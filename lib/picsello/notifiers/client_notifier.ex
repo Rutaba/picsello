@@ -4,7 +4,16 @@ defmodule Picsello.Notifiers.ClientNotifier do
 
   import Money.Sigils
 
-  alias Picsello.{BookingProposal, Job, Repo, Cart, Messages, ClientMessage, Galleries.Gallery, Utils}
+  alias Picsello.{
+    BookingProposal,
+    Job,
+    Repo,
+    Cart,
+    Messages,
+    ClientMessage,
+    Galleries.Gallery,
+    Utils
+  }
 
   alias Cart.Order
   require Logger

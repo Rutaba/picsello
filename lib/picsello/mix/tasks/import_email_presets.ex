@@ -171,7 +171,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         type: "lead",
         position: 0,
         name: "Booking Proposal Email - follow up 1",
-        subject_template: "Checking in!|{{photography_company_s_name}}",
+        subject_template: "Final Step to Secure Your Booking with {{photography_company_s_name}}",
         body_template: """
         <p><span style="color: rgb(0, 0, 0);">Hello {{client_first_name}},</span></p>
         <p><span style="color: rgb(0, 0, 0);">I trust you're doing well. Recognizing that life can become quite hectic, I wanted to touch base as I've noticed that you haven't yet completed the official booking process.</span></p>
@@ -195,7 +195,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         type: "lead",
         position: 0,
         name: "Booking Proposal Email - follow up 2",
-        subject_template: "It's me again!|{{photography_company_s_name}}",
+        subject_template: "Friendly Reminder: Final Step to Secure Your Booking",
         body_template: """
         <p><span style="color: rgb(0, 0, 0);">Hello {{client_first_name}},</span></p>
         <p><span style="color: rgb(0, 0, 0);">I hope this message finds you well. I understand that life can get busy, so I wanted to send a friendly reminder regarding the final step to secure your booking with me.</span></p>
@@ -219,7 +219,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         type: "lead",
         position: 0,
         name: "Booking Proposal Email - follow up 3",
-        subject_template: "Change of plans? | {{photography_company_s_name}}",
+        subject_template: "Change of plans?",
         body_template: """
         <p><span style="color: rgb(0, 0, 0);">Hello {{client_first_name}},</span></p>
         <p><span style="color: rgb(0, 0, 0);">I hope you're doing well. It seems I haven't received a response from you, and I know that life can sometimes lead us in different directions or bring about changes in priorities. I completely understand if that has happened. </span></p>
@@ -257,7 +257,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         type: "job",
         position: 0,
         name: "Pre-Shoot - retainer marked for Offline payment email",
-        subject_template: "Next Steps from {{photography_company_s_name}}",
+        subject_template: "Next Steps with {{photography_company_s_name}}",
         body_template: """
         <p><span style="color: rgb(0, 0, 0);">Hello {{client_first_name}},</span></p>
         <p><span style="color: rgb(0, 0, 0);">I’m really looking forward to working with you! I see you have noted that you will pay your retainer offline. </span></p>
@@ -276,7 +276,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         type: "job",
         position: 0,
         name: "Payments - paid in full email",
-        subject_template: "Thank you for your payment! | {{photography_company_s_name}}",
+        subject_template: "Thank you for your payment!",
         body_template: """
         <p><span style="color: rgb(0, 0, 0);">Hello {{client_first_name}},</span></p>
         <p><span style="color: rgb(0, 0, 0);">Thank you for your payment! Your account has been paid in full for your shoot with me on {{session_date}} at {{session_time}} at {{session_location}}. </span></p>
@@ -294,7 +294,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         type: "job",
         position: 0,
         name: "Payments - paid in full - Offline payment email",
-        subject_template: "Next Steps from {{photography_company_s_name}}",
+        subject_template: "Next Steps with {{photography_company_s_name}}",
         body_template: """
         <p><span style="color: rgb(0, 0, 0);">Hello {{client_first_name}},</span></p>
         <p><span style="color: rgb(0, 0, 0);">Thank you for your payment! Your account has been paid in full for your shoot with me on {{session_date}} at {{session_time}} at {{session_location}}. </span></p>
@@ -413,7 +413,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         type: "job",
         position: 0,
         name: "Post Shoot - Thank you for a great shoot email",
-        subject_template: "Thank you for a great shoot! | {{photography_company_s_name}}",
+        subject_template: "Thank you for a great shoot!",
         body_template: """
         <p><span style="color: rgb(0, 0, 0);">Hello {{client_first_name}},</span></p>
         <p><span style="color: rgb(0, 0, 0);">Thanks for a great shoot yesterday. I enjoyed working with you and we’ve captured some great images.</span></p>
@@ -431,7 +431,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         type: "job",
         position: 0,
         name: "Post Shoot - Follow up & request for reviews email",
-        subject_template: "Checking in! | {{photography_company_s_name}}",
+        subject_template: "Checking in!",
         body_template: """
         <p><span style="color: rgb(0, 0, 0);">Hello {{client_first_name}},</span></p>
         <p><span style="color: rgb(0, 0, 0);">I had an absolute blast photographing you and would love to hear from you about your experience.</span></p>
@@ -468,7 +468,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         type: "gallery",
         position: 0,
         name: "Gallery - Gallery Release email",
-        subject_template: "Your Gallery is ready! | {{photography_company_s_name}}",
+        subject_template: "Your Gallery is ready! ",
         body_template: """
         <p><span style="color: rgb(0, 0, 0);">Hello {{client_first_name}},</span></p>
         <p><span style="color: rgb(0, 0, 0);">Great news – your gallery is now available!</span></p>
@@ -490,7 +490,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         type: "gallery",
         position: 0,
         name: "Proofing Gallery For Selects email",
-        subject_template: "Your Proofing Album is ready! | {{photography_company_s_name}}",
+        subject_template: "Your Proofing Album is ready!",
         body_template: """
         <p><span style="color: rgb(0, 0, 0);">Hello {{client_first_name}},</span></p>
         <p><span style="color: rgb(0, 0, 0);">I'm thrilled to let you know that your proofs are now ready for your viewing pleasure! </span></p>
@@ -513,7 +513,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         type: "gallery",
         position: 0,
         name: "Proofing Gallery Finals email",
-        subject_template: "Your Gallery is ready! | {{photography_company_s_name}}",
+        subject_template: "Your Gallery is ready! ",
         body_template: """
         <p><span style="color: rgb(0, 0, 0);">Hello {{client_first_name}},</span></p>
         <p><span style="color: rgb(0, 0, 0);">I'm delighted to share that your retouched images are now available! </span></p>
@@ -631,8 +631,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         type: "gallery",
         position: 0,
         name: "Gallery - Gallery Expiring - follow up 2",
-        subject_template:
-          "Last Day to get your photos and products! | {{photography_company_s_name}}",
+        subject_template: "Last Day to get your photos and products!",
         body_template: """
         <p><span style="color: rgb(0, 0, 0);">Hello {{client_first_name}},</span></p>
         <p><span style="color: rgb(0, 0, 0);">I wanted to send along one last reminder in case you forgot! Your gallery is going to expire tomorrow! Please log into your gallery and make your selections before the gallery expires on {{gallery_expiration_date}}</span></p>
@@ -965,7 +964,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         type: "lead",
         position: 0,
         name: "Booking Proposal Email - follow up 1",
-        subject_template: "Checking in!|{{photography_company_s_name}}",
+        subject_template: "Final Step to Secure Your Booking with {{photography_company_s_name}}",
         body_template: """
         <p><span style="color: rgb(0, 0, 0);">Hello {{client_first_name}},</span></p>
         <p><span style="color: rgb(0, 0, 0);">I trust you're doing well. Recognizing that life can become quite hectic, I wanted to touch base as I've noticed that you haven't yet completed the official booking process.</span></p>
@@ -989,7 +988,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         type: "lead",
         position: 0,
         name: "Booking Proposal Email - follow up 2",
-        subject_template: "It's me again!|{{photography_company_s_name}}",
+        subject_template: "Friendly Reminder: Final Step to Secure Your Booking",
         body_template: """
         <p><span style="color: rgb(0, 0, 0);">Hello {{client_first_name}},</span></p>
         <p><span style="color: rgb(0, 0, 0);">I hope this message finds you well. I understand that life can get busy, so I wanted to send a friendly reminder regarding the final step to secure your booking with me.</span></p>
@@ -1013,7 +1012,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         type: "lead",
         position: 0,
         name: "Booking Proposal Email - follow up 3",
-        subject_template: "Change of plans? | {{photography_company_s_name}}",
+        subject_template: "Change of plans?",
         body_template: """
         <p><span style="color: rgb(0, 0, 0);">Hello {{client_first_name}},</span></p>
         <p><span style="color: rgb(0, 0, 0);">I hope you're doing well. It seems I haven't received a response from you, and I know that life can sometimes lead us in different directions or bring about changes in priorities. I completely understand if that has happened. </span></p>
@@ -1051,7 +1050,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         type: "job",
         position: 0,
         name: "Pre-Shoot - retainer marked for Offline payment email",
-        subject_template: "Next Steps from {{photography_company_s_name}}",
+        subject_template: "Next Steps with {{photography_company_s_name}}",
         body_template: """
         <p><span style="color: rgb(0, 0, 0);">Hello {{client_first_name}},</span></p>
         <p><span style="color: rgb(0, 0, 0);">I’m really looking forward to working with you! I see you have noted that you will pay your retainer offline. </span></p>
@@ -1070,7 +1069,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         type: "job",
         position: 0,
         name: "Payments - paid in full email",
-        subject_template: "Thank you for your payment! | {{photography_company_s_name}}",
+        subject_template: "Thank you for your payment!",
         body_template: """
         <p><span style="color: rgb(0, 0, 0);">Hello {{client_first_name}},</span></p>
         <p><span style="color: rgb(0, 0, 0);">Thank you for your payment! Your account has been paid in full for your shoot with me on {{session_date}} at {{session_time}} at {{session_location}}. </span></p>
@@ -1088,7 +1087,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         type: "job",
         position: 0,
         name: "Payments - paid in full - Offline payment email",
-        subject_template: "Next Steps from {{photography_company_s_name}}",
+        subject_template: "Next Steps with {{photography_company_s_name}}",
         body_template: """
         <p><span style="color: rgb(0, 0, 0);">Hello {{client_first_name}},</span></p>
         <p><span style="color: rgb(0, 0, 0);">Thank you for your payment! Your account has been paid in full for your shoot with me on {{session_date}} at {{session_time}} at {{session_location}}. </span></p>
@@ -1207,7 +1206,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         type: "job",
         position: 0,
         name: "Post Shoot - Thank you for a great shoot email",
-        subject_template: "Thank you for a great shoot! | {{photography_company_s_name}}",
+        subject_template: "Thank you for a great shoot!",
         body_template: """
         <p><span style="color: rgb(0, 0, 0);">Hello {{client_first_name}},</span></p>
         <p><span style="color: rgb(0, 0, 0);">Thanks for a great shoot yesterday. I enjoyed working with you and we’ve captured some great images.</span></p>
@@ -1283,7 +1282,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         type: "gallery",
         position: 0,
         name: "Gallery - Gallery Release email",
-        subject_template: "Your Gallery is ready! | {{photography_company_s_name}}",
+        subject_template: "Your Gallery is ready! ",
         body_template: """
         <p><span style="color: rgb(0, 0, 0);">Hello {{client_first_name}},</span></p>
         <p><span style="color: rgb(0, 0, 0);">Great news – your gallery is now available!</span></p>
@@ -1305,7 +1304,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         type: "gallery",
         position: 0,
         name: "Proofing Gallery For Selects email",
-        subject_template: "Your Proofing Album is ready! | {{photography_company_s_name}}",
+        subject_template: "Your Proofing Album is ready!",
         body_template: """
         <p><span style="color: rgb(0, 0, 0);">Hello {{client_first_name}},</span></p>
         <p><span style="color: rgb(0, 0, 0);">I'm thrilled to let you know that your proofs are now ready for your viewing pleasure! </span></p>
@@ -1328,7 +1327,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         type: "gallery",
         position: 0,
         name: "Proofing Gallery Finals email",
-        subject_template: "Your Gallery is ready! | {{photography_company_s_name}}",
+        subject_template: "Your Gallery is ready! ",
         body_template: """
         <p><span style="color: rgb(0, 0, 0);">Hello {{client_first_name}},</span></p>
         <p><span style="color: rgb(0, 0, 0);">I'm delighted to share that your retouched images are now available! </span></p>
@@ -1445,8 +1444,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         type: "gallery",
         position: 0,
         name: "Gallery - Gallery Expiring - follow up 2",
-        subject_template:
-          "Last Day to get your photos and products! | {{photography_company_s_name}}",
+        subject_template: "Last Day to get your photos and products!",
         body_template: """
         <p><span style="color: rgb(0, 0, 0);">Hello {{client_first_name}},</span></p>
         <p><span style="color: rgb(0, 0, 0);">I wanted to send along one last reminder in case you forgot! Your gallery is going to expire tomorrow! Please log into your gallery and make your selections before the gallery expires on {{gallery_expiration_date}}</span></p>
@@ -1779,7 +1777,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         type: "lead",
         position: 0,
         name: "Booking Proposal Email - follow up 1",
-        subject_template: "Checking in!|{{photography_company_s_name}}",
+        subject_template: "Final Step to Secure Your Booking with {{photography_company_s_name}}",
         body_template: """
         <p><span style="color: rgb(0, 0, 0);">Hello {{client_first_name}},</span></p>
         <p><span style="color: rgb(0, 0, 0);">I trust you're doing well. Recognizing that life can become quite hectic, I wanted to touch base as I've noticed that you haven't yet completed the official booking process.</span></p>
@@ -1803,7 +1801,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         type: "lead",
         position: 0,
         name: "Booking Proposal Email - follow up 2",
-        subject_template: "It's me again!|{{photography_company_s_name}}",
+        subject_template: "Friendly Reminder: Final Step to Secure Your Booking",
         body_template: """
         <p><span style="color: rgb(0, 0, 0);">Hello {{client_first_name}},</span></p>
         <p><span style="color: rgb(0, 0, 0);">I hope this message finds you well. I understand that life can get busy, so I wanted to send a friendly reminder regarding the final step to secure your booking with me.</span></p>
@@ -1827,7 +1825,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         type: "lead",
         position: 0,
         name: "Booking Proposal Email - follow up 3",
-        subject_template: "Change of plans? | {{photography_company_s_name}}",
+        subject_template: "Change of plans?",
         body_template: """
         <p><span style="color: rgb(0, 0, 0);">Hello {{client_first_name}},</span></p>
         <p><span style="color: rgb(0, 0, 0);">I hope you're doing well. It seems I haven't received a response from you, and I know that life can sometimes lead us in different directions or bring about changes in priorities. I completely understand if that has happened. </span></p>
@@ -1865,7 +1863,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         type: "job",
         position: 0,
         name: "Pre-Shoot - retainer marked for Offline payment email",
-        subject_template: "Next Steps from {{photography_company_s_name}}",
+        subject_template: "Next Steps with {{photography_company_s_name}}",
         body_template: """
         <p><span style="color: rgb(0, 0, 0);">Hello {{client_first_name}},</span></p>
         <p><span style="color: rgb(0, 0, 0);">I’m really looking forward to working with you! I see you have noted that you will pay your retainer offline. </span></p>
@@ -1884,7 +1882,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         type: "job",
         position: 0,
         name: "Payments - paid in full email",
-        subject_template: "Thank you for your payment! | {{photography_company_s_name}}",
+        subject_template: "Thank you for your payment!",
         body_template: """
         <p><span style="color: rgb(0, 0, 0);">Hello {{client_first_name}},</span></p>
         <p><span style="color: rgb(0, 0, 0);">Thank you for your payment! Your account has been paid in full for your shoot with me on {{session_date}} at {{session_time}} at {{session_location}}. </span></p>
@@ -1902,7 +1900,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         type: "job",
         position: 0,
         name: "Payments - paid in full - Offline payment email",
-        subject_template: "Next Steps from {{photography_company_s_name}}",
+        subject_template: "Next Steps with {{photography_company_s_name}}",
         body_template: """
         <p><span style="color: rgb(0, 0, 0);">Hello {{client_first_name}},</span></p>
         <p><span style="color: rgb(0, 0, 0);">Thank you for your payment! Your account has been paid in full for your shoot with me on {{session_date}} at {{session_time}} at {{session_location}}. </span></p>
@@ -2021,7 +2019,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         type: "job",
         position: 0,
         name: "Post Shoot - Thank you for a great shoot email",
-        subject_template: "Thank you for a great shoot! | {{photography_company_s_name}}",
+        subject_template: "Thank you for a great shoot!",
         body_template: """
         <p><span style="color: rgb(0, 0, 0);">Hello {{client_first_name}},</span></p>
         <p><span style="color: rgb(0, 0, 0);">Thanks for a great shoot yesterday. I enjoyed working with you and we’ve captured some great images.</span></p>
@@ -2039,7 +2037,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         type: "job",
         position: 0,
         name: "Post Shoot - Follow up & request for reviews email",
-        subject_template: "Checking in! | {{photography_company_s_name}}",
+        subject_template: "Checking in!",
         body_template: """
         <p><span style="color: rgb(0, 0, 0);">Hello {{client_first_name}},</span></p>
         <p><span style="color: rgb(0, 0, 0);">I had an absolute blast photographing you and would love to hear from you about your experience.</span></p>
@@ -2076,7 +2074,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         type: "gallery",
         position: 0,
         name: "Gallery - Gallery Release email",
-        subject_template: "Your Gallery is ready! | {{photography_company_s_name}}",
+        subject_template: "Your Gallery is ready! ",
         body_template: """
         <p><span style="color: rgb(0, 0, 0);">Hello {{client_first_name}},</span></p>
         <p><span style="color: rgb(0, 0, 0);">Great news – your gallery is now available!</span></p>
@@ -2098,7 +2096,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         type: "gallery",
         position: 0,
         name: "Proofing Gallery For Selects email",
-        subject_template: "Your Proofing Album is ready! | {{photography_company_s_name}}",
+        subject_template: "Your Proofing Album is ready!",
         body_template: """
         <p><span style="color: rgb(0, 0, 0);">Hello {{client_first_name}},</span></p>
         <p><span style="color: rgb(0, 0, 0);">I'm thrilled to let you know that your proofs are now ready for your viewing pleasure! </span></p>
@@ -2121,7 +2119,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         type: "gallery",
         position: 0,
         name: "Proofing Gallery Finals email",
-        subject_template: "Your Gallery is ready! | {{photography_company_s_name}}",
+        subject_template: "Your Gallery is ready! ",
         body_template: """
         <p><span style="color: rgb(0, 0, 0);">Hello {{client_first_name}},</span></p>
         <p><span style="color: rgb(0, 0, 0);">I'm delighted to share that your retouched images are now available! </span></p>
@@ -2239,8 +2237,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         type: "gallery",
         position: 0,
         name: "Gallery - Gallery Expiring - follow up 2",
-        subject_template:
-          "Last Day to get your photos and products! | {{photography_company_s_name}}",
+        subject_template: "Last Day to get your photos and products!",
         body_template: """
         <p><span style="color: rgb(0, 0, 0);">Hello {{client_first_name}},</span></p>
         <p><span style="color: rgb(0, 0, 0);">I wanted to send along one last reminder in case you forgot! Your gallery is going to expire tomorrow! Please log into your gallery and make your selections before the gallery expires on {{gallery_expiration_date}}</span></p>
@@ -2572,7 +2569,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         type: "lead",
         position: 0,
         name: "Booking Proposal Email - follow up 1",
-        subject_template: "Checking in!|{{photography_company_s_name}}",
+        subject_template: "Final Step to Secure Your Booking with {{photography_company_s_name}}",
         body_template: """
         <p><span style="color: rgb(0, 0, 0);">Hello {{client_first_name}},</span></p>
         <p><span style="color: rgb(0, 0, 0);">I trust you're doing well. Recognizing that life can become quite hectic, I wanted to touch base as I've noticed that you haven't yet completed the official booking process.</span></p>
@@ -2596,7 +2593,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         type: "lead",
         position: 0,
         name: "Booking Proposal Email - follow up 2",
-        subject_template: "It's me again!|{{photography_company_s_name}}",
+        subject_template: "Friendly Reminder: Final Step to Secure Your Booking",
         body_template: """
         <p><span style="color: rgb(0, 0, 0);">Hello {{client_first_name}},</span></p>
         <p><span style="color: rgb(0, 0, 0);">I hope this message finds you well. I understand that life can get busy, so I wanted to send a friendly reminder regarding the final step to secure your booking with me.</span></p>
@@ -2620,7 +2617,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         type: "lead",
         position: 0,
         name: "Booking Proposal Email - follow up 3",
-        subject_template: "Change of plans? | {{photography_company_s_name}}",
+        subject_template: "Change of plans?",
         body_template: """
         <p><span style="color: rgb(0, 0, 0);">Hello {{client_first_name}},</span></p>
         <p><span style="color: rgb(0, 0, 0);">I hope you're doing well. It seems I haven't received a response from you, and I know that life can sometimes lead us in different directions or bring about changes in priorities. I completely understand if that has happened. </span></p>
@@ -2658,7 +2655,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         type: "job",
         position: 0,
         name: "Pre-Shoot - retainer marked for Offline payment email",
-        subject_template: "Next Steps from {{photography_company_s_name}}",
+        subject_template: "Next Steps with {{photography_company_s_name}}",
         body_template: """
         <p><span style="color: rgb(0, 0, 0);">Hello {{client_first_name}},</span></p>
         <p><span style="color: rgb(0, 0, 0);">I’m really looking forward to working with you! I see you have noted that you will pay your retainer offline. </span></p>
@@ -2677,7 +2674,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         type: "job",
         position: 0,
         name: "Payments - paid in full email",
-        subject_template: "Thank you for your payment! | {{photography_company_s_name}}",
+        subject_template: "Thank you for your payment!",
         body_template: """
         <p><span style="color: rgb(0, 0, 0);">Hello {{client_first_name}},</span></p>
         <p><span style="color: rgb(0, 0, 0);">Thank you for your payment! Your account has been paid in full for your shoot with me on {{session_date}} at {{session_time}} at {{session_location}}. </span></p>
@@ -2695,7 +2692,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         type: "job",
         position: 0,
         name: "Payments - paid in full - Offline payment email",
-        subject_template: "Next Steps from {{photography_company_s_name}}",
+        subject_template: "Next Steps with {{photography_company_s_name}}",
         body_template: """
         <p><span style="color: rgb(0, 0, 0);">Hello {{client_first_name}},</span></p>
         <p><span style="color: rgb(0, 0, 0);">Thank you for your payment! Your account has been paid in full for your shoot with me on {{session_date}} at {{session_time}} at {{session_location}}. </span></p>
@@ -2814,7 +2811,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         type: "job",
         position: 0,
         name: "Post Shoot - Thank you for a great shoot email",
-        subject_template: "Thank you for a great shoot! | {{photography_company_s_name}}",
+        subject_template: "Thank you for a great shoot!",
         body_template: """
         <p><span style="color: rgb(0, 0, 0);">Hello {{client_first_name}},</span></p>
         <p><span style="color: rgb(0, 0, 0);">Thanks for a great shoot yesterday. I enjoyed working with you and we’ve captured some great images.</span></p>
@@ -2832,7 +2829,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         type: "job",
         position: 0,
         name: "Post Shoot - Follow up & request for reviews email",
-        subject_template: "Checking in! | {{photography_company_s_name}}",
+        subject_template: "Checking in!",
         body_template: """
         <p><span style="color: rgb(0, 0, 0);">Hello {{client_first_name}},</span></p>
         <p><span style="color: rgb(0, 0, 0);">I had an absolute blast photographing you and would love to hear from you about your experience.</span></p>
@@ -2869,7 +2866,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         type: "gallery",
         position: 0,
         name: "Gallery - Gallery Release email",
-        subject_template: "Your Gallery is ready! | {{photography_company_s_name}}",
+        subject_template: "Your Gallery is ready! ",
         body_template: """
         <p><span style="color: rgb(0, 0, 0);">Hello {{client_first_name}},</span></p>
         <p><span style="color: rgb(0, 0, 0);">Great news – your gallery is now available!</span></p>
@@ -2891,7 +2888,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         type: "gallery",
         position: 0,
         name: "Proofing Gallery For Selects email",
-        subject_template: "Your Proofing Album is ready! | {{photography_company_s_name}}",
+        subject_template: "Your Proofing Album is ready!",
         body_template: """
         <p><span style="color: rgb(0, 0, 0);">Hello {{client_first_name}},</span></p>
         <p><span style="color: rgb(0, 0, 0);">I'm thrilled to let you know that your proofs are now ready for your viewing pleasure! </span></p>
@@ -2914,7 +2911,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         type: "gallery",
         position: 0,
         name: "Proofing Gallery Finals email",
-        subject_template: "Your Gallery is ready! | {{photography_company_s_name}}",
+        subject_template: "Your Gallery is ready! ",
         body_template: """
         <p><span style="color: rgb(0, 0, 0);">Hello {{client_first_name}},</span></p>
         <p><span style="color: rgb(0, 0, 0);">I'm delighted to share that your retouched images are now available! </span></p>
@@ -3032,8 +3029,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         type: "gallery",
         position: 0,
         name: "Gallery - Gallery Expiring - follow up 2",
-        subject_template:
-          "Last Day to get your photos and products! | {{photography_company_s_name}}",
+        subject_template: "Last Day to get your photos and products!",
         body_template: """
         <p><span style="color: rgb(0, 0, 0);">Hello {{client_first_name}},</span></p>
         <p><span style="color: rgb(0, 0, 0);">I wanted to send along one last reminder in case you forgot! Your gallery is going to expire tomorrow! Please log into your gallery and make your selections before the gallery expires on {{gallery_expiration_date}}</span></p>
@@ -3365,7 +3361,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         type: "lead",
         position: 0,
         name: "Booking Proposal Email - follow up 1",
-        subject_template: "Checking in!|{{photography_company_s_name}}",
+        subject_template: "Final Step to Secure Your Booking with {{photography_company_s_name}}",
         body_template: """
         <p><span style="color: rgb(0, 0, 0);">Hello {{client_first_name}},</span></p>
         <p><span style="color: rgb(0, 0, 0);">I trust you're doing well. Recognizing that life can become quite hectic, I wanted to touch base as I've noticed that you haven't yet completed the official booking process.</span></p>
@@ -3389,7 +3385,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         type: "lead",
         position: 0,
         name: "Booking Proposal Email - follow up 2",
-        subject_template: "It's me again!|{{photography_company_s_name}}",
+        subject_template: "Friendly Reminder: Final Step to Secure Your Booking",
         body_template: """
         <p><span style="color: rgb(0, 0, 0);">Hello {{client_first_name}},</span></p>
         <p><span style="color: rgb(0, 0, 0);">I hope this message finds you well. I understand that life can get busy, so I wanted to send a friendly reminder regarding the final step to secure your booking with me.</span></p>
@@ -3413,7 +3409,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         type: "lead",
         position: 0,
         name: "Booking Proposal Email - follow up 3",
-        subject_template: "Change of plans? | {{photography_company_s_name}}",
+        subject_template: "Change of plans?",
         body_template: """
         <p><span style="color: rgb(0, 0, 0);">Hello {{client_first_name}},</span></p>
         <p><span style="color: rgb(0, 0, 0);">I hope you're doing well. It seems I haven't received a response from you, and I know that life can sometimes lead us in different directions or bring about changes in priorities. I completely understand if that has happened. </span></p>
@@ -3451,7 +3447,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         type: "job",
         position: 0,
         name: "Pre-Shoot - retainer marked for Offline payment email",
-        subject_template: "Next Steps from {{photography_company_s_name}}",
+        subject_template: "Next Steps with {{photography_company_s_name}}",
         body_template: """
         <p><span style="color: rgb(0, 0, 0);">Hello {{client_first_name}},</span></p>
         <p><span style="color: rgb(0, 0, 0);">I’m really looking forward to working with you! I see you have noted that you will pay your retainer offline. </span></p>
@@ -3470,7 +3466,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         type: "job",
         position: 0,
         name: "Payments - paid in full email",
-        subject_template: "Thank you for your payment! | {{photography_company_s_name}}",
+        subject_template: "Thank you for your payment!",
         body_template: """
         <p><span style="color: rgb(0, 0, 0);">Hello {{client_first_name}},</span></p>
         <p><span style="color: rgb(0, 0, 0);">Thank you for your payment! Your account has been paid in full for your shoot with me on {{session_date}} at {{session_time}} at {{session_location}}. </span></p>
@@ -3488,7 +3484,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         type: "job",
         position: 0,
         name: "Payments - paid in full - Offline payment email",
-        subject_template: "Next Steps from {{photography_company_s_name}}",
+        subject_template: "Next Steps with {{photography_company_s_name}}",
         body_template: """
         <p><span style="color: rgb(0, 0, 0);">Hello {{client_first_name}},</span></p>
         <p><span style="color: rgb(0, 0, 0);">Thank you for your payment! Your account has been paid in full for your shoot with me on {{session_date}} at {{session_time}} at {{session_location}}. </span></p>
@@ -3607,7 +3603,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         type: "job",
         position: 0,
         name: "Post Shoot - Thank you for a great shoot email",
-        subject_template: "Thank you for a great shoot! | {{photography_company_s_name}}",
+        subject_template: "Thank you for a great shoot!",
         body_template: """
         <p><span style="color: rgb(0, 0, 0);">Hello {{client_first_name}},</span></p>
         <p><span style="color: rgb(0, 0, 0);">Thanks for a great shoot yesterday. I enjoyed working with you and we’ve captured some great images.</span></p>
@@ -3625,7 +3621,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         type: "job",
         position: 0,
         name: "Post Shoot - Follow up & request for reviews email",
-        subject_template: "Checking in! | {{photography_company_s_name}}",
+        subject_template: "Checking in!",
         body_template: """
         <p><span style="color: rgb(0, 0, 0);">Hello {{client_first_name}},</span></p>
         <p><span style="color: rgb(0, 0, 0);">I had an absolute blast photographing you and would love to hear from you about your experience.</span></p>
@@ -3662,7 +3658,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         type: "gallery",
         position: 0,
         name: "Gallery - Gallery Release email",
-        subject_template: "Your Gallery is ready! | {{photography_company_s_name}}",
+        subject_template: "Your Gallery is ready! ",
         body_template: """
         <p><span style="color: rgb(0, 0, 0);">Hello {{client_first_name}},</span></p>
         <p><span style="color: rgb(0, 0, 0);">Great news – your gallery is now available!</span></p>
@@ -3684,7 +3680,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         type: "gallery",
         position: 0,
         name: "Proofing Gallery For Selects email",
-        subject_template: "Your Proofing Album is ready! | {{photography_company_s_name}}",
+        subject_template: "Your Proofing Album is ready!",
         body_template: """
         <p><span style="color: rgb(0, 0, 0);">Hello {{client_first_name}},</span></p>
         <p><span style="color: rgb(0, 0, 0);">I'm thrilled to let you know that your proofs are now ready for your viewing pleasure! </span></p>
@@ -3707,7 +3703,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         type: "gallery",
         position: 0,
         name: "Proofing Gallery Finals email",
-        subject_template: "Your Gallery is ready! | {{photography_company_s_name}}",
+        subject_template: "Your Gallery is ready! ",
         body_template: """
         <p><span style="color: rgb(0, 0, 0);">Hello {{client_first_name}},</span></p>
         <p><span style="color: rgb(0, 0, 0);">I'm delighted to share that your retouched images are now available! </span></p>
@@ -3825,8 +3821,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         type: "gallery",
         position: 0,
         name: "Gallery - Gallery Expiring - follow up 2",
-        subject_template:
-          "Last Day to get your photos and products! | {{photography_company_s_name}}",
+        subject_template: "Last Day to get your photos and products!",
         body_template: """
         <p><span style="color: rgb(0, 0, 0);">Hello {{client_first_name}},</span></p>
         <p><span style="color: rgb(0, 0, 0);">I wanted to send along one last reminder in case you forgot! Your gallery is going to expire tomorrow! Please log into your gallery and make your selections before the gallery expires on {{gallery_expiration_date}}</span></p>
@@ -4158,7 +4153,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         type: "lead",
         position: 0,
         name: "Booking Proposal Email - follow up 1",
-        subject_template: "Checking in!|{{photography_company_s_name}}",
+        subject_template: "Final Step to Secure Your Booking with {{photography_company_s_name}}",
         body_template: """
         <p><span style="color: rgb(0, 0, 0);">Hello {{client_first_name}},</span></p>
         <p><span style="color: rgb(0, 0, 0);">I trust you're doing well. Recognizing that life can become quite hectic, I wanted to touch base as I've noticed that you haven't yet completed the official booking process.</span></p>
@@ -4182,7 +4177,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         type: "lead",
         position: 0,
         name: "Booking Proposal Email - follow up 2",
-        subject_template: "It's me again!|{{photography_company_s_name}}",
+        subject_template: "Friendly Reminder: Final Step to Secure Your Booking",
         body_template: """
         <p><span style="color: rgb(0, 0, 0);">Hello {{client_first_name}},</span></p>
         <p><span style="color: rgb(0, 0, 0);">I hope this message finds you well. I understand that life can get busy, so I wanted to send a friendly reminder regarding the final step to secure your booking with me.</span></p>
@@ -4206,7 +4201,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         type: "lead",
         position: 0,
         name: "Booking Proposal Email - follow up 3",
-        subject_template: "Change of plans? | {{photography_company_s_name}}",
+        subject_template: "Change of plans?",
         body_template: """
         <p><span style="color: rgb(0, 0, 0);">Hello {{client_first_name}},</span></p>
         <p><span style="color: rgb(0, 0, 0);">I hope you're doing well. It seems I haven't received a response from you, and I know that life can sometimes lead us in different directions or bring about changes in priorities. I completely understand if that has happened. </span></p>
@@ -4244,7 +4239,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         type: "job",
         position: 0,
         name: "Pre-Shoot - retainer marked for Offline payment email",
-        subject_template: "Next Steps from {{photography_company_s_name}}",
+        subject_template: "Next Steps with {{photography_company_s_name}}",
         body_template: """
         <p><span style="color: rgb(0, 0, 0);">Hello {{client_first_name}},</span></p>
         <p><span style="color: rgb(0, 0, 0);">I’m really looking forward to working with you! I see you have noted that you will pay your retainer offline. </span></p>
@@ -4263,7 +4258,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         type: "job",
         position: 0,
         name: "Payments - paid in full email",
-        subject_template: "Thank you for your payment! | {{photography_company_s_name}}",
+        subject_template: "Thank you for your payment!",
         body_template: """
         <p><span style="color: rgb(0, 0, 0);">Hello {{client_first_name}},</span></p>
         <p><span style="color: rgb(0, 0, 0);">Thank you for your payment! Your account has been paid in full for your shoot with me on {{session_date}} at {{session_time}} at {{session_location}}. </span></p>
@@ -4281,7 +4276,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         type: "job",
         position: 0,
         name: "Payments - paid in full - Offline payment email",
-        subject_template: "Next Steps from {{photography_company_s_name}}",
+        subject_template: "Next Steps with {{photography_company_s_name}}",
         body_template: """
         <p><span style="color: rgb(0, 0, 0);">Hello {{client_first_name}},</span></p>
         <p><span style="color: rgb(0, 0, 0);">Thank you for your payment! Your account has been paid in full for your shoot with me on {{session_date}} at {{session_time}} at {{session_location}}. </span></p>
@@ -4400,7 +4395,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         type: "job",
         position: 0,
         name: "Post Shoot - Thank you for a great shoot email",
-        subject_template: "Thank you for a great shoot! | {{photography_company_s_name}}",
+        subject_template: "Thank you for a great shoot!",
         body_template: """
         <p><span style="color: rgb(0, 0, 0);">Hello {{client_first_name}},</span></p>
         <p><span style="color: rgb(0, 0, 0);">Thanks for a great shoot yesterday. I enjoyed working with you and we’ve captured some great images.</span></p>
@@ -4418,7 +4413,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         type: "job",
         position: 0,
         name: "Post Shoot - Follow up & request for reviews email",
-        subject_template: "Checking in! | {{photography_company_s_name}}",
+        subject_template: "Checking in!",
         body_template: """
         <p><span style="color: rgb(0, 0, 0);">Hello {{client_first_name}},</span></p>
         <p><span style="color: rgb(0, 0, 0);">I had an absolute blast photographing you and would love to hear from you about your experience.</span></p>
@@ -4455,7 +4450,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         type: "gallery",
         position: 0,
         name: "Gallery - Gallery Release email",
-        subject_template: "Your Gallery is ready! | {{photography_company_s_name}}",
+        subject_template: "Your Gallery is ready! ",
         body_template: """
         <p><span style="color: rgb(0, 0, 0);">Hello {{client_first_name}},</span></p>
         <p><span style="color: rgb(0, 0, 0);">Great news – your gallery is now available!</span></p>
@@ -4477,7 +4472,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         type: "gallery",
         position: 0,
         name: "Proofing Gallery For Selects email",
-        subject_template: "Your Proofing Album is ready! | {{photography_company_s_name}}",
+        subject_template: "Your Proofing Album is ready!",
         body_template: """
         <p><span style="color: rgb(0, 0, 0);">Hello {{client_first_name}},</span></p>
         <p><span style="color: rgb(0, 0, 0);">I'm thrilled to let you know that your proofs are now ready for your viewing pleasure! </span></p>
@@ -4500,7 +4495,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         type: "gallery",
         position: 0,
         name: "Proofing Gallery Finals email",
-        subject_template: "Your Gallery is ready! | {{photography_company_s_name}}",
+        subject_template: "Your Gallery is ready! ",
         body_template: """
         <p><span style="color: rgb(0, 0, 0);">Hello {{client_first_name}},</span></p>
         <p><span style="color: rgb(0, 0, 0);">I'm delighted to share that your retouched images are now available! </span></p>
@@ -4618,8 +4613,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         type: "gallery",
         position: 0,
         name: "Gallery - Gallery Expiring - follow up 2",
-        subject_template:
-          "Last Day to get your photos and products! | {{photography_company_s_name}}",
+        subject_template: "Last Day to get your photos and products!",
         body_template: """
         <p><span style="color: rgb(0, 0, 0);">Hello {{client_first_name}},</span></p>
         <p><span style="color: rgb(0, 0, 0);">I wanted to send along one last reminder in case you forgot! Your gallery is going to expire tomorrow! Please log into your gallery and make your selections before the gallery expires on {{gallery_expiration_date}}</span></p>
@@ -4951,7 +4945,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         type: "lead",
         position: 0,
         name: "Booking Proposal Email - follow up 1",
-        subject_template: "Checking in!|{{photography_company_s_name}}",
+        subject_template: "Final Step to Secure Your Booking with {{photography_company_s_name}}",
         body_template: """
         <p><span style="color: rgb(0, 0, 0);">Hello {{client_first_name}},</span></p>
         <p><span style="color: rgb(0, 0, 0);">I trust you're doing well. Recognizing that life can become quite hectic, I wanted to touch base as I've noticed that you haven't yet completed the official booking process.</span></p>
@@ -4975,7 +4969,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         type: "lead",
         position: 0,
         name: "Booking Proposal Email - follow up 2",
-        subject_template: "It's me again!|{{photography_company_s_name}}",
+        subject_template: "Friendly Reminder: Final Step to Secure Your Booking",
         body_template: """
         <p><span style="color: rgb(0, 0, 0);">Hello {{client_first_name}},</span></p>
         <p><span style="color: rgb(0, 0, 0);">I hope this message finds you well. I understand that life can get busy, so I wanted to send a friendly reminder regarding the final step to secure your booking with me.</span></p>
@@ -4999,7 +4993,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         type: "lead",
         position: 0,
         name: "Booking Proposal Email - follow up 3",
-        subject_template: "Change of plans? | {{photography_company_s_name}}",
+        subject_template: "Change of plans?",
         body_template: """
         <p><span style="color: rgb(0, 0, 0);">Hello {{client_first_name}},</span></p>
         <p><span style="color: rgb(0, 0, 0);">I hope you're doing well. It seems I haven't received a response from you, and I know that life can sometimes lead us in different directions or bring about changes in priorities. I completely understand if that has happened. </span></p>
@@ -5037,7 +5031,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         type: "job",
         position: 0,
         name: "Pre-Shoot - retainer marked for Offline payment email",
-        subject_template: "Next Steps from {{photography_company_s_name}}",
+        subject_template: "Next Steps with {{photography_company_s_name}}",
         body_template: """
         <p><span style="color: rgb(0, 0, 0);">Hello {{client_first_name}},</span></p>
         <p><span style="color: rgb(0, 0, 0);">I’m really looking forward to working with you! I see you have noted that you will pay your retainer offline. </span></p>
@@ -5056,7 +5050,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         type: "job",
         position: 0,
         name: "Payments - paid in full email",
-        subject_template: "Thank you for your payment! | {{photography_company_s_name}}",
+        subject_template: "Thank you for your payment!",
         body_template: """
         <p><span style="color: rgb(0, 0, 0);">Hello {{client_first_name}},</span></p>
         <p><span style="color: rgb(0, 0, 0);">Thank you for your payment! Your account has been paid in full for your shoot with me on {{session_date}} at {{session_time}} at {{session_location}}. </span></p>
@@ -5074,7 +5068,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         type: "job",
         position: 0,
         name: "Payments - paid in full - Offline payment email",
-        subject_template: "Next Steps from {{photography_company_s_name}}",
+        subject_template: "Next Steps with {{photography_company_s_name}}",
         body_template: """
         <p><span style="color: rgb(0, 0, 0);">Hello {{client_first_name}},</span></p>
         <p><span style="color: rgb(0, 0, 0);">Thank you for your payment! Your account has been paid in full for your shoot with me on {{session_date}} at {{session_time}} at {{session_location}}. </span></p>
@@ -5193,7 +5187,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         type: "job",
         position: 0,
         name: "Post Shoot - Thank you for a great shoot email",
-        subject_template: "Thank you for a great shoot! | {{photography_company_s_name}}",
+        subject_template: "Thank you for a great shoot!",
         body_template: """
         <p><span style="color: rgb(0, 0, 0);">Hello {{client_first_name}},</span></p>
         <p><span style="color: rgb(0, 0, 0);">Thanks for a great shoot yesterday. I enjoyed working with you and we’ve captured some great images.</span></p>
@@ -5211,7 +5205,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         type: "job",
         position: 0,
         name: "Post Shoot - Follow up & request for reviews email",
-        subject_template: "Checking in! | {{photography_company_s_name}}",
+        subject_template: "Checking in!",
         body_template: """
         <p><span style="color: rgb(0, 0, 0);">Hello {{client_first_name}},</span></p>
         <p><span style="color: rgb(0, 0, 0);">I had an absolute blast photographing you and would love to hear from you about your experience.</span></p>
@@ -5248,7 +5242,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         type: "gallery",
         position: 0,
         name: "Gallery - Gallery Release email",
-        subject_template: "Your Gallery is ready! | {{photography_company_s_name}}",
+        subject_template: "Your Gallery is ready! ",
         body_template: """
         <p><span style="color: rgb(0, 0, 0);">Hello {{client_first_name}},</span></p>
         <p><span style="color: rgb(0, 0, 0);">Great news – your gallery is now available!</span></p>
@@ -5270,7 +5264,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         type: "gallery",
         position: 0,
         name: "Proofing Gallery For Selects email",
-        subject_template: "Your Proofing Album is ready! | {{photography_company_s_name}}",
+        subject_template: "Your Proofing Album is ready!",
         body_template: """
         <p><span style="color: rgb(0, 0, 0);">Hello {{client_first_name}},</span></p>
         <p><span style="color: rgb(0, 0, 0);">I'm thrilled to let you know that your proofs are now ready for your viewing pleasure! </span></p>
@@ -5293,7 +5287,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         type: "gallery",
         position: 0,
         name: "Proofing Gallery Finals email",
-        subject_template: "Your Gallery is ready! | {{photography_company_s_name}}",
+        subject_template: "Your Gallery is ready! ",
         body_template: """
         <p><span style="color: rgb(0, 0, 0);">Hello {{client_first_name}},</span></p>
         <p><span style="color: rgb(0, 0, 0);">I'm delighted to share that your retouched images are now available! </span></p>
@@ -5411,8 +5405,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         type: "gallery",
         position: 0,
         name: "Gallery - Gallery Expiring - follow up 2",
-        subject_template:
-          "Last Day to get your photos and products! | {{photography_company_s_name}}",
+        subject_template: "Last Day to get your photos and products!",
         body_template: """
         <p><span style="color: rgb(0, 0, 0);">Hello {{client_first_name}},</span></p>
         <p><span style="color: rgb(0, 0, 0);">I wanted to send along one last reminder in case you forgot! Your gallery is going to expire tomorrow! Please log into your gallery and make your selections before the gallery expires on {{gallery_expiration_date}}</span></p>
@@ -5744,7 +5737,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         type: "lead",
         position: 0,
         name: "Booking Proposal Email - follow up 1",
-        subject_template: "Checking in!|{{photography_company_s_name}}",
+        subject_template: "Final Step to Secure Your Booking with {{photography_company_s_name}}",
         body_template: """
         <p><span style="color: rgb(0, 0, 0);">Hello {{client_first_name}},</span></p>
         <p><span style="color: rgb(0, 0, 0);">I trust you're doing well. Recognizing that life can become quite hectic, I wanted to touch base as I've noticed that you haven't yet completed the official booking process.</span></p>
@@ -5768,7 +5761,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         type: "lead",
         position: 0,
         name: "Booking Proposal Email - follow up 2",
-        subject_template: "It's me again!|{{photography_company_s_name}}",
+        subject_template: "Friendly Reminder: Final Step to Secure Your Booking",
         body_template: """
         <p><span style="color: rgb(0, 0, 0);">Hello {{client_first_name}},</span></p>
         <p><span style="color: rgb(0, 0, 0);">I hope this message finds you well. I understand that life can get busy, so I wanted to send a friendly reminder regarding the final step to secure your booking with me.</span></p>
@@ -5792,7 +5785,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         type: "lead",
         position: 0,
         name: "Booking Proposal Email - follow up 3",
-        subject_template: "Change of plans? | {{photography_company_s_name}}",
+        subject_template: "Change of plans?",
         body_template: """
         <p><span style="color: rgb(0, 0, 0);">Hello {{client_first_name}},</span></p>
         <p><span style="color: rgb(0, 0, 0);">I hope you're doing well. It seems I haven't received a response from you, and I know that life can sometimes lead us in different directions or bring about changes in priorities. I completely understand if that has happened. </span></p>
@@ -5830,7 +5823,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         type: "job",
         position: 0,
         name: "Pre-Shoot - retainer marked for Offline payment email",
-        subject_template: "Next Steps from {{photography_company_s_name}}",
+        subject_template: "Next Steps with {{photography_company_s_name}}",
         body_template: """
         <p><span style="color: rgb(0, 0, 0);">Hello {{client_first_name}},</span></p>
         <p><span style="color: rgb(0, 0, 0);">I’m really looking forward to working with you! I see you have noted that you will pay your retainer offline. </span></p>
@@ -5849,7 +5842,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         type: "job",
         position: 0,
         name: "Payments - paid in full email",
-        subject_template: "Thank you for your payment! | {{photography_company_s_name}}",
+        subject_template: "Thank you for your payment!",
         body_template: """
         <p><span style="color: rgb(0, 0, 0);">Hello {{client_first_name}},</span></p>
         <p><span style="color: rgb(0, 0, 0);">Thank you for your payment! Your account has been paid in full for your shoot with me on {{session_date}} at {{session_time}} at {{session_location}}. </span></p>
@@ -5867,7 +5860,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         type: "job",
         position: 0,
         name: "Payments - paid in full - Offline payment email",
-        subject_template: "Next Steps from {{photography_company_s_name}}",
+        subject_template: "Next Steps with {{photography_company_s_name}}",
         body_template: """
         <p><span style="color: rgb(0, 0, 0);">Hello {{client_first_name}},</span></p>
         <p><span style="color: rgb(0, 0, 0);">Thank you for your payment! Your account has been paid in full for your shoot with me on {{session_date}} at {{session_time}} at {{session_location}}. </span></p>
@@ -5986,7 +5979,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         type: "job",
         position: 0,
         name: "Post Shoot - Thank you for a great shoot email",
-        subject_template: "Thank you for a great shoot! | {{photography_company_s_name}}",
+        subject_template: "Thank you for a great shoot!",
         body_template: """
         <p><span style="color: rgb(0, 0, 0);">Hello {{client_first_name}},</span></p>
         <p><span style="color: rgb(0, 0, 0);">Thanks for a great shoot yesterday. I enjoyed working with you and we’ve captured some great images.</span></p>
@@ -6004,7 +5997,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         type: "job",
         position: 0,
         name: "Post Shoot - Follow up & request for reviews email",
-        subject_template: "Checking in! | {{photography_company_s_name}}",
+        subject_template: "Checking in!",
         body_template: """
         <p><span style="color: rgb(0, 0, 0);">Hello {{client_first_name}},</span></p>
         <p><span style="color: rgb(0, 0, 0);">I had an absolute blast photographing you and would love to hear from you about your experience.</span></p>
@@ -6041,7 +6034,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         type: "gallery",
         position: 0,
         name: "Gallery - Gallery Release email",
-        subject_template: "Your Gallery is ready! | {{photography_company_s_name}}",
+        subject_template: "Your Gallery is ready! ",
         body_template: """
         <p><span style="color: rgb(0, 0, 0);">Hello {{client_first_name}},</span></p>
         <p><span style="color: rgb(0, 0, 0);">Great news – your gallery is now available!</span></p>
@@ -6063,7 +6056,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         type: "gallery",
         position: 0,
         name: "Proofing Gallery For Selects email",
-        subject_template: "Your Proofing Album is ready! | {{photography_company_s_name}}",
+        subject_template: "Your Proofing Album is ready!",
         body_template: """
         <p><span style="color: rgb(0, 0, 0);">Hello {{client_first_name}},</span></p>
         <p><span style="color: rgb(0, 0, 0);">I'm thrilled to let you know that your proofs are now ready for your viewing pleasure! </span></p>
@@ -6086,7 +6079,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         type: "gallery",
         position: 0,
         name: "Proofing Gallery Finals email",
-        subject_template: "Your Gallery is ready! | {{photography_company_s_name}}",
+        subject_template: "Your Gallery is ready! ",
         body_template: """
         <p><span style="color: rgb(0, 0, 0);">Hello {{client_first_name}},</span></p>
         <p><span style="color: rgb(0, 0, 0);">I'm delighted to share that your retouched images are now available! </span></p>
@@ -6204,8 +6197,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         type: "gallery",
         position: 0,
         name: "Gallery - Gallery Expiring - follow up 2",
-        subject_template:
-          "Last Day to get your photos and products! | {{photography_company_s_name}}",
+        subject_template: "Last Day to get your photos and products!",
         body_template: """
         <p><span style="color: rgb(0, 0, 0);">Hello {{client_first_name}},</span></p>
         <p><span style="color: rgb(0, 0, 0);">I wanted to send along one last reminder in case you forgot! Your gallery is going to expire tomorrow! Please log into your gallery and make your selections before the gallery expires on {{gallery_expiration_date}}</span></p>
@@ -6537,7 +6529,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         type: "lead",
         position: 0,
         name: "Booking Proposal Email - follow up 1",
-        subject_template: "Checking in!|{{photography_company_s_name}}",
+        subject_template: "Final Step to Secure Your Booking with {{photography_company_s_name}}",
         body_template: """
         <p><span style="color: rgb(0, 0, 0);">Hello {{client_first_name}},</span></p>
         <p><span style="color: rgb(0, 0, 0);">I trust you're doing well. Recognizing that life can become quite hectic, I wanted to touch base as I've noticed that you haven't yet completed the official booking process.</span></p>
@@ -6561,7 +6553,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         type: "lead",
         position: 0,
         name: "Booking Proposal Email - follow up 2",
-        subject_template: "It's me again!|{{photography_company_s_name}}",
+        subject_template: "Friendly Reminder: Final Step to Secure Your Booking",
         body_template: """
         <p><span style="color: rgb(0, 0, 0);">Hello {{client_first_name}},</span></p>
         <p><span style="color: rgb(0, 0, 0);">I hope this message finds you well. I understand that life can get busy, so I wanted to send a friendly reminder regarding the final step to secure your booking with me.</span></p>
@@ -6585,7 +6577,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         type: "lead",
         position: 0,
         name: "Booking Proposal Email - follow up 3",
-        subject_template: "Change of plans? | {{photography_company_s_name}}",
+        subject_template: "Change of plans?",
         body_template: """
         <p><span style="color: rgb(0, 0, 0);">Hello {{client_first_name}},</span></p>
         <p><span style="color: rgb(0, 0, 0);">I hope you're doing well. It seems I haven't received a response from you, and I know that life can sometimes lead us in different directions or bring about changes in priorities. I completely understand if that has happened. </span></p>
@@ -6623,7 +6615,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         type: "job",
         position: 0,
         name: "Pre-Shoot - retainer marked for Offline payment email",
-        subject_template: "Next Steps from {{photography_company_s_name}}",
+        subject_template: "Next Steps with {{photography_company_s_name}}",
         body_template: """
         <p><span style="color: rgb(0, 0, 0);">Hello {{client_first_name}},</span></p>
         <p><span style="color: rgb(0, 0, 0);">I’m really looking forward to working with you! I see you have noted that you will pay your retainer offline. </span></p>
@@ -6642,7 +6634,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         type: "job",
         position: 0,
         name: "Payments - paid in full email",
-        subject_template: "Thank you for your payment! | {{photography_company_s_name}}",
+        subject_template: "Thank you for your payment!",
         body_template: """
         <p><span style="color: rgb(0, 0, 0);">Hello {{client_first_name}},</span></p>
         <p><span style="color: rgb(0, 0, 0);">Thank you for your payment! Your account has been paid in full for your shoot with me on {{session_date}} at {{session_time}} at {{session_location}}. </span></p>
@@ -6660,7 +6652,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         type: "job",
         position: 0,
         name: "Payments - paid in full - Offline payment email",
-        subject_template: "Next Steps from {{photography_company_s_name}}",
+        subject_template: "Next Steps with {{photography_company_s_name}}",
         body_template: """
         <p><span style="color: rgb(0, 0, 0);">Hello {{client_first_name}},</span></p>
         <p><span style="color: rgb(0, 0, 0);">Thank you for your payment! Your account has been paid in full for your shoot with me on {{session_date}} at {{session_time}} at {{session_location}}. </span></p>
@@ -6779,7 +6771,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         type: "job",
         position: 0,
         name: "Post Shoot - Thank you for a great shoot email",
-        subject_template: "Thank you for a great shoot! | {{photography_company_s_name}}",
+        subject_template: "Thank you for a great shoot!",
         body_template: """
         <p><span style="color: rgb(0, 0, 0);">Hello {{client_first_name}},</span></p>
         <p><span style="color: rgb(0, 0, 0);">Thanks for a great shoot yesterday. I enjoyed working with you and we’ve captured some great images.</span></p>
@@ -6797,7 +6789,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         type: "job",
         position: 0,
         name: "Post Shoot - Follow up & request for reviews email",
-        subject_template: "Checking in! | {{photography_company_s_name}}",
+        subject_template: "Checking in!",
         body_template: """
         <p><span style="color: rgb(0, 0, 0);">Hello {{client_first_name}},</span></p>
         <p><span style="color: rgb(0, 0, 0);">I had an absolute blast photographing you and would love to hear from you about your experience.</span></p>
@@ -6834,7 +6826,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         type: "gallery",
         position: 0,
         name: "Gallery - Gallery Release email",
-        subject_template: "Your Gallery is ready! | {{photography_company_s_name}}",
+        subject_template: "Your Gallery is ready! ",
         body_template: """
         <p><span style="color: rgb(0, 0, 0);">Hello {{client_first_name}},</span></p>
         <p><span style="color: rgb(0, 0, 0);">Great news – your gallery is now available!</span></p>
@@ -6856,7 +6848,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         type: "gallery",
         position: 0,
         name: "Proofing Gallery For Selects email",
-        subject_template: "Your Proofing Album is ready! | {{photography_company_s_name}}",
+        subject_template: "Your Proofing Album is ready!",
         body_template: """
         <p><span style="color: rgb(0, 0, 0);">Hello {{client_first_name}},</span></p>
         <p><span style="color: rgb(0, 0, 0);">I'm thrilled to let you know that your proofs are now ready for your viewing pleasure! </span></p>
@@ -6879,7 +6871,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         type: "gallery",
         position: 0,
         name: "Proofing Gallery Finals email",
-        subject_template: "Your Gallery is ready! | {{photography_company_s_name}}",
+        subject_template: "Your Gallery is ready! ",
         body_template: """
         <p><span style="color: rgb(0, 0, 0);">Hello {{client_first_name}},</span></p>
         <p><span style="color: rgb(0, 0, 0);">I'm delighted to share that your retouched images are now available! </span></p>
@@ -6997,8 +6989,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         type: "gallery",
         position: 0,
         name: "Gallery - Gallery Expiring - follow up 2",
-        subject_template:
-          "Last Day to get your photos and products! | {{photography_company_s_name}}",
+        subject_template: "Last Day to get your photos and products!",
         body_template: """
         <p><span style="color: rgb(0, 0, 0);">Hello {{client_first_name}},</span></p>
         <p><span style="color: rgb(0, 0, 0);">I wanted to send along one last reminder in case you forgot! Your gallery is going to expire tomorrow! Please log into your gallery and make your selections before the gallery expires on {{gallery_expiration_date}}</span></p>
@@ -7330,7 +7321,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         type: "lead",
         position: 0,
         name: "Booking Proposal Email - follow up 1",
-        subject_template: "Checking in!|{{photography_company_s_name}}",
+        subject_template: "Final Step to Secure Your Booking with {{photography_company_s_name}}",
         body_template: """
         <p><span style="color: rgb(0, 0, 0);">Hello {{client_first_name}},</span></p>
         <p><span style="color: rgb(0, 0, 0);">I trust you're doing well. Recognizing that life can become quite hectic, I wanted to touch base as I've noticed that you haven't yet completed the official booking process.</span></p>
@@ -7354,7 +7345,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         type: "lead",
         position: 0,
         name: "Booking Proposal Email - follow up 2",
-        subject_template: "It's me again!|{{photography_company_s_name}}",
+        subject_template: "Friendly Reminder: Final Step to Secure Your Booking",
         body_template: """
         <p><span style="color: rgb(0, 0, 0);">Hello {{client_first_name}},</span></p>
         <p><span style="color: rgb(0, 0, 0);">I hope this message finds you well. I understand that life can get busy, so I wanted to send a friendly reminder regarding the final step to secure your booking with me.</span></p>
@@ -7378,7 +7369,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         type: "lead",
         position: 0,
         name: "Booking Proposal Email - follow up 3",
-        subject_template: "Change of plans? | {{photography_company_s_name}}",
+        subject_template: "Change of plans?",
         body_template: """
         <p><span style="color: rgb(0, 0, 0);">Hello {{client_first_name}},</span></p>
         <p><span style="color: rgb(0, 0, 0);">I hope you're doing well. It seems I haven't received a response from you, and I know that life can sometimes lead us in different directions or bring about changes in priorities. I completely understand if that has happened. </span></p>
@@ -7416,7 +7407,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         type: "job",
         position: 0,
         name: "Pre-Shoot - retainer marked for Offline payment email",
-        subject_template: "Next Steps from {{photography_company_s_name}}",
+        subject_template: "Next Steps with {{photography_company_s_name}}",
         body_template: """
         <p><span style="color: rgb(0, 0, 0);">Hello {{client_first_name}},</span></p>
         <p><span style="color: rgb(0, 0, 0);">I’m really looking forward to working with you! I see you have noted that you will pay your retainer offline. </span></p>
@@ -7435,7 +7426,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         type: "job",
         position: 0,
         name: "Payments - paid in full email",
-        subject_template: "Thank you for your payment! | {{photography_company_s_name}}",
+        subject_template: "Thank you for your payment!",
         body_template: """
         <p><span style="color: rgb(0, 0, 0);">Hello {{client_first_name}},</span></p>
         <p><span style="color: rgb(0, 0, 0);">Thank you for your payment! Your account has been paid in full for your shoot with me on {{session_date}} at {{session_time}} at {{session_location}}. </span></p>
@@ -7453,7 +7444,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         type: "job",
         position: 0,
         name: "Payments - paid in full - Offline payment email",
-        subject_template: "Next Steps from {{photography_company_s_name}}",
+        subject_template: "Next Steps with {{photography_company_s_name}}",
         body_template: """
         <p><span style="color: rgb(0, 0, 0);">Hello {{client_first_name}},</span></p>
         <p><span style="color: rgb(0, 0, 0);">Thank you for your payment! Your account has been paid in full for your shoot with me on {{session_date}} at {{session_time}} at {{session_location}}. </span></p>
@@ -7572,7 +7563,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         type: "job",
         position: 0,
         name: "Post Shoot - Thank you for a great shoot email",
-        subject_template: "Thank you for a great shoot! | {{photography_company_s_name}}",
+        subject_template: "Thank you for a great shoot!",
         body_template: """
         <p><span style="color: rgb(0, 0, 0);">Hello {{client_first_name}},</span></p>
         <p><span style="color: rgb(0, 0, 0);">Thanks for a great shoot yesterday. I enjoyed working with you and we’ve captured some great images.</span></p>
@@ -7590,7 +7581,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         type: "job",
         position: 0,
         name: "Post Shoot - Follow up & request for reviews email",
-        subject_template: "Checking in! | {{photography_company_s_name}}",
+        subject_template: "Checking in!",
         body_template: """
         <p><span style="color: rgb(0, 0, 0);">Hello {{client_first_name}},</span></p>
         <p><span style="color: rgb(0, 0, 0);">I had an absolute blast photographing you and would love to hear from you about your experience.</span></p>
@@ -7627,7 +7618,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         type: "gallery",
         position: 0,
         name: "Gallery - Gallery Release email",
-        subject_template: "Your Gallery is ready! | {{photography_company_s_name}}",
+        subject_template: "Your Gallery is ready! ",
         body_template: """
         <p><span style="color: rgb(0, 0, 0);">Hello {{client_first_name}},</span></p>
         <p><span style="color: rgb(0, 0, 0);">Great news – your gallery is now available!</span></p>
@@ -7649,7 +7640,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         type: "gallery",
         position: 0,
         name: "Proofing Gallery For Selects email",
-        subject_template: "Your Proofing Album is ready! | {{photography_company_s_name}}",
+        subject_template: "Your Proofing Album is ready!",
         body_template: """
         <p><span style="color: rgb(0, 0, 0);">Hello {{client_first_name}},</span></p>
         <p><span style="color: rgb(0, 0, 0);">I'm thrilled to let you know that your proofs are now ready for your viewing pleasure! </span></p>
@@ -7672,7 +7663,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         type: "gallery",
         position: 0,
         name: "Proofing Gallery Finals email",
-        subject_template: "Your Gallery is ready! | {{photography_company_s_name}}",
+        subject_template: "Your Gallery is ready! ",
         body_template: """
         <p><span style="color: rgb(0, 0, 0);">Hello {{client_first_name}},</span></p>
         <p><span style="color: rgb(0, 0, 0);">I'm delighted to share that your retouched images are now available! </span></p>
@@ -7790,8 +7781,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         type: "gallery",
         position: 0,
         name: "Gallery - Gallery Expiring - follow up 2",
-        subject_template:
-          "Last Day to get your photos and products! | {{photography_company_s_name}}",
+        subject_template: "Last Day to get your photos and products!",
         body_template: """
         <p><span style="color: rgb(0, 0, 0);">Hello {{client_first_name}},</span></p>
         <p><span style="color: rgb(0, 0, 0);">I wanted to send along one last reminder in case you forgot! Your gallery is going to expire tomorrow! Please log into your gallery and make your selections before the gallery expires on {{gallery_expiration_date}}</span></p>
