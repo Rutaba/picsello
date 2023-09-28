@@ -9,6 +9,10 @@ defmodule Mix.Tasks.ImportQuestionnaires do
   def run(_) do
     load_app()
 
+    questionnaires()
+  end
+
+  def questionnaires() do
     [
       %{
         questions: [
