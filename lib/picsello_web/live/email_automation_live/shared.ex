@@ -436,11 +436,15 @@ defmodule PicselloWeb.EmailAutomationLive.Shared do
     %{calendar: calendar, count: count} = explode_hours(email.total_hours)
     time_calendar = get_timex_calendar(calendar)
     today = NaiveDateTime.utc_now() |> Timex.end_of_day()
+
     cond do
-      is_nil(gallery.expired_at) -> nil
+      is_nil(gallery.expired_at) ->
+        nil
+
       not is_nil(gallery.expired_at) and
           Timex.compare(gallery.expired_at, today, time_calendar) >= count ->
         gallery.expired_at
+
       true ->
         nil
     end
@@ -519,8 +523,8 @@ defmodule PicselloWeb.EmailAutomationLive.Shared do
 
   def fetch_date_for_state(:abandoned_emails, _email, last_completed_email, job, _gallery, _order) do
     if is_nil(job.archived_at),
-    do: nil,
-    else: get_date_for_schedule(last_completed_email, job.archived_at)
+      do: nil,
+      else: get_date_for_schedule(last_completed_email, job.archived_at)
   end
 
   def fetch_date_for_state(
@@ -763,22 +767,27 @@ defmodule PicselloWeb.EmailAutomationLive.Shared do
         [:gallery],
         skip_sub_categories
       )
-      |> Enum.map(
-        &[
-          gallery_id: gallery.id,
-          order_id: order_id,
-          total_hours: &1.total_hours,
-          condition: &1.condition,
-          body_template: &1.body_template,
-          name: &1.name,
-          subject_template: &1.subject_template,
-          private_name: &1.private_name,
-          email_automation_pipeline_id: &1.email_automation_pipeline_id,
-          organization_id: gallery.organization.id,
-          inserted_at: now,
-          updated_at: now
-        ]
-      )
+      |> Enum.map(fn email_data ->
+        state = Map.get(email_data, :email_automation_pipeline) |> Map.get(:state)
+
+        if state not in [:order_confirmation_physical, :order_confirmation_digital] do
+          [
+            gallery_id: gallery.id,
+            order_id: order_id,
+            total_hours: email_data.total_hours,
+            condition: email_data.condition,
+            body_template: email_data.body_template,
+            name: email_data.name,
+            subject_template: email_data.subject_template,
+            private_name: email_data.private_name,
+            email_automation_pipeline_id: email_data.email_automation_pipeline_id,
+            organization_id: gallery.organization.id,
+            inserted_at: now,
+            updated_at: now
+          ]
+        end
+      end)
+      |> Enum.filter(&(&1 != nil))
 
     previous_emails =
       if order,
