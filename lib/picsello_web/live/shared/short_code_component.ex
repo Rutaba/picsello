@@ -58,8 +58,6 @@ defmodule PicselloWeb.Shared.ShortCodeComponent do
   end
 
   def variables_codes(job_type, current_user, job) do
-    photographer(current_user.organization) |> IO.inspect()
-
     leads = [
       %{
         type: "lead",
