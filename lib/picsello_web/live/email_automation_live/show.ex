@@ -29,7 +29,8 @@ defmodule PicselloWeb.Live.EmailAutomations.Show do
     Orders,
     EmailAutomations,
     EmailAutomationSchedules,
-    Repo
+    Repo,
+    Utils
   }
 
   import PicselloWeb.EmailAutomationLive.Shared
@@ -143,6 +144,7 @@ defmodule PicselloWeb.Live.EmailAutomations.Show do
     body_html =
       EmailAutomationSchedules.get_schedule_by_id(id).body_template
       |> :bbmustache.render(get_sample_values(current_user, job), key_type: :atom)
+      |> Utils.normalize_body_template()
 
     template_preview = Marketing.template_preview(current_user, body_html)
 

@@ -255,7 +255,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         job_type: "wedding",
         type: "job",
         position: 0,
-        name: "Pre-Shoot - retainer marked for - Offline payment email",
+        name: "Pre-Shoot - retainer marked for Offline payment email",
         subject_template: "Next Steps from {{photography_company_s_name}}",
         body_template: """
         <p>Hello {{client_first_name}},</p>
@@ -1052,7 +1052,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         job_type: "newborn",
         type: "job",
         position: 0,
-        name: "Pre-Shoot - retainer marked for - Offline payment email",
+        name: "Pre-Shoot - retainer marked for Offline payment email",
         subject_template: "Next Steps from {{photography_company_s_name}}",
         body_template: """
         <p>Hello {{client_first_name}},</p>
@@ -1873,7 +1873,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         job_type: "family",
         type: "job",
         position: 0,
-        name: "Pre-Shoot - retainer marked for - Offline payment email",
+        name: "Pre-Shoot - retainer marked for Offline payment email",
         subject_template: "Next Steps from {{photography_company_s_name}}",
         body_template: """
         <p>Hello {{client_first_name}},</p>
@@ -2670,7 +2670,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         job_type: "mini",
         type: "job",
         position: 0,
-        name: "Pre-Shoot - retainer marked for - Offline payment email",
+        name: "Pre-Shoot - retainer marked for Offline payment email",
         subject_template: "Next Steps from {{photography_company_s_name}}",
         body_template: """
         <p>Hello {{client_first_name}},</p>
@@ -3467,7 +3467,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         job_type: "headshot",
         type: "job",
         position: 0,
-        name: "Pre-Shoot - retainer marked for - Offline payment email",
+        name: "Pre-Shoot - retainer marked for Offline payment email",
         subject_template: "Next Steps from {{photography_company_s_name}}",
         body_template: """
         <p>Hello {{client_first_name}},</p>
@@ -4263,7 +4263,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         job_type: "portrait",
         type: "job",
         position: 0,
-        name: "Pre-Shoot - retainer marked for - Offline payment email",
+        name: "Pre-Shoot - retainer marked for Offline payment email",
         subject_template: "Next Steps from {{photography_company_s_name}}",
         body_template: """
         <p>Hello {{client_first_name}},</p>
@@ -5060,7 +5060,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         job_type: "boudoir",
         type: "job",
         position: 0,
-        name: "Pre-Shoot - retainer marked for - Offline payment email",
+        name: "Pre-Shoot - retainer marked for Offline payment email",
         subject_template: "Next Steps from {{photography_company_s_name}}",
         body_template: """
         <p>Hello {{client_first_name}},</p>
@@ -5857,7 +5857,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         job_type: "other",
         type: "job",
         position: 0,
-        name: "Pre-Shoot - retainer marked for - Offline payment email",
+        name: "Pre-Shoot - retainer marked for Offline payment email",
         subject_template: "Next Steps from {{photography_company_s_name}}",
         body_template: """
         <p>Hello {{client_first_name}},</p>
@@ -6654,7 +6654,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         job_type: "maternity",
         type: "job",
         position: 0,
-        name: "Pre-Shoot - retainer marked for - Offline payment email",
+        name: "Pre-Shoot - retainer marked for Offline payment email",
         subject_template: "Next Steps from {{photography_company_s_name}}",
         body_template: """
         <p>Hello {{client_first_name}},</p>
@@ -7451,7 +7451,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         job_type: "event",
         type: "job",
         position: 0,
-        name: "Pre-Shoot - retainer marked for - Offline payment email",
+        name: "Pre-Shoot - retainer marked for Offline payment email",
         subject_template: "Next Steps from {{photography_company_s_name}}",
         body_template: """
         <p>Hello {{client_first_name}},</p>

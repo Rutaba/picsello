@@ -4,7 +4,7 @@ defmodule Picsello.Notifiers.ClientNotifier do
 
   import Money.Sigils
 
-  alias Picsello.{BookingProposal, Job, Repo, Cart, Messages, ClientMessage, Galleries.Gallery}
+  alias Picsello.{BookingProposal, Job, Repo, Cart, Messages, ClientMessage, Galleries.Gallery, Utils}
 
   alias Cart.Order
   require Logger
@@ -375,20 +375,11 @@ defmodule Picsello.Notifiers.ClientNotifier do
   @doc """
     emails handle lead & job
   """
-  @replacements [
-    {"&lt;", "<"},
-    {"&gt;", ">"},
-    {"/a&gt;", "/a>"},
-    {"&quot;", "\""}
-  ]
   def deliver_automation_email_job(email_preset, job, schema, _state, helpers) do
     with client <- job |> Repo.preload(:client) |> Map.get(:client),
          %{body_template: body, subject_template: subject} <-
            Picsello.EmailAutomations.resolve_variables(email_preset, schema, helpers) do
-      body =
-        Enum.reduce(@replacements, body, fn {from, to}, acc ->
-          String.replace(acc, from, to)
-        end)
+      body = Utils.normalize_body_template(body)
 
       deliver_transactional_email(
         %{subject: subject, headline: subject, body: body},

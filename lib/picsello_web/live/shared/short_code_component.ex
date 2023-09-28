@@ -104,7 +104,14 @@ defmodule PicselloWeb.Shared.ShortCodeComponent do
           %{
             id: 3,
             name: "gallery_link",
-            sample: "https://gallerylinkhere.com",
+            sample: """
+            <a
+              style="border:1px solid #1F1C1E;display:inline-block;background:white;color:#1F1C1E;font-family:Montserrat, sans-serif;font-size:18px;font-weight:normal;line-height:120%;margin:0;text-decoration:none;text-transform:none;padding:10px 15px;mso-padding-alt:0px;border-radius:0px;"
+              target="_blank"
+              href="https://gallerylinkhere.com">
+              Gallery Link
+            </a>
+            """,
             description: "Link to the client gallery"
           },
           %{
@@ -122,7 +129,14 @@ defmodule PicselloWeb.Shared.ShortCodeComponent do
           %{
             id: 6,
             name: "download_photos",
-            sample: "https://gallerydownloadshere.com",
+            sample: """
+            <a
+              style="border:1px solid #1F1C1E;display:inline-block;background:white;color:#1F1C1E;font-family:Montserrat, sans-serif;font-size:18px;font-weight:normal;line-height:120%;margin:0;text-decoration:none;text-transform:none;padding:10px 15px;mso-padding-alt:0px;border-radius:0px;"
+              target="_blank"
+              href="https://gallerydownloadshere.com">
+              Download Photos Link
+            </a>
+            """,
             description: "Link to the download gallery photos"
           },
           %{
@@ -134,13 +148,27 @@ defmodule PicselloWeb.Shared.ShortCodeComponent do
           %{
             id: 8,
             name: "album_link",
-            sample: "https://albumlinkhere.com",
+            sample: """
+            <a
+              style="border:1px solid #1F1C1E;display:inline-block;background:white;color:#1F1C1E;font-family:Montserrat, sans-serif;font-size:18px;font-weight:normal;line-height:120%;margin:0;text-decoration:none;text-transform:none;padding:10px 15px;mso-padding-alt:0px;border-radius:0px;"
+              target="_blank"
+              href="https://albumlinkhere.com">
+              Album Link
+            </a>
+            """,
             description: "Link to individual album, such as proofing, within client gallery"
           },
           %{
             id: 9,
             name: "client_gallery_order_page",
-            sample: "https://clientgalleryorderpage.com",
+            sample: """
+            <a
+              style="border:1px solid #1F1C1E;display:inline-block;background:white;color:#1F1C1E;font-family:Montserrat, sans-serif;font-size:18px;font-weight:normal;line-height:120%;margin:0;text-decoration:none;text-transform:none;padding:10px 15px;mso-padding-alt:0px;border-radius:0px;"
+              target="_blank"
+              href="https://clientgalleryorderpage.com">
+              Order Page Link
+            </a>
+            """,
             description: "Link for client to view their completed gallery order"
           }
         ]
@@ -261,7 +289,14 @@ defmodule PicselloWeb.Shared.ShortCodeComponent do
           %{
             id: 9,
             name: "view_proposal_button",
-            sample: "https://bookingproposalhere.com ",
+            sample: """
+            <a
+              style="border:1px solid #1F1C1E;display:inline-block;background:white;color:#1F1C1E;font-family:Montserrat, sans-serif;font-size:18px;font-weight:normal;line-height:120%;margin:0;text-decoration:none;text-transform:none;padding:10px 15px;mso-padding-alt:0px;border-radius:0px;"
+              target="_blank"
+              href="https://bookingproposalhere.com">
+              View Booking Proposal
+            </a>
+            """,
             description:
               "Link for clients to access their secure portal to make payments and keep in touch"
           }
