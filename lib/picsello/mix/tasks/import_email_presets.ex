@@ -41,11 +41,11 @@ defmodule Mix.Tasks.ImportEmailPresets do
       )
       |> Repo.all()
 
-    # organizations = from(o in Picsello.Organization) |> Repo.all()
+    organizations = from(o in Picsello.Organization) |> Repo.all()
     Logger.warning("[orgs count] #{Enum.count(organizations)}")
 
     [
-      # wedding
+      #wedding
       %{
         email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "client_contact"),
         total_hours: 0,
@@ -663,49 +663,49 @@ defmodule Mix.Tasks.ImportEmailPresets do
         {{email_signature}}
         """
       },
-      # %{
-      #   email_automation_pipeline_id:
-      #     get_pipeline_id_by_state(pipelines, "order_confirmation_digital"),
-      #   total_hours: 0,
-      #   status: "active",
-      #   job_type: "wedding",
-      #   type: "gallery",
-      #   position: 0,
-      #   name: "(Digital) Order Received",
-      #   subject_template: "Your photos are here! | {{photography_company_s_name}}",
-      #   body_template: """
-      #   <p><span style="color: rgb(0, 0, 0);">Hello {{order_first_name}},</span></p>
-      #   <p><span style="color: rgb(0, 0, 0);">Congrats! </span></p>
-      #   <p><span style="color: rgb(0, 0, 0);">Your digital images from {{photography_company_s_name}} are ready! </span></p>
-      #   <p><span style="color: rgb(0, 0, 0);">Simply click the download link below to download your files now (computer highly recommended for the download).</span></p>
-      #   <p><span style="color: rgb(0, 0, 0);"> {{download_photos}}</span></p>
-      #   <p><span style="color: rgb(0, 0, 0);">Once downloaded, simply unzip the file to access your digital image files to save onto your computer. We also recommend backing up your files to another location as soon as possible. </span></p>
-      #   <p><span style="color: rgb(0, 0, 0);"> </span></p>
-      #   <p><span style="color: rgb(0, 0, 0);">Please note that if you save directly to your phone, the resolution will not be of the highest quality so please save to your computer! </span></p>
-      #   <p><span style="color: rgb(0, 0, 0);">If you have any questions, please let me know. </span></p>
-      #   <p><span style="color: rgb(0, 0, 0);">Thanks! </span></p>
-      #   <p><span style="color: rgb(0, 0, 0);">{{email_signature}}</span></p>
-      #   """
-      # },
-      # %{
-      #   email_automation_pipeline_id:
-      #     get_pipeline_id_by_state(pipelines, "order_confirmation_physical"),
-      #   total_hours: 0,
-      #   status: "active",
-      #   job_type: "wedding",
-      #   type: "gallery",
-      #   position: 0,
-      #   name: "(Products) Order Received",
-      #   subject_template: "Your order has been received! | {{photography_company_s_name}}",
-      #   body_template: """
-      #   <p><span style="color: rgb(0, 0, 0);">Hello {{order_first_name}},</span></p>
-      #   <p><span style="color: rgb(0, 0, 0);">Congratulations on successfully placing an order from your gallery! I'm truly excited for you to have these beautiful images in your hands!</span></p>
-      #   <p><span style="color: rgb(0, 0, 0);">Your order is now in the production phase and is being prepared with great care. You can easily track the order by visiting {{client_gallery_order_page}}.</span></p>
-      #   <p><span style="color: rgb(0, 0, 0);">Should you have any questions or need further assistance regarding your order, please don't hesitate to reach out. </span></p>
-      #   <p><span style="color: rgb(0, 0, 0);">Best regards,</span></p>
-      #   <p><span style="color: rgb(0, 0, 0);">{{email_signature}}</span></p>
-      #   """
-      # },
+      %{
+        email_automation_pipeline_id:
+          get_pipeline_id_by_state(pipelines, "order_confirmation_digital"),
+        total_hours: 0,
+        status: "active",
+        job_type: "wedding",
+        type: "gallery",
+        position: 0,
+        name: "(Digital) Order Received",
+        subject_template: "Your photos are here! | {{photography_company_s_name}}",
+        body_template: """
+        <p><span style="color: rgb(0, 0, 0);">Hello {{order_first_name}},</span></p>
+        <p><span style="color: rgb(0, 0, 0);">Congrats! </span></p>
+        <p><span style="color: rgb(0, 0, 0);">Your digital images from {{photography_company_s_name}} are ready! </span></p>
+        <p><span style="color: rgb(0, 0, 0);">Simply click the download link below to download your files now (computer highly recommended for the download).</span></p>
+        <p><span style="color: rgb(0, 0, 0);"> {{download_photos}}</span></p>
+        <p><span style="color: rgb(0, 0, 0);">Once downloaded, simply unzip the file to access your digital image files to save onto your computer. We also recommend backing up your files to another location as soon as possible. </span></p>
+        <p><span style="color: rgb(0, 0, 0);"> </span></p>
+        <p><span style="color: rgb(0, 0, 0);">Please note that if you save directly to your phone, the resolution will not be of the highest quality so please save to your computer! </span></p>
+        <p><span style="color: rgb(0, 0, 0);">If you have any questions, please let me know. </span></p>
+        <p><span style="color: rgb(0, 0, 0);">Thanks! </span></p>
+        <p><span style="color: rgb(0, 0, 0);">{{email_signature}}</span></p>
+        """
+      },
+      %{
+        email_automation_pipeline_id:
+          get_pipeline_id_by_state(pipelines, "order_confirmation_physical"),
+        total_hours: 0,
+        status: "active",
+        job_type: "wedding",
+        type: "gallery",
+        position: 0,
+        name: "(Products) Order Received",
+        subject_template: "Your order has been received! | {{photography_company_s_name}}",
+        body_template: """
+        <p><span style="color: rgb(0, 0, 0);">Hello {{order_first_name}},</span></p>
+        <p><span style="color: rgb(0, 0, 0);">Congratulations on successfully placing an order from your gallery! I'm truly excited for you to have these beautiful images in your hands!</span></p>
+        <p><span style="color: rgb(0, 0, 0);">Your order is now in the production phase and is being prepared with great care. You can easily track the order by visiting {{client_gallery_order_page}}.</span></p>
+        <p><span style="color: rgb(0, 0, 0);">Should you have any questions or need further assistance regarding your order, please don't hesitate to reach out. </span></p>
+        <p><span style="color: rgb(0, 0, 0);">Best regards,</span></p>
+        <p><span style="color: rgb(0, 0, 0);">{{email_signature}}</span></p>
+        """
+      },
       %{
         email_automation_pipeline_id:
           get_pipeline_id_by_state(pipelines, "order_confirmation_digital_physical"),
@@ -731,25 +731,25 @@ defmodule Mix.Tasks.ImportEmailPresets do
         <p><span style="color: rgb(0, 0, 0);">{{email_signature}}</span></p>
         """
       },
-      # %{
-      #   email_automation_pipeline_id:
-      #     get_pipeline_id_by_state(pipelines, "digitals_ready_download"),
-      #   total_hours: 0,
-      #   status: "active",
-      #   job_type: "wedding",
-      #   type: "gallery",
-      #   position: 0,
-      #   name: "(Digital) Order Being Prepared",
-      #   subject_template: "Your order is being prepared. | {{photography_company_s_name}}",
-      #   body_template: """
-      #   <p><span style="color: rgb(0, 0, 0);">Hello {{order_first_name}},</span></p>
-      #   <p><span style="color: rgb(0, 0, 0);">I hope this message finds you well. I wanted to let you know that your digital images are currently being prepared for download. Since these files are quite large, it may take a little time to package them properly.</span></p>
-      #   <p><span style="color: rgb(0, 0, 0);">Please keep an eye on your email, as you can expect to receive another message with a download link to your digital image files in the next 30 minutes. </span></p>
-      #   <p><span style="color: rgb(0, 0, 0);">If you encounter any issues or have questions about the download, don't hesitate to reach out.</span></p>
-      #   <p><span style="color: rgb(0, 0, 0);">Best regards,</span></p>
-      #   <p><span style="color: rgb(0, 0, 0);">{{email_signature}}</span></p>
-      #   """
-      # },
+      %{
+        email_automation_pipeline_id:
+          get_pipeline_id_by_state(pipelines, "digitals_ready_download"),
+        total_hours: 0,
+        status: "active",
+        job_type: "wedding",
+        type: "gallery",
+        position: 0,
+        name: "(Digital) Order Being Prepared",
+        subject_template: "Your order is being prepared. | {{photography_company_s_name}}",
+        body_template: """
+        <p><span style="color: rgb(0, 0, 0);">Hello {{order_first_name}},</span></p>
+        <p><span style="color: rgb(0, 0, 0);">I hope this message finds you well. I wanted to let you know that your digital images are currently being prepared for download. Since these files are quite large, it may take a little time to package them properly.</span></p>
+        <p><span style="color: rgb(0, 0, 0);">Please keep an eye on your email, as you can expect to receive another message with a download link to your digital image files in the next 30 minutes. </span></p>
+        <p><span style="color: rgb(0, 0, 0);">If you encounter any issues or have questions about the download, don't hesitate to reach out.</span></p>
+        <p><span style="color: rgb(0, 0, 0);">Best regards,</span></p>
+        <p><span style="color: rgb(0, 0, 0);">{{email_signature}}</span></p>
+        """
+      },
       %{
         email_automation_pipeline_id:
           get_pipeline_id_by_state(pipelines, "digitals_ready_download"),
@@ -843,7 +843,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         <p>{{email_signature}}</p>
         """
       },
-      # newborn
+      #newborn
       %{
         email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "client_contact"),
         total_hours: 0,
@@ -1483,49 +1483,49 @@ defmodule Mix.Tasks.ImportEmailPresets do
         {{email_signature}}
         """
       },
-      # %{
-      #   email_automation_pipeline_id:
-      #     get_pipeline_id_by_state(pipelines, "order_confirmation_digital"),
-      #   total_hours: 0,
-      #   status: "active",
-      #   job_type: "newborn",
-      #   type: "gallery",
-      #   position: 0,
-      #   name: "(Digital) Order Received",
-      #   subject_template: "Your photos are here! | {{photography_company_s_name}}",
-      #   body_template: """
-      #   <p><span style="color: rgb(0, 0, 0);">Hello {{order_first_name}},</span></p>
-      #   <p><span style="color: rgb(0, 0, 0);">Congrats! </span></p>
-      #   <p><span style="color: rgb(0, 0, 0);">Your digital images from {{photography_company_s_name}} are ready! </span></p>
-      #   <p><span style="color: rgb(0, 0, 0);">Simply click the download link below to download your files now (computer highly recommended for the download).</span></p>
-      #   <p><span style="color: rgb(0, 0, 0);"> {{download_photos}}</span></p>
-      #   <p><span style="color: rgb(0, 0, 0);">Once downloaded, simply unzip the file to access your digital image files to save onto your computer. We also recommend backing up your files to another location as soon as possible. </span></p>
-      #   <p><span style="color: rgb(0, 0, 0);"> </span></p>
-      #   <p><span style="color: rgb(0, 0, 0);">Please note that if you save directly to your phone, the resolution will not be of the highest quality so please save to your computer! </span></p>
-      #   <p><span style="color: rgb(0, 0, 0);">If you have any questions, please let me know. </span></p>
-      #   <p><span style="color: rgb(0, 0, 0);">Thanks! </span></p>
-      #   <p><span style="color: rgb(0, 0, 0);">{{email_signature}}</span></p>
-      #   """
-      # },
-      # %{
-      #   email_automation_pipeline_id:
-      #     get_pipeline_id_by_state(pipelines, "order_confirmation_physical"),
-      #   total_hours: 0,
-      #   status: "active",
-      #   job_type: "newborn",
-      #   type: "gallery",
-      #   position: 0,
-      #   name: "(Products) Order Received",
-      #   subject_template: "Your order has been received! | {{photography_company_s_name}}",
-      #   body_template: """
-      #   <p><span style="color: rgb(0, 0, 0);">Hello {{order_first_name}},</span></p>
-      #   <p><span style="color: rgb(0, 0, 0);">Congratulations on successfully placing an order from your gallery! I'm truly excited for you to have these beautiful images in your hands!</span></p>
-      #   <p><span style="color: rgb(0, 0, 0);">Your order is now in the production phase and is being prepared with great care. You can easily track the order by visiting {{client_gallery_order_page}}.</span></p>
-      #   <p><span style="color: rgb(0, 0, 0);">Should you have any questions or need further assistance regarding your order, please don't hesitate to reach out. </span></p>
-      #   <p><span style="color: rgb(0, 0, 0);">Best regards,</span></p>
-      #   <p><span style="color: rgb(0, 0, 0);">{{email_signature}}</span></p>
-      #   """
-      # },
+      %{
+        email_automation_pipeline_id:
+          get_pipeline_id_by_state(pipelines, "order_confirmation_digital"),
+        total_hours: 0,
+        status: "active",
+        job_type: "newborn",
+        type: "gallery",
+        position: 0,
+        name: "(Digital) Order Received",
+        subject_template: "Your photos are here! | {{photography_company_s_name}}",
+        body_template: """
+        <p><span style="color: rgb(0, 0, 0);">Hello {{order_first_name}},</span></p>
+        <p><span style="color: rgb(0, 0, 0);">Congrats! </span></p>
+        <p><span style="color: rgb(0, 0, 0);">Your digital images from {{photography_company_s_name}} are ready! </span></p>
+        <p><span style="color: rgb(0, 0, 0);">Simply click the download link below to download your files now (computer highly recommended for the download).</span></p>
+        <p><span style="color: rgb(0, 0, 0);"> {{download_photos}}</span></p>
+        <p><span style="color: rgb(0, 0, 0);">Once downloaded, simply unzip the file to access your digital image files to save onto your computer. We also recommend backing up your files to another location as soon as possible. </span></p>
+        <p><span style="color: rgb(0, 0, 0);"> </span></p>
+        <p><span style="color: rgb(0, 0, 0);">Please note that if you save directly to your phone, the resolution will not be of the highest quality so please save to your computer! </span></p>
+        <p><span style="color: rgb(0, 0, 0);">If you have any questions, please let me know. </span></p>
+        <p><span style="color: rgb(0, 0, 0);">Thanks! </span></p>
+        <p><span style="color: rgb(0, 0, 0);">{{email_signature}}</span></p>
+        """
+      },
+      %{
+        email_automation_pipeline_id:
+          get_pipeline_id_by_state(pipelines, "order_confirmation_physical"),
+        total_hours: 0,
+        status: "active",
+        job_type: "newborn",
+        type: "gallery",
+        position: 0,
+        name: "(Products) Order Received",
+        subject_template: "Your order has been received! | {{photography_company_s_name}}",
+        body_template: """
+        <p><span style="color: rgb(0, 0, 0);">Hello {{order_first_name}},</span></p>
+        <p><span style="color: rgb(0, 0, 0);">Congratulations on successfully placing an order from your gallery! I'm truly excited for you to have these beautiful images in your hands!</span></p>
+        <p><span style="color: rgb(0, 0, 0);">Your order is now in the production phase and is being prepared with great care. You can easily track the order by visiting {{client_gallery_order_page}}.</span></p>
+        <p><span style="color: rgb(0, 0, 0);">Should you have any questions or need further assistance regarding your order, please don't hesitate to reach out. </span></p>
+        <p><span style="color: rgb(0, 0, 0);">Best regards,</span></p>
+        <p><span style="color: rgb(0, 0, 0);">{{email_signature}}</span></p>
+        """
+      },
       %{
         email_automation_pipeline_id:
           get_pipeline_id_by_state(pipelines, "order_confirmation_digital_physical"),
@@ -1551,25 +1551,25 @@ defmodule Mix.Tasks.ImportEmailPresets do
         <p><span style="color: rgb(0, 0, 0);">{{email_signature}}</span></p>
         """
       },
-      # %{
-      #   email_automation_pipeline_id:
-      #     get_pipeline_id_by_state(pipelines, "digitals_ready_download"),
-      #   total_hours: 0,
-      #   status: "active",
-      #   job_type: "newborn",
-      #   type: "gallery",
-      #   position: 0,
-      #   name: "(Digital) Order Being Prepared",
-      #   subject_template: "Your order is being prepared. | {{photography_company_s_name}}",
-      #   body_template: """
-      #   <p><span style="color: rgb(0, 0, 0);">Hello {{order_first_name}},</span></p>
-      #   <p><span style="color: rgb(0, 0, 0);">I hope this message finds you well. I wanted to let you know that your digital images are currently being prepared for download. Since these files are quite large, it may take a little time to package them properly.</span></p>
-      #   <p><span style="color: rgb(0, 0, 0);">Please keep an eye on your email, as you can expect to receive another message with a download link to your digital image files in the next 30 minutes. </span></p>
-      #   <p><span style="color: rgb(0, 0, 0);">If you encounter any issues or have questions about the download, don't hesitate to reach out.</span></p>
-      #   <p><span style="color: rgb(0, 0, 0);">Best regards,</span></p>
-      #   <p><span style="color: rgb(0, 0, 0);">{{email_signature}}</span></p>
-      #   """
-      # },
+      %{
+        email_automation_pipeline_id:
+          get_pipeline_id_by_state(pipelines, "digitals_ready_download"),
+        total_hours: 0,
+        status: "active",
+        job_type: "newborn",
+        type: "gallery",
+        position: 0,
+        name: "(Digital) Order Being Prepared",
+        subject_template: "Your order is being prepared. | {{photography_company_s_name}}",
+        body_template: """
+        <p><span style="color: rgb(0, 0, 0);">Hello {{order_first_name}},</span></p>
+        <p><span style="color: rgb(0, 0, 0);">I hope this message finds you well. I wanted to let you know that your digital images are currently being prepared for download. Since these files are quite large, it may take a little time to package them properly.</span></p>
+        <p><span style="color: rgb(0, 0, 0);">Please keep an eye on your email, as you can expect to receive another message with a download link to your digital image files in the next 30 minutes. </span></p>
+        <p><span style="color: rgb(0, 0, 0);">If you encounter any issues or have questions about the download, don't hesitate to reach out.</span></p>
+        <p><span style="color: rgb(0, 0, 0);">Best regards,</span></p>
+        <p><span style="color: rgb(0, 0, 0);">{{email_signature}}</span></p>
+        """
+      },
       %{
         email_automation_pipeline_id:
           get_pipeline_id_by_state(pipelines, "digitals_ready_download"),
@@ -1663,7 +1663,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         <p>{{email_signature}}</p>
         """
       },
-      # family
+      #family
       %{
         email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "client_contact"),
         total_hours: 0,
@@ -2279,49 +2279,49 @@ defmodule Mix.Tasks.ImportEmailPresets do
         {{email_signature}}
         """
       },
-      # %{
-      #   email_automation_pipeline_id:
-      #     get_pipeline_id_by_state(pipelines, "order_confirmation_digital"),
-      #   total_hours: 0,
-      #   status: "active",
-      #   job_type: "family",
-      #   type: "gallery",
-      #   position: 0,
-      #   name: "(Digital) Order Received",
-      #   subject_template: "Your photos are here! | {{photography_company_s_name}}",
-      #   body_template: """
-      #   <p><span style="color: rgb(0, 0, 0);">Hello {{order_first_name}},</span></p>
-      #   <p><span style="color: rgb(0, 0, 0);">Congrats! </span></p>
-      #   <p><span style="color: rgb(0, 0, 0);">Your digital images from {{photography_company_s_name}} are ready! </span></p>
-      #   <p><span style="color: rgb(0, 0, 0);">Simply click the download link below to download your files now (computer highly recommended for the download).</span></p>
-      #   <p><span style="color: rgb(0, 0, 0);"> {{download_photos}}</span></p>
-      #   <p><span style="color: rgb(0, 0, 0);">Once downloaded, simply unzip the file to access your digital image files to save onto your computer. We also recommend backing up your files to another location as soon as possible. </span></p>
-      #   <p><span style="color: rgb(0, 0, 0);"> </span></p>
-      #   <p><span style="color: rgb(0, 0, 0);">Please note that if you save directly to your phone, the resolution will not be of the highest quality so please save to your computer! </span></p>
-      #   <p><span style="color: rgb(0, 0, 0);">If you have any questions, please let me know. </span></p>
-      #   <p><span style="color: rgb(0, 0, 0);">Thanks! </span></p>
-      #   <p><span style="color: rgb(0, 0, 0);">{{email_signature}}</span></p>
-      #   """
-      # },
-      # %{
-      #   email_automation_pipeline_id:
-      #     get_pipeline_id_by_state(pipelines, "order_confirmation_physical"),
-      #   total_hours: 0,
-      #   status: "active",
-      #   job_type: "family",
-      #   type: "gallery",
-      #   position: 0,
-      #   name: "(Products) Order Received",
-      #   subject_template: "Your order has been received! | {{photography_company_s_name}}",
-      #   body_template: """
-      #   <p><span style="color: rgb(0, 0, 0);">Hello {{order_first_name}},</span></p>
-      #   <p><span style="color: rgb(0, 0, 0);">Congratulations on successfully placing an order from your gallery! I'm truly excited for you to have these beautiful images in your hands!</span></p>
-      #   <p><span style="color: rgb(0, 0, 0);">Your order is now in the production phase and is being prepared with great care. You can easily track the order by visiting {{client_gallery_order_page}}.</span></p>
-      #   <p><span style="color: rgb(0, 0, 0);">Should you have any questions or need further assistance regarding your order, please don't hesitate to reach out. </span></p>
-      #   <p><span style="color: rgb(0, 0, 0);">Best regards,</span></p>
-      #   <p><span style="color: rgb(0, 0, 0);">{{email_signature}}</span></p>
-      #   """
-      # },
+      %{
+        email_automation_pipeline_id:
+          get_pipeline_id_by_state(pipelines, "order_confirmation_digital"),
+        total_hours: 0,
+        status: "active",
+        job_type: "family",
+        type: "gallery",
+        position: 0,
+        name: "(Digital) Order Received",
+        subject_template: "Your photos are here! | {{photography_company_s_name}}",
+        body_template: """
+        <p><span style="color: rgb(0, 0, 0);">Hello {{order_first_name}},</span></p>
+        <p><span style="color: rgb(0, 0, 0);">Congrats! </span></p>
+        <p><span style="color: rgb(0, 0, 0);">Your digital images from {{photography_company_s_name}} are ready! </span></p>
+        <p><span style="color: rgb(0, 0, 0);">Simply click the download link below to download your files now (computer highly recommended for the download).</span></p>
+        <p><span style="color: rgb(0, 0, 0);"> {{download_photos}}</span></p>
+        <p><span style="color: rgb(0, 0, 0);">Once downloaded, simply unzip the file to access your digital image files to save onto your computer. We also recommend backing up your files to another location as soon as possible. </span></p>
+        <p><span style="color: rgb(0, 0, 0);"> </span></p>
+        <p><span style="color: rgb(0, 0, 0);">Please note that if you save directly to your phone, the resolution will not be of the highest quality so please save to your computer! </span></p>
+        <p><span style="color: rgb(0, 0, 0);">If you have any questions, please let me know. </span></p>
+        <p><span style="color: rgb(0, 0, 0);">Thanks! </span></p>
+        <p><span style="color: rgb(0, 0, 0);">{{email_signature}}</span></p>
+        """
+      },
+      %{
+        email_automation_pipeline_id:
+          get_pipeline_id_by_state(pipelines, "order_confirmation_physical"),
+        total_hours: 0,
+        status: "active",
+        job_type: "family",
+        type: "gallery",
+        position: 0,
+        name: "(Products) Order Received",
+        subject_template: "Your order has been received! | {{photography_company_s_name}}",
+        body_template: """
+        <p><span style="color: rgb(0, 0, 0);">Hello {{order_first_name}},</span></p>
+        <p><span style="color: rgb(0, 0, 0);">Congratulations on successfully placing an order from your gallery! I'm truly excited for you to have these beautiful images in your hands!</span></p>
+        <p><span style="color: rgb(0, 0, 0);">Your order is now in the production phase and is being prepared with great care. You can easily track the order by visiting {{client_gallery_order_page}}.</span></p>
+        <p><span style="color: rgb(0, 0, 0);">Should you have any questions or need further assistance regarding your order, please don't hesitate to reach out. </span></p>
+        <p><span style="color: rgb(0, 0, 0);">Best regards,</span></p>
+        <p><span style="color: rgb(0, 0, 0);">{{email_signature}}</span></p>
+        """
+      },
       %{
         email_automation_pipeline_id:
           get_pipeline_id_by_state(pipelines, "order_confirmation_digital_physical"),
@@ -2347,25 +2347,25 @@ defmodule Mix.Tasks.ImportEmailPresets do
         <p><span style="color: rgb(0, 0, 0);">{{email_signature}}</span></p>
         """
       },
-      # %{
-      #   email_automation_pipeline_id:
-      #     get_pipeline_id_by_state(pipelines, "digitals_ready_download"),
-      #   total_hours: 0,
-      #   status: "active",
-      #   job_type: "family",
-      #   type: "gallery",
-      #   position: 0,
-      #   name: "(Digital) Order Being Prepared",
-      #   subject_template: "Your order is being prepared. | {{photography_company_s_name}}",
-      #   body_template: """
-      #   <p><span style="color: rgb(0, 0, 0);">Hello {{order_first_name}},</span></p>
-      #   <p><span style="color: rgb(0, 0, 0);">I hope this message finds you well. I wanted to let you know that your digital images are currently being prepared for download. Since these files are quite large, it may take a little time to package them properly.</span></p>
-      #   <p><span style="color: rgb(0, 0, 0);">Please keep an eye on your email, as you can expect to receive another message with a download link to your digital image files in the next 30 minutes. </span></p>
-      #   <p><span style="color: rgb(0, 0, 0);">If you encounter any issues or have questions about the download, don't hesitate to reach out.</span></p>
-      #   <p><span style="color: rgb(0, 0, 0);">Best regards,</span></p>
-      #   <p><span style="color: rgb(0, 0, 0);">{{email_signature}}</span></p>
-      #   """
-      # },
+      %{
+        email_automation_pipeline_id:
+          get_pipeline_id_by_state(pipelines, "digitals_ready_download"),
+        total_hours: 0,
+        status: "active",
+        job_type: "family",
+        type: "gallery",
+        position: 0,
+        name: "(Digital) Order Being Prepared",
+        subject_template: "Your order is being prepared. | {{photography_company_s_name}}",
+        body_template: """
+        <p><span style="color: rgb(0, 0, 0);">Hello {{order_first_name}},</span></p>
+        <p><span style="color: rgb(0, 0, 0);">I hope this message finds you well. I wanted to let you know that your digital images are currently being prepared for download. Since these files are quite large, it may take a little time to package them properly.</span></p>
+        <p><span style="color: rgb(0, 0, 0);">Please keep an eye on your email, as you can expect to receive another message with a download link to your digital image files in the next 30 minutes. </span></p>
+        <p><span style="color: rgb(0, 0, 0);">If you encounter any issues or have questions about the download, don't hesitate to reach out.</span></p>
+        <p><span style="color: rgb(0, 0, 0);">Best regards,</span></p>
+        <p><span style="color: rgb(0, 0, 0);">{{email_signature}}</span></p>
+        """
+      },
       %{
         email_automation_pipeline_id:
           get_pipeline_id_by_state(pipelines, "digitals_ready_download"),
@@ -2459,7 +2459,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         <p>{{email_signature}}</p>
         """
       },
-      # mini-session
+      #mini-session
       %{
         email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "client_contact"),
         total_hours: 0,
@@ -3075,49 +3075,49 @@ defmodule Mix.Tasks.ImportEmailPresets do
         {{email_signature}}
         """
       },
-      # %{
-      #   email_automation_pipeline_id:
-      #     get_pipeline_id_by_state(pipelines, "order_confirmation_digital"),
-      #   total_hours: 0,
-      #   status: "active",
-      #   job_type: "mini",
-      #   type: "gallery",
-      #   position: 0,
-      #   name: "(Digital) Order Received",
-      #   subject_template: "Your photos are here! | {{photography_company_s_name}}",
-      #   body_template: """
-      #   <p><span style="color: rgb(0, 0, 0);">Hello {{order_first_name}},</span></p>
-      #   <p><span style="color: rgb(0, 0, 0);">Congrats! </span></p>
-      #   <p><span style="color: rgb(0, 0, 0);">Your digital images from {{photography_company_s_name}} are ready! </span></p>
-      #   <p><span style="color: rgb(0, 0, 0);">Simply click the download link below to download your files now (computer highly recommended for the download).</span></p>
-      #   <p><span style="color: rgb(0, 0, 0);"> {{download_photos}}</span></p>
-      #   <p><span style="color: rgb(0, 0, 0);">Once downloaded, simply unzip the file to access your digital image files to save onto your computer. We also recommend backing up your files to another location as soon as possible. </span></p>
-      #   <p><span style="color: rgb(0, 0, 0);"> </span></p>
-      #   <p><span style="color: rgb(0, 0, 0);">Please note that if you save directly to your phone, the resolution will not be of the highest quality so please save to your computer! </span></p>
-      #   <p><span style="color: rgb(0, 0, 0);">If you have any questions, please let me know. </span></p>
-      #   <p><span style="color: rgb(0, 0, 0);">Thanks! </span></p>
-      #   <p><span style="color: rgb(0, 0, 0);">{{email_signature}}</span></p>
-      #   """
-      # },
-      # %{
-      #   email_automation_pipeline_id:
-      #     get_pipeline_id_by_state(pipelines, "order_confirmation_physical"),
-      #   total_hours: 0,
-      #   status: "active",
-      #   job_type: "mini",
-      #   type: "gallery",
-      #   position: 0,
-      #   name: "(Products) Order Received",
-      #   subject_template: "Your order has been received! | {{photography_company_s_name}}",
-      #   body_template: """
-      #   <p><span style="color: rgb(0, 0, 0);">Hello {{order_first_name}},</span></p>
-      #   <p><span style="color: rgb(0, 0, 0);">Congratulations on successfully placing an order from your gallery! I'm truly excited for you to have these beautiful images in your hands!</span></p>
-      #   <p><span style="color: rgb(0, 0, 0);">Your order is now in the production phase and is being prepared with great care. You can easily track the order by visiting {{client_gallery_order_page}}.</span></p>
-      #   <p><span style="color: rgb(0, 0, 0);">Should you have any questions or need further assistance regarding your order, please don't hesitate to reach out. </span></p>
-      #   <p><span style="color: rgb(0, 0, 0);">Best regards,</span></p>
-      #   <p><span style="color: rgb(0, 0, 0);">{{email_signature}}</span></p>
-      #   """
-      # },
+      %{
+        email_automation_pipeline_id:
+          get_pipeline_id_by_state(pipelines, "order_confirmation_digital"),
+        total_hours: 0,
+        status: "active",
+        job_type: "mini",
+        type: "gallery",
+        position: 0,
+        name: "(Digital) Order Received",
+        subject_template: "Your photos are here! | {{photography_company_s_name}}",
+        body_template: """
+        <p><span style="color: rgb(0, 0, 0);">Hello {{order_first_name}},</span></p>
+        <p><span style="color: rgb(0, 0, 0);">Congrats! </span></p>
+        <p><span style="color: rgb(0, 0, 0);">Your digital images from {{photography_company_s_name}} are ready! </span></p>
+        <p><span style="color: rgb(0, 0, 0);">Simply click the download link below to download your files now (computer highly recommended for the download).</span></p>
+        <p><span style="color: rgb(0, 0, 0);"> {{download_photos}}</span></p>
+        <p><span style="color: rgb(0, 0, 0);">Once downloaded, simply unzip the file to access your digital image files to save onto your computer. We also recommend backing up your files to another location as soon as possible. </span></p>
+        <p><span style="color: rgb(0, 0, 0);"> </span></p>
+        <p><span style="color: rgb(0, 0, 0);">Please note that if you save directly to your phone, the resolution will not be of the highest quality so please save to your computer! </span></p>
+        <p><span style="color: rgb(0, 0, 0);">If you have any questions, please let me know. </span></p>
+        <p><span style="color: rgb(0, 0, 0);">Thanks! </span></p>
+        <p><span style="color: rgb(0, 0, 0);">{{email_signature}}</span></p>
+        """
+      },
+      %{
+        email_automation_pipeline_id:
+          get_pipeline_id_by_state(pipelines, "order_confirmation_physical"),
+        total_hours: 0,
+        status: "active",
+        job_type: "mini",
+        type: "gallery",
+        position: 0,
+        name: "(Products) Order Received",
+        subject_template: "Your order has been received! | {{photography_company_s_name}}",
+        body_template: """
+        <p><span style="color: rgb(0, 0, 0);">Hello {{order_first_name}},</span></p>
+        <p><span style="color: rgb(0, 0, 0);">Congratulations on successfully placing an order from your gallery! I'm truly excited for you to have these beautiful images in your hands!</span></p>
+        <p><span style="color: rgb(0, 0, 0);">Your order is now in the production phase and is being prepared with great care. You can easily track the order by visiting {{client_gallery_order_page}}.</span></p>
+        <p><span style="color: rgb(0, 0, 0);">Should you have any questions or need further assistance regarding your order, please don't hesitate to reach out. </span></p>
+        <p><span style="color: rgb(0, 0, 0);">Best regards,</span></p>
+        <p><span style="color: rgb(0, 0, 0);">{{email_signature}}</span></p>
+        """
+      },
       %{
         email_automation_pipeline_id:
           get_pipeline_id_by_state(pipelines, "order_confirmation_digital_physical"),
@@ -3143,25 +3143,25 @@ defmodule Mix.Tasks.ImportEmailPresets do
         <p><span style="color: rgb(0, 0, 0);">{{email_signature}}</span></p>
         """
       },
-      # %{
-      #   email_automation_pipeline_id:
-      #     get_pipeline_id_by_state(pipelines, "digitals_ready_download"),
-      #   total_hours: 0,
-      #   status: "active",
-      #   job_type: "mini",
-      #   type: "gallery",
-      #   position: 0,
-      #   name: "(Digital) Order Being Prepared",
-      #   subject_template: "Your order is being prepared. | {{photography_company_s_name}}",
-      #   body_template: """
-      #   <p><span style="color: rgb(0, 0, 0);">Hello {{order_first_name}},</span></p>
-      #   <p><span style="color: rgb(0, 0, 0);">I hope this message finds you well. I wanted to let you know that your digital images are currently being prepared for download. Since these files are quite large, it may take a little time to package them properly.</span></p>
-      #   <p><span style="color: rgb(0, 0, 0);">Please keep an eye on your email, as you can expect to receive another message with a download link to your digital image files in the next 30 minutes. </span></p>
-      #   <p><span style="color: rgb(0, 0, 0);">If you encounter any issues or have questions about the download, don't hesitate to reach out.</span></p>
-      #   <p><span style="color: rgb(0, 0, 0);">Best regards,</span></p>
-      #   <p><span style="color: rgb(0, 0, 0);">{{email_signature}}</span></p>
-      #   """
-      # },
+      %{
+        email_automation_pipeline_id:
+          get_pipeline_id_by_state(pipelines, "digitals_ready_download"),
+        total_hours: 0,
+        status: "active",
+        job_type: "mini",
+        type: "gallery",
+        position: 0,
+        name: "(Digital) Order Being Prepared",
+        subject_template: "Your order is being prepared. | {{photography_company_s_name}}",
+        body_template: """
+        <p><span style="color: rgb(0, 0, 0);">Hello {{order_first_name}},</span></p>
+        <p><span style="color: rgb(0, 0, 0);">I hope this message finds you well. I wanted to let you know that your digital images are currently being prepared for download. Since these files are quite large, it may take a little time to package them properly.</span></p>
+        <p><span style="color: rgb(0, 0, 0);">Please keep an eye on your email, as you can expect to receive another message with a download link to your digital image files in the next 30 minutes. </span></p>
+        <p><span style="color: rgb(0, 0, 0);">If you encounter any issues or have questions about the download, don't hesitate to reach out.</span></p>
+        <p><span style="color: rgb(0, 0, 0);">Best regards,</span></p>
+        <p><span style="color: rgb(0, 0, 0);">{{email_signature}}</span></p>
+        """
+      },
       %{
         email_automation_pipeline_id:
           get_pipeline_id_by_state(pipelines, "digitals_ready_download"),
@@ -3255,7 +3255,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         <p>{{email_signature}}</p>
         """
       },
-      # headshot
+      #headshot
       %{
         email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "client_contact"),
         total_hours: 0,
@@ -3870,49 +3870,49 @@ defmodule Mix.Tasks.ImportEmailPresets do
         {{email_signature}}
         """
       },
-      # %{
-      #   email_automation_pipeline_id:
-      #     get_pipeline_id_by_state(pipelines, "order_confirmation_digital"),
-      #   total_hours: 0,
-      #   status: "active",
-      #   job_type: "headshot",
-      #   type: "gallery",
-      #   position: 0,
-      #   name: "(Digital) Order Received",
-      #   subject_template: "Your photos are here! | {{photography_company_s_name}}",
-      #   body_template: """
-      #   <p><span style="color: rgb(0, 0, 0);">Hello {{order_first_name}},</span></p>
-      #   <p><span style="color: rgb(0, 0, 0);">Congrats! </span></p>
-      #   <p><span style="color: rgb(0, 0, 0);">Your digital images from {{photography_company_s_name}} are ready! </span></p>
-      #   <p><span style="color: rgb(0, 0, 0);">Simply click the download link below to download your files now (computer highly recommended for the download).</span></p>
-      #   <p><span style="color: rgb(0, 0, 0);"> {{download_photos}}</span></p>
-      #   <p><span style="color: rgb(0, 0, 0);">Once downloaded, simply unzip the file to access your digital image files to save onto your computer. We also recommend backing up your files to another location as soon as possible. </span></p>
-      #   <p><span style="color: rgb(0, 0, 0);"> </span></p>
-      #   <p><span style="color: rgb(0, 0, 0);">Please note that if you save directly to your phone, the resolution will not be of the highest quality so please save to your computer! </span></p>
-      #   <p><span style="color: rgb(0, 0, 0);">If you have any questions, please let me know. </span></p>
-      #   <p><span style="color: rgb(0, 0, 0);">Thanks! </span></p>
-      #   <p><span style="color: rgb(0, 0, 0);">{{email_signature}}</span></p>
-      #   """
-      # },
-      # %{
-      #   email_automation_pipeline_id:
-      #     get_pipeline_id_by_state(pipelines, "order_confirmation_physical"),
-      #   total_hours: 0,
-      #   status: "active",
-      #   job_type: "headshot",
-      #   type: "gallery",
-      #   position: 0,
-      #   name: "(Products) Order Received",
-      #   subject_template: "Your order has been received! | {{photography_company_s_name}}",
-      #   body_template: """
-      #   <p><span style="color: rgb(0, 0, 0);">Hello {{order_first_name}},</span></p>
-      #   <p><span style="color: rgb(0, 0, 0);">Congratulations on successfully placing an order from your gallery! I'm truly excited for you to have these beautiful images in your hands!</span></p>
-      #   <p><span style="color: rgb(0, 0, 0);">Your order is now in the production phase and is being prepared with great care. You can easily track the order by visiting {{client_gallery_order_page}}.</span></p>
-      #   <p><span style="color: rgb(0, 0, 0);">Should you have any questions or need further assistance regarding your order, please don't hesitate to reach out. </span></p>
-      #   <p><span style="color: rgb(0, 0, 0);">Best regards,</span></p>
-      #   <p><span style="color: rgb(0, 0, 0);">{{email_signature}}</span></p>
-      #   """
-      # },
+      %{
+        email_automation_pipeline_id:
+          get_pipeline_id_by_state(pipelines, "order_confirmation_digital"),
+        total_hours: 0,
+        status: "active",
+        job_type: "headshot",
+        type: "gallery",
+        position: 0,
+        name: "(Digital) Order Received",
+        subject_template: "Your photos are here! | {{photography_company_s_name}}",
+        body_template: """
+        <p><span style="color: rgb(0, 0, 0);">Hello {{order_first_name}},</span></p>
+        <p><span style="color: rgb(0, 0, 0);">Congrats! </span></p>
+        <p><span style="color: rgb(0, 0, 0);">Your digital images from {{photography_company_s_name}} are ready! </span></p>
+        <p><span style="color: rgb(0, 0, 0);">Simply click the download link below to download your files now (computer highly recommended for the download).</span></p>
+        <p><span style="color: rgb(0, 0, 0);"> {{download_photos}}</span></p>
+        <p><span style="color: rgb(0, 0, 0);">Once downloaded, simply unzip the file to access your digital image files to save onto your computer. We also recommend backing up your files to another location as soon as possible. </span></p>
+        <p><span style="color: rgb(0, 0, 0);"> </span></p>
+        <p><span style="color: rgb(0, 0, 0);">Please note that if you save directly to your phone, the resolution will not be of the highest quality so please save to your computer! </span></p>
+        <p><span style="color: rgb(0, 0, 0);">If you have any questions, please let me know. </span></p>
+        <p><span style="color: rgb(0, 0, 0);">Thanks! </span></p>
+        <p><span style="color: rgb(0, 0, 0);">{{email_signature}}</span></p>
+        """
+      },
+      %{
+        email_automation_pipeline_id:
+          get_pipeline_id_by_state(pipelines, "order_confirmation_physical"),
+        total_hours: 0,
+        status: "active",
+        job_type: "headshot",
+        type: "gallery",
+        position: 0,
+        name: "(Products) Order Received",
+        subject_template: "Your order has been received! | {{photography_company_s_name}}",
+        body_template: """
+        <p><span style="color: rgb(0, 0, 0);">Hello {{order_first_name}},</span></p>
+        <p><span style="color: rgb(0, 0, 0);">Congratulations on successfully placing an order from your gallery! I'm truly excited for you to have these beautiful images in your hands!</span></p>
+        <p><span style="color: rgb(0, 0, 0);">Your order is now in the production phase and is being prepared with great care. You can easily track the order by visiting {{client_gallery_order_page}}.</span></p>
+        <p><span style="color: rgb(0, 0, 0);">Should you have any questions or need further assistance regarding your order, please don't hesitate to reach out. </span></p>
+        <p><span style="color: rgb(0, 0, 0);">Best regards,</span></p>
+        <p><span style="color: rgb(0, 0, 0);">{{email_signature}}</span></p>
+        """
+      },
       %{
         email_automation_pipeline_id:
           get_pipeline_id_by_state(pipelines, "order_confirmation_digital_physical"),
@@ -3938,25 +3938,25 @@ defmodule Mix.Tasks.ImportEmailPresets do
         <p><span style="color: rgb(0, 0, 0);">{{email_signature}}</span></p>
         """
       },
-      # %{
-      #   email_automation_pipeline_id:
-      #     get_pipeline_id_by_state(pipelines, "digitals_ready_download"),
-      #   total_hours: 0,
-      #   status: "active",
-      #   job_type: "headshot",
-      #   type: "gallery",
-      #   position: 0,
-      #   name: "(Digital) Order Being Prepared",
-      #   subject_template: "Your order is being prepared. | {{photography_company_s_name}}",
-      #   body_template: """
-      #   <p><span style="color: rgb(0, 0, 0);">Hello {{order_first_name}},</span></p>
-      #   <p><span style="color: rgb(0, 0, 0);">I hope this message finds you well. I wanted to let you know that your digital images are currently being prepared for download. Since these files are quite large, it may take a little time to package them properly.</span></p>
-      #   <p><span style="color: rgb(0, 0, 0);">Please keep an eye on your email, as you can expect to receive another message with a download link to your digital image files in the next 30 minutes. </span></p>
-      #   <p><span style="color: rgb(0, 0, 0);">If you encounter any issues or have questions about the download, don't hesitate to reach out.</span></p>
-      #   <p><span style="color: rgb(0, 0, 0);">Best regards,</span></p>
-      #   <p><span style="color: rgb(0, 0, 0);">{{email_signature}}</span></p>
-      #   """
-      # },
+      %{
+        email_automation_pipeline_id:
+          get_pipeline_id_by_state(pipelines, "digitals_ready_download"),
+        total_hours: 0,
+        status: "active",
+        job_type: "headshot",
+        type: "gallery",
+        position: 0,
+        name: "(Digital) Order Being Prepared",
+        subject_template: "Your order is being prepared. | {{photography_company_s_name}}",
+        body_template: """
+        <p><span style="color: rgb(0, 0, 0);">Hello {{order_first_name}},</span></p>
+        <p><span style="color: rgb(0, 0, 0);">I hope this message finds you well. I wanted to let you know that your digital images are currently being prepared for download. Since these files are quite large, it may take a little time to package them properly.</span></p>
+        <p><span style="color: rgb(0, 0, 0);">Please keep an eye on your email, as you can expect to receive another message with a download link to your digital image files in the next 30 minutes. </span></p>
+        <p><span style="color: rgb(0, 0, 0);">If you encounter any issues or have questions about the download, don't hesitate to reach out.</span></p>
+        <p><span style="color: rgb(0, 0, 0);">Best regards,</span></p>
+        <p><span style="color: rgb(0, 0, 0);">{{email_signature}}</span></p>
+        """
+      },
       %{
         email_automation_pipeline_id:
           get_pipeline_id_by_state(pipelines, "digitals_ready_download"),
@@ -4050,7 +4050,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         <p>{{email_signature}}</p>
         """
       },
-      # portrait
+      #portrait
       %{
         email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "client_contact"),
         total_hours: 0,
@@ -4666,49 +4666,49 @@ defmodule Mix.Tasks.ImportEmailPresets do
         {{email_signature}}
         """
       },
-      # %{
-      #   email_automation_pipeline_id:
-      #     get_pipeline_id_by_state(pipelines, "order_confirmation_digital"),
-      #   total_hours: 0,
-      #   status: "active",
-      #   job_type: "portrait",
-      #   type: "gallery",
-      #   position: 0,
-      #   name: "(Digital) Order Received",
-      #   subject_template: "Your photos are here! | {{photography_company_s_name}}",
-      #   body_template: """
-      #   <p><span style="color: rgb(0, 0, 0);">Hello {{order_first_name}},</span></p>
-      #   <p><span style="color: rgb(0, 0, 0);">Congrats! </span></p>
-      #   <p><span style="color: rgb(0, 0, 0);">Your digital images from {{photography_company_s_name}} are ready! </span></p>
-      #   <p><span style="color: rgb(0, 0, 0);">Simply click the download link below to download your files now (computer highly recommended for the download).</span></p>
-      #   <p><span style="color: rgb(0, 0, 0);"> {{download_photos}}</span></p>
-      #   <p><span style="color: rgb(0, 0, 0);">Once downloaded, simply unzip the file to access your digital image files to save onto your computer. We also recommend backing up your files to another location as soon as possible. </span></p>
-      #   <p><span style="color: rgb(0, 0, 0);"> </span></p>
-      #   <p><span style="color: rgb(0, 0, 0);">Please note that if you save directly to your phone, the resolution will not be of the highest quality so please save to your computer! </span></p>
-      #   <p><span style="color: rgb(0, 0, 0);">If you have any questions, please let me know. </span></p>
-      #   <p><span style="color: rgb(0, 0, 0);">Thanks! </span></p>
-      #   <p><span style="color: rgb(0, 0, 0);">{{email_signature}}</span></p>
-      #   """
-      # },
-      # %{
-      #   email_automation_pipeline_id:
-      #     get_pipeline_id_by_state(pipelines, "order_confirmation_physical"),
-      #   total_hours: 0,
-      #   status: "active",
-      #   job_type: "portrait",
-      #   type: "gallery",
-      #   position: 0,
-      #   name: "(Products) Order Received",
-      #   subject_template: "Your order has been received! | {{photography_company_s_name}}",
-      #   body_template: """
-      #   <p><span style="color: rgb(0, 0, 0);">Hello {{order_first_name}},</span></p>
-      #   <p><span style="color: rgb(0, 0, 0);">Congratulations on successfully placing an order from your gallery! I'm truly excited for you to have these beautiful images in your hands!</span></p>
-      #   <p><span style="color: rgb(0, 0, 0);">Your order is now in the production phase and is being prepared with great care. You can easily track the order by visiting {{client_gallery_order_page}}.</span></p>
-      #   <p><span style="color: rgb(0, 0, 0);">Should you have any questions or need further assistance regarding your order, please don't hesitate to reach out. </span></p>
-      #   <p><span style="color: rgb(0, 0, 0);">Best regards,</span></p>
-      #   <p><span style="color: rgb(0, 0, 0);">{{email_signature}}</span></p>
-      #   """
-      # },
+      %{
+        email_automation_pipeline_id:
+          get_pipeline_id_by_state(pipelines, "order_confirmation_digital"),
+        total_hours: 0,
+        status: "active",
+        job_type: "portrait",
+        type: "gallery",
+        position: 0,
+        name: "(Digital) Order Received",
+        subject_template: "Your photos are here! | {{photography_company_s_name}}",
+        body_template: """
+        <p><span style="color: rgb(0, 0, 0);">Hello {{order_first_name}},</span></p>
+        <p><span style="color: rgb(0, 0, 0);">Congrats! </span></p>
+        <p><span style="color: rgb(0, 0, 0);">Your digital images from {{photography_company_s_name}} are ready! </span></p>
+        <p><span style="color: rgb(0, 0, 0);">Simply click the download link below to download your files now (computer highly recommended for the download).</span></p>
+        <p><span style="color: rgb(0, 0, 0);"> {{download_photos}}</span></p>
+        <p><span style="color: rgb(0, 0, 0);">Once downloaded, simply unzip the file to access your digital image files to save onto your computer. We also recommend backing up your files to another location as soon as possible. </span></p>
+        <p><span style="color: rgb(0, 0, 0);"> </span></p>
+        <p><span style="color: rgb(0, 0, 0);">Please note that if you save directly to your phone, the resolution will not be of the highest quality so please save to your computer! </span></p>
+        <p><span style="color: rgb(0, 0, 0);">If you have any questions, please let me know. </span></p>
+        <p><span style="color: rgb(0, 0, 0);">Thanks! </span></p>
+        <p><span style="color: rgb(0, 0, 0);">{{email_signature}}</span></p>
+        """
+      },
+      %{
+        email_automation_pipeline_id:
+          get_pipeline_id_by_state(pipelines, "order_confirmation_physical"),
+        total_hours: 0,
+        status: "active",
+        job_type: "portrait",
+        type: "gallery",
+        position: 0,
+        name: "(Products) Order Received",
+        subject_template: "Your order has been received! | {{photography_company_s_name}}",
+        body_template: """
+        <p><span style="color: rgb(0, 0, 0);">Hello {{order_first_name}},</span></p>
+        <p><span style="color: rgb(0, 0, 0);">Congratulations on successfully placing an order from your gallery! I'm truly excited for you to have these beautiful images in your hands!</span></p>
+        <p><span style="color: rgb(0, 0, 0);">Your order is now in the production phase and is being prepared with great care. You can easily track the order by visiting {{client_gallery_order_page}}.</span></p>
+        <p><span style="color: rgb(0, 0, 0);">Should you have any questions or need further assistance regarding your order, please don't hesitate to reach out. </span></p>
+        <p><span style="color: rgb(0, 0, 0);">Best regards,</span></p>
+        <p><span style="color: rgb(0, 0, 0);">{{email_signature}}</span></p>
+        """
+      },
       %{
         email_automation_pipeline_id:
           get_pipeline_id_by_state(pipelines, "order_confirmation_digital_physical"),
@@ -4734,25 +4734,25 @@ defmodule Mix.Tasks.ImportEmailPresets do
         <p><span style="color: rgb(0, 0, 0);">{{email_signature}}</span></p>
         """
       },
-      # %{
-      #   email_automation_pipeline_id:
-      #     get_pipeline_id_by_state(pipelines, "digitals_ready_download"),
-      #   total_hours: 0,
-      #   status: "active",
-      #   job_type: "portrait",
-      #   type: "gallery",
-      #   position: 0,
-      #   name: "(Digital) Order Being Prepared",
-      #   subject_template: "Your order is being prepared. | {{photography_company_s_name}}",
-      #   body_template: """
-      #   <p><span style="color: rgb(0, 0, 0);">Hello {{order_first_name}},</span></p>
-      #   <p><span style="color: rgb(0, 0, 0);">I hope this message finds you well. I wanted to let you know that your digital images are currently being prepared for download. Since these files are quite large, it may take a little time to package them properly.</span></p>
-      #   <p><span style="color: rgb(0, 0, 0);">Please keep an eye on your email, as you can expect to receive another message with a download link to your digital image files in the next 30 minutes. </span></p>
-      #   <p><span style="color: rgb(0, 0, 0);">If you encounter any issues or have questions about the download, don't hesitate to reach out.</span></p>
-      #   <p><span style="color: rgb(0, 0, 0);">Best regards,</span></p>
-      #   <p><span style="color: rgb(0, 0, 0);">{{email_signature}}</span></p>
-      #   """
-      # },
+      %{
+        email_automation_pipeline_id:
+          get_pipeline_id_by_state(pipelines, "digitals_ready_download"),
+        total_hours: 0,
+        status: "active",
+        job_type: "portrait",
+        type: "gallery",
+        position: 0,
+        name: "(Digital) Order Being Prepared",
+        subject_template: "Your order is being prepared. | {{photography_company_s_name}}",
+        body_template: """
+        <p><span style="color: rgb(0, 0, 0);">Hello {{order_first_name}},</span></p>
+        <p><span style="color: rgb(0, 0, 0);">I hope this message finds you well. I wanted to let you know that your digital images are currently being prepared for download. Since these files are quite large, it may take a little time to package them properly.</span></p>
+        <p><span style="color: rgb(0, 0, 0);">Please keep an eye on your email, as you can expect to receive another message with a download link to your digital image files in the next 30 minutes. </span></p>
+        <p><span style="color: rgb(0, 0, 0);">If you encounter any issues or have questions about the download, don't hesitate to reach out.</span></p>
+        <p><span style="color: rgb(0, 0, 0);">Best regards,</span></p>
+        <p><span style="color: rgb(0, 0, 0);">{{email_signature}}</span></p>
+        """
+      },
       %{
         email_automation_pipeline_id:
           get_pipeline_id_by_state(pipelines, "digitals_ready_download"),
@@ -4846,7 +4846,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         <p>{{email_signature}}</p>
         """
       },
-      # boudoir
+      #boudoir
       %{
         email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "client_contact"),
         total_hours: 0,
@@ -5462,49 +5462,49 @@ defmodule Mix.Tasks.ImportEmailPresets do
         {{email_signature}}
         """
       },
-      # %{
-      #   email_automation_pipeline_id:
-      #     get_pipeline_id_by_state(pipelines, "order_confirmation_digital"),
-      #   total_hours: 0,
-      #   status: "active",
-      #   job_type: "boudoir",
-      #   type: "gallery",
-      #   position: 0,
-      #   name: "(Digital) Order Received",
-      #   subject_template: "Your photos are here! | {{photography_company_s_name}}",
-      #   body_template: """
-      #   <p><span style="color: rgb(0, 0, 0);">Hello {{order_first_name}},</span></p>
-      #   <p><span style="color: rgb(0, 0, 0);">Congrats! </span></p>
-      #   <p><span style="color: rgb(0, 0, 0);">Your digital images from {{photography_company_s_name}} are ready! </span></p>
-      #   <p><span style="color: rgb(0, 0, 0);">Simply click the download link below to download your files now (computer highly recommended for the download).</span></p>
-      #   <p><span style="color: rgb(0, 0, 0);"> {{download_photos}}</span></p>
-      #   <p><span style="color: rgb(0, 0, 0);">Once downloaded, simply unzip the file to access your digital image files to save onto your computer. We also recommend backing up your files to another location as soon as possible. </span></p>
-      #   <p><span style="color: rgb(0, 0, 0);"> </span></p>
-      #   <p><span style="color: rgb(0, 0, 0);">Please note that if you save directly to your phone, the resolution will not be of the highest quality so please save to your computer! </span></p>
-      #   <p><span style="color: rgb(0, 0, 0);">If you have any questions, please let me know. </span></p>
-      #   <p><span style="color: rgb(0, 0, 0);">Thanks! </span></p>
-      #   <p><span style="color: rgb(0, 0, 0);">{{email_signature}}</span></p>
-      #   """
-      # },
-      # %{
-      #   email_automation_pipeline_id:
-      #     get_pipeline_id_by_state(pipelines, "order_confirmation_physical"),
-      #   total_hours: 0,
-      #   status: "active",
-      #   job_type: "boudoir",
-      #   type: "gallery",
-      #   position: 0,
-      #   name: "(Products) Order Received",
-      #   subject_template: "Your order has been received! | {{photography_company_s_name}}",
-      #   body_template: """
-      #   <p><span style="color: rgb(0, 0, 0);">Hello {{order_first_name}},</span></p>
-      #   <p><span style="color: rgb(0, 0, 0);">Congratulations on successfully placing an order from your gallery! I'm truly excited for you to have these beautiful images in your hands!</span></p>
-      #   <p><span style="color: rgb(0, 0, 0);">Your order is now in the production phase and is being prepared with great care. You can easily track the order by visiting {{client_gallery_order_page}}.</span></p>
-      #   <p><span style="color: rgb(0, 0, 0);">Should you have any questions or need further assistance regarding your order, please don't hesitate to reach out. </span></p>
-      #   <p><span style="color: rgb(0, 0, 0);">Best regards,</span></p>
-      #   <p><span style="color: rgb(0, 0, 0);">{{email_signature}}</span></p>
-      #   """
-      # },
+      %{
+        email_automation_pipeline_id:
+          get_pipeline_id_by_state(pipelines, "order_confirmation_digital"),
+        total_hours: 0,
+        status: "active",
+        job_type: "boudoir",
+        type: "gallery",
+        position: 0,
+        name: "(Digital) Order Received",
+        subject_template: "Your photos are here! | {{photography_company_s_name}}",
+        body_template: """
+        <p><span style="color: rgb(0, 0, 0);">Hello {{order_first_name}},</span></p>
+        <p><span style="color: rgb(0, 0, 0);">Congrats! </span></p>
+        <p><span style="color: rgb(0, 0, 0);">Your digital images from {{photography_company_s_name}} are ready! </span></p>
+        <p><span style="color: rgb(0, 0, 0);">Simply click the download link below to download your files now (computer highly recommended for the download).</span></p>
+        <p><span style="color: rgb(0, 0, 0);"> {{download_photos}}</span></p>
+        <p><span style="color: rgb(0, 0, 0);">Once downloaded, simply unzip the file to access your digital image files to save onto your computer. We also recommend backing up your files to another location as soon as possible. </span></p>
+        <p><span style="color: rgb(0, 0, 0);"> </span></p>
+        <p><span style="color: rgb(0, 0, 0);">Please note that if you save directly to your phone, the resolution will not be of the highest quality so please save to your computer! </span></p>
+        <p><span style="color: rgb(0, 0, 0);">If you have any questions, please let me know. </span></p>
+        <p><span style="color: rgb(0, 0, 0);">Thanks! </span></p>
+        <p><span style="color: rgb(0, 0, 0);">{{email_signature}}</span></p>
+        """
+      },
+      %{
+        email_automation_pipeline_id:
+          get_pipeline_id_by_state(pipelines, "order_confirmation_physical"),
+        total_hours: 0,
+        status: "active",
+        job_type: "boudoir",
+        type: "gallery",
+        position: 0,
+        name: "(Products) Order Received",
+        subject_template: "Your order has been received! | {{photography_company_s_name}}",
+        body_template: """
+        <p><span style="color: rgb(0, 0, 0);">Hello {{order_first_name}},</span></p>
+        <p><span style="color: rgb(0, 0, 0);">Congratulations on successfully placing an order from your gallery! I'm truly excited for you to have these beautiful images in your hands!</span></p>
+        <p><span style="color: rgb(0, 0, 0);">Your order is now in the production phase and is being prepared with great care. You can easily track the order by visiting {{client_gallery_order_page}}.</span></p>
+        <p><span style="color: rgb(0, 0, 0);">Should you have any questions or need further assistance regarding your order, please don't hesitate to reach out. </span></p>
+        <p><span style="color: rgb(0, 0, 0);">Best regards,</span></p>
+        <p><span style="color: rgb(0, 0, 0);">{{email_signature}}</span></p>
+        """
+      },
       %{
         email_automation_pipeline_id:
           get_pipeline_id_by_state(pipelines, "order_confirmation_digital_physical"),
@@ -5530,25 +5530,25 @@ defmodule Mix.Tasks.ImportEmailPresets do
         <p><span style="color: rgb(0, 0, 0);">{{email_signature}}</span></p>
         """
       },
-      # %{
-      #   email_automation_pipeline_id:
-      #     get_pipeline_id_by_state(pipelines, "digitals_ready_download"),
-      #   total_hours: 0,
-      #   status: "active",
-      #   job_type: "boudoir",
-      #   type: "gallery",
-      #   position: 0,
-      #   name: "(Digital) Order Being Prepared",
-      #   subject_template: "Your order is being prepared. | {{photography_company_s_name}}",
-      #   body_template: """
-      #   <p><span style="color: rgb(0, 0, 0);">Hello {{order_first_name}},</span></p>
-      #   <p><span style="color: rgb(0, 0, 0);">I hope this message finds you well. I wanted to let you know that your digital images are currently being prepared for download. Since these files are quite large, it may take a little time to package them properly.</span></p>
-      #   <p><span style="color: rgb(0, 0, 0);">Please keep an eye on your email, as you can expect to receive another message with a download link to your digital image files in the next 30 minutes. </span></p>
-      #   <p><span style="color: rgb(0, 0, 0);">If you encounter any issues or have questions about the download, don't hesitate to reach out.</span></p>
-      #   <p><span style="color: rgb(0, 0, 0);">Best regards,</span></p>
-      #   <p><span style="color: rgb(0, 0, 0);">{{email_signature}}</span></p>
-      #   """
-      # },
+      %{
+        email_automation_pipeline_id:
+          get_pipeline_id_by_state(pipelines, "digitals_ready_download"),
+        total_hours: 0,
+        status: "active",
+        job_type: "boudoir",
+        type: "gallery",
+        position: 0,
+        name: "(Digital) Order Being Prepared",
+        subject_template: "Your order is being prepared. | {{photography_company_s_name}}",
+        body_template: """
+        <p><span style="color: rgb(0, 0, 0);">Hello {{order_first_name}},</span></p>
+        <p><span style="color: rgb(0, 0, 0);">I hope this message finds you well. I wanted to let you know that your digital images are currently being prepared for download. Since these files are quite large, it may take a little time to package them properly.</span></p>
+        <p><span style="color: rgb(0, 0, 0);">Please keep an eye on your email, as you can expect to receive another message with a download link to your digital image files in the next 30 minutes. </span></p>
+        <p><span style="color: rgb(0, 0, 0);">If you encounter any issues or have questions about the download, don't hesitate to reach out.</span></p>
+        <p><span style="color: rgb(0, 0, 0);">Best regards,</span></p>
+        <p><span style="color: rgb(0, 0, 0);">{{email_signature}}</span></p>
+        """
+      },
       %{
         email_automation_pipeline_id:
           get_pipeline_id_by_state(pipelines, "digitals_ready_download"),
@@ -5642,7 +5642,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         <p>{{email_signature}}</p>
         """
       },
-      # other
+      #other
       %{
         email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "client_contact"),
         total_hours: 0,
@@ -6258,49 +6258,49 @@ defmodule Mix.Tasks.ImportEmailPresets do
         {{email_signature}}
         """
       },
-      # %{
-      #   email_automation_pipeline_id:
-      #     get_pipeline_id_by_state(pipelines, "order_confirmation_digital"),
-      #   total_hours: 0,
-      #   status: "active",
-      #   job_type: "other",
-      #   type: "gallery",
-      #   position: 0,
-      #   name: "(Digital) Order Received",
-      #   subject_template: "Your photos are here! | {{photography_company_s_name}}",
-      #   body_template: """
-      #   <p><span style="color: rgb(0, 0, 0);">Hello {{order_first_name}},</span></p>
-      #   <p><span style="color: rgb(0, 0, 0);">Congrats! </span></p>
-      #   <p><span style="color: rgb(0, 0, 0);">Your digital images from {{photography_company_s_name}} are ready! </span></p>
-      #   <p><span style="color: rgb(0, 0, 0);">Simply click the download link below to download your files now (computer highly recommended for the download).</span></p>
-      #   <p><span style="color: rgb(0, 0, 0);"> {{download_photos}}</span></p>
-      #   <p><span style="color: rgb(0, 0, 0);">Once downloaded, simply unzip the file to access your digital image files to save onto your computer. We also recommend backing up your files to another location as soon as possible. </span></p>
-      #   <p><span style="color: rgb(0, 0, 0);"> </span></p>
-      #   <p><span style="color: rgb(0, 0, 0);">Please note that if you save directly to your phone, the resolution will not be of the highest quality so please save to your computer! </span></p>
-      #   <p><span style="color: rgb(0, 0, 0);">If you have any questions, please let me know. </span></p>
-      #   <p><span style="color: rgb(0, 0, 0);">Thanks! </span></p>
-      #   <p><span style="color: rgb(0, 0, 0);">{{email_signature}}</span></p>
-      #   """
-      # },
-      # %{
-      #   email_automation_pipeline_id:
-      #     get_pipeline_id_by_state(pipelines, "order_confirmation_physical"),
-      #   total_hours: 0,
-      #   status: "active",
-      #   job_type: "other",
-      #   type: "gallery",
-      #   position: 0,
-      #   name: "(Products) Order Received",
-      #   subject_template: "Your order has been received! | {{photography_company_s_name}}",
-      #   body_template: """
-      #   <p><span style="color: rgb(0, 0, 0);">Hello {{order_first_name}},</span></p>
-      #   <p><span style="color: rgb(0, 0, 0);">Congratulations on successfully placing an order from your gallery! I'm truly excited for you to have these beautiful images in your hands!</span></p>
-      #   <p><span style="color: rgb(0, 0, 0);">Your order is now in the production phase and is being prepared with great care. You can easily track the order by visiting {{client_gallery_order_page}}.</span></p>
-      #   <p><span style="color: rgb(0, 0, 0);">Should you have any questions or need further assistance regarding your order, please don't hesitate to reach out. </span></p>
-      #   <p><span style="color: rgb(0, 0, 0);">Best regards,</span></p>
-      #   <p><span style="color: rgb(0, 0, 0);">{{email_signature}}</span></p>
-      #   """
-      # },
+      %{
+        email_automation_pipeline_id:
+          get_pipeline_id_by_state(pipelines, "order_confirmation_digital"),
+        total_hours: 0,
+        status: "active",
+        job_type: "other",
+        type: "gallery",
+        position: 0,
+        name: "(Digital) Order Received",
+        subject_template: "Your photos are here! | {{photography_company_s_name}}",
+        body_template: """
+        <p><span style="color: rgb(0, 0, 0);">Hello {{order_first_name}},</span></p>
+        <p><span style="color: rgb(0, 0, 0);">Congrats! </span></p>
+        <p><span style="color: rgb(0, 0, 0);">Your digital images from {{photography_company_s_name}} are ready! </span></p>
+        <p><span style="color: rgb(0, 0, 0);">Simply click the download link below to download your files now (computer highly recommended for the download).</span></p>
+        <p><span style="color: rgb(0, 0, 0);"> {{download_photos}}</span></p>
+        <p><span style="color: rgb(0, 0, 0);">Once downloaded, simply unzip the file to access your digital image files to save onto your computer. We also recommend backing up your files to another location as soon as possible. </span></p>
+        <p><span style="color: rgb(0, 0, 0);"> </span></p>
+        <p><span style="color: rgb(0, 0, 0);">Please note that if you save directly to your phone, the resolution will not be of the highest quality so please save to your computer! </span></p>
+        <p><span style="color: rgb(0, 0, 0);">If you have any questions, please let me know. </span></p>
+        <p><span style="color: rgb(0, 0, 0);">Thanks! </span></p>
+        <p><span style="color: rgb(0, 0, 0);">{{email_signature}}</span></p>
+        """
+      },
+      %{
+        email_automation_pipeline_id:
+          get_pipeline_id_by_state(pipelines, "order_confirmation_physical"),
+        total_hours: 0,
+        status: "active",
+        job_type: "other",
+        type: "gallery",
+        position: 0,
+        name: "(Products) Order Received",
+        subject_template: "Your order has been received! | {{photography_company_s_name}}",
+        body_template: """
+        <p><span style="color: rgb(0, 0, 0);">Hello {{order_first_name}},</span></p>
+        <p><span style="color: rgb(0, 0, 0);">Congratulations on successfully placing an order from your gallery! I'm truly excited for you to have these beautiful images in your hands!</span></p>
+        <p><span style="color: rgb(0, 0, 0);">Your order is now in the production phase and is being prepared with great care. You can easily track the order by visiting {{client_gallery_order_page}}.</span></p>
+        <p><span style="color: rgb(0, 0, 0);">Should you have any questions or need further assistance regarding your order, please don't hesitate to reach out. </span></p>
+        <p><span style="color: rgb(0, 0, 0);">Best regards,</span></p>
+        <p><span style="color: rgb(0, 0, 0);">{{email_signature}}</span></p>
+        """
+      },
       %{
         email_automation_pipeline_id:
           get_pipeline_id_by_state(pipelines, "order_confirmation_digital_physical"),
@@ -6326,25 +6326,25 @@ defmodule Mix.Tasks.ImportEmailPresets do
         <p><span style="color: rgb(0, 0, 0);">{{email_signature}}</span></p>
         """
       },
-      # %{
-      #   email_automation_pipeline_id:
-      #     get_pipeline_id_by_state(pipelines, "digitals_ready_download"),
-      #   total_hours: 0,
-      #   status: "active",
-      #   job_type: "other",
-      #   type: "gallery",
-      #   position: 0,
-      #   name: "(Digital) Order Being Prepared",
-      #   subject_template: "Your order is being prepared. | {{photography_company_s_name}}",
-      #   body_template: """
-      #   <p><span style="color: rgb(0, 0, 0);">Hello {{order_first_name}},</span></p>
-      #   <p><span style="color: rgb(0, 0, 0);">I hope this message finds you well. I wanted to let you know that your digital images are currently being prepared for download. Since these files are quite large, it may take a little time to package them properly.</span></p>
-      #   <p><span style="color: rgb(0, 0, 0);">Please keep an eye on your email, as you can expect to receive another message with a download link to your digital image files in the next 30 minutes. </span></p>
-      #   <p><span style="color: rgb(0, 0, 0);">If you encounter any issues or have questions about the download, don't hesitate to reach out.</span></p>
-      #   <p><span style="color: rgb(0, 0, 0);">Best regards,</span></p>
-      #   <p><span style="color: rgb(0, 0, 0);">{{email_signature}}</span></p>
-      #   """
-      # },
+      %{
+        email_automation_pipeline_id:
+          get_pipeline_id_by_state(pipelines, "digitals_ready_download"),
+        total_hours: 0,
+        status: "active",
+        job_type: "other",
+        type: "gallery",
+        position: 0,
+        name: "(Digital) Order Being Prepared",
+        subject_template: "Your order is being prepared. | {{photography_company_s_name}}",
+        body_template: """
+        <p><span style="color: rgb(0, 0, 0);">Hello {{order_first_name}},</span></p>
+        <p><span style="color: rgb(0, 0, 0);">I hope this message finds you well. I wanted to let you know that your digital images are currently being prepared for download. Since these files are quite large, it may take a little time to package them properly.</span></p>
+        <p><span style="color: rgb(0, 0, 0);">Please keep an eye on your email, as you can expect to receive another message with a download link to your digital image files in the next 30 minutes. </span></p>
+        <p><span style="color: rgb(0, 0, 0);">If you encounter any issues or have questions about the download, don't hesitate to reach out.</span></p>
+        <p><span style="color: rgb(0, 0, 0);">Best regards,</span></p>
+        <p><span style="color: rgb(0, 0, 0);">{{email_signature}}</span></p>
+        """
+      },
       %{
         email_automation_pipeline_id:
           get_pipeline_id_by_state(pipelines, "digitals_ready_download"),
@@ -6438,7 +6438,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         <p>{{email_signature}}</p>
         """
       },
-      # maternity
+      #maternity
       %{
         email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "client_contact"),
         total_hours: 0,
@@ -7054,49 +7054,49 @@ defmodule Mix.Tasks.ImportEmailPresets do
         {{email_signature}}
         """
       },
-      # %{
-      #   email_automation_pipeline_id:
-      #     get_pipeline_id_by_state(pipelines, "order_confirmation_digital"),
-      #   total_hours: 0,
-      #   status: "active",
-      #   job_type: "maternity",
-      #   type: "gallery",
-      #   position: 0,
-      #   name: "(Digital) Order Received",
-      #   subject_template: "Your photos are here! | {{photography_company_s_name}}",
-      #   body_template: """
-      #   <p><span style="color: rgb(0, 0, 0);">Hello {{order_first_name}},</span></p>
-      #   <p><span style="color: rgb(0, 0, 0);">Congrats! </span></p>
-      #   <p><span style="color: rgb(0, 0, 0);">Your digital images from {{photography_company_s_name}} are ready! </span></p>
-      #   <p><span style="color: rgb(0, 0, 0);">Simply click the download link below to download your files now (computer highly recommended for the download).</span></p>
-      #   <p><span style="color: rgb(0, 0, 0);"> {{download_photos}}</span></p>
-      #   <p><span style="color: rgb(0, 0, 0);">Once downloaded, simply unzip the file to access your digital image files to save onto your computer. We also recommend backing up your files to another location as soon as possible. </span></p>
-      #   <p><span style="color: rgb(0, 0, 0);"> </span></p>
-      #   <p><span style="color: rgb(0, 0, 0);">Please note that if you save directly to your phone, the resolution will not be of the highest quality so please save to your computer! </span></p>
-      #   <p><span style="color: rgb(0, 0, 0);">If you have any questions, please let me know. </span></p>
-      #   <p><span style="color: rgb(0, 0, 0);">Thanks! </span></p>
-      #   <p><span style="color: rgb(0, 0, 0);">{{email_signature}}</span></p>
-      #   """
-      # },
-      # %{
-      #   email_automation_pipeline_id:
-      #     get_pipeline_id_by_state(pipelines, "order_confirmation_physical"),
-      #   total_hours: 0,
-      #   status: "active",
-      #   job_type: "maternity",
-      #   type: "gallery",
-      #   position: 0,
-      #   name: "(Products) Order Received",
-      #   subject_template: "Your order has been received! | {{photography_company_s_name}}",
-      #   body_template: """
-      #   <p><span style="color: rgb(0, 0, 0);">Hello {{order_first_name}},</span></p>
-      #   <p><span style="color: rgb(0, 0, 0);">Congratulations on successfully placing an order from your gallery! I'm truly excited for you to have these beautiful images in your hands!</span></p>
-      #   <p><span style="color: rgb(0, 0, 0);">Your order is now in the production phase and is being prepared with great care. You can easily track the order by visiting {{client_gallery_order_page}}.</span></p>
-      #   <p><span style="color: rgb(0, 0, 0);">Should you have any questions or need further assistance regarding your order, please don't hesitate to reach out. </span></p>
-      #   <p><span style="color: rgb(0, 0, 0);">Best regards,</span></p>
-      #   <p><span style="color: rgb(0, 0, 0);">{{email_signature}}</span></p>
-      #   """
-      # },
+      %{
+        email_automation_pipeline_id:
+          get_pipeline_id_by_state(pipelines, "order_confirmation_digital"),
+        total_hours: 0,
+        status: "active",
+        job_type: "maternity",
+        type: "gallery",
+        position: 0,
+        name: "(Digital) Order Received",
+        subject_template: "Your photos are here! | {{photography_company_s_name}}",
+        body_template: """
+        <p><span style="color: rgb(0, 0, 0);">Hello {{order_first_name}},</span></p>
+        <p><span style="color: rgb(0, 0, 0);">Congrats! </span></p>
+        <p><span style="color: rgb(0, 0, 0);">Your digital images from {{photography_company_s_name}} are ready! </span></p>
+        <p><span style="color: rgb(0, 0, 0);">Simply click the download link below to download your files now (computer highly recommended for the download).</span></p>
+        <p><span style="color: rgb(0, 0, 0);"> {{download_photos}}</span></p>
+        <p><span style="color: rgb(0, 0, 0);">Once downloaded, simply unzip the file to access your digital image files to save onto your computer. We also recommend backing up your files to another location as soon as possible. </span></p>
+        <p><span style="color: rgb(0, 0, 0);"> </span></p>
+        <p><span style="color: rgb(0, 0, 0);">Please note that if you save directly to your phone, the resolution will not be of the highest quality so please save to your computer! </span></p>
+        <p><span style="color: rgb(0, 0, 0);">If you have any questions, please let me know. </span></p>
+        <p><span style="color: rgb(0, 0, 0);">Thanks! </span></p>
+        <p><span style="color: rgb(0, 0, 0);">{{email_signature}}</span></p>
+        """
+      },
+      %{
+        email_automation_pipeline_id:
+          get_pipeline_id_by_state(pipelines, "order_confirmation_physical"),
+        total_hours: 0,
+        status: "active",
+        job_type: "maternity",
+        type: "gallery",
+        position: 0,
+        name: "(Products) Order Received",
+        subject_template: "Your order has been received! | {{photography_company_s_name}}",
+        body_template: """
+        <p><span style="color: rgb(0, 0, 0);">Hello {{order_first_name}},</span></p>
+        <p><span style="color: rgb(0, 0, 0);">Congratulations on successfully placing an order from your gallery! I'm truly excited for you to have these beautiful images in your hands!</span></p>
+        <p><span style="color: rgb(0, 0, 0);">Your order is now in the production phase and is being prepared with great care. You can easily track the order by visiting {{client_gallery_order_page}}.</span></p>
+        <p><span style="color: rgb(0, 0, 0);">Should you have any questions or need further assistance regarding your order, please don't hesitate to reach out. </span></p>
+        <p><span style="color: rgb(0, 0, 0);">Best regards,</span></p>
+        <p><span style="color: rgb(0, 0, 0);">{{email_signature}}</span></p>
+        """
+      },
       %{
         email_automation_pipeline_id:
           get_pipeline_id_by_state(pipelines, "order_confirmation_digital_physical"),
@@ -7122,25 +7122,25 @@ defmodule Mix.Tasks.ImportEmailPresets do
         <p><span style="color: rgb(0, 0, 0);">{{email_signature}}</span></p>
         """
       },
-      # %{
-      #   email_automation_pipeline_id:
-      #     get_pipeline_id_by_state(pipelines, "digitals_ready_download"),
-      #   total_hours: 0,
-      #   status: "active",
-      #   job_type: "maternity",
-      #   type: "gallery",
-      #   position: 0,
-      #   name: "(Digital) Order Being Prepared",
-      #   subject_template: "Your order is being prepared. | {{photography_company_s_name}}",
-      #   body_template: """
-      #   <p><span style="color: rgb(0, 0, 0);">Hello {{order_first_name}},</span></p>
-      #   <p><span style="color: rgb(0, 0, 0);">I hope this message finds you well. I wanted to let you know that your digital images are currently being prepared for download. Since these files are quite large, it may take a little time to package them properly.</span></p>
-      #   <p><span style="color: rgb(0, 0, 0);">Please keep an eye on your email, as you can expect to receive another message with a download link to your digital image files in the next 30 minutes. </span></p>
-      #   <p><span style="color: rgb(0, 0, 0);">If you encounter any issues or have questions about the download, don't hesitate to reach out.</span></p>
-      #   <p><span style="color: rgb(0, 0, 0);">Best regards,</span></p>
-      #   <p><span style="color: rgb(0, 0, 0);">{{email_signature}}</span></p>
-      #   """
-      # },
+      %{
+        email_automation_pipeline_id:
+          get_pipeline_id_by_state(pipelines, "digitals_ready_download"),
+        total_hours: 0,
+        status: "active",
+        job_type: "maternity",
+        type: "gallery",
+        position: 0,
+        name: "(Digital) Order Being Prepared",
+        subject_template: "Your order is being prepared. | {{photography_company_s_name}}",
+        body_template: """
+        <p><span style="color: rgb(0, 0, 0);">Hello {{order_first_name}},</span></p>
+        <p><span style="color: rgb(0, 0, 0);">I hope this message finds you well. I wanted to let you know that your digital images are currently being prepared for download. Since these files are quite large, it may take a little time to package them properly.</span></p>
+        <p><span style="color: rgb(0, 0, 0);">Please keep an eye on your email, as you can expect to receive another message with a download link to your digital image files in the next 30 minutes. </span></p>
+        <p><span style="color: rgb(0, 0, 0);">If you encounter any issues or have questions about the download, don't hesitate to reach out.</span></p>
+        <p><span style="color: rgb(0, 0, 0);">Best regards,</span></p>
+        <p><span style="color: rgb(0, 0, 0);">{{email_signature}}</span></p>
+        """
+      },
       %{
         email_automation_pipeline_id:
           get_pipeline_id_by_state(pipelines, "digitals_ready_download"),
@@ -7234,7 +7234,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         <p>{{email_signature}}</p>
         """
       },
-      # event
+      #event
       %{
         email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "client_contact"),
         total_hours: 0,
@@ -7850,49 +7850,49 @@ defmodule Mix.Tasks.ImportEmailPresets do
         {{email_signature}}
         """
       },
-      # %{
-      #   email_automation_pipeline_id:
-      #     get_pipeline_id_by_state(pipelines, "order_confirmation_digital"),
-      #   total_hours: 0,
-      #   status: "active",
-      #   job_type: "event",
-      #   type: "gallery",
-      #   position: 0,
-      #   name: "(Digital) Order Received",
-      #   subject_template: "Your photos are here! | {{photography_company_s_name}}",
-      #   body_template: """
-      #   <p><span style="color: rgb(0, 0, 0);">Hello {{order_first_name}},</span></p>
-      #   <p><span style="color: rgb(0, 0, 0);">Congrats! </span></p>
-      #   <p><span style="color: rgb(0, 0, 0);">Your digital images from {{photography_company_s_name}} are ready! </span></p>
-      #   <p><span style="color: rgb(0, 0, 0);">Simply click the download link below to download your files now (computer highly recommended for the download).</span></p>
-      #   <p><span style="color: rgb(0, 0, 0);"> {{download_photos}}</span></p>
-      #   <p><span style="color: rgb(0, 0, 0);">Once downloaded, simply unzip the file to access your digital image files to save onto your computer. We also recommend backing up your files to another location as soon as possible. </span></p>
-      #   <p><span style="color: rgb(0, 0, 0);"> </span></p>
-      #   <p><span style="color: rgb(0, 0, 0);">Please note that if you save directly to your phone, the resolution will not be of the highest quality so please save to your computer! </span></p>
-      #   <p><span style="color: rgb(0, 0, 0);">If you have any questions, please let me know. </span></p>
-      #   <p><span style="color: rgb(0, 0, 0);">Thanks! </span></p>
-      #   <p><span style="color: rgb(0, 0, 0);">{{email_signature}}</span></p>
-      #   """
-      # },
-      # %{
-      #   email_automation_pipeline_id:
-      #     get_pipeline_id_by_state(pipelines, "order_confirmation_physical"),
-      #   total_hours: 0,
-      #   status: "active",
-      #   job_type: "event",
-      #   type: "gallery",
-      #   position: 0,
-      #   name: "(Products) Order Received",
-      #   subject_template: "Your order has been received! | {{photography_company_s_name}}",
-      #   body_template: """
-      #   <p><span style="color: rgb(0, 0, 0);">Hello {{order_first_name}},</span></p>
-      #   <p><span style="color: rgb(0, 0, 0);">Congratulations on successfully placing an order from your gallery! I'm truly excited for you to have these beautiful images in your hands!</span></p>
-      #   <p><span style="color: rgb(0, 0, 0);">Your order is now in the production phase and is being prepared with great care. You can easily track the order by visiting {{client_gallery_order_page}}.</span></p>
-      #   <p><span style="color: rgb(0, 0, 0);">Should you have any questions or need further assistance regarding your order, please don't hesitate to reach out. </span></p>
-      #   <p><span style="color: rgb(0, 0, 0);">Best regards,</span></p>
-      #   <p><span style="color: rgb(0, 0, 0);">{{email_signature}}</span></p>
-      #   """
-      # },
+      %{
+        email_automation_pipeline_id:
+          get_pipeline_id_by_state(pipelines, "order_confirmation_digital"),
+        total_hours: 0,
+        status: "active",
+        job_type: "event",
+        type: "gallery",
+        position: 0,
+        name: "(Digital) Order Received",
+        subject_template: "Your photos are here! | {{photography_company_s_name}}",
+        body_template: """
+        <p><span style="color: rgb(0, 0, 0);">Hello {{order_first_name}},</span></p>
+        <p><span style="color: rgb(0, 0, 0);">Congrats! </span></p>
+        <p><span style="color: rgb(0, 0, 0);">Your digital images from {{photography_company_s_name}} are ready! </span></p>
+        <p><span style="color: rgb(0, 0, 0);">Simply click the download link below to download your files now (computer highly recommended for the download).</span></p>
+        <p><span style="color: rgb(0, 0, 0);"> {{download_photos}}</span></p>
+        <p><span style="color: rgb(0, 0, 0);">Once downloaded, simply unzip the file to access your digital image files to save onto your computer. We also recommend backing up your files to another location as soon as possible. </span></p>
+        <p><span style="color: rgb(0, 0, 0);"> </span></p>
+        <p><span style="color: rgb(0, 0, 0);">Please note that if you save directly to your phone, the resolution will not be of the highest quality so please save to your computer! </span></p>
+        <p><span style="color: rgb(0, 0, 0);">If you have any questions, please let me know. </span></p>
+        <p><span style="color: rgb(0, 0, 0);">Thanks! </span></p>
+        <p><span style="color: rgb(0, 0, 0);">{{email_signature}}</span></p>
+        """
+      },
+      %{
+        email_automation_pipeline_id:
+          get_pipeline_id_by_state(pipelines, "order_confirmation_physical"),
+        total_hours: 0,
+        status: "active",
+        job_type: "event",
+        type: "gallery",
+        position: 0,
+        name: "(Products) Order Received",
+        subject_template: "Your order has been received! | {{photography_company_s_name}}",
+        body_template: """
+        <p><span style="color: rgb(0, 0, 0);">Hello {{order_first_name}},</span></p>
+        <p><span style="color: rgb(0, 0, 0);">Congratulations on successfully placing an order from your gallery! I'm truly excited for you to have these beautiful images in your hands!</span></p>
+        <p><span style="color: rgb(0, 0, 0);">Your order is now in the production phase and is being prepared with great care. You can easily track the order by visiting {{client_gallery_order_page}}.</span></p>
+        <p><span style="color: rgb(0, 0, 0);">Should you have any questions or need further assistance regarding your order, please don't hesitate to reach out. </span></p>
+        <p><span style="color: rgb(0, 0, 0);">Best regards,</span></p>
+        <p><span style="color: rgb(0, 0, 0);">{{email_signature}}</span></p>
+        """
+      },
       %{
         email_automation_pipeline_id:
           get_pipeline_id_by_state(pipelines, "order_confirmation_digital_physical"),
@@ -7918,25 +7918,25 @@ defmodule Mix.Tasks.ImportEmailPresets do
         <p><span style="color: rgb(0, 0, 0);">{{email_signature}}</span></p>
         """
       },
-      # %{
-      #   email_automation_pipeline_id:
-      #     get_pipeline_id_by_state(pipelines, "digitals_ready_download"),
-      #   total_hours: 0,
-      #   status: "active",
-      #   job_type: "event",
-      #   type: "gallery",
-      #   position: 0,
-      #   name: "(Digital) Order Being Prepared",
-      #   subject_template: "Your order is being prepared. | {{photography_company_s_name}}",
-      #   body_template: """
-      #   <p><span style="color: rgb(0, 0, 0);">Hello {{order_first_name}},</span></p>
-      #   <p><span style="color: rgb(0, 0, 0);">I hope this message finds you well. I wanted to let you know that your digital images are currently being prepared for download. Since these files are quite large, it may take a little time to package them properly.</span></p>
-      #   <p><span style="color: rgb(0, 0, 0);">Please keep an eye on your email, as you can expect to receive another message with a download link to your digital image files in the next 30 minutes. </span></p>
-      #   <p><span style="color: rgb(0, 0, 0);">If you encounter any issues or have questions about the download, don't hesitate to reach out.</span></p>
-      #   <p><span style="color: rgb(0, 0, 0);">Best regards,</span></p>
-      #   <p><span style="color: rgb(0, 0, 0);">{{email_signature}}</span></p>
-      #   """
-      # },
+      %{
+        email_automation_pipeline_id:
+          get_pipeline_id_by_state(pipelines, "digitals_ready_download"),
+        total_hours: 0,
+        status: "active",
+        job_type: "event",
+        type: "gallery",
+        position: 0,
+        name: "(Digital) Order Being Prepared",
+        subject_template: "Your order is being prepared. | {{photography_company_s_name}}",
+        body_template: """
+        <p><span style="color: rgb(0, 0, 0);">Hello {{order_first_name}},</span></p>
+        <p><span style="color: rgb(0, 0, 0);">I hope this message finds you well. I wanted to let you know that your digital images are currently being prepared for download. Since these files are quite large, it may take a little time to package them properly.</span></p>
+        <p><span style="color: rgb(0, 0, 0);">Please keep an eye on your email, as you can expect to receive another message with a download link to your digital image files in the next 30 minutes. </span></p>
+        <p><span style="color: rgb(0, 0, 0);">If you encounter any issues or have questions about the download, don't hesitate to reach out.</span></p>
+        <p><span style="color: rgb(0, 0, 0);">Best regards,</span></p>
+        <p><span style="color: rgb(0, 0, 0);">{{email_signature}}</span></p>
+        """
+      },
       %{
         email_automation_pipeline_id:
           get_pipeline_id_by_state(pipelines, "digitals_ready_download"),
