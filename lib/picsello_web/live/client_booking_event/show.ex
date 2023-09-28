@@ -36,14 +36,14 @@ defmodule PicselloWeb.ClientBookingEventLive.Show do
     <%= if @status == :active do %>
       <div class="center-container px-8 pt-6 mx-auto min-h-screen flex flex-col">
         <div class="flex">
-          <.photographer_logo organization={@organization} />
+          <.photographer_logo class="font-normal" organization={@organization} />
         </div>
         <hr class="border-gray-100 my-8">
 
         <div class="flex flex-col-reverse sm:flex-row">
           <div class="flex-1 sm:pr-8">
             <div class="flex flex-col pt-8 sm:max-w-lg">
-              <h1 class="text-4xl font-bold"><%= @booking_event.name %></h1>
+              <h1 class="text-4xl"><%= @booking_event.name %></h1>
               <p class="text-base-250 mt-2 text-lg"><%= Picsello.Package.price(@booking_event.package_template) %></p>
               <.subtitle_display booking_event={@booking_event} package={@booking_event.package_template} class="text-base-250 mt-2" />
               <div class="mt-4 flex flex-col border-gray-100 border-y py-4 text-base-250">
