@@ -10,7 +10,7 @@ defmodule PicselloWeb.EmailAutomationLive.AddEmailComponent do
   import PicselloWeb.Shared.ShortCodeComponent, only: [short_codes_select: 1]
   import PicselloWeb.EmailAutomationLive.Shared
 
-  alias Picsello.{Repo, EmailPresets, EmailPresets.EmailPreset}
+  alias Picsello.{Repo, EmailPresets, EmailPresets.EmailPreset, Utils}
   alias Ecto.Changeset
 
   @steps [:timing, :edit_email, :preview_email]
@@ -153,6 +153,7 @@ defmodule PicselloWeb.EmailAutomationLive.AddEmailComponent do
     body_html =
       Ecto.Changeset.get_field(changeset, :body_template)
       |> :bbmustache.render(get_sample_values(current_user, job), key_type: :atom)
+      |> Utils.normalize_body_template()
 
     Process.send_after(self(), {:load_template_preview, __MODULE__, body_html}, 50)
 

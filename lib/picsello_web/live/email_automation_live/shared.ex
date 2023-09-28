@@ -17,7 +17,8 @@ defmodule PicselloWeb.EmailAutomationLive.Shared do
     EmailAutomationSchedules,
     EmailAutomation.EmailSchedule,
     EmailAutomation.EmailScheduleHistory,
-    Repo
+    Repo,
+    Utils
   }
 
   # @impl true
@@ -84,6 +85,7 @@ defmodule PicselloWeb.EmailAutomationLive.Shared do
         }),
         key_type: :atom
       )
+      |> Utils.normalize_body_template()
 
     Process.send_after(self(), {:load_template_preview, module_name, body_html}, 50)
 
