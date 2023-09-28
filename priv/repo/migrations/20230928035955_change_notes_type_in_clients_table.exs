@@ -3,7 +3,7 @@ defmodule Picsello.Repo.Migrations.ChangeNotesTypeInClientsTable do
 
   def change do
     # alter table(:clients) do
-    # modify(:notes, :text, from: :string)
+    #   modify(:notes, :text, from: :string)
     # end
   end
 end

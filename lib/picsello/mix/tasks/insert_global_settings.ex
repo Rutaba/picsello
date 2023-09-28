@@ -10,6 +10,10 @@ defmodule Mix.Tasks.InsertGlobalSettings do
   def run(_) do
     load_app()
 
+    global_settings()
+  end
+
+  def global_settings() do
     gallery_products_params = GlobalSettings.gallery_products_params()
 
     from(org in Organization,
