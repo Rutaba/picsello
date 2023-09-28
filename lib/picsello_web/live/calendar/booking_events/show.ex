@@ -410,11 +410,10 @@ defmodule PicselloWeb.Live.Calendar.BookingEvents.Show do
 
       <% "calendar" -> %>
         <div class="mt-10 flex flex-col xl:flex-row gap-8">
-          <div class="flex xl:w-2/5 flex-col">
-            <%!-- <div phx-hook="BookingEventCalendar" phx-update="replace" class="sm:w-[450px] sm:flex sm:flex-wrap" id="booking_event_calendar" data-time-zone={@current_user.time_zone} data-feed-path={Routes.calendar_feed_path(@socket, :show, @booking_event.id)}/> --%>
+          <div class="flex xl:w-1/2 flex-col">
             <div phx-hook="BookingEventCalendar" phx-update="replace" class="" id="booking_event_calendar" data-time-zone={@current_user.time_zone} data-feed-path={Routes.calendar_feed_path(@socket, :show, @booking_event.id)}/>
           </div>
-          <div class="md:col-span-3 xl:w-3/5 flex flex-col xl:overflow-y-scroll xl:max-h-[600px]">
+          <div class="xl:h-[600px] flex flex-col flex-grow">
             <%= if @calendar_date_event && @calendar_date_event != [] do %>
               <div class="flex">
                 <div class="flex text-2xl font-bold"><%= BEShared.date_formatter(@calendar_date_event.date) %></div>
@@ -430,12 +429,14 @@ defmodule PicselloWeb.Live.Calendar.BookingEvents.Show do
                   </div>
                 </div>
               </div>
-              <div class="flex mt-2">
+              <div class="flex mb-2">
                 <p class="text-blue-planning-300 mr-4"><b><%= BEShared.count_booked_slots(@calendar_date_event.slots) %></b> bookings</p>
                 <p class="text-blue-planning-300 mr-4"><b><%= BEShared.count_available_slots(@calendar_date_event.slots) %></b> available</p>
                 <p class="text-blue-planning-300"><b><%= BEShared.count_hidden_slots(@calendar_date_event.slots) %></b> hidden</p>
               </div>
-              <.render_slots booking_event_date={@calendar_date_event} {assigns} />
+              <div class="xl:overflow-y-scroll flex flex-col gap-1.5">
+                <.render_slots booking_event_date={@calendar_date_event} {assigns} />
+              </div>
             <% else %>
               <div class="p-3 border-2 border-base-200 rounded-lg">
                 <div class="font-bold text-base-250 text-xl flex items-center justify-center p-3 opacity-50"> <div> Add booking event dates </div> </div>
@@ -512,7 +513,7 @@ defmodule PicselloWeb.Live.Calendar.BookingEvents.Show do
             <hr class="my-2 md:my-3 col-span-7">
           </div>
         <% "calendar" -> %>
-          <div class="border-2 border-base-200 rounded-lg flex p-3 my-1.5">
+          <div class="border-2 border-base-200 rounded-lg flex p-3">
             <div class="flex flex-col">
               <div class="mb-1 font-bold text-black text-lg">
                 <%= if @slot.status == :book do %>

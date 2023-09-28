@@ -1,6 +1,6 @@
 import { Calendar } from '@fullcalendar/core';
 import dayGridPlugin from '@fullcalendar/daygrid';
-import interactionPlugin from "@fullcalendar/interaction"; 
+import interactionPlugin from "@fullcalendar/interaction";
 import listPlugin from '@fullcalendar/list';
 
 const isMobile = () => window.innerWidth <= 768;
@@ -33,7 +33,6 @@ const calendar_render = (el, component) => {
 
   calendar.render();
   calendar.on('dateClick', function(info) {
-    console.log(info);
     component.pushEvent("calendar-date-changed", {date: info.dateStr})
   });
 };
