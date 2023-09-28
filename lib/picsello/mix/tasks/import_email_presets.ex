@@ -6,7 +6,6 @@ defmodule Mix.Tasks.ImportEmailPresets do
   import Ecto.Query
 
   alias Picsello.{
-    Accounts.User,
     Repo,
     EmailPresets.EmailPreset,
     EmailAutomation.EmailAutomationPipeline
@@ -24,7 +23,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
     pipelines = from(p in EmailAutomationPipeline) |> Repo.all()
 
     organizations =
-      from(u in User,
+      from(u in Picsello.Accounts.User,
         select: %{id: u.organization_id},
         where:
           u.email in [
@@ -41,7 +40,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
       )
       |> Repo.all()
 
-    organizations = from(o in Picsello.Organization) |> Repo.all()
+    # organizations = from(o in Picsello.Organization, select: %{id: o.id}) |> Repo.all()
     Logger.warning("[orgs count] #{Enum.count(organizations)}")
 
     [
