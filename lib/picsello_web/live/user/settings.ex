@@ -571,7 +571,7 @@ defmodule PicselloWeb.Live.User.Settings do
 
   defp _settings_nav(assigns) do
     ~H"""
-    <ul class="flex py-4 overflow-auto font-bold text-blue-planning-300">
+    <ul class="flex py-4 overflow-auto font-bold text-blue-planning-300" {testid("settings-nav")}>
     <%= for %{to: {path, action}} = link <- @link, !Map.get(link, :hide) do %>
         <li>
           <.nav_link title={path} :let={active} to={apply(Routes, :"#{path}_path", [@socket, action])} class="block whitespace-nowrap border-b-4 border-transparent transition-all duration-300 hover:border-b-blue-planning-300" active_class="border-b-blue-planning-300" socket={@socket} live_action={@live_action}>

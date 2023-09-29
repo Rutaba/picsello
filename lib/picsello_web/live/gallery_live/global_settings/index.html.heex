@@ -1,7 +1,7 @@
 <.settings_nav socket={@socket} live_action={@live_action} current_user={@current_user} container_class="sm:pb-0 pb-28">
   <div class="flex flex-col justify-between flex-1 mt-5 sm:flex-row">
     <div>
-      <h1 class="text-2xl font-bold">Gallery</h1>
+      <h1 class="text-2xl font-bold" {testid("settings-heading")}>Gallery</h1>
       <div class="max-w-4xl mt-2 text-base-250">
         <p>Easily set (so you can forget!) your gallery settings on a global level including expiration dates, watermark<%= if @currency in products_currency() do %>, product settings, and related products.<% else %> and digital images.<% end %></p>
       </div>

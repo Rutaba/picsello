@@ -95,7 +95,7 @@ defmodule PicselloWeb.Live.PackageTemplates do
     <.settings_nav socket={@socket} live_action={@live_action} current_user={@current_user} container_class="sm:pb-0 pb-28">
       <div class={classes("flex flex-col justify-between flex-1 mt-5 sm:flex-row", %{"flex-grow-0" => Enum.any?(@templates) })}>
         <div>
-          <h1 class="text-2xl font-bold">Packages</h1>
+          <h1 class="text-2xl font-bold" {testid("settings-heading")}>Packages</h1>
 
           <p class="max-w-2xl my-2 text-base-250">
             Create reusable pricing and shoot templates to make it easier to manage leads. Looking to learn more about your pricing? <%= live_redirect to: Routes.calculator_path(@socket, :index), title: "Check out our helpful calculator!", class: "underline text-blue-planning-300 intro-calculator" do %>Check out our helpful calculator!<% end %>
