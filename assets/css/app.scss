@@ -125,14 +125,22 @@ canvas {
     z-index: 0;
   }
 
+  .muuri-item > div {
+    width: 100%;
+  }
+
   .item-content {
     position: relative;
     overflow: hidden;
     width: 100%;
+
+    &.preview {
+      @apply h-full;
+    }
   }
 
   .item {
-    @apply flex absolute items-center m-[5px] w-[200px] z-10;
+    @apply flex absolute items-center m-[5px] w-[calc(100%-10px)] sm:w-[calc(33.33%-10px)] lg:w-[calc(20%-10px)] z-10;
 
     
     .galleryItem {
