@@ -166,7 +166,6 @@ export default {
 
     if (isMobile()) {
       this.el.style.width = '100%';
-      const offset = (w - iw - count * 12) / 2;
     }
   },
 
