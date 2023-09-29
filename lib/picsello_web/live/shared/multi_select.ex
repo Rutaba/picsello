@@ -169,7 +169,7 @@ defmodule PicselloWeb.Shared.MultiSelect do
   end
 
   @doc false
-  defmacro init_rest(assigns, from_mount) when is_boolean(from_mount) do
+  defmacro init_rest(assigns, from_mount) do
     quote do
       if @use_alpinejs do
         (unquote(from_mount) && add_alpinejs_assigns(unquote(assigns))) || unquote(assigns)
