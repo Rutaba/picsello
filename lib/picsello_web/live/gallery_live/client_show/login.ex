@@ -12,7 +12,10 @@ defmodule PicselloWeb.GalleryLive.ClientShow.Login do
       &open_modal(
         &1,
         AuthenticationComponent,
-        Map.take(&1.assigns, [:gallery, :album, :live_action])
+        %{
+          background: "bg-gradient-to-t from-black/80 to-black-20",
+          assigns: Map.take(&1.assigns, [:gallery, :album, :live_action])
+        }
       )
     )
     |> ok()

@@ -42,7 +42,7 @@ defmodule Picsello.UserManagesPackageTemplatesTest do
       &(&1 |> Element.clear() |> Element.fill_in(with: "70.00"))
     )
     |> scroll_into_view(testid("preset-summary"))
-    |> assert_has(testid("preset-summary", text: "$60.00 to To Book, $70.00"))
+    |> assert_has(testid("preset-summary", text: "$60.00 To Book, $70.00"))
   end
 
   defp edit_package_screen(session) do

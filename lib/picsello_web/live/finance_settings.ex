@@ -21,6 +21,8 @@ defmodule PicselloWeb.Live.FinanceSettings do
 
   alias PicselloWeb.SearchComponent
 
+  @products_currency Picsello.Product.currency()
+
   @impl true
   def mount(_params, _session, %{assigns: %{current_user: current_user}} = socket) do
     user_currency = UserCurrencies.get_user_currency(current_user.organization.id)
@@ -132,7 +134,7 @@ defmodule PicselloWeb.Live.FinanceSettings do
     <div class={classes("grid grid-cols-2 sm:grid-cols-1 lg:grid-cols-2 items-center mt-2 justify-between" , %{"opacity-50 pointer-events-none" => !Enum.member?([:charges_enabled, :loading], @stripe_status)})}>
       <div class="flex">
         <%= if @icon do %>
-          <.icon name={@icon} class="mr-2 mt-2 w-6 h-6" />
+          <.icon name={@icon} class="mr-2 mt-2 w-6 h-6 flex-shrink-0" />
         <% end %>
         <div>
           <p class="font-semibold"><%= @heading %></p>
@@ -203,6 +205,7 @@ defmodule PicselloWeb.Live.FinanceSettings do
       ) do
     socket
     |> SearchComponent.open(%{
+      show_warning?: currency != @products_currency,
       selection: %{id: currency, name: currency},
       change_event: :change_currency,
       submit_event: :submit_currency,
@@ -306,7 +309,7 @@ defmodule PicselloWeb.Live.FinanceSettings do
           payment_schedule_params = %{
             price: payment_schedule.price |> convert_currency(currency, rate),
             description:
-              "#{currency}#{payment_schedule.price} to #{payment_schedule.due_interval}"
+              "#{Money.to_string(payment_schedule.price, symbol: false)} #{currency} #{payment_schedule.due_interval}"
           }
 
           Multi.update(

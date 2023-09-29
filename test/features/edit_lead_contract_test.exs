@@ -11,7 +11,11 @@ defmodule Picsello.EditLeadContractTest do
     lead =
       insert(:lead, %{
         type: "wedding",
-        user: user
+        user: user,
+        client: %{name: "Peter"},
+        shoots: [
+          %{name: "test_name"}
+        ]
       })
 
     [lead: lead]

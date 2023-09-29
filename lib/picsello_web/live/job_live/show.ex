@@ -26,7 +26,7 @@ defmodule PicselloWeb.JobLive.Show do
       complete_job_component: 1
     ]
 
-  import PicselloWeb.GalleryLive.Shared, only: [expired_at: 1, new_gallery_path: 2]
+  import PicselloWeb.GalleryLive.Shared, only: [expired_at: 1]
 
   @upload_options [
     accept: ~w(.pdf .docx .txt),
@@ -196,10 +196,9 @@ defmodule PicselloWeb.JobLive.Show do
     |> noreply()
   end
 
+  @impl true
   def handle_info({:redirect_to_gallery, gallery}, socket) do
-    socket
-    |> push_redirect(to: new_gallery_path(socket, gallery))
-    |> noreply()
+    PicselloWeb.Live.Shared.handle_info({:redirect_to_gallery, gallery}, socket)
   end
 
   @impl true

@@ -492,7 +492,7 @@ defmodule Picsello.ClientAcceptsBookingProposalTest do
     photographer_session
     |> visit("/leads/#{lead.id}")
     |> click(checkbox("Include questionnaire in proposal?", selected: true))
-    |> assert_text("$0.00 to To Book")
+    |> assert_text("$0.00 To Book")
     |> click(@send_proposal_button)
     |> wait_for_enabled_submit_button()
     |> click(@send_email_button)

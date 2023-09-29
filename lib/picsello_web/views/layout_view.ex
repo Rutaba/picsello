@@ -477,9 +477,9 @@ defmodule PicselloWeb.LayoutView do
 
         <.subscription_ending_soon type="header" socket={@socket} current_user={@current_user} />
 
-        <div id="initials-menu" class="relative flex flex-row justify-end cursor-pointer" phx-update="ignore" phx-hook="ToggleContent">
+        <div id="initials-menu" class="relative flex flex-row justify-end cursor-pointer" phx-hook="ToggleContent">
           <%= if @current_user do %>
-            <div class="absolute top-0 right-0 flex flex-col items-end hidden cursor-default text-base-300 toggle-content">
+            <div phx-update="ignore" id="initials-menu-inner-content" class="absolute top-0 right-0 flex flex-col items-end hidden cursor-default text-base-300 toggle-content">
               <div class="p-4 -mb-2 bg-white shadow-md cursor-pointer text-base-300">
                 <.icon name="close-x" class="w-4 h-4 stroke-current stroke-2" />
               </div>

@@ -221,7 +221,7 @@ defmodule Picsello.BookingEvents do
     if available_slots > 0 do
       Enum.reduce_while(slot, [], fn x, acc ->
         %{slot_start: slot_time, slot_end: slot_end} =
-          if x != available_slots - 1 do
+          if x != available_slots do
             %{
               slot_start: start_time |> Time.add(duration_buffer * x),
               slot_end: start_time |> Time.add(duration_buffer * (x + 1))
@@ -452,12 +452,19 @@ defmodule Picsello.BookingEvents do
           |> Map.put(:schedule_date, get_schedule_date(schedule, shoot_date))
         end)
 
-      opts = %{
-        payment_schedules: payment_schedules,
-        action: :insert,
-        total_price: Package.price(package_template),
-        questionnaire: Picsello.Questionnaire.for_package(package_template)
-      }
+      opts =
+        if booking_event.include_questionnaire?,
+          do: %{
+            payment_schedules: payment_schedules,
+            action: :insert,
+            total_price: Package.price(package_template),
+            questionnaire: Picsello.Questionnaire.for_package(package_template)
+          },
+          else: %{
+            payment_schedules: payment_schedules,
+            action: :insert,
+            total_price: Package.price(package_template)
+          }
 
       package_template
       |> Picsello.Packages.changeset_from_template()
@@ -475,9 +482,14 @@ defmodule Picsello.BookingEvents do
       )
     end)
     |> Ecto.Multi.insert(:proposal, fn changes ->
+      questionnaire_id =
+        if booking_event.include_questionnaire?,
+          do: changes.package_update.questionnaire_template_id,
+          else: nil
+
       Picsello.BookingProposal.create_changeset(%{
         job_id: changes.job.id,
-        questionnaire_id: changes.package_update.questionnaire_template_id
+        questionnaire_id: questionnaire_id
       })
     end)
     |> Oban.insert(:oban_job, fn changes ->

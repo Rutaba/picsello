@@ -5,6 +5,8 @@ defmodule Picsello.Product do
   alias Picsello.Repo
   import Ecto.Query, only: [from: 2, join: 5, with_cte: 3, order_by: 3, select: 3]
 
+  @products_currency Application.compile_env!(:picsello, :products)[:currency]
+
   @attributes_with_markups_cte """
   select
     height,
@@ -251,4 +253,6 @@ defmodule Picsello.Product do
 
   defp do_selections([{key, values} | tail]),
     do: for(selections <- do_selections(tail), value <- values, do: [{key, value} | selections])
+
+  def currency(), do: @products_currency
 end

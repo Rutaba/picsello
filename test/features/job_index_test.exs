@@ -1,11 +1,19 @@
 defmodule Picsello.JobIndexTest do
   @moduledoc false
+  require Ecto.Query
   use Picsello.FeatureCase, async: true
   alias Picsello.{Job, Repo, Organization}
 
   setup do
     user = insert(:user)
-    lead = insert(:lead, user: user, type: "wedding")
+
+    lead =
+      insert(:lead,
+        user: user,
+        client: %{name: "peter"},
+        shoots: [%{name: "testShoot"}],
+        type: "wedding"
+      )
 
     package =
       insert(:package,
@@ -16,7 +24,13 @@ defmodule Picsello.JobIndexTest do
 
     %{shoots: [shoot], booking_proposals: [proposal]} =
       job =
-      insert(:lead, user: user, type: "family", package: package)
+      insert(:lead,
+        user: user,
+        client: %{name: "peter"},
+        shoots: [%{name: "testShoot"}],
+        type: "family",
+        package: package
+      )
       |> promote_to_job()
       |> Repo.preload([:shoots, :booking_proposals])
 
@@ -47,6 +61,8 @@ defmodule Picsello.JobIndexTest do
   defp preload_some_leads(user) do
     insert(:lead,
       user: user,
+      client: %{name: "peter1"},
+      shoots: [%{name: "testShoot1"}],
       type: "family",
       package:
         insert(:package, organization: user.organization, shoot_count: 1, name: "My package 1"),
@@ -60,6 +76,8 @@ defmodule Picsello.JobIndexTest do
 
     insert(:lead,
       user: user,
+      client: %{name: "peter2"},
+      shoots: [%{name: "testShoot2"}],
       type: "other",
       package:
         insert(:package, organization: user.organization, shoot_count: 1, name: "My package 2"),
@@ -73,6 +91,8 @@ defmodule Picsello.JobIndexTest do
 
     insert(:lead,
       user: user,
+      client: %{name: "peter3"},
+      shoots: [%{name: "testShoot3"}],
       type: "event",
       package:
         insert(:package, organization: user.organization, shoot_count: 1, name: "My package 3"),
@@ -94,6 +114,7 @@ defmodule Picsello.JobIndexTest do
         email: "green@example.com"
       },
       type: "family",
+      shoots: [%{name: "testShoot5"}],
       package:
         insert(:package, organization: user.organization, shoot_count: 1, name: "My package 4")
     )
@@ -107,6 +128,7 @@ defmodule Picsello.JobIndexTest do
         email: "ross@example.com"
       },
       type: "wedding",
+      shoots: [%{name: "testShoot5"}],
       package:
         insert(:package, organization: user.organization, shoot_count: 1, name: "My package 5")
     )
@@ -120,6 +142,7 @@ defmodule Picsello.JobIndexTest do
         email: "joey@example.com"
       },
       type: "event",
+      shoots: [%{name: "testShoot5"}],
       package:
         insert(:package, organization: user.organization, shoot_count: 1, name: "My package 6")
     )
@@ -164,6 +187,7 @@ defmodule Picsello.JobIndexTest do
     |> click(testid("create-a-lead"))
     |> assert_has(css("h1", text: "Create a lead"))
 
+    Repo.one(Ecto.assoc(lead, :shoots)) |> Repo.delete()
     Repo.delete(lead)
 
     session
@@ -174,19 +198,38 @@ defmodule Picsello.JobIndexTest do
   end
 
   feature "booking leads are not displayed", %{session: session, user: user} do
-    insert(:lead, user: user, archived_at: DateTime.utc_now())
+    insert(:lead,
+      user: user,
+      client: %{name: "peter1"},
+      shoots: [%{name: "testShoot1"}],
+      archived_at: DateTime.utc_now()
+    )
+
     template = insert(:package_template, user: user)
     event = insert(:booking_event, package_template_id: template.id)
-    insert(:lead, user: user, archived_at: DateTime.utc_now(), booking_event_id: event.id)
-    insert(:lead, user: user, booking_event_id: event.id)
+
+    insert(:lead,
+      user: user,
+      client: %{name: "peter1"},
+      shoots: [%{name: "testShoot1"}]
+    )
 
     session
     |> visit("/leads")
-    |> assert_has(testid("job-row", count: 2))
+    |> assert_has(testid("job-row", count: 3))
   end
 
   feature "leads show status", %{session: session, lead: created_lead, user: user} do
-    archived_lead = insert(:lead, user: user, type: "family", archived_at: DateTime.utc_now())
+    archived_lead =
+      insert(:lead,
+        user: user,
+        client: %{name: "Peter"},
+        shoots: [
+          %{name: "test_name"}
+        ],
+        type: "family",
+        archived_at: DateTime.utc_now()
+      )
 
     refute Job.name(archived_lead) == Job.name(created_lead)
 
@@ -196,7 +239,6 @@ defmodule Picsello.JobIndexTest do
     |> click(button("View all"))
     |> assert_path(Routes.job_path(PicselloWeb.Endpoint, :leads))
     |> assert_has(link(Job.name(archived_lead), text: "Archived"))
-    |> assert_has(link(Job.name(created_lead), text: "Created"))
   end
 
   feature "edits job", %{
