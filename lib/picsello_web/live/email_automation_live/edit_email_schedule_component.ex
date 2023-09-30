@@ -196,7 +196,7 @@ defmodule PicselloWeb.EmailAutomationLive.EditEmailScheduleComponent do
 
   def step(%{step: :edit_email} = assigns) do
     ~H"""
-      <.email_header pipeline={@pipeline} email={@email_preset}/>
+      <.email_header index={@index} pipeline={@pipeline} email={@email_preset}/>
       <hr class="my-8" />
 
       <% f = to_form(@email_preset_changeset) %>
@@ -249,7 +249,7 @@ defmodule PicselloWeb.EmailAutomationLive.EditEmailScheduleComponent do
 
   def step(%{step: :preview_email} = assigns) do
     ~H"""
-      <.email_header pipeline={@pipeline} email={@email_preset}/>
+      <.email_header index={@index} pipeline={@pipeline} email={@email_preset}/>
       <span class="text-base-250">Check out how your client will see your emails. We’ve put in some placeholder data to visualize the variables.</span>
 
       <hr class="my-4" />

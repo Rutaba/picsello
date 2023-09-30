@@ -109,6 +109,7 @@ defmodule Picsello.EmailPresets.JobResolver do
       "job_name" => &Picsello.Job.name(&1.job),
       "booking_event_name" => &booking_event_name(&1.job),
       "mini_session_link" => &noop/1,
+      # TODO: booking_event_client_url
       "booking_event_client_url" => fn resolver ->
         helpers(resolver).client_booking_event_url(
           organization(resolver).slug,

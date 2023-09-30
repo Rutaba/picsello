@@ -207,7 +207,8 @@ defmodule PicselloWeb.Live.EmailAutomations.Index do
          } = socket,
          %{
            "email_id" => email_id,
-           "pipeline_id" => pipeline_id
+           "pipeline_id" => pipeline_id,
+           "index" => index
          },
          module
        ) do
@@ -218,7 +219,8 @@ defmodule PicselloWeb.Live.EmailAutomations.Index do
       job_type: selected_job_type.jobtype,
       pipeline: get_pipline(pipeline_id),
       email_id: to_integer(email_id),
-      email: EmailAutomations.get_email_by_id(to_integer(email_id))
+      email: EmailAutomations.get_email_by_id(to_integer(email_id)),
+      index: to_integer(index)
     })
   end
 
@@ -291,11 +293,11 @@ defmodule PicselloWeb.Live.EmailAutomations.Index do
                       </span>
                     <% end %>
                   </div>
-                  <button phx-click="edit-time-popup" phx-value-email_id={email.id}  phx-value-pipeline_id={@pipeline.id} class={classes("flex items-center px-2 py-1 btn-tertiary text-blue-planning-300  hover:border-blue-planning-300 mr-2 whitespace-nowrap", %{"hidden" => is_state_manually_trigger(@pipeline.state) and index == 0})}>
+                  <button phx-click="edit-time-popup" phx-value-index={index} phx-value-email_id={email.id}  phx-value-pipeline_id={@pipeline.id} class={classes("flex items-center px-2 py-1 btn-tertiary text-blue-planning-300  hover:border-blue-planning-300 mr-2 whitespace-nowrap", %{"hidden" => is_state_manually_trigger(@pipeline.state) and index == 0})}>
                     <.icon name="settings" class="inline-block w-4 h-4 mr-3 fill-current text-blue-planning-300" />
                     Edit time
                   </button>
-                  <button phx-click="edit-email-popup" phx-value-email_id={email.id} phx-value-pipeline_id={@pipeline.id} class="flex items-center px-2 py-1 btn-tertiary bg-blue-planning-300 text-white hover:bg-blue-planning-300/75 whitespace-nowrap" >
+                  <button phx-click="edit-email-popup" phx-value-index={index} phx-value-email_id={email.id} phx-value-pipeline_id={@pipeline.id} class="flex items-center px-2 py-1 btn-tertiary bg-blue-planning-300 text-white hover:bg-blue-planning-300/75 whitespace-nowrap" >
                     <.icon name="pencil" class="inline-block w-4 h-4 mr-3 fill-current text-white" />
                     Edit email
                   </button>

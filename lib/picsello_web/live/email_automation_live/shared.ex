@@ -312,6 +312,8 @@ defmodule PicselloWeb.EmailAutomationLive.Shared do
   end
 
   def email_header(assigns) do
+    assigns = assigns |> Enum.into(%{index: -1})
+
     ~H"""
       <div class="flex flex-row mt-2 mb-4 items-center">
         <div class="flex mr-2">
@@ -323,7 +325,7 @@ defmodule PicselloWeb.EmailAutomationLive.Shared do
           <p><b> <%= @email.type |> Atom.to_string() |> String.capitalize()%>:</b> <%= get_email_name(@email, nil) %></p>
           <p class="text-sm text-base-250">
             <%= if @email.total_hours == 0 do %>
-              Send email immediately
+              <%= get_email_schedule_text(0, @pipeline.state, nil, @index, nil, nil) %>
             <% else %>
               <% %{calendar: calendar, count: count, sign: sign} = get_email_meta(@email.total_hours) %>
               <%= "Send email #{count} #{calendar} #{sign} #{String.downcase(@pipeline.name)}" %>
