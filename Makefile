@@ -78,3 +78,7 @@ check:
 
 iex: setup
 	iex -S mix phx.server
+
+full_setup:
+	mix full_setup
+	iex -S mix phx.server

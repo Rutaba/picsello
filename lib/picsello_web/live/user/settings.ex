@@ -23,8 +23,10 @@ defmodule PicselloWeb.Live.User.Settings do
   @impl true
   def mount(_params, _session, %{assigns: %{current_user: user}} = socket) do
     socket
+    |> assign(:current_user, Accounts.preload_address(user))
     |> assigns_changesets()
     |> assign(:promotion_code, Subscriptions.maybe_get_promotion_code?(user))
+    |> assign(:card_btn_class, "btn-primary px-9 mx-1")
     |> ok()
   end
 
@@ -45,7 +47,9 @@ defmodule PicselloWeb.Live.User.Settings do
       )
     )
     |> assign(
+      name_changeset: name_changeset(user),
       organization_name_changeset: organization_name_changeset(user),
+      organization_address_changeset: organization_address_changeset(user),
       phone_changeset: phone_changeset(user),
       time_zone_changeset: time_zone_changeset(user)
     )
@@ -142,14 +146,24 @@ defmodule PicselloWeb.Live.User.Settings do
     )
   end
 
+  defp name_changeset(user, params \\ %{}) do
+    user
+    |> User.name_changeset(params)
+  end
+
   defp phone_changeset(user, params \\ %{}) do
     user
     |> Onboardings.user_onboarding_phone_changeset(params)
   end
 
-  defp organization_name_changeset(user, params \\ %{}) do
-    user.organization
+  defp organization_name_changeset(%{organization: organization}, params \\ %{}) do
+    organization
     |> Organization.name_changeset(params)
+  end
+
+  defp organization_address_changeset(%{organization: organization}, params \\ %{}) do
+    organization
+    |> Organization.address_changeset(params)
   end
 
   defp time_zone_changeset(user, params \\ %{}) do
@@ -195,7 +209,7 @@ defmodule PicselloWeb.Live.User.Settings do
   def handle_event(
         "validate",
         %{
-          "action" => "update_name",
+          "action" => "update_organization_name",
           "organization" => organization_params
         },
         %{assigns: %{current_user: user}} = socket
@@ -207,6 +221,38 @@ defmodule PicselloWeb.Live.User.Settings do
     socket
     |> assign(:organization_name_changeset, changeset)
     |> assign_is_save_settings()
+    |> noreply()
+  end
+
+  @impl true
+  def handle_event(
+        "validate",
+        %{
+          "action" => "update_user_name",
+          "user" => user_params
+        },
+        %{assigns: %{current_user: user}} = socket
+      ) do
+    user
+    |> name_changeset(user_params)
+    |> Map.put(:action, :validate)
+    |> then(&assign(socket, :name_changeset, &1))
+    |> noreply()
+  end
+
+  @impl true
+  def handle_event(
+        "validate",
+        %{
+          "action" => "update_organization_address",
+          "organization" => organization_params
+        },
+        %{assigns: %{current_user: user}} = socket
+      ) do
+    user
+    |> organization_address_changeset(organization_params)
+    |> Map.put(:action, :validate)
+    |> then(&assign(socket, :organization_address_changeset, &1))
     |> noreply()
   end
 
@@ -299,7 +345,7 @@ defmodule PicselloWeb.Live.User.Settings do
   end
 
   @impl true
-  def handle_event("save", %{"action" => "update_name"}, socket) do
+  def handle_event("save", %{"action" => "update_organization_name"}, socket) do
     socket
     |> PicselloWeb.ConfirmationComponent.open(%{
       close_label: "Cancel",
@@ -309,6 +355,55 @@ defmodule PicselloWeb.Live.User.Settings do
       title: "Are you sure?",
       subtitle: "Changing your business name will update throughout Picsello."
     })
+    |> noreply()
+  end
+
+  @impl true
+  def handle_event(
+        "save",
+        %{"action" => "update_user_name", "user" => user_params},
+        %{assigns: %{current_user: user}} = socket
+      ) do
+    user
+    |> name_changeset(user_params)
+    |> Repo.update()
+    |> case do
+      {:ok, user} ->
+        socket
+        |> put_flash(:success, "User name changed successfully")
+        |> assign(current_user: user)
+        |> assign(:name_changeset, name_changeset(user))
+
+      {:error, changeset} ->
+        assign(socket, name_changeset: changeset)
+    end
+    |> noreply()
+  end
+
+  @impl true
+  def handle_event(
+        "save",
+        %{
+          "action" => "update_organization_address",
+          "organization" => organization_params
+        },
+        %{assigns: %{current_user: user}} = socket
+      ) do
+    user
+    |> organization_address_changeset(organization_params)
+    |> Repo.update()
+    |> case do
+      {:ok, organization} ->
+        socket
+        |> put_flash(:success, "Business address changed successfully")
+        |> assign(
+          :organization_address_changeset,
+          organization_address_changeset(%{organization: organization})
+        )
+
+      {:error, changeset} ->
+        assign(socket, organization_address_changeset: changeset)
+    end
     |> noreply()
   end
 
@@ -422,16 +517,20 @@ defmodule PicselloWeb.Live.User.Settings do
     assigns = assigns |> Enum.into(%{container_class: "", intro_id: nil})
 
     ~H"""
-    <div><h1 class="px-6 py-10 text-4xl font-bold center-container">Your Settings</h1></div>
+    <div class="flex items-center gap-1 center-container px-6 pt-10"><h1 class="text-4xl font-bold">Your Settings</h1></div>
 
     <div class={"flex flex-col flex-1 px-6 center-container #{@container_class}"} {if @intro_id, do: intro(@current_user, @intro_id), else: []}>
       <._settings_nav socket={@socket} live_action={@live_action} current_user={@current_user}>
-        <:link to={{:user_settings, :edit}} >Account</:link>
-        <:link to={{:package_templates, :index}} >Package Templates</:link>
-        <:link hide={!show_pricing_tab?()} to={{:pricing, :index}} >Gallery Store Pricing</:link>
-        <:link to={{:profile_settings, :index}} >Public Profile</:link>
-        <:link to={{:brand_settings, :index}} >Brand</:link>
-        <:link to={{:finance_settings, :index}} >Finances</:link>
+        <:link to={{:package_templates, :index}}>Packages</:link>
+        <:link to={{:contracts_index, :index}}>Contracts</:link>
+        <:link to={{:questionnaires_index, :index}}>Questionnaires</:link>
+        <:link to={{:calendar_settings, :settings}}>Calendar</:link>
+        <:link to={{:gallery_global_settings_index, :edit}}>Gallery</:link>
+        <:link to={{:finance_settings, :index}}>Finances</:link>
+        <:link to={{:brand_settings, :index}}>Brand</:link>
+        <:link hide={!show_pricing_tab?()} to={{:pricing, :index}}>Gallery Store Pricing</:link>
+        <:link to={{:profile_settings, :index}}>Public Profile</:link>
+        <:link to={{:user_settings, :edit}}>Account</:link>
       </._settings_nav>
       <hr />
 
@@ -447,7 +546,7 @@ defmodule PicselloWeb.Live.User.Settings do
     <div class={"mb-5 flex overflow-hidden border rounded-lg #{@class}"}>
       <div class="w-4 border-r bg-blue-planning-300" />
 
-      <div class={classes("flex flex-col justify-between w-full p-10", %{"pl-8 -ml-4" => @select})}>
+      <div class={classes("flex flex-col justify-between w-full p-10", %{"pl-14 -ml-4" => @select})}>
 
         <div class="flex flex-col items-start sm:items-center sm:flex-row">
           <h1 class="mb-2 mr-4 text-xl font-bold sm:text-2xl text-blue-planning-300"><%= @title %></h1>
@@ -472,11 +571,11 @@ defmodule PicselloWeb.Live.User.Settings do
 
   defp _settings_nav(assigns) do
     ~H"""
-    <ul class="flex py-4 -ml-4 overflow-auto font-bold text-blue-planning-300">
+    <ul class="flex py-4 overflow-auto font-bold text-blue-planning-300" {testid("settings-nav")}>
     <%= for %{to: {path, action}} = link <- @link, !Map.get(link, :hide) do %>
         <li>
-          <.nav_link title={path} :let={active} to={apply(Routes, :"#{path}_path", [@socket, action])} class="block rounded-lg whitespace-nowrap" active_class="bg-blue-planning-100 text-base-300" socket={@socket} live_action={@live_action}>
-            <div {if active, do: %{id: "active-settings-nav-link", phx_hook: "ScrollIntoView"}, else: %{}} class="px-4 py-3">
+          <.nav_link title={path} :let={active} to={apply(Routes, :"#{path}_path", [@socket, action])} class="block whitespace-nowrap border-b-4 border-transparent transition-all duration-300 hover:border-b-blue-planning-300" active_class="border-b-blue-planning-300" socket={@socket} live_action={@live_action}>
+            <div {if active, do: %{id: "active-settings-nav-link", phx_hook: "ScrollIntoView"}, else: %{}} class="px-3 py-2">
               <%= render_slot(link) %>
             </div>
           </.nav_link>

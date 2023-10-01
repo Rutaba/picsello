@@ -1,4 +1,5 @@
 defmodule Picsello.GalleryUnsortedPhotosTest do
+  @moduledoc false
   use Picsello.FeatureCase, async: true
 
   setup :onboarded
@@ -80,7 +81,7 @@ defmodule Picsello.GalleryUnsortedPhotosTest do
     |> visit("/galleries/#{gallery_id}/photos")
     |> assert_has(css(".item", count: photos_count))
     |> force_simulate_click(css("#photo-#{List.first(photo_ids)}-view"))
-    |> assert_has(css("span", text: "/images/print.png"))
+    |> assert_text("/images/print.png")
   end
 
   test "Unsorted Photos, delete signle photo", %{

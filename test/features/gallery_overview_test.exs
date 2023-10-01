@@ -1,4 +1,5 @@
 defmodule Picsello.GalleryOverviewTest do
+  @moduledoc false
   use Picsello.FeatureCase, async: false
 
   alias Picsello.Galleries

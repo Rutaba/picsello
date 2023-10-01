@@ -1,4 +1,5 @@
 defmodule Picsello.ClientOrdersTest do
+  @moduledoc false
   use Picsello.FeatureCase, async: true
   import Ecto.Query, only: [from: 2]
   import Money.Sigils

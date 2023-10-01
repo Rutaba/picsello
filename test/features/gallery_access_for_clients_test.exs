@@ -1,4 +1,5 @@
 defmodule Picsello.GalleryAccessForClientsTest do
+  @moduledoc false
   use Picsello.FeatureCase, async: true
 
   setup do
@@ -28,7 +29,7 @@ defmodule Picsello.GalleryAccessForClientsTest do
     |> click(button("Submit"))
     |> assert_has(
       css("p",
-        text: "Unfortunately, we do not recognize this password or incorrect email-format."
+        text: "Unfortunately, we don't recognize this password or email"
       )
     )
   end

@@ -595,26 +595,6 @@ defmodule PicselloWeb.GalleryLive.Photos.Index do
     |> noreply()
   end
 
-  @impl true
-  def handle_event("gallery-created", %{"galleryType" => "finals"}, socket) do
-    socket |> assign(:first_visit?, true) |> noreply()
-  end
-
-  @impl true
-  def handle_event("gallery-created", %{"galleryType" => type}, socket) do
-    {title, subtitle} = success_component_items()[type]
-
-    socket
-    |> PicselloWeb.SuccessComponent.open(%{
-      title: title,
-      subtitle: subtitle,
-      close_label: "Great!",
-      close_class: "bg-black text-white",
-      for: type
-    })
-    |> noreply()
-  end
-
   def handle_event(
         "folder-information",
         %{"folder" => folder, "sub_folders" => sub_folders},
@@ -1153,20 +1133,7 @@ defmodule PicselloWeb.GalleryLive.Photos.Index do
     """
   end
 
-  defp success_component_items() do
-    %{
-      "proofing" => {
-        "Set Up Your Proofing Gallery",
-        "Your proofing gallery is up and running! Your first proofing album lives within your gallery for this job."
-      },
-      "standard" => {
-        "Gallery Created!",
-        "Hooray! Your gallery has been created. You're now ready to upload photos."
-      }
-    }
-  end
-
-  defp grid_padding(%{photos_error_count: error_count, first_visit?: first_visit?}) do
+  defp grid_padding(error_count, first_visit?) do
     cond do
       first_visit? && error_count != 0 -> "pt-80 mt-4"
       first_visit? && error_count == 0 -> "pt-72"

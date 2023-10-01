@@ -15,7 +15,8 @@ defmodule Picsello.Organization do
     Accounts.User,
     Repo,
     Profiles.Profile,
-    GlobalSettings.GalleryProduct
+    GlobalSettings.GalleryProduct,
+    Address
   }
 
   defmodule EmailSignature do
@@ -30,6 +31,31 @@ defmodule Picsello.Organization do
     def changeset(signature, attrs) do
       signature
       |> cast(attrs, [:show_phone, :content])
+    end
+  end
+
+  defmodule PaymentOptions do
+    @moduledoc false
+    use Ecto.Schema
+    @primary_key false
+
+    embedded_schema do
+      field(:allow_cash, :boolean, default: false)
+      field(:allow_affirm, :boolean, default: false)
+      field(:allow_afterpay_clearpay, :boolean, default: false)
+      field(:allow_klarna, :boolean, default: false)
+      field(:allow_cashapp, :boolean, default: false)
+    end
+
+    def changeset(payment_options, attrs) do
+      payment_options
+      |> cast(attrs, [
+        :allow_cash,
+        :allow_affirm,
+        :allow_afterpay_clearpay,
+        :allow_klarna,
+        :allow_cashapp
+      ])
     end
   end
 
@@ -83,6 +109,7 @@ defmodule Picsello.Organization do
 
     embeds_one(:profile, Profile, on_replace: :update)
     embeds_one(:email_signature, EmailSignature, on_replace: :update)
+    embeds_one(:payment_options, PaymentOptions, on_replace: :update)
     embeds_one(:client_proposal, ClientProposal, on_replace: :update)
 
     has_many(:package_templates, Package, where: [package_template_id: nil])
@@ -95,6 +122,7 @@ defmodule Picsello.Organization do
     has_many(:organization_job_types, OrganizationJobType, on_replace: :delete)
     has_one(:global_setting, Picsello.GlobalSettings.Gallery)
     has_one(:user, User)
+    has_one(:address, Address, on_replace: :update)
 
     timestamps()
   end
@@ -111,6 +139,12 @@ defmodule Picsello.Organization do
     organization
     |> cast(attrs, [])
     |> cast_embed(:client_proposal)
+  end
+
+  def address_changeset(organization, attrs) do
+    organization
+    |> cast(attrs, [])
+    |> cast_assoc(:address, required: true)
   end
 
   def registration_changeset(organization, attrs, "" <> user_name),
@@ -179,6 +213,12 @@ defmodule Picsello.Organization do
     organization
     |> cast(attrs, [])
     |> cast_embed(:profile)
+  end
+
+  def payment_options_changeset(organization, attrs) do
+    organization
+    |> cast(attrs, [])
+    |> cast_embed(:payment_options)
   end
 
   def assign_stripe_account_changeset(%__MODULE__{} = organization, "" <> stripe_account_id),

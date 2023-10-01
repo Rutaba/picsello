@@ -66,6 +66,24 @@ defmodule PicselloWeb.ClientBookingEventLive.Shared do
     |> Enum.join(", ")
   end
 
+  def maybe_event_disable_or_archive(%{assigns: %{booking_event: booking_event}} = socket) do
+    status = Map.get(booking_event, :status)
+
+    case status do
+      :active ->
+        socket
+
+      status ->
+        socket
+        |> PicselloWeb.ConfirmationComponent.open(%{
+          title:
+            "Your reservation has #{status}. Contact your photographer for more information.",
+          icon: "warning-orange"
+        })
+    end
+    |> assign(status: status)
+  end
+
   defp format_date(date),
     do: "#{capitalize_month(Calendar.strftime(date, "%b"))} #{Calendar.strftime(date, "%d, %Y")}"
 
@@ -74,7 +92,7 @@ defmodule PicselloWeb.ClientBookingEventLive.Shared do
   defp formatted_subtitle(booking_event, %{download_count: count} = _package) do
     [
       if(count > 0,
-        do: "#{count} #{ngettext("image", "images", count)}"
+        do: "#{count} #{ngettext("image", "images", count)} included"
       ),
       "#{booking_event.duration_minutes} min session",
       dyn_gettext(booking_event.location)

@@ -1,4 +1,5 @@
 defmodule Picsello.UserFinancesTest do
+  @moduledoc false
   use Picsello.FeatureCase, async: true
   require Ecto.Query
   alias Picsello.{Organization, Repo}

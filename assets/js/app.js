@@ -77,6 +77,7 @@ import DatePicker from './hooks/date-picker';
 import BeforeUnload from './hooks/before-unload';
 import Cookies from 'js-cookie';
 import FolderUpload from './hooks/folder-upload';
+import SearchResultSelect from './hooks/search-result-select';
 import Tooltip from './hooks/tooltip';
 
 const Modal = {
@@ -181,40 +182,6 @@ const FinalCostInput = {
   },
 };
 
-const SetGalleryCookie = {
-  mounted() {
-    let galleryType = this.el.dataset.galleryType;
-    document.cookie = `GalleryType=${galleryType}; path=/`;
-  },
-};
-
-const GetGalleryCookie = {
-  mounted() {
-    const galleryType = getCookie('GalleryType');
-    document.cookie =
-      'GalleryType=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;';
-    if (galleryType != '') {
-      this.pushEvent('gallery-created', { galleryType: galleryType });
-    }
-  },
-};
-
-function getCookie(cname) {
-  let name = cname + '=';
-  let decodedCookie = decodeURIComponent(document.cookie);
-  let ca = decodedCookie.split(';');
-  for (let i = 0; i < ca.length; i++) {
-    let c = ca[i];
-    while (c.charAt(0) == ' ') {
-      c = c.substring(1);
-    }
-    if (c.indexOf(name) == 0) {
-      return c.substring(name.length, c.length);
-    }
-  }
-  return '';
-}
-
 const showWelcomeModal = {
   mounted() {
     const show = Cookies.get('show_welcome_modal');
@@ -247,6 +214,7 @@ const showAdminBanner = {
     handleAdminCookie();
   },
 };
+
 
 const Hooks = {
   AutoHeight,
@@ -292,11 +260,10 @@ const Hooks = {
   ClientGalleryCookie,
   CardStatus,
   FinalCostInput,
-  SetGalleryCookie,
-  GetGalleryCookie,
   showWelcomeModal,
   showAdminBanner,
-  FolderUpload
+  FolderUpload,
+  SearchResultSelect
 };
 
 window.addEventListener(`phx:download`, (event) => {
