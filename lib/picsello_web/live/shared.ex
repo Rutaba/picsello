@@ -266,7 +266,7 @@ defmodule PicselloWeb.Live.Shared do
   def make_popup(socket, opts) do
     socket
     |> ConfirmationComponent.open(%{
-      close_label: opts[:close_label] || "No, go back",
+      close_label: opts[:close_label] || "Cancel",
       confirm_event: opts[:event],
       class: "dialog-photographer",
       confirm_class: Keyword.get(opts, :confirm_class, "btn-warning"),

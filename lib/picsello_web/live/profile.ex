@@ -248,7 +248,7 @@ defmodule PicselloWeb.Live.Profile do
   def handle_event("confirm-delete-image", %{"image-field" => image_field}, socket) do
     socket
     |> PicselloWeb.ConfirmationComponent.open(%{
-      close_label: "No! Get me out of here",
+      close_label: "Cancel",
       confirm_event: "delete-" <> image_field,
       confirm_label: "Yes, delete",
       icon: "warning-orange",

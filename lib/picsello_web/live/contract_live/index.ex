@@ -193,8 +193,8 @@ defmodule PicselloWeb.Live.Contracts.Index do
     |> PicselloWeb.ConfirmationComponent.open(%{
       title: "Are you sure you want to archive this contract?",
       confirm_event: "archive-contract_" <> contract_id,
-      confirm_label: "Yes, archive the contract",
-      close_label: "No! Get me out of here",
+      confirm_label: "Yes, archive",
+      close_label: "Cancel",
       icon: "warning-orange"
     })
     |> noreply()
