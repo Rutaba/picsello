@@ -830,7 +830,7 @@ defmodule PicselloWeb.Live.Pricing.Calculator.Index do
 
         sendgrid_template(:calculator_template, opts)
         |> to({name, email})
-        |> from({"Picsello", "noreply@picsello.com"})
+        |> from({"Picsello", noreply_address()})
         |> deliver_later()
 
         socket
