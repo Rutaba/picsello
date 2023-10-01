@@ -101,7 +101,7 @@ defmodule PicselloWeb.GalleryLive.Photos.PhotoView do
         </a>
         <div class="relative justify-center flex flex-col h-screen w-screen p2 md:p-5">
           <img src={preview_url(@photo, proofing_client_view?: @is_proofing)} class="object-contain h-full flex-shrink-1 p2 md:p-5" loading="lazy">
-          <div class="flex gap-4 md:gap-10 flex-grow-1 w-full justify-between md:justify-center pb-2">
+          <div class="flex gap-4 md:gap-10 flex-grow-1 w-full justify-between md:justify-center md:pb-4 pb-8 px-4 md:px-0">
             <div phx-click="prev" phx-window-keyup="keydown" phx-target={@myself} class="bg-inherit border-2 flex items-center justify-center w-10 h-10 rounded-full">
               <.icon name="back" class="w-full h-full p-2 cursor-pointer text-base-100 stroke-2" />
             </div>
