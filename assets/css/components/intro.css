@@ -87,3 +87,7 @@
     box-shadow: 0 0 0 0 rgba(77, 170, 198, 0);
   }
 }
+
+.tippy-content {
+    overflow-wrap: break-word;
+}
