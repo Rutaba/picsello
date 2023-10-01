@@ -187,12 +187,12 @@ defmodule PicselloWeb.Live.ClientLive.Index do
 
     socket
     |> ConfirmationComponent.open(%{
-      close_label: "No, go back",
+      close_label: "Cancel",
       confirm_event: "unarchive_" <> to_string(client.id),
-      confirm_label: "Yes, Unarchive",
+      confirm_label: "Yes, unarchive",
       icon: "warning-orange",
-      title: "Unarchive Client?",
-      subtitle: "Are you sure you wish to Unarchive #{client.name || "this client"}?"
+      title: "Are you sure you want to unarchive this client?",
+      subtitle: "You'll be unarchiving #{client.name || "this client"}"
     })
     |> noreply()
   end
@@ -602,12 +602,12 @@ defmodule PicselloWeb.Live.ClientLive.Index do
     do:
       socket
       |> ConfirmationComponent.open(%{
-        close_label: "No, go back",
+        close_label: "Cancel",
         confirm_event: "archive_" <> to_string(client.id),
         confirm_label: "Yes, archive",
         icon: "warning-orange",
-        title: "Archive Client?",
-        subtitle: "Are you sure you wish to archive #{client.name || "this client"}?"
+        title: "Are you sure you want to archive this client?",
+        subtitle: "You'll be archiving #{client.name || "this client"}?"
       })
       |> noreply()
 
