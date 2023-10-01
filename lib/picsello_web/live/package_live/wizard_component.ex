@@ -639,10 +639,12 @@ defmodule PicselloWeb.PackageLive.WizardComponent do
               <% m = to_form(@multiplier) %>
 
               <div class="mt-4 px-6 pb-6">
-                <label class="flex items-center sm:mt-8 justify-self-start font-bold">
-                  <%= checkbox(m, :is_enabled, class: "w-5 h-5 mr-2 checkbox") %>
-
-                  Apply a discount or surcharge
+                <label class="flex sm:mt-8 justify-self-start font-bold">
+                  <%= checkbox(m, :is_enabled, class: "w-5 h-5 mr-2 mt-1 checkbox") %>
+                  <div class="flex flex-col">
+                    Apply a discount or surcharge
+                    <span class="font-normal text-sm text-base-250">Please select all the options to which the discount should be applied</span>
+                  </div>
                 </label>
 
                 <%= if m |> current() |> Map.get(:is_enabled) do %>
@@ -664,11 +666,13 @@ defmodule PicselloWeb.PackageLive.WizardComponent do
                     <div class={classes("flex items-center pl-0 sm:flex-row sm:pl-16", %{"text-base-250 cursor-none" => !print_credits_include_in_total})}>
                       <%= checkbox m, :discount_print_credits, class: "w-5 h-5 mr-2.5 checkbox", disabled: !print_credits_include_in_total %>
                       <%= label_for m, :discount_print_credits, label: "Apply to print credit", class: "font-normal" %>
+                      <.tooltip class="ml-1" content="<strong>To apply a print credit discount/surcharge</strong>: you need to add an amount to your print credits and check “Include in package total calculation”" id="include-print" />
                     </div>
                   <% end %>
                   <div class={classes("flex items-center pl-0 sm:flex-row sm:pl-16", %{"text-base-250 cursor-none" => !digitals_include_in_total})}>
                     <%= checkbox m, :discount_digitals, class: "w-5 h-5 mr-2.5 checkbox", disabled: !digitals_include_in_total %>
                     <%= label_for m, :discount_digitals, label: "Apply to digitals", class: "font-normal" %>
+                    <.tooltip class="ml-1" content="<strong>To apply a digital collection discount/surcharge</strong>: select “Clients don’t have to pay for some Digital Images”, add some images you want to provide them, and check “Include in package total calculation”" id="include-digital" />
                   </div>
                 <% end %>
               </div>
