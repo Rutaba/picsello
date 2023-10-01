@@ -17,7 +17,7 @@ defmodule PicselloWeb.Live.BrandSettings do
     <.settings_nav socket={@socket} live_action={@live_action} current_user={@current_user} intro_id="intro_settings_brand">
       <div class="flex flex-col justify-between flex-1 flex-grow-0 mt-5 sm:flex-row">
         <div>
-          <h1 class="text-2xl font-bold">Brand</h1>
+          <h1 class="text-2xl font-bold" {testid("settings-heading")}>Brand</h1>
 
           <p class="max-w-2xl my-2 text-base-250">
             Edit the look and feel of your business. Any change here will apply across your Picsello experience including, your Public Profile, Marketing emails, and Gallery.

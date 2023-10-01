@@ -1,35 +1,18 @@
-<div class="pt-6 px-6 py-2 center-container">
-  <div class="flex text-4xl items-center">
-    <.back_button to={Routes.home_path(@socket, :index)} class="lg:hidden"/>
-    <.crumbs class="text-sm text-base-250">
-      <:crumb to={Routes.home_path(@socket, :index)}>Home</:crumb>
-      <:crumb>Questionnaires</:crumb>
-    </.crumbs>
-  </div>
-
-  <hr class="mt-2 border-white" />
-
-  <div class="flex justify-between lg:mt-2 md:justify-start">
-    <div class="flex">
-      <div>
-        <.back_button to={Routes.home_path(@socket, :index)} class="hidden lg:flex mt-2"/>
-      </div>
-      
-      <div>
-        <h1 class="text-4xl font-bold">Questionnaires</h1>
-        <div class="max-w-4xl mt-2 text-base-250">
-          <p>Pre-written questionnaire templates are at the ready for you to use as-is, or, duplicate and modify as you see fit! Need to dig deeper with a client? You can easily create your own questionnaire to suit your specific shoot prep needs. <a href="https://support.picsello.com/article/143-custom-questionnaires" target="_blank" rel="noreferrer" class="underline text-blue-planning-300">Learn more here</a>.</p>
-        </div>  
+<.settings_nav socket={@socket} live_action={@live_action} current_user={@current_user} container_class="sm:pb-0 pb-28">
+  <div class="flex flex-col justify-between flex-1 mt-5 sm:flex-row">
+    <div>
+      <h1 class="text-2xl font-bold" {testid("settings-heading")}>Questionnaires</h1>
+      <div class="max-w-4xl mt-2 text-base-250">
+        <p>Pre-written questionnaire templates are at the ready for you to use as-is, or, duplicate and modify as you see fit! Need to dig deeper with a client? You can easily create your own questionnaire to suit your specific shoot prep needs. <a href="https://support.picsello.com/article/143-custom-questionnaires" target="_blank" rel="noreferrer" class="underline text-blue-planning-300">Learn more here</a>.</p>
       </div>
     </div>
-    <div class="fixed bottom-0 left-0 right-0 z-10 flex flex-shrink-0 w-full sm:p-0 p-6 mt-auto sm:mt-0 sm:bottom-auto sm:ml-auto sm:static sm:items-start sm:w-auto">
+    <div class="fixed bottom-0 left-0 right-0 z-20 flex flex-shrink-0 w-full p-6 mt-auto bg-white sm:mt-0 sm:bottom-auto sm:static sm:items-start sm:w-auto">
       <button type="button" title="create questionnaire" class="w-full md:w-auto btn-primary text-center" phx-click="create-questionnaire">Create questionnaire</button>
     </div>
   </div>
-  <hr class="mt-4 sm:mt-10" />
-</div>
 
-<div class="p-6 center-container">
+  <hr class="my-4" />
+
   <%= if show_intro?(@current_user, "intro_questionnaires") === "true" do %>
     <.empty_state_base wrapper_class="border rounded-lg p-4 mb-8" tour_embed="https://demo.arcade.software/J7LVwwRlcenKLiB7vKf3?embed" headline="Meet Questionnaires" eyebrow_text="Questionnaires Product Tour" body="Explore our defaults in the table below or create your own and add to your packages to get the info you need and save time." third_party_padding="calc(66.66666666666666% + 41px)" close_event="intro-close-questionnaires">
       <button type="button" title="create questionnaire" class="w-full md:w-auto btn-tertiary flex-shrink-0 text-center" phx-click="create-questionnaire">Create questionnaire</button>
@@ -64,4 +47,4 @@
       </div>
     </div>
   <% end %>
-</div>
+</.settings_nav>
