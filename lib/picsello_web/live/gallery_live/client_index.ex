@@ -50,7 +50,10 @@ defmodule PicselloWeb.GalleryLive.ClientIndex do
       active: false,
       gallery: gallery,
       digitals: %{},
-      credits: credits(gallery)
+      credits: credits(gallery),
+      meta_attrs: %{
+        robots: "noindex, nofollow"
+      }
     )
     |> ok()
   end
