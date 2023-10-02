@@ -11,6 +11,7 @@ defmodule PicselloWeb.GalleryLive.GlobalSettings.Index do
   alias Phoenix.PubSub
   require Logger
 
+  import PicselloWeb.Live.User.Settings, only: [settings_nav: 1]
   import PicselloWeb.JobLive.Shared, only: [assign_existing_uploads: 2]
   import Picsello.Utils, only: [products_currency: 0]
 
@@ -84,7 +85,7 @@ defmodule PicselloWeb.GalleryLive.GlobalSettings.Index do
 
     socket
     |> PicselloWeb.ConfirmationComponent.open(%{
-      close_label: "No, Go back",
+      close_label: "Cancel",
       confirm_event: "set_expire",
       confirm_label: "Yes, set expiration date",
       icon: "warning-orange",
@@ -103,7 +104,7 @@ defmodule PicselloWeb.GalleryLive.GlobalSettings.Index do
       ) do
     socket
     |> PicselloWeb.ConfirmationComponent.open(%{
-      close_label: "No, go back",
+      close_label: "Cancel",
       confirm_event: "never_expire",
       confirm_label: "Yes, set galleries to never expire",
       icon: "warning-orange",
@@ -117,7 +118,7 @@ defmodule PicselloWeb.GalleryLive.GlobalSettings.Index do
   def handle_event("delete", _, socket) do
     socket
     |> PicselloWeb.ConfirmationComponent.open(%{
-      close_label: "No, go back",
+      close_label: "Cancel",
       confirm_event: "delete_watermarks",
       confirm_label: "Yes, delete",
       icon: "warning-orange",

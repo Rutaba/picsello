@@ -101,8 +101,8 @@ defmodule PicselloWeb.GalleryLive.Photos.PhotoView do
         </a>
         <div class="relative justify-center flex flex-col h-screen w-screen p2 md:p-5">
           <img src={preview_url(@photo, proofing_client_view?: @is_proofing)} class="object-contain h-full flex-shrink-1 p2 md:p-5" loading="lazy">
-          <div class="flex gap-4 md:gap-10 flex-grow-1 w-full justify-between md:justify-center pb-2">
-            <div phx-click="prev" phx-window-keyup="keydown" phx-target={@myself} class="bg-inherit border-2 flex items-center justify-center w-10 h-10 rounded-full">
+          <div class="flex gap-4 md:gap-10 flex-grow-1 w-full justify-between md:justify-center md:pb-4 pb-8 px-8 md:px-0">
+            <div phx-click="prev" phx-window-keyup="keydown" phx-target={@myself} class="bg-inherit border-2 flex items-center justify-center w-10 h-10 rounded-full flex-shrink-0">
               <.icon name="back" class="w-full h-full p-2 cursor-pointer text-base-100 stroke-2" />
             </div>
             <div class="flex items-center gap-2">
@@ -116,9 +116,11 @@ defmodule PicselloWeb.GalleryLive.Photos.PhotoView do
                   </div>
                 </button>
               <% end %>
-              <h4 class="text-base-200 font-light text-sm items-center flex-shrink-0"><%= @photo.name %></h4>
+              <h4 class="text-base-200 font-light text-sm items-center flex-shrink-0 truncate sm:max-w-none max-w-[120px] underline sm:no-underline cursor-pointer" {testid("lightbox-photo-name")} phx-hook="Tooltip" id="filename" data-hint={@photo.name}>
+                <%= @photo.name %>
+              </h4>
             </div>
-            <div phx-click="next" phx-target={@myself} class="bg-inherit border-2 flex items-center justify-center w-10 h-10 rounded-full">
+            <div phx-click="next" phx-target={@myself} class="bg-inherit border-2 flex items-center justify-center w-10 h-10 rounded-full flex-shrink-0">
               <.icon name="forth" class="w-full h-full p-2 cursor-pointer text-base-100 stroke-2" />
             </div>
           </div>

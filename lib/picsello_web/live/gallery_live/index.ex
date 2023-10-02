@@ -103,7 +103,7 @@ defmodule PicselloWeb.GalleryLive.Index do
       ) do
     socket
     |> PicselloWeb.ConfirmationComponent.open(%{
-      close_label: "No, go back",
+      close_label: "Cancel",
       confirm_event: "delete_gallery",
       confirm_label: "Yes, delete",
       icon: "warning-orange",
@@ -204,9 +204,7 @@ defmodule PicselloWeb.GalleryLive.Index do
 
   @impl true
   def handle_info({:redirect_to_gallery, gallery}, socket) do
-    socket
-    |> push_redirect(to: new_gallery_path(socket, gallery))
-    |> noreply()
+    PicselloWeb.Live.Shared.handle_info({:redirect_to_gallery, gallery}, socket)
   end
 
   def image_item(%{gallery: gallery} = assigns) do

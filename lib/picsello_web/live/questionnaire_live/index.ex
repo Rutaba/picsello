@@ -1,8 +1,10 @@
 defmodule PicselloWeb.Live.Questionnaires.Index do
   @moduledoc false
   use PicselloWeb, :live_view
+
   alias Picsello.{Questionnaire}
-  import PicselloWeb.Live.Calendar.Shared, only: [back_button: 1]
+
+  import PicselloWeb.Live.User.Settings, only: [settings_nav: 1]
   import Picsello.Onboardings, only: [save_intro_state: 3]
 
   @impl true

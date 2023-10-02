@@ -56,7 +56,7 @@ defmodule Picsello.Repo.Migrations.CreateJobStatusesView do
   """
 
   def up do
-    execute(@view)
+    # execute(@view)
   end
 
   def down do

@@ -42,7 +42,7 @@ defmodule PicselloWeb.HomeLive.Index do
   import PicselloWeb.Gettext, only: [ngettext: 3]
 
   import PicselloWeb.GalleryLive.Shared,
-    only: [new_gallery_path: 2, clip_board: 2, cover_photo_url: 1, disabled?: 1]
+    only: [clip_board: 2, cover_photo_url: 1, disabled?: 1]
 
   import Ecto.Query
   import Ecto.Changeset, only: [get_change: 2]
@@ -446,7 +446,7 @@ defmodule PicselloWeb.HomeLive.Index do
       ) do
     socket
     |> PicselloWeb.ConfirmationComponent.open(%{
-      close_label: "No, go back",
+      close_label: "Cancel",
       confirm_event: "delete_gallery",
       confirm_label: "Yes, delete",
       icon: "warning-orange",
@@ -512,9 +512,7 @@ defmodule PicselloWeb.HomeLive.Index do
 
   @impl true
   def handle_info({:redirect_to_gallery, gallery}, socket) do
-    socket
-    |> push_redirect(to: new_gallery_path(socket, gallery))
-    |> noreply()
+    PicselloWeb.Live.Shared.handle_info({:redirect_to_gallery, gallery}, socket)
   end
 
   @impl true
@@ -1355,7 +1353,7 @@ defmodule PicselloWeb.HomeLive.Index do
       "missing-payment-method" =>
         {!Picsello.Subscriptions.subscription_payment_method?(current_user), org_card},
       "create-lead" => {leads_empty?, org_card},
-      "black-friday" => {Subscriptions.monthly?(current_user.subscription), org_card}
+      "black-friday" => {Subscriptions.interval(current_user.subscription) == "month", org_card}
     }
 
     case params |> Map.fetch(concise_name) do

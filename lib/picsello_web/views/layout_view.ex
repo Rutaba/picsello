@@ -152,7 +152,8 @@ defmodule PicselloWeb.LayoutView do
             icon: "calendar",
             path: Routes.calendar_booking_events_index_path(socket, :index)
           },
-          %{title: "Leads", icon: "three-people", path: Routes.job_path(socket, :leads)}
+          %{title: "Leads", icon: "three-people", path: Routes.job_path(socket, :leads)},
+          %{title: "Marketing", icon: "bullhorn", path: Routes.marketing_path(socket, :index)}
         ]
       },
       %{
@@ -186,17 +187,6 @@ defmodule PicselloWeb.LayoutView do
         ]
       },
       %{
-        heading: "Market",
-        items: [
-          %{
-            title: "Public Profile",
-            icon: "website",
-            path: Routes.profile_settings_path(socket, :index)
-          },
-          %{title: "Marketing", icon: "bullhorn", path: Routes.marketing_path(socket, :index)}
-        ]
-      },
-      %{
         heading: "Settings",
         items: [
           %{
@@ -215,6 +205,11 @@ defmodule PicselloWeb.LayoutView do
             path: Routes.questionnaires_index_path(socket, :index)
           },
           %{
+            title: "Calendar",
+            icon: "calendar",
+            path: Routes.calendar_settings_path(socket, :settings)
+          },
+          %{
             title: "Gallery",
             icon: "gallery-settings",
             path: Routes.gallery_global_settings_index_path(socket, :edit)
@@ -228,6 +223,11 @@ defmodule PicselloWeb.LayoutView do
             title: "Brand",
             icon: "brand",
             path: Routes.brand_settings_path(socket, :index)
+          },
+          %{
+            title: "Public Profile",
+            icon: "website",
+            path: Routes.profile_settings_path(socket, :index)
           },
           %{
             title: "Account",
@@ -266,6 +266,11 @@ defmodule PicselloWeb.LayoutView do
         title: "Questionnaires",
         icon: "questionnaire",
         path: Routes.questionnaires_index_path(socket, :index)
+      },
+      %{
+        title: "Calendar",
+        icon: "calendar",
+        path: Routes.calendar_settings_path(socket, :settings)
       },
       %{
         title: "Gallery",
@@ -472,9 +477,9 @@ defmodule PicselloWeb.LayoutView do
 
         <.subscription_ending_soon type="header" socket={@socket} current_user={@current_user} />
 
-        <div id="initials-menu" class="relative flex flex-row justify-end cursor-pointer" phx-update="ignore" phx-hook="ToggleContent">
+        <div id="initials-menu" class="relative flex flex-row justify-end cursor-pointer" phx-hook="ToggleContent">
           <%= if @current_user do %>
-            <div class="absolute top-0 right-0 flex flex-col items-end hidden cursor-default text-base-300 toggle-content">
+            <div phx-update="ignore" id="initials-menu-inner-content" class="absolute top-0 right-0 flex flex-col items-end hidden cursor-default text-base-300 toggle-content">
               <div class="p-4 -mb-2 bg-white shadow-md cursor-pointer text-base-300">
                 <.icon name="close-x" class="w-4 h-4 stroke-current stroke-2" />
               </div>

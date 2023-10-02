@@ -2,7 +2,7 @@ defmodule PicselloWeb.Live.Contracts.Index do
   @moduledoc false
   use PicselloWeb, :live_view
 
-  import PicselloWeb.Live.Calendar.Shared, only: [back_button: 1]
+  import PicselloWeb.Live.User.Settings, only: [settings_nav: 1]
   import Picsello.Onboardings, only: [save_intro_state: 3]
 
   import PicselloWeb.Shared.CustomPagination,
@@ -193,8 +193,8 @@ defmodule PicselloWeb.Live.Contracts.Index do
     |> PicselloWeb.ConfirmationComponent.open(%{
       title: "Are you sure you want to archive this contract?",
       confirm_event: "archive-contract_" <> contract_id,
-      confirm_label: "Yes, archive the contract",
-      close_label: "No! Get me out of here",
+      confirm_label: "Yes, archive",
+      close_label: "Cancel",
       icon: "warning-orange"
     })
     |> noreply()
@@ -320,7 +320,7 @@ defmodule PicselloWeb.Live.Contracts.Index do
 
     ~H"""
       <div class="flex flex-col w-full lg:w-auto mr-2 mb-3 lg:mb-0">
-        <h1 class="font-extrabold text-sm flex flex-col whitespace-nowrap"><%= @title %></h1>
+        <h1 class="font-extrabold text-sm flex flex-col whitespace-nowrap mb-1"><%= @title %></h1>
         <div class="flex">
           <div id={@id} class="relative rounded-lg w-full lg:w-48 border-grey border p-2 cursor-pointer") data-offset-y="5" phx-hook="Select">
             <div {testid("dropdown_#{@id}")} class="flex flex-row items-center border-gray-700">

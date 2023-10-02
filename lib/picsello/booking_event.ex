@@ -89,6 +89,7 @@ defmodule Picsello.BookingEvent do
     field :address, :string
     field :thumbnail_url, :string
     field :show_on_profile?, :boolean, default: false
+    field :include_questionnaire?, :boolean, default: true
     field(:status, Ecto.Enum, values: [:active, :disabled, :archive])
     belongs_to :package_template, Picsello.Package
     belongs_to :organization, Picsello.Organization
@@ -205,5 +206,23 @@ defmodule Picsello.BookingEvent do
     else
       changeset |> add_error(:dates, "can't be the same")
     end
+  end
+
+  defp update_package_template(booking_event, attrs) do
+    booking_event
+    |> cast(attrs, [:package_template_id, :include_questionnaire?])
+    |> validate_required([:package_template_id])
+  end
+
+  defp update_customize(booking_event, attrs) do
+    booking_event
+    |> cast(attrs, [
+      :description,
+      :thumbnail_url
+    ])
+    |> validate_required([
+      :description,
+      :thumbnail_url
+    ])
   end
 end

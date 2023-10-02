@@ -277,6 +277,36 @@ defmodule PicselloWeb.GalleryLive.Shared do
     )
   end
 
+  defp editor_urls(
+         %{assigns: %{gallery_client: gallery_client, album: %Album{is_finals: true} = album}} =
+           socket
+       ) do
+    [
+      complete_url:
+        Routes.gallery_client_album_url(socket, :proofing_album, album.client_link_hash) <>
+          "?editorId=%EDITOR_ID%",
+      secondary_url:
+        Routes.gallery_client_album_url(socket, :proofing_album, album.client_link_hash) <>
+          "?editorId=%EDITOR_ID%&clone=true&clientEmail=#{gallery_client.email}",
+      cancel_url: Routes.gallery_client_album_url(socket, :proofing_album, album.client_link_hash)
+    ]
+  end
+
+  defp editor_urls(
+         %{assigns: %{gallery_client: gallery_client, gallery: %Galleries.Gallery{} = gallery}} =
+           socket
+       ) do
+    [
+      complete_url:
+        Routes.gallery_client_index_url(socket, :index, gallery.client_link_hash) <>
+          "?editorId=%EDITOR_ID%",
+      secondary_url:
+        Routes.gallery_client_index_url(socket, :index, gallery.client_link_hash) <>
+          "?editorId=%EDITOR_ID%&clone=true&clientEmail=#{gallery_client.email}",
+      cancel_url: Routes.gallery_client_index_url(socket, :index, gallery.client_link_hash)
+    ]
+  end
+
   def get_all_gallery_albums(gallery_id) do
     case client_liked_album(gallery_id) do
       nil -> Albums.get_albums_by_gallery_id(gallery_id)

@@ -451,4 +451,9 @@ defmodule Picsello.Accounts do
         {:error, changeset}
     end
   end
+
+  @spec preload_address(User.t()) :: User.t()
+  def preload_address(%User{} = user) do
+    Repo.preload(user, [organization: :address], force: true)
+  end
 end

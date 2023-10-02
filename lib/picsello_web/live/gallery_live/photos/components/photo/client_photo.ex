@@ -30,5 +30,5 @@ defmodule PicselloWeb.GalleryLive.Photos.Photo.ClientPhoto do
   end
 
   defp wrapper_style(width, %{aspect_ratio: aspect_ratio}),
-    do: "width: #{width}px;height: #{width / aspect_ratio}px;"
+    do: "height: #{width / aspect_ratio}px;"
 end

@@ -121,7 +121,9 @@ defmodule Picsello.FeatureCase do
 
     def wait_for_enabled_submit_button(session, opts \\ []) do
       try do
-        session |> assert_has(css("button:not(:disabled)[type='submit']", opts))
+        session
+        |> sleep(100)
+        |> assert_has(css("button:not(:disabled)[type='submit']", opts))
       rescue
         _ ->
           session

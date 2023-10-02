@@ -14,13 +14,13 @@ defmodule PicselloWeb.GalleryLive.Photos.Photo.Shared do
 
   def photo(%{target: false} = assigns) do
     ~H"""
-    <img src={@url} class="relative" />
+    <img src={@url} class="relative" loading="lazy" />
     """
   end
 
   def photo(assigns) do
     ~H"""
-    <img phx-click="click" phx-target={@target} phx-value-preview={@preview} phx-value-preview_photo_id={@photo_id} src={@url} class="relative" />
+    <img phx-click="click" phx-target={@target} phx-value-preview={@preview} phx-value-preview_photo_id={@photo_id} src={@url} class="relative" loading="lazy" />
     """
   end
 end
