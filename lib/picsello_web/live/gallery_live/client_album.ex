@@ -30,7 +30,10 @@ defmodule PicselloWeb.GalleryLive.ClientAlbum do
   @impl true
   def handle_params(%{"album_id" => album_id}, _, socket) do
     socket
-    |> assign(:album, %{is_proofing: false, is_finals: false} = Albums.get_album!(album_id))
+    |> assign(
+      :album,
+      %{is_proofing: false, is_finals: false} = Albums.get_album!(album_id)
+    )
     |> assign(:is_proofing, false)
     |> assigns()
   end
@@ -240,6 +243,7 @@ defmodule PicselloWeb.GalleryLive.ClientAlbum do
       favorites_count: Galleries.gallery_favorites_count(gallery),
       favorites_filter: false,
       gallery: gallery,
+      album_order_photos: Orders.get_all_purchased_photos_in_album(gallery, album.id),
       album: album,
       photos_count: Galleries.get_album_photo_count(gallery.id, album.id),
       page: 0,
@@ -258,10 +262,10 @@ defmodule PicselloWeb.GalleryLive.ClientAlbum do
 
   defp top_section(%{is_proofing: false} = assigns) do
     ~H"""
-    <%= if @album.is_finals do %>
-      <div class="text-lg font-bold lg:text-3xl">Your Photos</div>
-      <div class="flex flex-col lg:flex-row justify-between lg:items-center my-4 w-full">
-        <div class="flex items-center mt-4">
+    <div class="text-lg font-bold lg:text-3xl">Your Photos</div>
+    <div class="flex flex-col lg:flex-row justify-between lg:items-center my-4 w-full">
+      <div class="flex items-center mt-4">
+        <%= if !Enum.empty?(@album_order_photos) || @album.is_finals do %>
           <.button
           element="a"
           icon="download"
@@ -271,23 +275,17 @@ defmodule PicselloWeb.GalleryLive.ClientAlbum do
           href={Routes.gallery_downloads_path(
               @socket, :download_all,
               @gallery.client_link_hash,
-              photo_ids: @album.photos |> Enum.map(& &1.id) |> Enum.join(","),
+              photo_ids: if @album.is_finals do generate_download_photo_ids(@album.photos) else generate_download_photo_ids(@album_order_photos) end,
               is_client: true
           )}>
-          Download all photos
+          Download purchased photos
           </.button>
+        <% end %>
 
-          <.photos_count photos_count={@photos_count} class="ml-4" />
-        </div>
-        <.toggle_filter title="Show favorites only" event="toggle_favorites" applied?={@favorites_filter} album_favorites_count={@album_favorites_count}/>
+        <.photos_count photos_count={@photos_count} class="ml-4" />
       </div>
-    <% else %>
-      <div class="flex flex-col sm:flex-row sm:justify-between sm:items-end">
-        <div class="text-lg font-bold lg:text-3xl">Your Photos</div>
-        <.toggle_filter title="Show favorites only" event="toggle_favorites" applied?={@favorites_filter} album_favorites_count={@album_favorites_count}/>
-      </div>
-      <.photos_count {assigns} class="mb-8 lg:mb-16" />
-    <% end %>
+      <.toggle_filter title="Show favorites only" event="toggle_favorites" applied?={@favorites_filter} album_favorites_count={@album_favorites_count}/>
+    </div>
     """
   end
 
@@ -363,5 +361,11 @@ defmodule PicselloWeb.GalleryLive.ClientAlbum do
       </div>
     <% end %>
     """
+  end
+
+  defp generate_download_photo_ids(photos) do
+    photos
+    |> Enum.map(& &1.id)
+    |> Enum.join(",")
   end
 end
