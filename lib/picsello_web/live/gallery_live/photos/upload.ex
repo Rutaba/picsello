@@ -207,6 +207,12 @@ defmodule PicselloWeb.GalleryLive.Photos.Upload do
       |> Picsello.Repo.preload(:album)
       |> start_photo_processing(gallery)
 
+      PubSub.broadcast(
+        Picsello.PubSub,
+        "photo_insert:#{gallery.id}",
+        {:photo_insert, photo, entry}
+      )
+
       socket
       |> assign(
         uploaded_files: uploaded_files + 1,

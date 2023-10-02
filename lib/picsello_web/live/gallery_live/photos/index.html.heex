@@ -256,9 +256,9 @@
                     show_products: @show_products
                   %>
                 <% end %>
-                <.photo_loader inprogress_photos={@inprogress_photos} url={@url} />
+                  <.photo_loader inprogress_photos={@inprogress_photos} url={@url} />
               </div>
-
+           
               <div class="hidden">
                 <div id="selected-mode" class={@select_mode}></div>
                 <div id="photo-update-listener" phx-hook="PhotoUpdate" data-photo-updates={@photo_updates}></div>

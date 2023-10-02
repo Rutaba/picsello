@@ -755,8 +755,6 @@ defmodule PicselloWeb.GalleryLive.Photos.Index do
         {:photo_processed, _, photo},
         %{assigns: %{total_progress: total_progress}} = socket
       ) do
-    send(self(), :invalid_preview)
-
     if total_progress == 100 || total_progress == 0 do
       photo_update =
         %{
@@ -768,7 +766,9 @@ defmodule PicselloWeb.GalleryLive.Photos.Index do
       socket |> assign(:photo_updates, photo_update)
     else
       socket
+      |> push_event("remove_preview_loader", %{photo_id: photo.id})
     end
+    |> assign_invalid_preview_images()
     |> noreply()
   end
 
@@ -944,14 +944,37 @@ defmodule PicselloWeb.GalleryLive.Photos.Index do
   end
 
   @re_call_time 5000
-  def handle_info(:invalid_preview, %{assigns: %{gallery: gallery}} = socket) do
+  def handle_info(:invalid_preview, socket) do
     Process.send_after(self(), :invalid_preview, @re_call_time)
 
+    socket
+    |> assign_invalid_preview_images
+    |> noreply()
+  end
+
+  def handle_info({:photo_insert, photo, entry}, socket) do
+    send(self(), {:process_photo_insert, photo, entry})
+
+    socket
+    |> assign(:update_mode, "ignore")
+    |> noreply()
+  end
+
+  def handle_info({:process_photo_insert, photo, entry}, socket) do
+    socket
+    |> push_event("apply_preview_loader", %{
+      id: "photo-loader-#{entry.uuid}",
+      url: Picsello.Photos.original_url(photo),
+      photo_id: photo.id
+    })
+    |> noreply
+  end
+
+  defp assign_invalid_preview_images(%{assigns: %{gallery: gallery}} = socket) do
     invalid_preview_photos = Galleries.get_gallery_photos(gallery.id, invalid_preview: true)
 
     socket
     |> assign(invalid_preview_photos: invalid_preview_photos)
-    |> noreply()
   end
 
   defp assigns(socket, gallery_id, album \\ nil) do
@@ -963,6 +986,7 @@ defmodule PicselloWeb.GalleryLive.Photos.Index do
       PubSub.subscribe(Picsello.PubSub, "photo_uploaded:#{gallery_id}")
       PubSub.subscribe(Picsello.PubSub, "uploading:#{gallery_id}")
       PubSub.subscribe(Picsello.PubSub, "invalid_preview:#{gallery_id}")
+      PubSub.subscribe(Picsello.PubSub, "photo_insert:#{gallery_id}")
 
       send(self(), :invalid_preview)
     end
@@ -1048,11 +1072,10 @@ defmodule PicselloWeb.GalleryLive.Photos.Index do
     |> Repo.transaction()
     |> then(fn
       {:ok, %{update_gallery: gallery, delete_photos: {count, _}}} ->
-        send(self(), :invalid_preview)
-
         socket
         |> assign(:gallery, gallery)
         |> assign(:selected_photos, [])
+        |> assign_invalid_preview_images()
         |> push_event("remove_items", %{"ids" => selected_photos})
         |> push_event("select_mode", %{"mode" => "selected_none"})
         |> put_flash(
@@ -1148,10 +1171,16 @@ defmodule PicselloWeb.GalleryLive.Photos.Index do
 
   defp photo_loader(assigns) do
     ~H"""
-    <%= for {_, index} <- Enum.with_index(@inprogress_photos) do%>
-      <div id={"photo-loader-#{index}"} class="item h-[130px] photo-loader flex bg-gray-200">
+    <%= for entry <- @inprogress_photos do%>
+      <div id={"photo-loader-#{entry.uuid}"} class="item h-[130px] photo-loader flex bg-gray-200">
         <div class="relative cursor-pointer item-content preview">
           <div class="galleryLoader">
+            <div id={"photo-loader-#{entry.uuid}-inner"} class="PhotoLoader grid place-items-center text-white absolute z-10 top-0 left-0 h-full w-full bg-gray-600/30 backdrop-blur-[1px] hidden">
+                <div class="flex gap-2 justify-center p-1 bg-white rounded-full">
+                    <.icon class="animate-spin w-5 h-5 text-blue-planning-300" name="loader"/>
+                    <p class="text-blue-planning-300 text-xs font-bold text-center">Generating preview...</p>
+                </div>
+            </div>
             <img src={@url} class="relative" />
           </div>
         </div>

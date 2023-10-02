@@ -290,18 +290,7 @@ defmodule Picsello.Galleries do
         %{watermark: watermark} = Repo.get!(Gallery, id) |> Repo.preload(:watermark)
         datetime = DateTime.add(DateTime.utc_now(), -@mseonds_to_consider_photos_invalid, :second)
 
-        if watermark do
-          dynamic(
-            [p],
-            (is_nil(p.preview_url) or is_nil(p.watermarked_preview_url)) and
-              p.updated_at < ^datetime and ^conditions
-          )
-        else
-          dynamic(
-            [p],
-            is_nil(p.preview_url) and p.updated_at < ^datetime and ^conditions
-          )
-        end
+        invalid_preview_conditions(watermark, datetime, conditions)
 
       _, conditions ->
         conditions
@@ -313,6 +302,21 @@ defmodule Picsello.Galleries do
       conditons ->
         conditons
     end)
+  end
+
+  defp invalid_preview_conditions(watermark, datetime, conditions) do
+    if watermark do
+      dynamic(
+        [p],
+        (is_nil(p.preview_url) or is_nil(p.watermarked_preview_url)) and
+          p.updated_at < ^datetime and ^conditions
+      )
+    else
+      dynamic(
+        [p],
+        is_nil(p.preview_url) and p.updated_at < ^datetime and ^conditions
+      )
+    end
   end
 
   @spec get_all_album_photos(
