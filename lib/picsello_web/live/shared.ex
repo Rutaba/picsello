@@ -824,16 +824,16 @@ defmodule PicselloWeb.Live.Shared do
     end
   end
 
-  defp get_template(%{assigns: %{job: job}}) do
-    Questionnaire.for_job(job)
-  end
-
-  defp get_template(%{assigns: %{package: package}}) do
-    Questionnaire.for_package(package)
   def handle_info({:redirect_to_gallery, gallery}, socket) do
     socket
     |> put_flash(:success, "Gallery created—You’re now ready to upload photos!")
     |> push_redirect(to: new_gallery_path(socket, gallery))
     |> noreply()
   end
+
+  defp get_template(%{assigns: %{job: job}}),
+    do: Questionnaire.for_job(job)
+
+  defp get_template(%{assigns: %{package: package}}),
+    do: Questionnaire.for_package(package)
 end

@@ -439,6 +439,7 @@ defmodule Picsello.BookingEventDates do
   # Sets default values for a changeset representing a `BookingEventDate` record with repeat dates.
   defp set_defaults_for_repeat_dates_changeset(booking_event) do
     now = NaiveDateTime.utc_now() |> NaiveDateTime.truncate(:second)
+
     booking_event
     |> Changeset.change(%{
       calendar: "",

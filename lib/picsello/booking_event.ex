@@ -150,12 +150,6 @@ defmodule Picsello.BookingEvent do
     booking_event |> change(status: :active)
   end
 
-  def update_package_template(booking_event, attrs) do
-    booking_event
-    |> cast(attrs, [:package_template_id])
-    |> validate_required([:package_template_id])
-  end
-
   def update_customize(booking_event, attrs) do
     booking_event
     |> cast(attrs, [
@@ -168,6 +162,12 @@ defmodule Picsello.BookingEvent do
       :description,
       :thumbnail_url
     ])
+  end
+
+  def update_package_template(booking_event, attrs) do
+    booking_event
+    |> cast(attrs, [:package_template_id, :include_questionnaire?])
+    |> validate_required([:package_template_id])
   end
 
   defp update_details(booking_event, attrs) do
@@ -206,23 +206,5 @@ defmodule Picsello.BookingEvent do
     else
       changeset |> add_error(:dates, "can't be the same")
     end
-  end
-
-  defp update_package_template(booking_event, attrs) do
-    booking_event
-    |> cast(attrs, [:package_template_id, :include_questionnaire?])
-    |> validate_required([:package_template_id])
-  end
-
-  defp update_customize(booking_event, attrs) do
-    booking_event
-    |> cast(attrs, [
-      :description,
-      :thumbnail_url
-    ])
-    |> validate_required([
-      :description,
-      :thumbnail_url
-    ])
   end
 end

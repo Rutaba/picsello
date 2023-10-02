@@ -27,7 +27,7 @@ defmodule PicselloWeb.JobLive.Show do
     ]
 
   import PicselloWeb.Shared.EditNameComponent, only: [edit_name_input: 1]
-  import PicselloWeb.GalleryLive.Shared, only: [expired_at: 1, new_gallery_path: 2]
+  import PicselloWeb.GalleryLive.Shared, only: [expired_at: 1]
 
   @upload_options [
     accept: ~w(.pdf .docx .txt),

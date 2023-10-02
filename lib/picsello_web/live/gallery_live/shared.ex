@@ -1171,30 +1171,6 @@ defmodule PicselloWeb.GalleryLive.Shared do
     Routes.gallery_client_album_url(socket, :proofing_album, album.client_link_hash)
   end
 
-  defp editor_urls(%{assigns: %{album: %Album{is_finals: true} = album}} = socket) do
-    [
-      complete_url:
-        Routes.gallery_client_album_url(socket, :proofing_album, album.client_link_hash) <>
-          "?editorId=%EDITOR_ID%",
-      secondary_url:
-        Routes.gallery_client_album_url(socket, :proofing_album, album.client_link_hash) <>
-          "?editorId=%EDITOR_ID%&clone=true",
-      cancel_url: Routes.gallery_client_album_url(socket, :proofing_album, album.client_link_hash)
-    ]
-  end
-
-  defp editor_urls(%{assigns: %{gallery: %Galleries.Gallery{} = gallery}} = socket) do
-    [
-      complete_url:
-        Routes.gallery_client_index_url(socket, :index, gallery.client_link_hash) <>
-          "?editorId=%EDITOR_ID%",
-      secondary_url:
-        Routes.gallery_client_index_url(socket, :index, gallery.client_link_hash) <>
-          "?editorId=%EDITOR_ID%&clone=true",
-      cancel_url: Routes.gallery_client_index_url(socket, :index, gallery.client_link_hash)
-    ]
-  end
-
   defp tracking_info(%{whcc_order: %{orders: sub_orders}}, %{editor_id: editor_id}) do
     Enum.find_value(sub_orders, fn
       %{editor_ids: editor_ids, whcc_tracking: tracking} ->
