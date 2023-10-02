@@ -1,4 +1,5 @@
 defmodule Picsello.GalleryPhotosDownloadTest do
+  @moduledoc false
   use Picsello.FeatureCase, async: true
   import Money.Sigils
 
@@ -27,25 +28,14 @@ defmodule Picsello.GalleryPhotosDownloadTest do
 
   test "downloads single photo", %{
     session: session,
-    gallery: %{id: gallery_id, client_link_hash: client_link_hash},
+    gallery: %{id: gallery_id},
     photo_ids: photo_ids
   } do
-    link =
-      Routes.gallery_downloads_path(
-        PicselloWeb.Endpoint,
-        :download_photo,
-        client_link_hash,
-        List.first(photo_ids)
-      )
-
     session
     |> visit("/galleries/#{gallery_id}/photos")
     |> find(css("#item-#{List.first(photo_ids)}"))
     |> force_simulate_click(css("#meatball-photo-#{List.first(photo_ids)}"))
-    |> find(
-      css("a", text: "Download photo"),
-      &assert(Element.attr(&1, "href") =~ link)
-    )
+    |> assert_has(css("button", text: "Download photo"))
   end
 
   test "render error 403 if unauthorized user", %{

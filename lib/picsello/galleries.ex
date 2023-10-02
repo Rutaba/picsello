@@ -652,7 +652,8 @@ defmodule Picsello.Galleries do
         name: type,
         is_proofing: type == "proofing",
         is_finals: type == "finals",
-        set_password: false
+        set_password: false,
+        client_link_hash: UUID.uuid4()
       }
     ]
 
@@ -732,7 +733,9 @@ defmodule Picsello.Galleries do
   end
 
   defp gallery_session_tokens_query(gallery) do
-    from(st in SessionToken, where: st.resource_id == ^gallery.id and st.resource_type == :gallery)
+    from(st in SessionToken,
+      where: st.resource_id == ^gallery.id and st.resource_type == :gallery
+    )
   end
 
   @doc """
@@ -928,6 +931,47 @@ defmodule Picsello.Galleries do
       """
         WITH ranks AS (
           SELECT id, ROW_NUMBER() OVER (ORDER BY position) AS pos
+          FROM photos
+          WHERE gallery_id = $1::integer
+        )
+        UPDATE photos p
+        SET position = r.pos
+        FROM ranks r
+        WHERE p.gallery_id = $1::integer
+          AND p.id = r.id
+      """,
+      [gallery_id]
+    )
+  end
+
+  @doc """
+  Sorts photos positions within an album by ascending order
+  """
+  def sort_album_photo_positions_by_name(album_id) do
+    Ecto.Adapters.SQL.query(
+      Repo,
+      """
+        WITH ranks AS (
+          SELECT id, ROW_NUMBER() OVER (ORDER BY LOWER(name)) AS pos
+          FROM photos
+          WHERE album_id = $1::integer
+        )
+        UPDATE photos p
+        SET position = r.pos
+        FROM ranks r
+        WHERE p.album_id = $1::integer
+          AND p.id = r.id
+      """,
+      [album_id]
+    )
+  end
+
+  def sort_gallery_photo_positions_by_name(gallery_id) do
+    Ecto.Adapters.SQL.query(
+      Repo,
+      """
+        WITH ranks AS (
+          SELECT id, ROW_NUMBER() OVER (ORDER BY LOWER(name)) AS pos
           FROM photos
           WHERE gallery_id = $1::integer
         )
@@ -1192,7 +1236,7 @@ defmodule Picsello.Galleries do
     from(gc in GalleryClient,
       where: gc.gallery_id == ^gallery.id and gc.email == ^email
     )
-    |> Repo.one()
+    |> Repo.all()
   end
 
   @doc """
@@ -1325,7 +1369,7 @@ defmodule Picsello.Galleries do
 
   def insert_gallery_client(gallery, email) do
     case Galleries.get_gallery_client(gallery, email) do
-      nil ->
+      [] ->
         GalleryClient.changeset(%GalleryClient{}, %{email: email, gallery_id: gallery.id})
         |> Repo.insert()
 

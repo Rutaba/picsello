@@ -12,6 +12,7 @@ defmodule Picsello.Workers.ScheduleAutomationEmail do
     Galleries,
     ClientMessage,
     Organization,
+    Job,
     Repo
   }
 
@@ -20,7 +21,7 @@ defmodule Picsello.Workers.ScheduleAutomationEmail do
   def perform(_) do
     get_all_organizations()
     |> Enum.chunk_every(2)
-    |> Enum.map(fn organizations ->
+    |> Enum.each(fn organizations ->
       get_all_emails(organizations)
       |> Enum.map(fn job_pipeline ->
         job_id = job_pipeline.job_id
@@ -46,38 +47,30 @@ defmodule Picsello.Workers.ScheduleAutomationEmail do
         job = Task.await(job_task)
         job = if is_nil(gallery_id), do: job, else: gallery.job
 
-        subjects = Task.await(subjects_task)
-        Logger.info("Email Subjects #{subjects}")
+        if is_job_emails?(job) do
+          subjects = Task.await(subjects_task)
+          Logger.info("Email Subjects #{subjects}")
 
-        # Each pipeline emails subjects resolve variables
-        subjects_resolve = EmailAutomations.resolve_all_subjects(job, gallery, type, subjects)
-        Logger.info("Email Subjects Resolve [#{subjects_resolve}]")
+          # Each pipeline emails subjects resolve variables
+          subjects_resolve = EmailAutomations.resolve_all_subjects(job, gallery, type, subjects)
+          Logger.info("Email Subjects Resolve [#{subjects_resolve}]")
 
-        # Check client reply for any email of current pipeline
-        is_reply =
-          if state in [
-               :shoot_thanks,
-               :post_shoot,
-               :before_shoot,
-               :gallery_expiration_soon,
-               :paid_full,
-               :paid_offline_full,
-               :balance_due,
-               :offline_payment,
-               :digitals_ready_download
-             ] do
-            false
-          else
-            is_reply_receive!(job, subjects_resolve)
+          # Check client reply for any email of current pipeline
+          is_reply =
+            if state in [:client_contact, :manual_thank_you_lead, :manual_booking_proposal_sent] do
+              is_reply_receive!(job, subjects_resolve)
+            else
+              false
+            end
+
+          Logger.info(
+            "Reply of any email from client for job #{job_id} and pipeline_id #{job_pipeline.pipeline_id}"
+          )
+
+          # This condition only run when no reply recieve from any email for that job & pipeline
+          if !is_reply do
+            send_email_each_pipeline(job_pipeline, job, gallery)
           end
-
-        Logger.info(
-          "Reply of any email from client for job #{job_id} and pipeline_id #{job_pipeline.pipeline_id}"
-        )
-
-        # This condition only run when no reply recieve from any email for that job & pipeline
-        if !is_reply and is_nil(job.archived_at) do
-          send_email_each_pipeline(job_pipeline, job, gallery)
         end
       end)
     end)
@@ -142,40 +135,19 @@ defmodule Picsello.Workers.ScheduleAutomationEmail do
 
     Logger.info("Job date time for state #{state} #{job_date_time}")
 
-    is_send_time =
-      if state in [:shoot_thanks, :post_shoot, :before_shoot, :gallery_expiration_soon] and
-           not is_nil(job_date_time) do
-        true
-      else
-        is_email_send_time(job_date_time, schedule.total_hours)
-      end
+    is_send_time = is_email_send_time(job_date_time, state, schedule.total_hours)
 
     Logger.info("Time to send email #{is_send_time}")
 
     if is_send_time and is_nil(schedule.reminded_at) and !schedule.is_stopped do
-      schema =
-        case type do
-          :gallery -> if is_nil(order), do: gallery, else: order
-          _ -> job
-        end
-
-      send_email_task =
-        Task.async(fn -> EmailAutomations.send_now_email(type, schedule, schema, state) end)
-
-      case Task.await(send_email_task) do
-        {:ok, _result} ->
-          Logger.info(
-            "Email #{schedule.name} sent at #{DateTime.truncate(DateTime.utc_now(), :second)}"
-          )
-
-        error ->
-          Logger.error("Email #{schedule.name} #{error}")
-      end
+      send_email_task(type, state, schedule, job, gallery, order)
     end
   end
 
   defp get_gallery(nil), do: nil
-  defp get_gallery(id), do: Galleries.get_gallery!(id) |> Repo.preload([:albums, job: :client])
+
+  defp get_gallery(id),
+    do: Galleries.get_gallery!(id) |> Repo.preload([:orders, :albums, job: :client])
 
   defp group_key(email_schedule) do
     if email_schedule.job_id != nil do
@@ -185,9 +157,13 @@ defmodule Picsello.Workers.ScheduleAutomationEmail do
     end
   end
 
-  defp is_email_send_time(nil, _total_hours), do: false
+  defp is_email_send_time(nil, _state, _total_hours), do: false
 
-  defp is_email_send_time(submit_time, total_hours) do
+  defp is_email_send_time(_submit_time, state, _total_hours)
+       when state in [:shoot_thanks, :post_shoot, :before_shoot, :gallery_expiration_soon],
+       do: true
+
+  defp is_email_send_time(submit_time, _state, total_hours) do
     %{sign: sign} = Shared.explode_hours(total_hours)
     {:ok, current_time} = DateTime.now("Etc/UTC")
     diff_seconds = DateTime.diff(current_time, submit_time, :second)
@@ -213,7 +189,39 @@ defmodule Picsello.Workers.ScheduleAutomationEmail do
     |> Enum.count() > 0
   end
 
+  defp send_email_task(type, state, schedule, job, gallery, order) do
+    schema =
+      case type do
+        :gallery -> if is_nil(order), do: gallery, else: order
+        _ -> job
+      end
+
+    send_email_task =
+      Task.async(fn -> EmailAutomations.send_now_email(type, schedule, schema, state) end)
+
+    case Task.await(send_email_task) do
+      {:ok, _result} ->
+        Logger.info(
+          "Email #{schedule.name} sent at #{DateTime.truncate(DateTime.utc_now(), :second)}"
+        )
+
+      error ->
+        Logger.error("Email #{schedule.name} #{error}")
+    end
+  end
+
   defp get_all_organizations() do
     Repo.all(Organization) |> Enum.map(& &1.id)
   end
+
+  defp is_job_emails?(%Job{
+         job_status: %{is_lead: true},
+         booking_event_id: booking_event_id,
+         archived_at: archived_at
+       })
+       when not is_nil(booking_event_id) and not is_nil(archived_at),
+       do: true
+
+  defp is_job_emails?(%Job{archived_at: nil}), do: true
+  defp is_job_emails?(_), do: false
 end

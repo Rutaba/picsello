@@ -29,7 +29,7 @@
       <div class="h-auto">
         <div id={"replace-"} phx-update="replace" class="w-full p-5 mt-auto sm:mt-0 sm:bottom-auto sm:static sm:items-start sm:w-auto grid grid-cols-1 bg-base-200 rounded-xl lg:w-80 gap-y-1">
           <%= Enum.map(@job_types, fn type -> %>
-            <div testid={"#{type.job_type}"} class="font-bold bg-base-250/10 rounded-lg cursor-pointer grid-item"
+            <div class={classes("font-bold bg-base-250/10 rounded-lg cursor-pointer grid-item", %{"md:text-blue-planning-300" => @selected_job_type.job_type == type.job_type})}
             phx-click="assign_templates_by_type" phx-value-id={type.id}>
               <div class="flex items-center lg:h-11 pr-4 lg:pl-2 lg:py-4 pl-3 py-3 overflow-hidden text-sm transition duration-300 ease-in-out rounded-lg text-ellipsis" >
                 <a class="flex w-full">
@@ -68,23 +68,27 @@
         <%= Enum.map(@automation_pipelines, fn automation_pipeline -> %>
           <div class="flex flex-row mb-3 mt-8 items-center">
             <div class="text-2xl font-bold"> <%= automation_pipeline.category_name %></div>
-            <span class="ml-2 rounded-md bg-base-200 px-2 text-sm font-bold"> <%= automation_pipeline.total_emails_count %> emails</span>
+            <span class="ml-2 rounded-md bg-base-200 px-2 text-sm font-bold"><%= automation_pipeline.total_emails_count %> <%= ngettext("email", "emails", automation_pipeline.total_emails_count) %></span>
           </div>
           <%= Enum.map(automation_pipeline.subcategories, fn subcategory -> %>
-            <div class="mb-3 flex text-base-250 uppercase font-bold tracking-widestplus mr-5 mt-5 pr-3 cursor-pointer" phx-click="toggle-section" phx-value-section_id={subcategory.subcategory_name}> <%= subcategory.subcategory_name %> 
-              <div class="ml-auto">
-                <%= if !Enum.member?(@collapsed_sections, subcategory.subcategory_name) do %>
-                  <.icon name="down" class="w-5 h-5 stroke-2 text-blue-planning-300" />
-                <% else %>
-                  <.icon name="up" class="w-5 h-5 stroke-2 text-blue-planning-300" />
-                <% end %>
+            <%= if subcategory.subcategory_slug != "order_status_emails" do %>
+              <div class="mb-3 flex text-base-250 uppercase font-bold tracking-[.3em] mr-5 mt-5 pr-3 cursor-pointer" phx-click="toggle-section" phx-value-section_id={subcategory.subcategory_name}> <%= subcategory.subcategory_name %> 
+                <div class="ml-auto">
+                  <%= if !Enum.member?(@collapsed_sections, subcategory.subcategory_name) do %>
+                    <.icon name="down" class="w-5 h-5 stroke-2 text-blue-planning-300" />
+                  <% else %>
+                    <.icon name="up" class="w-5 h-5 stroke-2 text-blue-planning-300" />
+                  <% end %>
+                </div>
               </div>
-            </div>
-            <%= Enum.map(subcategory.pipelines, fn pipeline -> %>
-              <%= if Enum.member?(@collapsed_sections, subcategory.subcategory_name) do %>
-                <.pipeline_section id="pipepline-#{pipeline.id}" collapsed_sections={@collapsed_sections} pipeline={pipeline} category={automation_pipeline.category_id} subcategory={subcategory.subcategory_id}/>
-              <% end %>
-            <% end) %>
+              <%= Enum.map(subcategory.pipelines, fn pipeline -> %>
+                <%= if pipeline.state not in ["order_confirmation_physical", "order_confirmation_digital"] do %>
+                  <%= if Enum.member?(@collapsed_sections, subcategory.subcategory_name) do %>
+                    <.pipeline_section id="pipepline-#{pipeline.id}" collapsed_sections={@collapsed_sections} pipeline={pipeline} category={automation_pipeline.category_id} subcategory={subcategory.subcategory_id} subcategory_slug={subcategory.subcategory_slug}/>
+                  <% end %>
+                <% end %>
+              <% end) %>
+            <% end %>
           <% end) %>
         <% end) %>
       </div>

@@ -1,4 +1,5 @@
 defmodule Picsello.GalleryDashboardCardAndViewTest do
+  @moduledoc false
   use Picsello.FeatureCase, async: true
 
   setup :onboarded
@@ -50,7 +51,11 @@ defmodule Picsello.GalleryDashboardCardAndViewTest do
     gallery_client =
       insert(:gallery_client, %{email: "client-1@example.com", gallery_id: gallery.id})
 
-    insert(:order, gallery_client: gallery_client, gallery: gallery, placed_at: DateTime.utc_now())
+    insert(:order,
+      gallery_client: gallery_client,
+      gallery: gallery,
+      placed_at: DateTime.utc_now()
+    )
 
     visit_homepage(session)
     |> visit_view_all_galleries()
@@ -186,6 +191,6 @@ defmodule Picsello.GalleryDashboardCardAndViewTest do
     session
     |> assert_text("Your Galleries")
     |> assert_text("Meet Galleries")
-    |> assert_has(link("Create a gallery"))
+    |> assert_has(testid("create-a-gallery", text: "Create a gallery", count: 2))
   end
 end

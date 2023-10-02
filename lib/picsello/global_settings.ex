@@ -3,12 +3,9 @@ defmodule Picsello.GlobalSettings do
   alias Picsello.GlobalSettings.GalleryProduct, as: GSGalleryProduct
   alias Picsello.GlobalSettings.PrintProduct, as: GSPrintProduct
   alias Picsello.GlobalSettings.Gallery, as: GSGallery
-  alias Picsello.{Repo, Category, UserCurrency}
-  alias Ecto.Multi
-  alias Picsello.Galleries.GalleryProduct
-  alias Ecto.Changeset
+  alias Picsello.{Repo, Category, UserCurrency, Galleries.GalleryProduct}
+  alias Ecto.{Multi, Changeset}
   import Ecto.Query
-  alias Ecto.Changeset
 
   @whcc_print_category Category.print_category()
 
@@ -178,8 +175,8 @@ defmodule Picsello.GlobalSettings do
 
   defp build_digital_prices(each_price, buy_all_price, currency, rate) do
     %{
-      buy_all_price: Money.new(each_price.amount, currency) |> Money.multiply(rate),
-      download_each_price: Money.new(buy_all_price.amount, currency) |> Money.multiply(rate)
+      download_each_price: Money.new(each_price.amount, currency) |> Money.multiply(rate),
+      buy_all_price: Money.new(buy_all_price.amount, currency) |> Money.multiply(rate)
     }
   end
 
@@ -195,7 +192,7 @@ defmodule Picsello.GlobalSettings do
 
       GSGallery.price_changeset(
         gs_gallery,
-        build_digital_prices(buy_all_price, download_each_price, currency, rate)
+        build_digital_prices(download_each_price, buy_all_price, currency, rate)
       )
     end)
     |> Repo.transaction()

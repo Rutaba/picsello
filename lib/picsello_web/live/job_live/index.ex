@@ -249,9 +249,8 @@ defmodule PicselloWeb.JobLive.Index do
             <ul class={"absolute z-30 hidden mt-2 bg-white toggle rounded-md popover-content border border-base-200 #{@class}"}>
               <%= for option <- @options_list do %>
                 <li id={option.id} target-class="toggle-it" parent-class="toggle" toggle-type="selected-active" phx-hook="ToggleSiblings"
-                class="flex items-center py-1.5 hover:bg-blue-planning-100 hover:rounded-md">
-
-                  <button id={"btn-#{option.id}"} class={classes("album-select", %{"w-64" => @id == "status", "w-40" => @id != "status"})} phx-click={"apply-filter-#{@id}"} phx-value-option={option.id}><%= option.title %></button>
+                class="flex items-center py-1.5 hover:bg-blue-planning-100 hover:rounded-md" phx-click={"apply-filter-#{@id}"} phx-value-option={option.id}>
+                  <button id={"btn-#{option.id}"} class={classes("album-select", %{"w-64" => @id == "status", "w-40" => @id != "status"})}><%= option.title %></button>
                   <%= if option.id == @selected_option do %>
                     <.icon name="tick" class="w-6 h-5 ml-auto mr-1 toggle-it text-green" />
                   <% end %>
@@ -279,7 +278,7 @@ defmodule PicselloWeb.JobLive.Index do
     ~H"""
       <div {testid("search_filter_and_sort_bar")} class="flex flex-col px-5 center-container justify-between items-end px-1.5 lg:flex-row mb-0 md:mb-10">
         <div class="relative flex w-full lg:w-2/3 mr-2 mb-3 md:mb-0">
-          <a {testid("close_search")} href='#' class="absolute top-0 bottom-0 flex flex-row items-center justify-center overflow-hidden text-xs text-gray-400 left-2">
+          <a {testid("close_search")} class="absolute top-0 bottom-0 flex flex-row items-center justify-center overflow-hidden text-xs text-gray-400 left-2">
             <%= if @search_phrase do %>
               <span phx-click="clear-search" class="cursor-pointer">
                 <.icon name="close-x" class="w-4 ml-1 fill-current stroke-current stroke-2 close-icon text-blue-planning-300" />
@@ -336,7 +335,8 @@ defmodule PicselloWeb.JobLive.Index do
       |> Job.for_user()
       |> then(fn query ->
         case type.plural do
-          "leads" -> query |> Job.leads() |> Job.not_booking()
+          # |> Job.not_booking() #Remove this because on leads when job abondoned we have to show
+          "leads" -> query |> Job.leads()
           "jobs" -> query |> Job.not_leads()
         end
       end)

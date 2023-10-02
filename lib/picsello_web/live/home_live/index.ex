@@ -40,7 +40,7 @@ defmodule PicselloWeb.HomeLive.Index do
   import PicselloWeb.Gettext, only: [ngettext: 3]
 
   import PicselloWeb.GalleryLive.Shared,
-    only: [new_gallery_path: 2, clip_board: 2, cover_photo_url: 1, disabled?: 1]
+    only: [clip_board: 2, cover_photo_url: 1, disabled?: 1]
 
   import Ecto.Query
   import Ecto.Changeset, only: [get_change: 2]
@@ -523,9 +523,7 @@ defmodule PicselloWeb.HomeLive.Index do
 
   @impl true
   def handle_info({:redirect_to_gallery, gallery}, socket) do
-    socket
-    |> push_redirect(to: new_gallery_path(socket, gallery))
-    |> noreply()
+    PicselloWeb.Live.Shared.handle_info({:redirect_to_gallery, gallery}, socket)
   end
 
   @impl true
@@ -1374,7 +1372,7 @@ defmodule PicselloWeb.HomeLive.Index do
       "missing-payment-method" =>
         {!Picsello.Subscriptions.subscription_payment_method?(current_user), org_card},
       "create-lead" => {leads_empty?, org_card},
-      "black-friday" => {Subscriptions.monthly?(current_user.subscription), org_card}
+      "black-friday" => {Subscriptions.interval(current_user.subscription) == "month", org_card}
     }
 
     case params |> Map.fetch(concise_name) do
@@ -1501,7 +1499,7 @@ defmodule PicselloWeb.HomeLive.Index do
     ~H"""
     <li class={"relative #{Map.get(assigns, :class)}"} {@attrs}>
       <%= if @badge do %>
-        <div {testid "badge"} class={classes("absolute -top-2.5 right-5 leading-none w-5 h-5 rounded-full pb-0.5 flex items-center justify-center text-xs", %{"bg-base-300 text-white" => @badge > 0, "bg-gray-300" => @badge == 0})}>
+          <div {testid "badge"} class={classes("absolute -top-2.5 right-5 leading-none w-5 h-5 rounded-full pb-0.5 flex items-center justify-center text-xs", %{"bg-base-300 text-white" => @badge > 0, "bg-gray-300" => @badge == 0})}>
           <%= if @badge > 0, do: @badge %>
         </div>
       <% end %>
@@ -1509,7 +1507,7 @@ defmodule PicselloWeb.HomeLive.Index do
         <div class="h-full p-5 ml-3 bg-white">
             <h1 class="text-lg font-bold">
             <.icon name={@icon} width="23" height="20" class={"inline-block mr-2 rounded-sm fill-current text-#{@color}"} />
-            <%= @title %> <%= if @hint_content do %><.intro_hint content={@hint_content} /><% end %>
+            <%= @title %> <%= if @hint_content do %><.tooltip id="tooltip-#{@title}" content={@hint_content} /><% end %>
           </h1>
           <%= render_slot(@inner_block) %>
         </div>

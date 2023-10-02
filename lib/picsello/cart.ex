@@ -107,7 +107,7 @@ defmodule Picsello.Cart do
     end
   end
 
-  defp digital_credit_remaining(gallery_id) do
+  def digital_credit_remaining(gallery_id) do
     from(gallery in Gallery,
       join: digital_pricing in assoc(gallery, :gallery_digital_pricing),
       left_join: orders in assoc(gallery, :orders),

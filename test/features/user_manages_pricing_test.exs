@@ -1,4 +1,5 @@
 defmodule Picsello.UserManagesPricingTest do
+  @moduledoc false
   use Picsello.FeatureCase, async: true
 
   setup :onboarded
@@ -31,8 +32,7 @@ defmodule Picsello.UserManagesPricingTest do
     lustre_attribute = "Surface Lustre"
 
     session
-    |> click(testid("subnav-Settings"))
-    |> click(link("Public Profile"))
+    |> visit("/profile/settings")
     |> click(link("Gallery Store Pricing"))
     |> click(link("Loose Prints"))
     |> assert_text("Adjust Pricing: Loose Prints")

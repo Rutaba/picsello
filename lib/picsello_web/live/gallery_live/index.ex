@@ -204,9 +204,7 @@ defmodule PicselloWeb.GalleryLive.Index do
 
   @impl true
   def handle_info({:redirect_to_gallery, gallery}, socket) do
-    socket
-    |> push_redirect(to: new_gallery_path(socket, gallery))
-    |> noreply()
+    PicselloWeb.Live.Shared.handle_info({:redirect_to_gallery, gallery}, socket)
   end
 
   def image_item(%{gallery: gallery} = assigns) do
@@ -339,7 +337,7 @@ defmodule PicselloWeb.GalleryLive.Index do
   end
 
   defp dropdown_item(%{icon: icon} = assigns) do
-    assigns = Enum.into(assigns, %{class: "", id: ""})
+    assigns = Enum.into(assigns, %{class: "", id: "", disable: false})
 
     icon_text_class =
       if icon in ["trash", "closed-eye"], do: "text-red-sales-300", else: "text-blue-planning-300"
@@ -347,7 +345,7 @@ defmodule PicselloWeb.GalleryLive.Index do
     assigns = assign(assigns, icon_text_class: icon_text_class)
 
     ~H"""
-    <a {@link} class={"text-gray-700 block px-4 py-2 text-sm hover:bg-blue-planning-100 #{@class}"} role="menuitem" tabindex="-1" id={@id} }>
+    <a {if @disable, do: [href: "javascript:void(0)"], else: @link} class={classes("text-gray-700 block px-4 py-2 text-sm hover:bg-blue-planning-100 #{@class}", %{"opacity-50 hover:opacity-30 hover:cursor-not-allowed" => @disable})} role="menuitem" tabindex="-1" id={@id} }>
       <.icon name={@icon} class={"w-4 h-4 fill-current #{@icon_text_class} inline mr-1"} />
       <%= @title %>
     </a>

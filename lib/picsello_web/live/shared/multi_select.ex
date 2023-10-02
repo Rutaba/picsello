@@ -68,6 +68,7 @@ defmodule PicselloWeb.Shared.MultiSelect do
       called on change of selected items
 
     * `:class` - class added to the main `div` of the component
+    * `:placeholder_class` - class added to the placeholder `span` of the component
     * `:max_selected` - max number of selected items
     * `:wrap` - allow to wrap selected tags to multiple lines
     * `:title` - component's title to use as the tooltip
@@ -84,6 +85,7 @@ defmodule PicselloWeb.Shared.MultiSelect do
   attr :on_change, :any, doc: "Lambda `(options) -> ok` to be called on selecting items"
   attr :class, :string, default: nil
   attr :select_class, :string, default: nil
+  attr :placeholder_class, :string, default: nil
   attr :max_selected, :integer, default: nil, doc: "Max number of items selected"
   attr :max_shown, :integer, default: 100_000, doc: "Max number of shown selected tags"
   attr :wrap, :boolean, default: false, doc: "Permit multiline wrapping of selected items"
@@ -132,7 +134,7 @@ defmodule PicselloWeb.Shared.MultiSelect do
     component: @class_prefix <> "h-12 flex flex-col gap-1 relative sm:text-sm",
     main: "p-2 flex w-full gap-1 min-h-fit border rounded-t-lg rounded-lg",
     tags: "flex flex-wrap gap-1 w-full",
-    placeholder: "select-none opacity-50 self-center",
+    placeholder: "select-none self-center",
     tag: "bg-primary-600 rounded-md p-1 gap-1 select-none flex place-items-center",
     main_icons: "right-2 self-center py-1 pl-1 z-10 flex place-items-center",
     body:
@@ -167,7 +169,7 @@ defmodule PicselloWeb.Shared.MultiSelect do
   end
 
   @doc false
-  defmacro init_rest(assigns, from_mount) when is_boolean(from_mount) do
+  defmacro init_rest(assigns, from_mount) do
     quote do
       if @use_alpinejs do
         (unquote(from_mount) && add_alpinejs_assigns(unquote(assigns))) || unquote(assigns)
@@ -211,7 +213,7 @@ defmodule PicselloWeb.Shared.MultiSelect do
     assigns =
       assigns
       |> assign(:filter, "")
-      |> assign(:cur_shown, 10000)
+      |> assign(:cur_shown, 10_000)
       |> assign(:filter_checked, false)
       |> assign(:option_count, 0)
       |> assign(:selected_count, 0)
@@ -255,7 +257,7 @@ defmodule PicselloWeb.Shared.MultiSelect do
              data-target={@myself} data-wrap={Atom.to_string(@wrap)} data-filterside={@filter_side} {@tags_rest}>
           <%= cond do %>
             <% @selected_count == 0 -> %>
-              <span class={css(:placeholder)}><%= @placeholder %></span>
+              <span class={[css(:placeholder), @placeholder_class]}><%= @placeholder %></span>
             <% @hide_tags || (@selected_count > @cur_shown and not @wrap) -> %>
               <span class={css(:tag)}>
                 <span><%= @selected_count %> items selected</span>
@@ -297,7 +299,6 @@ defmodule PicselloWeb.Shared.MultiSelect do
           </div>
         <% end %>
         <div id={"#{@id}-opts"} class={css(:options)}>
-          <div phx-click="select_all_options" phx-target={@myself} class="text-blue-planning-300 underline pb-2 cursor-pointer">Select all</div>
           <%=
             for opt <- @options,
                 id        = "#{@id}[#{opt.id}]",

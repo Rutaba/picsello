@@ -204,13 +204,30 @@ defmodule Picsello.Cart.Checkouts do
   end
 
   defp create_session(
-         %{gallery: %{organization: %{stripe_account_id: stripe_account_id}}} = order,
+         %{gallery: %{organization: %{stripe_account_id: stripe_account_id} = organization}} =
+           order,
          %{amount: application_fee_cents},
          %{"success_url" => success_url, "cancel_url" => cancel_url}
        ) do
+    total_cost = Order.total_cost(order)
     order_number = Order.number(order)
 
+    # if total_cost is less than %Money{5000} then filter out affirm per their requirements
+    payment_method_types =
+      Picsello.Payments.map_payment_opts_to_stripe_opts(organization)
+      |> Enum.filter(fn method ->
+        if total_cost.amount < 5000 do
+          method != "affirm"
+        else
+          true
+        end
+      end)
+
     params = %{
+      shipping_address_collection: %{
+        allowed_countries: ["US"]
+      },
+      payment_method_types: payment_method_types,
       line_items: build_line_items(order),
       customer_email: order.delivery_info.email,
       client_reference_id: "order_number_#{order_number}",

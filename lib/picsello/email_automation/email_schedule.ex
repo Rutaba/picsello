@@ -43,17 +43,17 @@ defmodule Picsello.EmailAutomation.EmailSchedule do
     )
     |> validate_required(~w[email_automation_pipeline_id subject_template body_template]a)
     |> then(fn changeset ->
-      unless get_field(changeset, :immediately) do
-        changeset
-        |> validate_required([:count])
-        |> validate_number(:count, greater_than: 0, less_than_or_equal_to: 31)
-        |> put_change(:total_hours, EmailPreset.calculate_hours(changeset))
-      else
+      if get_field(changeset, :immediately) do
         changeset
         |> put_change(:count, nil)
         |> put_change(:calendar, nil)
         |> put_change(:sign, nil)
         |> put_change(:total_hours, 0)
+      else
+        changeset
+        |> validate_required([:count])
+        |> validate_number(:count, greater_than: 0, less_than_or_equal_to: 31)
+        |> put_change(:total_hours, EmailPreset.calculate_hours(changeset))
       end
     end)
     |> check_constraint(:job_id, name: :job_gallery_constraint)

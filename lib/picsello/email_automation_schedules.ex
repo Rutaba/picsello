@@ -17,18 +17,18 @@ defmodule Picsello.EmailAutomationSchedules do
     |> Repo.one()
   end
 
-  def get_schedules_by_gallery(gallery_id) do
-    from(es in EmailSchedule, where: es.gallery_id == ^gallery_id)
+  def get_emails_by_gallery(table, gallery_id) do
+    from(es in table, where: es.gallery_id == ^gallery_id)
     |> Repo.all()
   end
 
-  def get_schedules_by_order(order_id) do
-    from(es in EmailSchedule, where: es.order_id == ^order_id)
+  def get_emails_by_order(table, order_id) do
+    from(es in table, where: es.order_id == ^order_id)
     |> Repo.all()
   end
 
-  def get_schedules_by_job(job_id) do
-    from(es in EmailSchedule, where: es.job_id == ^job_id)
+  def get_emails_by_job(table, job_id) do
+    from(es in table, where: es.job_id == ^job_id)
     |> Repo.all()
   end
 
@@ -71,8 +71,10 @@ defmodule Picsello.EmailAutomationSchedules do
     |> select([email, pipeline, category, subcategory], %{
       category_type: category.type,
       category_id: category.id,
+      category_position: category.position,
       subcategory_slug: subcategory.slug,
       subcategory_id: subcategory.id,
+      subcategory_position: subcategory.position,
       job_id: email.job_id,
       pipeline:
         fragment(
@@ -178,10 +180,10 @@ defmodule Picsello.EmailAutomationSchedules do
   defp email_schedules_group_by_categories(emails_schedules) do
     emails_schedules
     |> Enum.group_by(
-      &{&1.subcategory_slug, &1.subcategory_name, &1.subcategory_id, &1.gallery_id, &1.job_id,
-       &1.order_id, &1.order_number}
+      &{&1.subcategory_slug, &1.subcategory_name, &1.subcategory_id, &1.subcategory_position,
+       &1.gallery_id, &1.job_id, &1.order_id, &1.order_number}
     )
-    |> Enum.map(fn {{slug, name, id, gallery_id, job_id, order_id, order_number},
+    |> Enum.map(fn {{slug, name, id, position, gallery_id, job_id, order_id, order_number},
                     automation_pipelines} ->
       pipelines =
         automation_pipelines
@@ -201,9 +203,11 @@ defmodule Picsello.EmailAutomationSchedules do
         category_type: List.first(automation_pipelines).category_type,
         category_name: List.first(automation_pipelines).category_name,
         category_id: List.first(automation_pipelines).category_id,
+        category_position: List.first(automation_pipelines).category_position,
         subcategory_slug: slug,
         subcategory_name: name,
         subcategory_id: id,
+        subcategory_position: position,
         gallery_id: gallery_id,
         job_id: job_id,
         order_id: order_id,
@@ -211,23 +215,25 @@ defmodule Picsello.EmailAutomationSchedules do
         pipelines: pipeline_morphied
       }
     end)
-    |> Enum.sort_by(&{&1.subcategory_id, &1.subcategory_name}, :asc)
+    |> Enum.sort_by(&{&1.subcategory_position, &1.subcategory_name}, :asc)
     |> Enum.group_by(
-      &{&1.category_id, &1.category_name, &1.category_type, &1.gallery_id, &1.job_id}
+      &{&1.category_id, &1.category_name, &1.category_type, &1.category_position, &1.gallery_id,
+       &1.job_id}
     )
-    |> Enum.map(fn {{id, name, type, gallery_id, job_id}, pipelines} ->
+    |> Enum.map(fn {{id, name, type, position, gallery_id, job_id}, pipelines} ->
       subcategories = EmailAutomations.remove_categories_from_list(pipelines)
 
       %{
         category_type: type,
         category_name: name,
         category_id: id,
+        category_position: position,
         gallery_id: gallery_id,
         job_id: job_id,
         subcategories: subcategories
       }
     end)
-    |> Enum.sort_by(&{&1.category_id, &1.category_name}, :asc)
+    |> Enum.sort_by(&{&1.category_position, &1.category_name}, :asc)
   end
 
   def query_get_email_schedule(

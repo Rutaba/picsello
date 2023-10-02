@@ -1,238 +1,457 @@
-<style>
-  body {
-    font-family: sans-serif;
-    font-size: 14px;
-    line-height: 22px;
-  }
+<!DOCTYPE html>
 
-  h1 {
-    margin-bottom: 1rem;
-    font-size: 1.875rem;
-    line-height: 2.25rem;
-    font-weight: 700;
-  }
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300&display=swap" rel="stylesheet">
+    <style>
+      html {
+        font-family: 'Montserrat', sans-serif;
+        font-size: 12px;
+        line-height: 22px;
+      }
 
-  hr {
-    margin: 1rem 0rem;
-    opacity: 0.3;
-  }
+      h1 {
+        margin-top: 3rem;
+        margin-bottom: 1rem;
+        font-size: 1.875rem;
+        line-height: 2.25rem;
+        font-weight: 700;
+      }
 
-  .mt1 {
-    margin-top: 1rem;
-  }
+      hr {
+        margin: 1rem 0rem;
+        opacity: 0.3;
+      }
 
-  .mb1 {
-    margin-bottom: 1rem;
-  }
+      .mt1 {
+        margin-top: 1rem;
+      }
 
-  .mlauto {
-    margin-left: auto;
-  }
+      .mt2 {
+        margin-top: 2rem;
+      }
 
-  .pl1 {
-    padding-left: 1rem;
-  }
+      .mb1 {
+        margin-bottom: 1rem;
+      }
 
-  .text-green {
-    color: #429467;
-  }
+      .mlauto {
+        margin-left: auto;
+      }
 
-  .invoice-flex {
-    display: -webkit-box;
-    display: flex;
-    width: 100%;
-  }
+      .pt1 {
+        padding-top: 1rem;
+      }
 
-  .quote-flex {
-    display: -webkit-box;
-    display: flex;
-    width: 50%;
-  }
+      .pt2 {
+        padding-top: 2rem;
+      }
 
-  .bold {
-    font-weight: bold;
-  }
+      .pl1 {
+        padding-left: 1rem;
+      }
 
-  .invoice-header,
-  .invoice-row {
-    display: -webkit-box;
-    display: flex;
-  }
+      .text-green,
+      .text-green-finances-300 {
+        color: #429467;
+      }
 
-  .invoice-between {
-    -webkit-box-pack: justify;
-    justify-content: space-between;
-  }
+      .text-red-sales-300 {
+        color: #E1662F;
+      }
 
-  .invoice-header {
-    margin: 1rem 0rem;
-    background-color: #f0f0f0;
-  }
+      .text-left {
+        text-align: left;
+      }
 
-  .invoice-header h3 {
-    font-size: 14px;
-    padding-top: 0.5rem;
-    padding-bottom: 0.5rem;
-  }
+      .text-right {
+        text-align: right;
+      }
 
-  .invoice-column {
-    width: 50%;
-  }
+      .invoice-flex {
+        display: -webkit-box;
+        display: flex;
+        width: 100%;
+      }
 
-  .invoice-column-header {
-    font-weight: 700;
-    text-transform: uppercase;
-    letter-spacing: 0.1rem;
-  }
+      .quote-flex {
+        display: -webkit-box;
+        display: flex;
+        width: 50%;
+      }
 
-  .invoice-info-row {
-    display: -webkit-box;
-    display: flex;
-  }
+      .invoice-header,
+      .invoice-row {
+        display: -webkit-box;
+        display: flex;
+      }
 
-  .invoice-payment-container {
-    background-color: #f0f0f0;
-    padding: 7px;
-  }
-</style>
-<div>
-  <h1>
-    Invoice for <%= @job.client.name %>
-  </h1>
+      .invoice-between {
+        -webkit-box-pack: justify;
+        justify-content: space-between;
+      }
 
-  <div class="mt1">
-    <div class="invoice-flex">
-      <dl class="quote-flex">
-        <dt class="bold">Dated:</dt>
-        <dd><%= PicselloWeb.LiveHelpers.strftime(@photographer.time_zone, @proposal.inserted_at, "%b %d, %Y") %></dd>
-      </dl>
+      .invoice-header {
+        margin: 1rem 0rem;
+        background-color: #f0f0f0;
+      }
 
-      <dl class="quote-flex">
-        <dt class="bold">Quote #:</dt>
-        <dd><%= @proposal.id |> Integer.to_string |> String.pad_leading(6, "0") %></dd>
-      </dl>
-    </div>
+      .invoice-header h3 {
+        font-size: 14px;
+        padding-top: 0.5rem;
+        padding-bottom: 0.5rem;
+      }
 
-    <hr />
+      .invoice-column {
+        width: 50%;
+      }
 
-    <div class="invoice-info-row">
-      <div class="invoice-column">
-        <div class="bold">For:</div>
-        <div><%= @client.name %></div>
-        <div><%= @client.email %></div>
+      .invoice-column-header {
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.1rem;
+      }
 
-        <div class="bold mt1">Package:</div>
-        <div><%= @package.name %></div>
-      </div>
+      .invoice-info-row {
+        display: -webkit-box;
+        display: flex;
+      }
 
-      <div class="invoice-column">
-        <div class="bold">From:</div>
-        <div><%= @organization.name %></div>
+      .invoice-payment-container {
+        background-color: #f0f0f0;
+        padding: 7px;
+      }
 
-        <div class="bold mt1">Email:</div>
-        <div><%= @photographer.email %></div>
-      </div>
-    </div>
+      .payment-schedule-headerRow {
+        background-color: #f0f0f0;
+      }
 
-    <div class="invoice-header">
-      <div class="invoice-column invoice-column-header">
-        <h3 class="pl1">Item</h3>
-      </div>
-      <div class="invoice-column invoice-column-header">
-        <h3>Details</h3>
-      </div>
-    </div>
+      .invoice-status {
+        font-size: 16px;
+      }
 
-    <%= for shoot <- @shoots do %>
-      <div class="invoice-row">
-        <div class="invoice-column">
-          <h3 class="bold"><%= shoot.name %></h3>
-          <%= PicselloWeb.LiveHelpers.strftime(@photographer.time_zone, shoot.starts_at, "%B %d, %Y") %>
-        </div>
-        <div class="invoice-column">
-          <p>
-            <%= dyn_gettext("duration-#{shoot.duration_minutes}") %>
-            starting at <%= PicselloWeb.LiveHelpers.strftime(@photographer.time_zone, shoot.starts_at, "%-I:%M %P") %>
-          </p>
-          <p><%= PicselloWeb.LiveHelpers.shoot_location(shoot) %></p>
-        </div>
-      </div>
-      <hr />
-    <% end %>
+      .payment-schedule-table {
+        width: 100%;
+        border-collapse: collapse;
+      }
 
-    <div class="invoice-row">
-      <div class="invoice-column">
-        <div class="bold pl1">Photo Downloads</div>
-      </div>
-      <%= case Picsello.Packages.Download.from_package(@package) do %>
-        <% %{includes_credits: true} = d -> %>
-          <div class="invoice-column">
-            <div><%= ngettext "1 photo download", "%{count} photo downloads", d.count %></div>
-            <div>Additional downloads @ <%= Money.to_string(d.each_price, symbol: false, code: true)%>/ea</div>
-          </div>
-        <% %{status: :limited} = d -> %>
-          <div class="invoice-column">
-            <div>Download photos @ <%= Money.to_string(d.each_price, symbol: false, code: true)%>/ea</div>
-          </div>
-        <% _ -> %>
-          <div class="invoice-column">
-            <div>All photos downloadable</div>
-          </div>
+      .payment-schedule-row {
+        width: 100%;
+      }
+
+      .payment-schedule-col {
+        padding: 7px 1rem;
+        text-align: left;
+        border: none;
+        border-bottom: 1px solid #f0f0f0;
+      }
+
+      .payment-schedule-col:first-child,
+      .payment-schedule-col:nth-child(2) {
+        width: 40%
+      }
+
+      .payment-schedule-col:last-child {
+        width: 20%
+      }
+
+      .payment-schedule-headerCol {
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.1rem;
+        background-color: #f0f0f0;
+        border: none !important;
+      }
+
+      .contract-signature {
+        box-sizing: border-box;
+        width: 100%;
+        border: 1px solid #E1E1E1;
+        padding: 0.5rem 1rem;
+      }
+
+      fieldset {
+        border: none;
+        padding: 0px;
+        margin: 0px;
+      }
+
+      label {
+        width: 100%;
+        display: block;
+      }
+
+      input[type="text"],
+      input[type="tel"],
+      input[type="email"],
+      input[type="date"],
+      textarea {
+        width: 100%;
+        display: block;
+        box-sizing: border-box;
+        border: 1px solid #E1E1E1;
+        padding: 0.5rem 1rem;
+        margin: 0px;
+        font-size: 12px;
+      }
+
+      input[type="radio"],
+      input[type="checkbox"] {
+        -webkit-appearance: none;
+        appearance: none;
+        border: 1px solid black;
+        width: 15px;
+        height: 15px;
+        display: inline-block;
+        vertical-align: middle;
+      }
+
+      input[type="radio"]:checked,
+      input[type="checkbox"]:checked {
+        background-color: black;
+      }
+
+      input[type="radio"] {
+        border-radius: 999px;
+      }
+
+      label > .input-label {
+        vertical-align: middle;
+      }
+
+      dd {
+        display: block;
+        margin-top: 0.5rem;
+        margin-bottom: 1.5rem;
+        padding: 0px;
+        margin-left: 0px;
+        margin-right: 0px;
+      }
+
+      label > input {
+        display: inline;
+      }
+
+      label > .input-label {
+        display: inline;
+      }
+
+      .logo-img {
+        width: auto;
+        height: 80px;
+        display: block;
+      }
+      header {
+        border-bottom: 1px solid #E1E1E1;
+        margin: 1rem 0rem;
+      }
+    </style>
+  </head>
+  <body style="border:0; margin: 0;">
+    <header>
+      <%= case @organization_logo_url do %>
+        <% nil -> %> <h1><%= @organization.name %></h1>
+        <% organization_logo_url -> %> <img class="logo-img" src={organization_logo_url} />
       <% end %>
-    </div>
+    </header>
 
-    <hr />
-    <%= if @print_credit do %>
-      <div class="invoice-row">
-        <div class="invoice-column">
-          <div class="bold pl1">Print Credit</div>
+    <%!-- Invoice --%>
+    <section>
+      <div class="invoice-row mb1">
+        <div class="quote-flex">
+          <div>
+            Dated:<br />
+            <%= PicselloWeb.LiveHelpers.strftime(@photographer.time_zone, @proposal.inserted_at, "%b %d, %Y") %>
+          </div>
         </div>
-        <div class="invoice-column">
-          <div><%= @amount %><%= @amount.currency%> in print credits to use in your gallery</div>
+
+        <div class="quote-flex">
+          <div>
+            Quote #:<br />
+            <%= @proposal.id |> Integer.to_string |> String.pad_leading(6, "0") %>
+          </div>
         </div>
       </div>
 
-      <hr />
-    <% end %>
+      <div class="invoice-info-row">
+        <div class="invoice-column">
+          <div>For:</div>
+          <div><%= @client.name %></div>
+          <div><%= @client.email %></div>
+        </div>
 
-    <div class="invoice-column pl1 mlauto">
-      <div class="contents">
-        <%= with discount_percent when discount_percent != nil <- Picsello.Packages.discount_percent(@package) do %>
+        <div class="invoice-column">
+          <div>From:</div>
+          <div><%= @organization.name %></div>
+          <div><%= @photographer.email %></div>
+        </div>
+      </div>
+
+      <h1>
+        Invoice
+      </h1>
+
+      <div class="invoice-header">
+        <div class="invoice-column invoice-column-header">
+          <h3 class="pl1">Item</h3>
+        </div>
+        <div class="invoice-column invoice-column-header">
+          <h3>Details</h3>
+        </div>
+      </div>
+
+      <%= for shoot <- @shoots do %>
+        <div class="invoice-row">
+          <div class="invoice-column">
+            <p class="pl1">
+              <%= shoot.name %><br />
+              <%= PicselloWeb.LiveHelpers.strftime(@photographer.time_zone, shoot.starts_at, "%B %d, %Y") %>
+            </p>
+          </div>
+          <div class="invoice-column">
+            <p>
+              <%= dyn_gettext("duration-#{shoot.duration_minutes}") %>
+              starting at <%= PicselloWeb.LiveHelpers.strftime(@photographer.time_zone, shoot.starts_at, "%-I:%M %P") %>
+            </p>
+            <p><%= PicselloWeb.LiveHelpers.shoot_location(shoot) %></p>
+          </div>
+        </div>
+        <hr />
+      <% end %>
+
+      <div class="invoice-row">
+        <div class="invoice-column">
+          <div class="pl1">Photo Downloads</div>
+        </div>
+        <%= case Picsello.Packages.Download.from_package(@package) do %>
+          <% %{status: :limited} = d -> %>
+            <div class="invoice-column">
+              <div><%= ngettext "1 photo download", "%{count} photo downloads", d.count %></div>
+              <div>Additional downloads @ <%= Money.to_string(d.each_price, symbol: false, code: true)%>/ea</div>
+            </div>
+          <% %{status: :none} = d -> %>
+            <div class="invoice-column">
+              <div>Download photos @ <%= Money.to_string(d.each_price, symbol: false, code: true)%>/ea</div>
+            </div>
+          <% _ -> %>
+            <div class="invoice-column">
+              <div>All photos downloadable</div>
+            </div>
+        <% end %>
+      </div>
+
+      <hr />
+
+      <%= if @print_credit do %>
+        <div class="invoice-row">
+          <div class="invoice-column">
+            <div class="pl1">Print Credit</div>
+          </div>
+          <div class="invoice-column">
+            <div><%= @amount %><%= @print_credit.currency%> in print credits to use in your gallery</div>
+          </div>
+        </div>
+
+        <hr />
+      <% end %>
+
+      <div class="invoice-column pl1 mlauto">
+        <div class="contents">
+          <%= with discount_percent when discount_percent != nil <- Picsello.Packages.discount_percent(@package) do %>
+            <div class="invoice-row invoice-between mb1">
+              <div>Session fee</div>
+              <div><%= Money.to_string(Picsello.Package.base_price(@package), symbol: false, code: true)%></div>
+            </div>
+            <div class="invoice-row invoice-between mb1 text-green">
+              <div>Discount</div>
+              <div><%= discount_percent %>%</div>
+            </div>
+          <% end %>
+          <div class="invoice-row invoice-between">
+            <div>Invoice Total</div>
+            <div><%= Money.to_string(Picsello.Package.price(@package), symbol: false, code: true)%></div>
+          </div>
+        </div>
+
+        <hr />
+
+        <%= if @package.collected_price do %>
           <div class="invoice-row invoice-between mb1">
-            <div class="bold">Session fee</div>
-            <div><%= Money.to_string(Picsello.Package.base_price(@package), symbol: false, code: true)%></div>
-          </div>
-          <div class="invoice-row invoice-between mb1 text-green">
-            <div>Discount</div>
-            <div><%= discount_percent %>%</div>
+            <div>Previously collected</div>
+            <div><%= Money.to_string(@package.collected_price, symbol: false, code: true)%></div>
           </div>
         <% end %>
-        <div class="invoice-row invoice-between">
-          <div class="bold">Total</div>
-          <div class="bold"><%= Money.to_string(Picsello.Package.price(@package), symbol: false, code: true)%></div>
-        </div>
+
+        <%= unless PaymentSchedules.free?(@job) do %>
+          <div class="invoice-payment-container">
+            <div class="invoice-row invoice-between mb1">
+              <div class="invoice-status">Paid</div>
+              <div class="invoice-status"><%= Money.to_string(PaymentSchedules.paid_price(@job), symbol: false, code: true) %></div>
+            </div>
+            <div class="invoice-row invoice-between">
+              <div class="invoice-status">Owed</div>
+              <div class="invoice-status"><%=  Money.to_string(PaymentSchedules.owed_price(@job), symbol: false, code: true) %></div>
+            </div>
+          </div>
+        <% end %>
       </div>
+    </section>
 
-      <hr />
+    <%!-- Payment schedule --%>
+    <%= unless Picsello.PaymentSchedules.free?(@job) do %>
+      <section>
+        <h1>
+          Payment Schedule
+        </h1>
 
-      <%= if @package.collected_price do %>
-        <div class="invoice-row invoice-between mb1">
-          <div class="bold">Previously collected</div>
-          <div><%= Money.to_string(@package.collected_price, symbol: false, code: true)%></div>
+        <table class="payment-schedule-table" border="0">
+          <tr class="payment-schedule-row payment-schedule-headerRow"> 
+            <th class="payment-schedule-col payment-schedule-headerCol">Payment Name</th>
+            <th class="payment-schedule-col payment-schedule-headerCol">Status</th>
+            <th class="payment-schedule-col payment-schedule-headerCol">Amount</th>
+          </tr>
+          <%= for schedule <- @job.payment_schedules do %>
+            <tr class={"payment-schedule-row #{status_class(make_status(schedule))}"}>      
+              <td class="payment-schedule-col"><%= schedule.description %></td>
+              <td class="payment-schedule-col"><%= make_status(schedule) %></td>
+              <td class="payment-schedule-col"><%= Money.to_string(schedule.price, symbol: false, code: true) %></td>
+            </tr> 
+          <% end %>
+        </table>
+      </section>
+    <% end %>
+
+    <%!-- Contract --%>
+    <section>
+      <h1>
+        Contract
+      </h1>
+      <div class="mt-4 raw_html text-base-250 min-h-[8rem]">
+        <%= raw @contract_content %>
+      </div>
+      <%= if @proposal && @proposal.accepted_at do %>
+        <p class="text-base-250">Signed <%= PicselloWeb.LiveHelpers.strftime(@photographer.time_zone, @proposal.accepted_at, "%b %d, %Y") %> by </p>
+        <div class="contract-signature">
+          <%= @proposal.signed_legal_name %>
         </div>
       <% end %>
-      <%= unless Picsello.PaymentSchedules.free?(@job) do %>
-        <%= for payment <- @job.payment_schedules do %>
-          <div class="invoice-row invoice-between invoice-payment-container">
-            <%= if Picsello.PaymentSchedules.paid?(payment) do %>
-              <div class="bold"><%= Money.to_string(payment.price, symbol: false, code: true)%> paid on <%= PicselloWeb.LiveHelpers.strftime(@photographer.time_zone, payment.paid_at, "%b %d, %Y") %></div>
-            <% else %>
-              <div class="bold"><%= Money.to_string(payment.price, symbol: false, code: true)%> <%= PicselloWeb.BookingProposalLive.InvoiceComponent.to_book(payment, @photographer.time_zone) %></div>
+    </section>
+
+    <%!-- Questionnaire --%>
+    <%= if @proposal.questionnaire_id do %>
+      <section>
+        <h1>
+          Questionnaire
+        </h1>
+        <fieldset class="questionnaire" disabled="disabled">
+          <dl>
+            <%= for {{question, answer}, question_index} <- @proposal.questionnaire.questions |> Enum.zip(@proposal.answer.answers) |> Enum.with_index() do %>
+              <.questionnaire_item question={question} answer={answer} question_index={question_index} />
             <% end %>
-            <div><%= Money.to_string(payment.price, symbol: false, code: true)%></div>
-          </div>
-        <% end %>
-      <% end %>
-    </div>
-  </div>
-</div>
+          </dl>
+        </fieldset>
+      </section>
+    <% end %>
+  </body>
+</html>

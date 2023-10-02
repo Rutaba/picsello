@@ -3,7 +3,7 @@ defmodule PicselloWeb.Live.ClientLive.Index do
   use PicselloWeb, :live_view
 
   import PicselloWeb.GalleryLive.Index, only: [update_gallery_listing: 1]
-  import PicselloWeb.GalleryLive.Shared, only: [add_message_and_notify: 3, new_gallery_path: 2]
+  import PicselloWeb.GalleryLive.Shared, only: [add_message_and_notify: 3]
 
   import PicselloWeb.Shared.CustomPagination,
     only: [
@@ -175,6 +175,26 @@ defmodule PicselloWeb.Live.ClientLive.Index do
         %{assigns: %{client: client}} = socket
       ) do
     open_confirmation_component(socket, client)
+  end
+
+  @impl true
+  def handle_event(
+        "confirm-unarchive",
+        %{"id" => id},
+        %{assigns: %{clients: clients}} = socket
+      ) do
+    client = clients |> Enum.find(&(&1.id == to_integer(id)))
+
+    socket
+    |> ConfirmationComponent.open(%{
+      close_label: "No, go back",
+      confirm_event: "unarchive_" <> to_string(client.id),
+      confirm_label: "Yes, Unarchive",
+      icon: "warning-orange",
+      title: "Unarchive Client?",
+      subtitle: "Are you sure you wish to Unarchive #{client.name || "this client"}?"
+    })
+    |> noreply()
   end
 
   @impl true
@@ -392,14 +412,28 @@ defmodule PicselloWeb.Live.ClientLive.Index do
 
   @impl true
   def handle_info({:redirect_to_gallery, gallery}, socket) do
-    socket
-    |> push_redirect(to: new_gallery_path(socket, gallery))
-    |> noreply()
+    PicselloWeb.Live.Shared.handle_info({:redirect_to_gallery, gallery}, socket)
   end
 
   @impl true
   def handle_info({:confirm_event, "archive_" <> id}, socket) do
     case Clients.archive_client(id) do
+      {:ok, _client} ->
+        socket
+        |> put_flash(:success, "Client archived successfully")
+
+      {:error, _} ->
+        socket
+        |> close_modal()
+        |> put_flash(:error, "Error archiving client")
+    end
+    |> push_redirect(to: Routes.clients_path(socket, :index))
+    |> noreply()
+  end
+
+  @impl true
+  def handle_info({:confirm_event, "unarchive_" <> id}, socket) do
+    case Clients.unarchive_client(id) do
       {:ok, _client} ->
         socket
         |> put_flash(:success, "Client archived successfully")
@@ -448,8 +482,8 @@ defmodule PicselloWeb.Live.ClientLive.Index do
       <ul class="absolute z-30 hidden w-full md:w-32 mt-2 bg-white toggle rounded-md popover-content border shadow-lg">
         <%= for option <- @options_list do %>
           <li id={option.id} target-class="toggle-it" parent-class="toggle" toggle-type="selected-active" phx-hook="ToggleSiblings"
-          class="flex items-center py-1.5 hover:bg-blue-planning-100 hover:rounded-md">
-            <button id={option.id} class="album-select" phx-click={"apply-filter-#{@id}"} phx-value-option={option.id}><%= option.title %></button>
+          class="flex items-center py-1.5 hover:bg-blue-planning-100 hover:rounded-md" phx-click={"apply-filter-#{@id}"} phx-value-option={option.id}>
+            <button id={option.id} class="album-select"><%= option.title %></button>
             <%= if option.id == @selected_option do %>
               <.icon name="tick" class="w-6 h-5 mr-1 toggle-it text-blue-planning-300" />
             <% end %>
@@ -475,20 +509,22 @@ defmodule PicselloWeb.Live.ClientLive.Index do
             </span>
             <% end %>
         <% end %>
-        <span class="cursor-pointer">
-          <%= if Changeset.get_field(@tags_changeset, :client_id) == @client.id do%>
-            <div class="relative flex">
-              <input type="text" autofocus class="border-gray-600 border-2 pl-2 rounded w-24" id={"save-tags-client-#{@client.id}"} name="client_tag_values" phx-debounce="500" spellcheck="false" placeholder="Add tag..." phx-window-keydown="save-tags" phx-value-client_id={@client.id} />
-              <a class="absolute top-0 bottom-0 flex flex-row items-center text-xs text-gray-400 mr-1 right-0">
-                <span phx-click="close-tags" phx-value-client-id={@client.id} class="cursor-pointer">
-                  <.icon name="close-x" class="w-3 fill-current stroke-current stroke-2 close-icon text-gray-600" />
-                </span>
-              </a>
-            </div>
-          <% else %>
-            <.icon_button_simple class="flex flex-shrink-0 ml-2 bg-white border rounded border-gray-600 text-gray-600" color="gray-400" phx-click="add-tags" phx-value-client_id={"#{@client.id}"} icon="plus" icon_class="w-2 h-3"></.icon_button_simple>
-          <% end %>
-        </span>
+        <%= if is_nil(@client.archived_at) do %>
+          <span class="cursor-pointer">
+            <%= if Changeset.get_field(@tags_changeset, :client_id) == @client.id do%>
+              <div class="relative flex">
+                <input type="text" autofocus class="border-gray-600 border-2 pl-2 rounded w-24" id={"save-tags-client-#{@client.id}"} name="client_tag_values" phx-debounce="500" spellcheck="false" placeholder="Add tag..." phx-window-keydown="save-tags" phx-value-client_id={@client.id} />
+                <a class="absolute top-0 bottom-0 flex flex-row items-center text-xs text-gray-400 mr-1 right-0">
+                  <span phx-click="close-tags" phx-value-client-id={@client.id} class="cursor-pointer">
+                    <.icon name="close-x" class="w-3 fill-current stroke-current stroke-2 close-icon text-gray-600" />
+                  </span>
+                </a>
+              </div>
+            <% else %>
+              <.icon_button_simple class="flex flex-shrink-0 ml-2 bg-white border rounded border-gray-600 text-gray-600" color="gray-400" phx-click="add-tags" phx-value-client_id={"#{@client.id}"} icon="plus" icon_class="w-2 h-3"></.icon_button_simple>
+            <% end %>
+          </span>
+        <% end %>
       </div>
     """
   end
@@ -503,10 +539,17 @@ defmodule PicselloWeb.Live.ClientLive.Index do
       </button>
 
       <div class="z-10 flex flex-col hidden w-44 bg-white border rounded-lg shadow-lg popover-content">
-        <%= for %{title: title, action: action, icon: icon} <- actions() do %>
-          <button title={title} type="button" phx-click={action} phx-value-id={@client.id} class="flex items-center px-3 py-2 rounded-lg hover:bg-blue-planning-100 hover:font-bold">
-            <.icon name={icon} class={classes("inline-block w-4 h-4 mr-3 fill-current", %{"text-red-sales-300" => icon == "trash", "text-blue-planning-300" => icon != "trash"})} />
-            <%= title %>
+        <%= if is_nil(@client.archived_at) do %>
+          <%= for %{title: title, action: action, icon: icon} <- actions() do %>
+            <button title={title} type="button" phx-click={action} phx-value-id={@client.id} class="flex items-center px-3 py-2 rounded-lg hover:bg-blue-planning-100 hover:font-bold">
+              <.icon name={icon} class={classes("inline-block w-4 h-4 mr-3 fill-current", %{"text-red-sales-300" => icon == "trash", "text-blue-planning-300" => icon != "trash"})} />
+              <%= title %>
+            </button>
+          <% end %>
+        <% else %>
+          <button title="Unarchive" type="button" phx-click="confirm-unarchive" phx-value-id={@client.id} class="flex items-center px-3 py-2 rounded-lg hover:bg-blue-planning-100 hover:font-bold">
+            <.icon name="plus" class="inline-block w-4 h-4 mr-3 fill-current text-blue-planning-300"/>
+            Unarchive
           </button>
         <% end %>
       </div>
@@ -623,7 +666,7 @@ defmodule PicselloWeb.Live.ClientLive.Index do
            search_phrase: search_phrase
          }
        }) do
-    Clients.find_all_by(
+    Clients.find_clients_count(
       user: user,
       filters: %{
         status: status,
@@ -633,8 +676,6 @@ defmodule PicselloWeb.Live.ClientLive.Index do
         search_phrase: search_phrase
       }
     )
-    |> Repo.all()
-    |> Enum.count()
   end
 
   defp reassign_pagination_and_clients(%{assigns: %{pagination_changeset: changeset}} = socket) do
@@ -682,4 +723,15 @@ defmodule PicselloWeb.Live.ClientLive.Index do
       %{title: "Archive", action: "confirm-archive", icon: "trash"}
     ]
   end
+
+  @referrals ["Friend", "Other"]
+  def referred_by_name(referred_by, referral_name) when referred_by in @referrals do
+    if referral_name do
+      "#{referred_by} - #{referral_name}"
+    else
+      "#{referred_by}"
+    end
+  end
+
+  def referred_by_name(_referred_by, _referral_name), do: "-"
 end

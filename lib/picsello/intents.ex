@@ -76,7 +76,8 @@ defmodule Picsello.Intents do
     end
 
     defp processing_fee(%{
-           charges: %{data: [%{balance_transaction: %{fee_details: fee_details}}]}
+           charges: %{data: [%{balance_transaction: %{fee_details: fee_details}}]},
+           currency: currency
          }) do
       %{amount: amount} =
         if fee_details && is_list(fee_details) do
@@ -86,7 +87,7 @@ defmodule Picsello.Intents do
         end
         |> Enum.find(fee_details, &(&1.type == "stripe_fee"))
 
-      amount
+      if is_map(amount), do: amount, else: Money.new(amount, currency)
     end
 
     defp processing_fee(_), do: Money.new(0)

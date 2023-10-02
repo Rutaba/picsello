@@ -44,6 +44,7 @@ import '@fontsource/be-vietnam/700.css';
 import Analytics from './hooks/analytics';
 import AutoHeight from './hooks/auto-height';
 import Calendar from './hooks/calendar';
+import CheckIdle from './hooks/check-idle';
 import ClientGalleryCookie from './hooks/client-gallery-cookie';
 import Clipboard from './hooks/clipboard';
 import DefaultCostTooltip from './hooks/default-cost-tooltip';
@@ -76,6 +77,8 @@ import DatePicker from './hooks/date-picker';
 import BeforeUnload from './hooks/before-unload';
 import Cookies from 'js-cookie';
 import FolderUpload from './hooks/folder-upload';
+import SearchResultSelect from './hooks/search-result-select';
+import Tooltip from './hooks/tooltip';
 
 const Modal = {
   mounted() {
@@ -179,40 +182,6 @@ const FinalCostInput = {
   },
 };
 
-const SetGalleryCookie = {
-  mounted() {
-    let galleryType = this.el.dataset.galleryType;
-    document.cookie = `GalleryType=${galleryType}; path=/`;
-  },
-};
-
-const GetGalleryCookie = {
-  mounted() {
-    const galleryType = getCookie('GalleryType');
-    document.cookie =
-      'GalleryType=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;';
-    if (galleryType != '') {
-      this.pushEvent('gallery-created', { galleryType: galleryType });
-    }
-  },
-};
-
-function getCookie(cname) {
-  let name = cname + '=';
-  let decodedCookie = decodeURIComponent(document.cookie);
-  let ca = decodedCookie.split(';');
-  for (let i = 0; i < ca.length; i++) {
-    let c = ca[i];
-    while (c.charAt(0) == ' ') {
-      c = c.substring(1);
-    }
-    if (c.indexOf(name) == 0) {
-      return c.substring(name.length, c.length);
-    }
-  }
-  return '';
-}
-
 const showWelcomeModal = {
   mounted() {
     const show = Cookies.get('show_welcome_modal');
@@ -246,9 +215,11 @@ const showAdminBanner = {
   },
 };
 
+
 const Hooks = {
   AutoHeight,
   Calendar,
+  CheckIdle,
   ClearInput,
   ClearQuillInput,
   ClientGalleryCookie,
@@ -283,17 +254,25 @@ const Hooks = {
   TZCookie,
   ToggleContent,
   ToggleSiblings,
+  Tooltip,
   ResumeUpload,
   GallerySelector,
   ClientGalleryCookie,
   CardStatus,
   FinalCostInput,
-  SetGalleryCookie,
-  GetGalleryCookie,
   showWelcomeModal,
   showAdminBanner,
   FolderUpload,
+  SearchResultSelect
 };
+
+window.addEventListener(`phx:download`, (event) => {
+  let frame = document.createElement("iframe");
+  frame.setAttribute("src", event.detail.uri);
+  frame.style.visibility = 'hidden';
+  frame.style.display = 'none';
+  document.body.appendChild(frame);
+});
 
 let Uploaders = {};
 Uploaders.GCS = function (entries, onViewError) {

@@ -6,11 +6,14 @@ defmodule PicselloWeb.Shared.ShortCodeComponent do
 
   @impl true
   def render(assigns) do
-  assigns =
-    assigns
-    |> Enum.into(%{
-      variables_list: variables_codes(assigns.job_type)
-    })
+    job = Map.get(assigns, :job, nil)
+
+    assigns =
+      assigns
+      |> Enum.into(%{
+        variables_list: variables_codes(assigns.job_type, assigns.current_user, job)
+      })
+
     ~H"""
       <div>
         <div testid="variables" class="flex items-center font-bold bg-gray-100 rounded-t-lg border-gray-200 text-blue-planning-300 p-2.5">
@@ -55,7 +58,7 @@ defmodule PicselloWeb.Shared.ShortCodeComponent do
     """
   end
 
-  def variables_codes(job_type) do
+  def variables_codes(job_type, current_user, job) do
     leads = [
       %{
         type: "lead",
@@ -70,13 +73,15 @@ defmodule PicselloWeb.Shared.ShortCodeComponent do
         ]
       }
     ]
-    other = case job_type do
-      :job -> job_variables()
-      :gallery -> job_variables() ++ gallery_variables()
-      _ -> []
-    end
 
-    client_variables() ++ photograopher_variables() ++ leads ++ other
+    other =
+      case job_type do
+        :job -> job_variables()
+        :gallery -> job_variables() ++ gallery_variables()
+        _ -> []
+      end
+
+    client_variables(job) ++ photograopher_variables(current_user) ++ leads ++ other
   end
 
   defp gallery_variables() do
@@ -86,51 +91,94 @@ defmodule PicselloWeb.Shared.ShortCodeComponent do
         variables: [
           %{
             id: 1,
+            name: "gallery_name",
+            sample: "Gallery name",
+            description: "Gallery name"
+          },
+          %{
+            id: 2,
             name: "password",
             sample: "81234",
             description: "Password that has been generated for a client gallery"
           },
           %{
-            id: 2,
+            id: 3,
             name: "gallery_link",
-            sample: "https://gallerylinkhere.com",
+            sample: """
+            <a
+              style="border:1px solid #1F1C1E;display:inline-block;background:white;color:#1F1C1E;font-family:Montserrat, sans-serif;font-size:18px;font-weight:normal;line-height:120%;margin:0;text-decoration:none;text-transform:none;padding:10px 15px;mso-padding-alt:0px;border-radius:0px;"
+              target="_blank"
+              href="https://gallerylinkhere.com">
+              Gallery Link
+            </a>
+            """,
             description: "Link to the client gallery"
           },
           %{
-            id: 3,
+            id: 4,
             name: "album_password",
             sample: "75642",
             description: "Password that has been generaged for a gallery album"
           },
           %{
-            id: 4,
+            id: 5,
             name: "gallery_expiration_date",
             sample: "August 15, 2023",
             description: "Expiration date of the specific gallery formatted as Month DD, YYYY"
           },
           %{
-            id: 5,
+            id: 6,
+            name: "download_photos",
+            sample: """
+            <a
+              style="border:1px solid #1F1C1E;display:inline-block;background:white;color:#1F1C1E;font-family:Montserrat, sans-serif;font-size:18px;font-weight:normal;line-height:120%;margin:0;text-decoration:none;text-transform:none;padding:10px 15px;mso-padding-alt:0px;border-radius:0px;"
+              target="_blank"
+              href="https://gallerydownloadshere.com">
+              Download Photos Link
+            </a>
+            """,
+            description: "Link to the download gallery photos"
+          },
+          %{
+            id: 7,
             name: "order_first_name",
             sample: "Jane",
             description: "First name to personalize gallery order emails"
           },
           %{
-            id: 6,
+            id: 8,
             name: "album_link",
-            sample: "https://albumlinkhere.com",
+            sample: """
+            <a
+              style="border:1px solid #1F1C1E;display:inline-block;background:white;color:#1F1C1E;font-family:Montserrat, sans-serif;font-size:18px;font-weight:normal;line-height:120%;margin:0;text-decoration:none;text-transform:none;padding:10px 15px;mso-padding-alt:0px;border-radius:0px;"
+              target="_blank"
+              href="https://albumlinkhere.com">
+              Album Link
+            </a>
+            """,
             description: "Link to individual album, such as proofing, within client gallery"
           },
           %{
-            id: 7,
+            id: 9,
             name: "client_gallery_order_page",
-            sample: "https://clientgalleryorderpage.com",
+            sample: """
+            <a
+              style="border:1px solid #1F1C1E;display:inline-block;background:white;color:#1F1C1E;font-family:Montserrat, sans-serif;font-size:18px;font-weight:normal;line-height:120%;margin:0;text-decoration:none;text-transform:none;padding:10px 15px;mso-padding-alt:0px;border-radius:0px;"
+              target="_blank"
+              href="https://clientgalleryorderpage.com">
+              Order Page Link
+            </a>
+            """,
             description: "Link for client to view their completed gallery order"
           }
         ]
       }
     ]
   end
-  defp client_variables() do
+
+  defp client_variables(job) do
+    name = get_client_data(job)
+
     [
       %{
         type: "client",
@@ -138,27 +186,23 @@ defmodule PicselloWeb.Shared.ShortCodeComponent do
           %{
             id: 1,
             name: "client_first_name",
-            sample: "Jane",
+            sample: name |> String.split(" ") |> List.first(),
             description: "Client first name to personalize emails"
           },
           %{
             id: 2,
-            name: "email_signature",
-            sample: "Jane Goodrich",
-            description: "Included on every email sent from your Picsello account"
-          },
-          %{
-            id: 3,
             name: "client_full_name",
-            sample: "Jane Goodrich",
+            sample: name,
             description: "Client full name to personalize emails"
           }
         ]
       }
     ]
-
   end
-  defp photograopher_variables() do
+
+  defp photograopher_variables(user) do
+    name = get_photopgrapher_data(user)
+
     [
       %{
         type: "photographer",
@@ -166,11 +210,17 @@ defmodule PicselloWeb.Shared.ShortCodeComponent do
           %{
             id: 1,
             name: "photography_company_s_name",
-            sample: "John lee",
+            sample: name,
             description: "photohrapher company"
           },
           %{
             id: 2,
+            name: "email_signature",
+            sample: name,
+            description: "Included on every email sent from your Picsello account"
+          },
+          %{
+            id: 3,
             name: "photographer_cell",
             sample: "(123) 456-7891",
             description:
@@ -180,6 +230,7 @@ defmodule PicselloWeb.Shared.ShortCodeComponent do
       }
     ]
   end
+
   defp job_variables() do
     [
       %{
@@ -201,19 +252,19 @@ defmodule PicselloWeb.Shared.ShortCodeComponent do
           %{
             id: 3,
             name: "invoice_amount",
-            sample: "450",
+            sample: "450 USD",
             description: "Invoice amount; use in context with payments and balances due"
           },
           %{
             id: 4,
             name: "payment_amount",
-            sample: "775",
+            sample: "775 USD",
             description: "Current payment being made"
           },
           %{
             id: 5,
             name: "remaining_amount",
-            sample: "650",
+            sample: "650 USD",
             description: "Outstanding balance due; use in context with payments, invoices"
           },
           %{
@@ -238,7 +289,14 @@ defmodule PicselloWeb.Shared.ShortCodeComponent do
           %{
             id: 9,
             name: "view_proposal_button",
-            sample: "https://bookingproposalhere.com ",
+            sample: """
+            <a
+              style="border:1px solid #1F1C1E;display:inline-block;background:white;color:#1F1C1E;font-family:Montserrat, sans-serif;font-size:18px;font-weight:normal;line-height:120%;margin:0;text-decoration:none;text-transform:none;padding:10px 15px;mso-padding-alt:0px;border-radius:0px;"
+              target="_blank"
+              href="https://bookingproposalhere.com">
+              View Booking Proposal
+            </a>
+            """,
             description:
               "Link for clients to access their secure portal to make payments and keep in touch"
           }
@@ -247,4 +305,13 @@ defmodule PicselloWeb.Shared.ShortCodeComponent do
     ]
   end
 
+  defp get_photopgrapher_data(user) do
+    Map.get(user.organization, :name, "John lee") |> String.capitalize()
+  end
+
+  defp get_client_data(nil), do: "Jane Goodrich"
+
+  defp get_client_data(job) do
+    Map.get(job.client, :name, "John Goodrich") |> String.capitalize()
+  end
 end

@@ -20,11 +20,11 @@ defmodule Picsello.Messages do
 
   def add_message_to_job(
         %Changeset{} = changeset,
-        %Job{id: id},
+        %Job{id: id} = job,
         recipients_list,
         user
       ) do
-    recipients = get_recipient_attrs(recipients_list, user)
+    recipients = get_recipient_attrs(recipients_list, user, job)
 
     changeset
     |> Changeset.put_change(:job_id, id)
@@ -83,7 +83,7 @@ defmodule Picsello.Messages do
   def find_by_token("" <> token) do
     result = Phoenix.Token.verify(PicselloWeb.Endpoint, "JOB_ID", token, max_age: :infinity)
 
-    Logger.warn(
+    Logger.warning(
       "[Token] find_by_token result {#{Tuple.to_list(result) |> List.first()}, #{Tuple.to_list(result) |> List.last()}}"
     )
 
@@ -100,7 +100,7 @@ defmodule Picsello.Messages do
   def find_by_token("" <> token, key) do
     result = Phoenix.Token.verify(PicselloWeb.Endpoint, key, token, max_age: :infinity)
 
-    Logger.warn(
+    Logger.warning(
       "[Token] find_by_token result {#{Tuple.to_list(result) |> List.first()}, #{Tuple.to_list(result) |> List.last()}}"
     )
 
@@ -126,22 +126,35 @@ defmodule Picsello.Messages do
     )
   end
 
-  defp get_recipient_attrs(recipients_list, user) do
+  defp get_recipient_attrs(recipients_list, user, job \\ nil) do
     recipients_list
     |> Enum.map(fn {type, recipients} ->
       if is_list(recipients),
         do:
           recipients
           |> Enum.map(fn recipient ->
-            get_attrs(recipient, type, user)
+            get_attrs(recipient, type, user, job)
           end),
-        else: get_attrs(recipients, type, user)
+        else: get_attrs(recipients, type, user, job)
     end)
     |> List.flatten()
   end
 
-  defp get_attrs(email, type, user) do
-    client = Clients.get_client(user, email: email)
+  defp get_attrs(email, type, %{organization_id: organization_id}, job) do
+    client = Clients.client_by_email(organization_id, email)
+
+    client =
+      case client do
+        nil ->
+          insert_client_multi(email, organization_id, job)
+
+        %{id: id, archived_at: nil} ->
+          {:ok, client} = Clients.unarchive_client(id)
+          client
+
+        _ ->
+          client
+      end
 
     %{
       client_id: client.id,
@@ -149,6 +162,38 @@ defmodule Picsello.Messages do
       inserted_at: now(),
       updated_at: now()
     }
+  end
+
+  defp insert_client_multi(email, organization_id, job) do
+    Ecto.Multi.new()
+    |> Ecto.Multi.insert(:insert_client, fn _ ->
+      Clients.new_client_changeset(
+        %{"name" => String.split(email, "@") |> List.first(), "email" => email},
+        organization_id
+      )
+    end)
+    |> Ecto.Multi.insert(:insert_tag, fn %{insert_client: %{id: client_id}} ->
+      name = get_tag_name(job)
+
+      Picsello.ClientTag.create_changeset(%{
+        "name" => name,
+        "client_id" => client_id
+      })
+    end)
+    |> Repo.transaction()
+    |> case do
+      {:ok, %{insert_client: client}} ->
+        client
+    end
+  end
+
+  defp get_tag_name(nil), do: "Associated to client"
+
+  defp get_tag_name(job) do
+    job = Repo.preload(job, :client)
+    name = if job.job_name, do: job.job_name, else: "#{job.client.name} #{job.type}"
+
+    "Associated to lead/job \"#{name}\""
   end
 
   defp now(), do: DateTime.utc_now() |> DateTime.truncate(:second)

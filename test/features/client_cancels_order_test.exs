@@ -1,4 +1,5 @@
 defmodule Picsello.ClientCancelsOrderTest do
+  @moduledoc false
   use Picsello.FeatureCase, async: true
   import Money.Sigils
 
@@ -43,14 +44,16 @@ defmodule Picsello.ClientCancelsOrderTest do
     photo_ids: photo_ids
   } do
     session
-    |> click(link("View Gallery"))
+    |> click(css("a", text: "View Gallery"))
     |> click(css("#img-#{List.first(photo_ids)}"))
     |> assert_text("Select an option")
     |> within_modal(&click(&1, button("Add to cart")))
     |> click(css("#img-#{List.last(photo_ids)}"))
+    |> click(css("[phx-click='next']"))
     |> assert_text("Select an option")
+    |> click(css("[phx-click='next']"))
     |> within_modal(&click(&1, button("Add to cart")))
-    |> click(css("p", text: "Added!"))
+    |> click(css("[phx-click='close']"))
     |> click(link("cart"))
     |> click(link("Continue"))
     |> fill_in(text_field("Email"), with: "zach@example.com")
@@ -70,7 +73,7 @@ defmodule Picsello.ClientCancelsOrderTest do
     # |> click(button("Check out with Stripe"))
     #
     # assert [%{errors: []}, %{errors: []}] = run_jobs()
-    # 
+    #
     # assert_receive {:create_session, _params}
   end
 end

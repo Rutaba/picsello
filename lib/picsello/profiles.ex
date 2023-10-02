@@ -26,8 +26,8 @@ defmodule Picsello.Profiles do
     import Ecto.Changeset
 
     embedded_schema do
-      field :url, :string
-      field :content_type, :string
+      field(:url, :string)
+      field(:content_type, :string)
     end
 
     def changeset(profile_image, attrs) do
@@ -76,7 +76,7 @@ defmodule Picsello.Profiles do
     def url_validation_errors(url) do
       case URI.parse(url) do
         %{scheme: nil} ->
-          ("https://" <> url) |> url_validation_errors()
+          ["is invalid"]
 
         %{scheme: scheme, host: "" <> host} when scheme in ["http", "https"] ->
           label = "[a-zA-Z0-9\\-]{1,63}+"
@@ -100,11 +100,12 @@ defmodule Picsello.Profiles do
     import Picsello.Accounts.User, only: [validate_email_format: 1]
     import PicselloWeb.Gettext
 
-    @fields ~w[name email phone job_type message]a
+    @fields ~w[name email phone referred_by referral_name job_type message]a
+    @required_fields ~w[name email phone job_type message]a
 
     embedded_schema do
       for field <- @fields do
-        field field, :string
+        field(field, :string)
       end
     end
 
@@ -112,18 +113,36 @@ defmodule Picsello.Profiles do
       contact
       |> cast(attrs, @fields)
       |> validate_email_format()
-      |> validate_required(@fields)
+      |> validate_required(@required_fields)
     end
 
-    def to_string(%__MODULE__{} = contact) do
+    def message_for(%__MODULE__{} = contact) do
+      msg = """
+        name: #{contact.name}
+        email: #{contact.email}
+        phone: #{contact.phone}
       """
-          name: #{contact.name}
-         email: #{contact.email}
-         phone: #{contact.phone}
-      job type: #{dyn_gettext(contact.job_type)}
-       message: #{contact.message}
-      """
+
+      build_message(contact, msg) <>
+        """
+          job type: #{dyn_gettext(contact.job_type)}
+          message: #{contact.message}
+        """
     end
+
+    defp build_message(%{referred_by: nil}, msg), do: msg
+
+    defp build_message(%{referral_name: nil, referred_by: ref_by}, msg),
+      do: msg <> referred_by(ref_by)
+
+    defp build_message(%{referral_name: ref_name, referred_by: ref_by}, msg),
+      do: msg <> referred_by(ref_by) <> referral_name(ref_name)
+
+    defp referred_by(nil), do: nil
+    defp referred_by(value), do: "referred by: #{value}"
+
+    defp referral_name(nil), do: nil
+    defp referral_name(value), do: "referral name: #{value}"
   end
 
   def contact_changeset(contact, attrs) do
@@ -155,7 +174,9 @@ defmodule Picsello.Profiles do
   end
 
   def update_organization_profile(%Organization{} = organization, attrs) do
-    organization |> edit_organization_profile_changeset(attrs) |> Repo.update()
+    organization
+    |> edit_organization_profile_changeset(attrs)
+    |> Repo.update()
   end
 
   def handle_contact(%{id: organization_id} = _organization, params, helpers) do
@@ -170,10 +191,10 @@ defmodule Picsello.Profiles do
           |> Ecto.Multi.insert(
             :client,
             contact
-            |> Map.take([:name, :email, :phone])
+            |> Map.take([:name, :email, :phone, :referred_by, :referral_name])
             |> Map.put(:organization_id, organization_id)
             |> Client.create_changeset(),
-            on_conflict: {:replace, [:email]},
+            on_conflict: {:replace, [:email, :archived_at]},
             conflict_target: [:organization_id, :email],
             returning: [:id]
           )
@@ -183,7 +204,10 @@ defmodule Picsello.Profiles do
           )
           |> Ecto.Multi.insert_all(:email_automation_job, EmailSchedule, fn %{lead: job} ->
             job = job |> Repo.preload(client: [organization: [:user]])
-            Shared.job_emails(job.type, job.client.organization.id, job.id, [:lead, :job])
+
+            Shared.job_emails(job.type, job.client.organization.id, job.id, [:lead, :job], [
+              :abandoned_emails
+            ])
           end)
           |> Ecto.Multi.insert(
             :message,
@@ -191,7 +215,7 @@ defmodule Picsello.Profiles do
               %{
                 job_id: &1.lead.id,
                 subject: "New lead from profile",
-                body_text: Contact.to_string(contact)
+                body_text: Contact.message_for(contact)
               },
               [:job_id]
             )
@@ -312,18 +336,6 @@ defmodule Picsello.Profiles do
     Phoenix.PubSub.subscribe(Picsello.PubSub, topic)
   end
 
-  defp delete_image_from_storage(url) do
-    Task.start(fn ->
-      url
-      |> URI.parse()
-      |> Map.get(:path)
-      |> Path.split()
-      |> Enum.drop(2)
-      |> Path.join()
-      |> Picsello.Galleries.Workers.PhotoStorage.delete(bucket())
-    end)
-  end
-
   def handle_photo_processed_message(path, id) do
     image_field = if String.contains?(path, "main_image"), do: "main_image", else: "logo"
 
@@ -353,7 +365,7 @@ defmodule Picsello.Profiles do
         end
 
       _ ->
-        Logger.warn("ignoring path #{path} for version #{id}")
+        Logger.warning("ignoring path #{path} for version #{id}")
     end
 
     :ok
@@ -384,7 +396,7 @@ defmodule Picsello.Profiles do
       Picsello.Galleries.Workers.PhotoStorage.params_for_upload(
         expires_in: 600,
         bucket: bucket(),
-        key: to_filename(organization, image, "original"),
+        key: to_filename(organization, image, remove_file_extension(image.client_name)),
         fields:
           %{
             "resize" => Jason.encode!(%{height: resize_height, withoutEnlargement: true}),
@@ -406,14 +418,48 @@ defmodule Picsello.Profiles do
         ]
       )
 
-    meta = params |> Map.take([:url, :key, :fields]) |> Map.put(:uploader, "GCS")
-
     {:ok, organization} =
       update_organization_profile(organization, %{
         profile: %{image_field => %{id: image.uuid, content_type: image.client_type}}
       })
 
-    {:ok, meta, organization}
+    {:ok, make_meta(params), organization}
+  end
+
+  def brand_logo_preflight(%{upload_config: image_field} = image, organization) do
+    resize_height =
+      %{
+        logo: 104,
+        main_image: 600
+      }
+      |> Map.get(image_field)
+
+    {:ok,
+     Picsello.Galleries.Workers.PhotoStorage.params_for_upload(
+       expires_in: 600,
+       bucket: bucket(),
+       key: to_filename(organization, image, remove_file_extension(image.client_name)),
+       fields:
+         %{
+           "resize" => Jason.encode!(%{height: resize_height, withoutEnlargement: true}),
+           "pubsub-topic" => output_topic(),
+           "version-id" => image.uuid,
+           "out-filename" => to_filename(organization, image, "#{image.uuid}.png")
+         }
+         |> meta_fields()
+         |> Enum.into(%{
+           "content-type" => image.client_type,
+           "cache-control" => "public, max-age=@upload_options"
+         }),
+       conditions: [
+         [
+           "content-length-range",
+           0,
+           String.to_integer(Application.get_env(:picsello, :photo_max_file_size))
+         ]
+       ]
+     )
+     |> make_meta()}
   end
 
   def logo_url(organization) do
@@ -439,6 +485,26 @@ defmodule Picsello.Profiles do
     Repo.preload(organization_job_types, [:jobtype])
     |> get_active_organization_job_types()
     |> Enum.map(& &1.job_type)
+  end
+
+  defp delete_image_from_storage(url) do
+    Task.start(fn ->
+      url
+      |> URI.parse()
+      |> Map.get(:path)
+      |> Path.split()
+      |> Enum.drop(2)
+      |> Path.join()
+      |> Picsello.Galleries.Workers.PhotoStorage.delete(bucket())
+    end)
+  end
+
+  defp remove_file_extension(filename) do
+    String.replace(filename, [".svg", ".png", ".jpeg", ".jpg", ".pdf", ".docx", ".txt"], "")
+  end
+
+  defp make_meta(params) do
+    params |> Map.take([:url, :key, :fields]) |> Map.put(:uploader, "GCS")
   end
 
   defp to_filename(organization, %{client_type: content_type} = image, name),

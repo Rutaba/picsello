@@ -1,6 +1,6 @@
 defmodule Picsello.CalendarSettingsTest do
-  use Picsello.FeatureCase, async: true
-  require Ecto.Query
+  @moduledoc false
+  use Picsello.FeatureCase, async: false
 
   setup :onboarded
   setup :authenticated
@@ -10,15 +10,15 @@ defmodule Picsello.CalendarSettingsTest do
     |> visit("/calendar/settings")
     |> assert_text("Calendar Settings")
     |> assert_has(css("a[href*='/calendar']", count: 3))
-    |> click(link("Calendar", count: 2, at: 1))
+    |> click(css("#copy-calendar-link"))
     |> assert_url_contains("calendar")
   end
 
   feature "Calendar settings copy url test", %{session: session} do
     session
     |> visit("/calendar/settings")
-    |> assert_text("Subscribe to your Picsello calendar")
-    |> assert_text("Copy this link if you need to subscribe")
+    |> assert_text("2-way Calendar Sync")
+    |> assert_text("1-way Calendar Sync")
     |> click(button("Copy link"))
     |> assert_text("Copied!")
   end

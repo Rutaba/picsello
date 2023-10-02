@@ -1,4 +1,5 @@
 defmodule Picsello.UserOnboardsIntroTest do
+  @moduledoc false
   use Picsello.FeatureCase, async: true
 
   setup do

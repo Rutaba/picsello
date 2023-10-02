@@ -55,9 +55,11 @@ defmodule Picsello.EmailPresets.JobResolver do
   end
 
   defp booking_event_name(job) do
-    booking_event = Map.get(job, :booking_event)
+    booking_event = Map.get(job, :booking_event, nil)
     if booking_event, do: booking_event.name, else: Picsello.Job.name(job)
   end
+
+  defp booking_event_id(job), do: Map.get(job, :booking_event_id, nil)
 
   defp strftime(%__MODULE__{helpers: helpers} = resolver, date, format) do
     resolver |> photographer() |> Map.get(:time_zone) |> helpers.strftime(date, format)
@@ -66,6 +68,7 @@ defmodule Picsello.EmailPresets.JobResolver do
   defp package(%__MODULE__{job: job}), do: Picsello.Repo.preload(job, :package).package
 
   defp noop(%__MODULE__{}), do: nil
+  defp show_red_section(%__MODULE__{}), do: false
 
   defp helpers(%__MODULE__{helpers: helpers}), do: helpers
 
@@ -106,6 +109,13 @@ defmodule Picsello.EmailPresets.JobResolver do
       "job_name" => &Picsello.Job.name(&1.job),
       "booking_event_name" => &booking_event_name(&1.job),
       "mini_session_link" => &noop/1,
+      # TODO: booking_event_client_url
+      "booking_event_client_url" => fn resolver ->
+        helpers(resolver).client_booking_event_url(
+          organization(resolver).slug,
+          booking_event_id(resolver.job)
+        )
+      end,
       "payment_amount" =>
         &case &1.payment_schedule do
           %Picsello.PaymentSchedule{price: price} -> price
@@ -165,6 +175,8 @@ defmodule Picsello.EmailPresets.JobResolver do
         &case photographer(&1) do
           %Picsello.Accounts.User{name: name} -> name |> String.split() |> hd
           _ -> nil
-        end
+        end,
+      "first_red_section" => &show_red_section/1,
+      "second_red_section" => &show_red_section/1
     }
 end

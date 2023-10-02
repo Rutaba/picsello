@@ -174,11 +174,6 @@ defmodule PicselloWeb.LayoutView do
             path: Routes.job_path(socket, :jobs)
           },
           %{
-            title: "Email Automations",
-            icon: "envelope",
-            path: Routes.email_automations_index_path(socket, :index)
-          },
-          %{
             title: "Inbox",
             icon: "envelope",
             path: Routes.inbox_path(socket, :index)
@@ -204,6 +199,11 @@ defmodule PicselloWeb.LayoutView do
       %{
         heading: "Settings",
         items: [
+          %{
+            title: "Automations",
+            icon: "play-icon",
+            path: Routes.email_automations_index_path(socket, :index)
+          },
           %{
             title: "Packages",
             icon: "package",
@@ -482,9 +482,9 @@ defmodule PicselloWeb.LayoutView do
 
         <.subscription_ending_soon type="header" socket={@socket} current_user={@current_user} />
 
-        <div id="initials-menu" class="relative flex flex-row justify-end cursor-pointer" phx-update="ignore" phx-hook="ToggleContent">
+        <div id="initials-menu" class="relative flex flex-row justify-end cursor-pointer" phx-hook="ToggleContent">
           <%= if @current_user do %>
-            <div class="absolute top-0 right-0 flex flex-col items-end hidden cursor-default text-base-300 toggle-content">
+            <div phx-update="ignore" id="initials-menu-inner-content" class="absolute top-0 right-0 flex flex-col items-end hidden cursor-default text-base-300 toggle-content">
               <div class="p-4 -mb-2 bg-white shadow-md cursor-pointer text-base-300">
                 <.icon name="close-x" class="w-4 h-4 stroke-current stroke-2" />
               </div>

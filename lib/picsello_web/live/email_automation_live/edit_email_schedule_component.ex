@@ -24,6 +24,9 @@ defmodule PicselloWeb.EmailAutomationLive.EditEmailScheduleComponent do
         socket
       ) do
     job_types = get_selected_job_types(job_types, job_type)
+    first_red_section = get_plain_text(email.body_template, "first_red_section")
+    second_red_section = get_plain_text(email.body_template, "second_red_section")
+
     email_presets = EmailPresets.email_automation_presets(type, job_type.name, pipeline_id)
 
     socket
@@ -35,6 +38,14 @@ defmodule PicselloWeb.EmailAutomationLive.EditEmailScheduleComponent do
     |> assign(step: :edit_email)
     |> assign(show_variables: false)
     |> assign(email_preset_changeset: EmailSchedule.changeset(email, %{}))
+    |> assign(
+      :first_red_section,
+      if(first_red_section, do: first_red_section |> String.replace("\n", ""), else: nil)
+    )
+    |> assign(
+      :second_red_section,
+      if(second_red_section, do: second_red_section |> String.replace("\n", ""), else: nil)
+    )
     |> assign_new(:template_preview, fn -> nil end)
     |> ok()
   end
@@ -111,8 +122,7 @@ defmodule PicselloWeb.EmailAutomationLive.EditEmailScheduleComponent do
       ) do
     socket
     |> assign(
-      email_preset_changeset:
-        build_email_changeset(email_preset, maybe_normalize_params(params))
+      email_preset_changeset: build_email_changeset(email_preset, maybe_normalize_params(params))
     )
     |> noreply()
   end
@@ -121,15 +131,13 @@ defmodule PicselloWeb.EmailAutomationLive.EditEmailScheduleComponent do
   def handle_event(
         "submit",
         %{"step" => "edit_email"},
-        %{assigns: %{email_preset_changeset: changeset} = assigns} = socket
+        socket
       ) do
-    body_html = Ecto.Changeset.get_field(changeset, :body_template)
-    Process.send_after(self(), {:load_template_preview, __MODULE__, body_html}, 50)
+    socket =
+      socket
+      |> assign(:module_name, __MODULE__)
 
-    socket
-    |> assign(:template_preview, :loading)
-    |> assign(step: next_step(assigns))
-    |> noreply()
+    preview_template(socket)
   end
 
   @impl true
@@ -188,7 +196,7 @@ defmodule PicselloWeb.EmailAutomationLive.EditEmailScheduleComponent do
 
   def step(%{step: :edit_email} = assigns) do
     ~H"""
-      <.email_header pipeline={@pipeline} email={@email_preset}/>
+      <.email_header index={@index} pipeline={@pipeline} email={@email_preset}/>
       <hr class="my-8" />
 
       <% f = to_form(@email_preset_changeset) %>
@@ -231,7 +239,7 @@ defmodule PicselloWeb.EmailAutomationLive.EditEmailScheduleComponent do
             </div>
 
             <div class={"flex flex-col w-full md:w-1/3 md:ml-2 min-h-[16rem] md:mt-0 mt-6 #{!@show_variables && "hidden"}"}>
-              <.short_codes_select id="short-codes" show_variables={"#{@show_variables}"} target={@myself} job_type={@pipeline.email_automation_category.type} />
+              <.short_codes_select id="short-codes" show_variables={"#{@show_variables}"} target={@myself} job_type={@pipeline.email_automation_category.type} job={@job} current_user={@current_user}/>
             </div>
           </div>
         </div>
@@ -241,7 +249,7 @@ defmodule PicselloWeb.EmailAutomationLive.EditEmailScheduleComponent do
 
   def step(%{step: :preview_email} = assigns) do
     ~H"""
-      <.email_header pipeline={@pipeline} email={@email_preset}/>
+      <.email_header index={@index} pipeline={@pipeline} email={@email_preset}/>
       <span class="text-base-250">Check out how your client will see your emails. We’ve put in some placeholder data to visualize the variables.</span>
 
       <hr class="my-4" />
@@ -255,7 +263,7 @@ defmodule PicselloWeb.EmailAutomationLive.EditEmailScheduleComponent do
           </div>
         <% content -> %>
           <div class="flex justify-center p-2 mt-4 rounded-lg bg-base-200">
-            <iframe srcdoc={content} class="w-[30rem]" scrolling="no" phx-hook="IFrameAutoHeight" id="template-preview">
+            <iframe srcdoc={content} class="w-[30rem]" scrolling="no" phx-hook="IFrameAutoHeight" phx-update="ignore" id="template-preview">
             </iframe>
           </div>
       <% end %>
@@ -263,10 +271,6 @@ defmodule PicselloWeb.EmailAutomationLive.EditEmailScheduleComponent do
   end
 
   defp step_number(name, steps), do: Enum.find_index(steps, &(&1 == name)) + 1
-
-  defp next_step(%{step: step, steps: steps}) do
-    Enum.at(steps, Enum.find_index(steps, &(&1 == step)) + 1)
-  end
 
   def step_buttons(%{step: step} = assigns) when step in [:timing, :edit_email] do
     ~H"""
@@ -282,17 +286,6 @@ defmodule PicselloWeb.EmailAutomationLive.EditEmailScheduleComponent do
       Save
     </button>
     """
-  end
-
-  defp maybe_normalize_params(params) do
-    {_, params} =
-      get_and_update_in(
-        params,
-        ["status"],
-        &{&1, if(&1 == "true", do: :active, else: :disabled)}
-      )
-
-    params
   end
 
   defp save(
@@ -314,10 +307,10 @@ defmodule PicselloWeb.EmailAutomationLive.EditEmailScheduleComponent do
     )
     |> Repo.transaction()
     |> case do
-      {:ok, %{email_preset: email_preset}} ->
+      {:ok, _} ->
         send(
           self(),
-          {:update_automation, %{message: "Successfully updated", email_preset: email_preset}}
+          {:update_automation, %{message: "Successfully updated"}}
         )
 
         :ok

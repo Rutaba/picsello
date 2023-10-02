@@ -463,7 +463,7 @@ defmodule PicselloWeb.GalleryLive.CreateComponent do
   end
 
   defp date_time_now() do
-    (DateTime.utc_now() |> DateTime.to_string())
+    DateTime.utc_now() |> DateTime.to_string()
   end
 
   defp package_pricing_params(package) do

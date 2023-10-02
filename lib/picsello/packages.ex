@@ -80,12 +80,11 @@ defmodule Picsello.Packages do
 
     import PicselloWeb.PackageLive.Shared, only: [current: 1]
 
-    @percent_options for(amount <- 10..100//10, do: {"#{amount}%", amount})
     @sign_options [{"Discount", "-"}, {"Surcharge", "+"}]
 
     @primary_key false
     embedded_schema do
-      field(:percent, :integer, default: @percent_options |> hd |> elem(1))
+      field(:percent, :float, default: 0.0)
       field(:sign, :string, default: @sign_options |> hd |> elem(1))
       field(:is_enabled, :boolean)
       field(:discount_base_price, :boolean, default: false)
@@ -146,12 +145,11 @@ defmodule Picsello.Packages do
         Map.get(multiplier, :discount_digitals)
     end
 
-    def percent_options(), do: @percent_options
     def sign_options(), do: @sign_options
 
     def from_decimal(%{base_multiplier: d} = package) do
-      case d |> Decimal.sub(1) |> Decimal.mult(100) |> Decimal.to_integer() do
-        0 ->
+      case d |> Decimal.sub(1) |> Decimal.mult(100) |> Decimal.to_float() do
+        0.0 ->
           %__MODULE__{is_enabled: false}
 
         percent when percent < 0 ->
@@ -171,11 +169,19 @@ defmodule Picsello.Packages do
 
     def to_decimal(%__MODULE__{sign: sign, percent: percent}) do
       case sign do
-        "+" -> percent
-        "-" -> Decimal.negate(percent)
+        "+" -> percent_to_decimal(percent)
+        "-" -> percent |> percent_to_decimal() |> Decimal.negate()
       end
       |> Decimal.div(100)
       |> Decimal.add(1)
+    end
+
+    defp percent_to_decimal(value) do
+      if is_float(value) do
+        Decimal.from_float(value)
+      else
+        Decimal.new(value)
+      end
     end
   end
 
@@ -335,6 +341,7 @@ defmodule Picsello.Packages do
     def from_package(package, nil),
       do: from_package(package, %{download_each_price: nil, buy_all_price: nil})
 
+    # called when creating new package
     def from_package(
           %{download_each_price: nil, buy_all: nil, download_count: nil, currency: currency} =
             package,
@@ -351,6 +358,7 @@ defmodule Picsello.Packages do
             set_download_fields(package, global_settings)
           )
 
+    # Called when editing existing package
     def from_package(
           %{download_each_price: each_price, download_count: count, id: id, currency: currency} =
             package,
@@ -391,24 +399,10 @@ defmodule Picsello.Packages do
     end
 
     def from_package(
-          %{download_each_price: each_price, download_count: count, currency: currency} = package,
-          %{download_each_price: gs_each_price} = global_settings
-        )
-        when not is_nil(each_price) and
-               (each_price == gs_each_price or each_price.amount == @default_each_price_amount) and
-               count in [0, nil] do
-      Map.merge(
-        %__MODULE__{status: :none, is_custom_price: true, is_buy_all: true, currency: currency},
-        set_download_fields(package, global_settings)
-      )
-    end
-
-    def from_package(
-          %{download_each_price: each_price, download_count: count, currency: currency} = package,
+          %{download_count: count, currency: currency} = package,
           global_settings
         )
-        when each_price in [global_settings.download_each_price, nil] or
-               each_price.amount == @default_each_price_amount do
+        when count > 0 do
       Map.merge(
         %__MODULE__{
           status: :limited,
@@ -423,22 +417,29 @@ defmodule Picsello.Packages do
     end
 
     def from_package(
-          %{download_count: count, currency: currency},
-          _global_settings
+          %{download_each_price: each_price, currency: currency} = package,
+          global_settings
         )
-        when count in [0, nil],
-        do:
-          set_count_fields(
-            %__MODULE__{
-              status: :unlimited,
-              is_custom_price: false,
-              each_price: zero_price(currency),
-              buy_all: nil,
-              is_buy_all: false,
-              currency: currency
-            },
-            count
-          )
+        when not is_nil(each_price) and each_price.amount > 0 do
+      Map.merge(
+        %__MODULE__{status: :none, is_custom_price: true, is_buy_all: true, currency: currency},
+        set_download_fields(package, global_settings)
+      )
+    end
+
+    def from_package(%{download_count: count, currency: currency}, _),
+      do:
+        set_count_fields(
+          %__MODULE__{
+            status: :unlimited,
+            is_custom_price: false,
+            each_price: zero_price(currency),
+            buy_all: nil,
+            is_buy_all: false,
+            currency: currency
+          },
+          count
+        )
 
     def count(%__MODULE__{count: nil}), do: 0
     def count(%__MODULE__{count: count}), do: count
@@ -502,6 +503,8 @@ defmodule Picsello.Packages do
     defp set_count_fields(download, count),
       do: %{download | count: count, includes_credits: true}
   end
+
+  def get_payment_defaults(), do: @payment_defaults_fixed
 
   def get_payment_defaults(schedule_type) do
     Map.get(@payment_defaults_fixed, schedule_type, ["To Book", "6 Months Before", "Week Before"])
@@ -765,7 +768,7 @@ defmodule Picsello.Packages do
         %{
           package_id: package.id,
           price: Money.new(get_price(base_price, count, index) * 100),
-          description: "$#{get_price(base_price, count, index)} to #{default}",
+          description: "$#{get_price(base_price, count, index)} #{default}",
           schedule_date: future_date(),
           interval: true,
           due_interval: default,

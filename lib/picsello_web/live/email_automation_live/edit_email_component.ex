@@ -4,10 +4,12 @@ defmodule PicselloWeb.EmailAutomationLive.EditEmailComponent do
   use PicselloWeb, :live_component
   import PicselloWeb.LiveModal, only: [close_x: 1, footer: 1]
   import PicselloWeb.GalleryLive.Shared, only: [steps: 1]
+  import PicselloWeb.PackageLive.Shared, only: [current: 1]
   import PicselloWeb.Shared.Quill, only: [quill_input: 1]
   import PicselloWeb.Shared.MultiSelect
   import PicselloWeb.Shared.ShortCodeComponent, only: [short_codes_select: 1]
   import PicselloWeb.EmailAutomationLive.Shared
+  import Ecto.Query
 
   alias Picsello.{Repo, EmailPresets, EmailPresets.EmailPreset}
 
@@ -24,17 +26,28 @@ defmodule PicselloWeb.EmailAutomationLive.EditEmailComponent do
         socket
       ) do
     job_types = get_selected_job_types(job_types, job_type)
+    first_red_section = get_plain_text(email.body_template, "first_red_section")
+    second_red_section = get_plain_text(email.body_template, "second_red_section")
     email_presets = EmailPresets.email_automation_presets(type, job_type.name, pipeline_id)
 
     socket
     |> assign(assigns)
     |> assign(job_types: job_types)
+    |> assign(:job, nil)
     |> assign(email_presets: remove_duplicate(email_presets, email))
     |> assign(email_preset: email)
     |> assign(steps: @steps)
     |> assign(step: :edit_email)
     |> assign(show_variables: false)
     |> assign(email_preset_changeset: EmailPreset.changeset(email, %{}))
+    |> assign(
+      :first_red_section,
+      if(first_red_section, do: first_red_section |> String.replace("\n", ""), else: nil)
+    )
+    |> assign(
+      :second_red_section,
+      if(second_red_section, do: second_red_section |> String.replace("\n", ""), else: nil)
+    )
     |> assign_new(:template_preview, fn -> nil end)
     |> ok()
   end
@@ -111,8 +124,7 @@ defmodule PicselloWeb.EmailAutomationLive.EditEmailComponent do
       ) do
     socket
     |> assign(
-      email_preset_changeset:
-        build_email_changeset(email_preset, maybe_normalize_params(params))
+      email_preset_changeset: build_email_changeset(email_preset, maybe_normalize_params(params))
     )
     |> noreply()
   end
@@ -121,17 +133,13 @@ defmodule PicselloWeb.EmailAutomationLive.EditEmailComponent do
   def handle_event(
         "submit",
         %{"step" => "edit_email"},
-        %{assigns: %{email_preset_changeset: changeset} = assigns} = socket
+        socket
       ) do
-    body_html = Ecto.Changeset.get_field(changeset, :body_template)
-    |> :bbmustache.render(get_sample_values(), key_type: :atom)
+    socket =
+      socket
+      |> assign(:module_name, __MODULE__)
 
-    Process.send_after(self(), {:load_template_preview, __MODULE__, body_html}, 50)
-
-    socket
-    |> assign(:template_preview, :loading)
-    |> assign(step: next_step(assigns))
-    |> noreply()
+    preview_template(socket)
   end
 
   @impl true
@@ -171,17 +179,25 @@ defmodule PicselloWeb.EmailAutomationLive.EditEmailComponent do
           <.step name={@step} f={f} {assigns} />
 
           <.footer class="pt-10">
-            <div class="mr-auto md:hidden flex w-full pointer-events-none opacity-40">
-            <.multi_select
-                id="job_types_mobile"
-                select_class="w-full"
-                hide_tags={true}
-                placeholder="Add to:"
-                search_on={false}
-                form="job_type"
-                on_change={fn options -> send_update(__MODULE__, id: __MODULE__, options: options) end}
-                options={@job_types}
-              />
+            <div class="mr-auto md:hidden flex w-full">
+              <div class="hidden">
+                <.multi_select
+                    id="job_types_mobile"
+                    select_class="w-full"
+                    hide_tags={true}
+                    placeholder="Add to:"
+                    search_on={false}
+                    form="job_type"
+                    on_change={fn options -> send_update(__MODULE__, id: __MODULE__, options: options) end}
+                    options={@job_types}
+                  />
+              </div>
+              <div class={classes(%{"hidden" => @step == :preview_email})}>
+                <label class="flex items-center mt-3">
+                  <%= checkbox(f, :is_global, class: "w-5 h-5 mr-2.5 checkbox") %>
+                  <span>Apply Changes to all job types</span>
+                </label>
+              </div>
             </div>
             <.step_buttons step={@step} form={f} is_valid={step_valid?(assigns)} myself={@myself} />
 
@@ -195,17 +211,25 @@ defmodule PicselloWeb.EmailAutomationLive.EditEmailComponent do
               </button>
             <% end %>
 
-            <div class="mr-auto hidden md:flex pointer-events-none opacity-40">
-              <.multi_select
-                id="job_types"
-                select_class="w-52"
-                hide_tags={true}
-                placeholder="Add to:"
-                search_on={false}
-                form="job_type"
-                on_change={fn options -> send_update(__MODULE__, id: __MODULE__, options: options) end}
-                options={@job_types}
-              />
+            <div class="mr-auto hidden md:flex">
+              <div class="mr-auto hidden pointer-events-none opacity-40">
+                <.multi_select
+                  id="job_types"
+                  select_class="w-52"
+                  hide_tags={true}
+                  placeholder="Add to:"
+                  search_on={false}
+                  form="job_type"
+                  on_change={fn options -> send_update(__MODULE__, id: __MODULE__, options: options) end}
+                  options={@job_types}
+                />
+              </div>
+              <div class={classes(%{"hidden" => @step == :preview_email})}>
+                <label class="flex items-center mt-3">
+                  <%= checkbox(f, :is_global, class: "w-5 h-5 mr-2.5 checkbox") %>
+                  <span>Apply Changes to all job types</span>
+                </label>
+              </div>
             </div>
           </.footer>
         </.form>
@@ -215,7 +239,7 @@ defmodule PicselloWeb.EmailAutomationLive.EditEmailComponent do
 
   def step(%{step: :edit_email} = assigns) do
     ~H"""
-      <.email_header pipeline={@pipeline} email={@email}/>
+      <.email_header index={@index} pipeline={@pipeline} email={@email}/>
       <hr class="my-8" />
 
       <% f = to_form(@email_preset_changeset) %>
@@ -260,7 +284,7 @@ defmodule PicselloWeb.EmailAutomationLive.EditEmailComponent do
             </div>
 
             <div class={"flex flex-col w-full md:w-1/3 md:ml-2 min-h-[16rem] md:mt-0 mt-6 #{!@show_variables && "hidden"}"}>
-              <.short_codes_select id="short-codes" show_variables={"#{@show_variables}"} target={@myself} job_type={@pipeline.email_automation_category.type} />
+              <.short_codes_select id="short-codes" show_variables={"#{@show_variables}"} target={@myself} job_type={@pipeline.email_automation_category.type} current_user={@current_user}/>
             </div>
           </div>
         </div>
@@ -270,7 +294,7 @@ defmodule PicselloWeb.EmailAutomationLive.EditEmailComponent do
 
   def step(%{step: :preview_email} = assigns) do
     ~H"""
-      <.email_header pipeline={@pipeline} email={@email_preset}/>
+      <.email_header index={@index} pipeline={@pipeline} email={@email_preset}/>
       <span class="text-base-250">Check out how your client will see your emails. We’ve put in some placeholder data to visualize the variables.</span>
 
       <hr class="my-4" />
@@ -284,7 +308,7 @@ defmodule PicselloWeb.EmailAutomationLive.EditEmailComponent do
           </div>
         <% content -> %>
           <div class="flex justify-center p-2 mt-4 rounded-lg bg-base-200">
-            <iframe srcdoc={content} class="w-[30rem]" scrolling="no" phx-hook="IFrameAutoHeight" id="template-preview">
+            <iframe srcdoc={content} class="w-[30rem]" scrolling="no" phx-hook="IFrameAutoHeight" phx-update="ignore" id="template-preview">
             </iframe>
           </div>
       <% end %>
@@ -293,14 +317,10 @@ defmodule PicselloWeb.EmailAutomationLive.EditEmailComponent do
 
   defp step_number(name, steps), do: Enum.find_index(steps, &(&1 == name)) + 1
 
-  defp next_step(%{step: step, steps: steps}) do
-    Enum.at(steps, Enum.find_index(steps, &(&1 == step)) + 1)
-  end
-
   def step_buttons(%{step: step} = assigns) when step in [:timing, :edit_email] do
     ~H"""
-    <button class="btn-primary" title="Next" disabled={!@is_valid} type="submit" phx-disable-with="Next">
-      Next
+    <button class="btn-primary" title="Review" disabled={!@is_valid} type="submit" phx-disable-with="Review">
+      Review
     </button>
     """
   end
@@ -308,50 +328,60 @@ defmodule PicselloWeb.EmailAutomationLive.EditEmailComponent do
   def step_buttons(%{step: :preview_email} = assigns) do
     ~H"""
     <button class="btn-primary" title="Save" disabled={!@is_valid} type="submit" phx-disable-with="Save">
-      Save
+      Finish
     </button>
     """
-  end
-
-  defp maybe_normalize_params(params) do
-    {_, params} =
-      get_and_update_in(
-        params,
-        ["status"],
-        &{&1, if(&1 == "true", do: :active, else: :disabled)}
-      )
-
-    params
   end
 
   defp save(
          %{
            assigns: %{
-            pipeline: pipeline,
+             pipeline: pipeline,
              email_preset_changeset: email_preset_changeset,
              email: email,
-            #  current_user: %{organization_id: organization_id}
+             current_user: %{organization_id: organization_id}
            }
          } = socket
        ) do
     changeset =
-    Ecto.Changeset.put_change(email_preset_changeset, :id, email.id)
-    |> Ecto.Changeset.put_change(:state, pipeline.state)
+      Ecto.Changeset.put_change(email_preset_changeset, :id, email.id)
+      |> Ecto.Changeset.put_change(:state, pipeline.state)
 
-    Ecto.Multi.new()
-    |> Ecto.Multi.insert(
-      :email_preset,
-      fn _ -> changeset end,
-      on_conflict: {:replace, [:name, :subject_template, :body_template, :private_name]},
-      conflict_target: [:id]
-    )
+    preset = current(changeset)
+
+    if preset.is_global do
+      Ecto.Multi.new()
+      |> Ecto.Multi.update_all(
+        :email_presets,
+        fn _ ->
+          from(ep in EmailPreset,
+            where:
+              ep.state == ^pipeline.state and ep.organization_id == ^organization_id and
+                ep.name == ^preset.name,
+            update: [
+              set: [
+                subject_template: ^preset.subject_template,
+                body_template: ^preset.body_template,
+                private_name: ^preset.private_name
+              ]
+            ]
+          )
+        end,
+        []
+      )
+    else
+      Ecto.Multi.new()
+      |> Ecto.Multi.insert(
+        :email_preset,
+        fn _ -> changeset end,
+        on_conflict: {:replace, [:subject_template, :body_template, :private_name]},
+        conflict_target: [:id]
+      )
+    end
     |> Repo.transaction()
     |> case do
-      {:ok, %{email_preset: email_preset}} ->
-        send(
-          self(),
-          {:update_automation, %{message: "Successfully updated", email_preset: email_preset}}
-        )
+      {:ok, _} ->
+        send(self(), {:update_automation, %{message: "Successfully updated"}})
 
         :ok
 

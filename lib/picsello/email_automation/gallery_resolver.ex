@@ -2,7 +2,7 @@ defmodule Picsello.EmailPresets.GalleryResolver do
   @moduledoc "resolves gallery mustache variables"
 
   defstruct [:gallery, :order, :album, :helpers]
-  alias Picsello.{Galleries.Gallery, Galleries.Album, Cart.Order}
+  alias Picsello.{Galleries.Gallery, Galleries.Album, Cart.Order, Pack}
 
   def new({%Gallery{} = gallery}, helpers),
     do: %__MODULE__{
@@ -52,6 +52,15 @@ defmodule Picsello.EmailPresets.GalleryResolver do
     resolver |> photographer() |> Map.get(:time_zone) |> helpers.strftime(date, format)
   end
 
+  defp download_photos_link(%__MODULE__{gallery: gallery}) do
+    case Pack.url(gallery) do
+      {:ok, url} -> url
+      _ -> nil
+    end
+  end
+
+  defp show_red_section(%__MODULE__{}), do: false
+
   defp helpers(%__MODULE__{helpers: helpers}), do: helpers
 
   def vars,
@@ -64,6 +73,7 @@ defmodule Picsello.EmailPresets.GalleryResolver do
       "photography_company_s_name" => &organization(&1).name,
       "photographer_first_name" => &(&1 |> photographer() |> Picsello.Accounts.User.first_name()),
       "gallery_name" => &(&1 |> gallery() |> Map.get(:name)),
+      "download_photos" => &download_photos_link(&1),
       "gallery_expiration_date" =>
         &with(
           %DateTime{} = expired_at <- &1 |> gallery() |> Map.get(:expired_at),
@@ -84,6 +94,8 @@ defmodule Picsello.EmailPresets.GalleryResolver do
           %Album{client_link_hash: "" <> client_link_hash} <- album(&1),
           do: helpers(&1).album_url(client_link_hash)
         ),
-      "album_password" => &(&1 |> gallery() |> Map.get(:password))
+      "album_password" => &(&1 |> gallery() |> Map.get(:password)),
+      "first_red_section" => &show_red_section/1,
+      "second_red_section" => &show_red_section/1
     }
 end

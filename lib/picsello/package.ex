@@ -11,6 +11,7 @@ defmodule Picsello.Package do
     field :base_multiplier, :decimal, default: 1
     field :base_price, Money.Ecto.Map.Type
     field :description, :string
+    field :thumbnail_url, :string
     field :download_count, :integer
     field :download_each_price, Money.Ecto.Map.Type
     field :job_type, :string
@@ -132,7 +133,7 @@ defmodule Picsello.Package do
     package
     |> cast(
       attrs,
-      ~w[discount_base_price discount_digitals discount_print_credits digitals_include_in_total print_credits_include_in_total schedule_type fixed description questionnaire_template_id name organization_id shoot_count print_credits turnaround_weeks show_on_public_profile]a
+      ~w[discount_base_price discount_digitals discount_print_credits digitals_include_in_total print_credits_include_in_total schedule_type fixed description thumbnail_url questionnaire_template_id name organization_id shoot_count print_credits turnaround_weeks show_on_public_profile]a
     )
     |> validate_required(~w[name organization_id shoot_count turnaround_weeks]a)
     |> validate_number(:shoot_count, less_than_or_equal_to: 10)
@@ -156,7 +157,9 @@ defmodule Picsello.Package do
         package_id = Ecto.Changeset.get_field(changeset, :id)
 
         changeset
-        |> validate_number(:shoot_count, greater_than_or_equal_to: shoot_count_minimum(package_id))
+        |> validate_number(:shoot_count,
+          greater_than_or_equal_to: shoot_count_minimum(package_id)
+        )
       else
         changeset
       end
@@ -295,6 +298,26 @@ defmodule Picsello.Package do
     Money.add(digitals_price, update_price)
   end
 
+  def price_before_discounts(%__MODULE__{currency: currency} = package) do
+    print_credits_price =
+      if package.print_credits_include_in_total do
+        print_credits(package)
+      else
+        Money.new(0, currency)
+      end
+
+    digitals_price =
+      if package.digitals_include_in_total do
+        Money.add(print_credits_price, digitals_price(package))
+      else
+        print_credits_price
+      end
+
+    base_price = base_price(package)
+
+    Money.add(digitals_price, base_price)
+  end
+
   def templates_for_organization(organization_id) do
     templates_for_organization_query(organization_id)
     |> where([package], package.show_on_public_profile)
@@ -357,6 +380,7 @@ defmodule Picsello.Package do
           id: integer(),
           name: String.t(),
           description: String.t(),
+          thumbnail_url: String.t(),
           organization_id: integer(),
           shoot_count: integer(),
           turnaround_weeks: integer(),

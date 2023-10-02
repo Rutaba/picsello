@@ -130,7 +130,10 @@ defmodule Picsello.Notifiers.UserNotifierTest do
                stripe_fee: %Money{amount: -1673, currency: :USD},
                positive_shipping: %Money{amount: 3845, currency: :USD},
                shipping: %Money{amount: -3845, currency: :USD},
-               total_products_price: %Money{amount: 52_800, currency: :USD}
+               total_products_price: %Money{amount: 52_800, currency: :USD},
+               print_credit_remaining: %Money{amount: 0, currency: :USD},
+               print_credit_used: %Money{amount: 0, currency: :USD},
+               print_credits_available: true
              }) ==
                template_variables(email)
     end
@@ -163,7 +166,10 @@ defmodule Picsello.Notifiers.UserNotifierTest do
                shipping: %Money{amount: -3845, currency: :USD},
                positive_shipping: %Money{amount: 3845, currency: :USD},
                total_costs: %Money{amount: -3845, currency: :USD},
-               total_products_price: %Money{amount: 52_800, currency: :USD}
+               total_products_price: %Money{amount: 52_800, currency: :USD},
+               print_credit_remaining: %Money{amount: 0, currency: :USD},
+               print_credit_used: %Money{amount: 0, currency: :USD},
+               print_credits_available: true
              }) ==
                template_variables(email)
     end
@@ -205,7 +211,10 @@ defmodule Picsello.Notifiers.UserNotifierTest do
                total_costs: %Money{amount: -59, currency: :USD},
                total_digitals_price: %Money{amount: 1000, currency: :USD},
                total_products_price: %Money{amount: 0, currency: :USD},
-               products_quantity: 0
+               products_quantity: 0,
+               print_credit_remaining: %Money{amount: 0, currency: :USD},
+               print_credit_used: %Money{amount: 0, currency: :USD},
+               print_credits_available: true
              }) ==
                template_variables(email)
     end

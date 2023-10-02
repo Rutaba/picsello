@@ -8,9 +8,10 @@ defmodule Picsello.EmailPresets.EmailPreset do
   @types ~w(lead job gallery)a
   @status ~w(active disabled)a
   @states_by_type %{
-    lead: ~w(manual_thank_you_lead client_contact booking_proposal_sent manual_booking_proposal_sent lead)a,
+    lead:
+      ~w(manual_thank_you_lead client_contact booking_proposal_sent manual_booking_proposal_sent abandoned_emails lead)a,
     job:
-      ~w(job post_shoot shoot_thanks offline_payment paid_full paid_offline_full balance_due before_shoot booking_event pays_retainer pays_retainer_offline booking_proposal payment_confirmation_client shoot_reminder)a,
+      ~w(job post_shoot shoot_thanks offline_payment paid_full paid_offline_full balance_due before_shoot thanks_booking pays_retainer pays_retainer_offline booking_proposal payment_confirmation_client shoot_reminder)a,
     gallery:
       ~w[manual_gallery_send_link gallery_send_link cart_abandoned gallery_expiration_soon gallery_password_changed order_confirmation_physical order_confirmation_digital order_confirmation_digital_physical digitals_ready_download order_shipped order_delayed order_arrived gallery_shipping_to_client gallery_shipping_to_photographer album_send_link proofs_send_link manual_send_proofing_gallery manual_send_proofing_gallery_finals]a
   }
@@ -29,6 +30,7 @@ defmodule Picsello.EmailPresets.EmailPreset do
     field :position, :integer
     field :private_name, :string
     field :immediately, :boolean, default: true, virtual: true
+    field :is_global, :boolean, default: false, virtual: true
     field :count, :integer, virtual: true
     field :calendar, :string, virtual: true
     field :sign, :string, virtual: true
@@ -53,7 +55,7 @@ defmodule Picsello.EmailPresets.EmailPreset do
     email_preset
     |> cast(
       attrs,
-      ~w[status total_hours state condition email_automation_pipeline_id organization_id immediately count calendar sign template_id private_name type job_type name position subject_template body_template]a
+      ~w[status total_hours state condition email_automation_pipeline_id organization_id is_global immediately count calendar sign template_id private_name type job_type name position subject_template body_template]a
     )
     |> validate_required(
       ~w[status email_automation_pipeline_id type name position subject_template body_template]a
@@ -61,17 +63,17 @@ defmodule Picsello.EmailPresets.EmailPreset do
     # |> validate_states()
     |> foreign_key_constraint(:job_type)
     |> then(fn changeset ->
-      unless get_field(changeset, :immediately) do
-        changeset
-        |> validate_required([:count])
-        |> validate_number(:count, greater_than: 0, less_than_or_equal_to: 31)
-        |> put_change(:total_hours, calculate_hours(changeset))
-      else
+      if get_field(changeset, :immediately) do
         changeset
         |> put_change(:count, nil)
         |> put_change(:calendar, nil)
         |> put_change(:sign, nil)
         |> put_change(:total_hours, 0)
+      else
+        changeset
+        |> validate_required([:count])
+        |> validate_number(:count, greater_than: 0, less_than_or_equal_to: 31)
+        |> put_change(:total_hours, calculate_hours(changeset))
       end
     end)
   end
@@ -115,6 +117,7 @@ defmodule Picsello.EmailPresets.EmailPreset do
           total_hours: integer(),
           condition: String.t(),
           immediately: boolean(),
+          is_global: boolean(),
           count: integer(),
           calendar: String.t(),
           sign: String.t(),

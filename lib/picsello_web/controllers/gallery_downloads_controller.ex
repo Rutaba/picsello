@@ -52,10 +52,28 @@ defmodule PicselloWeb.GalleryDownloadsController do
       |> Enum.map(& &1.photo)
       |> Enum.split_with(& &1.size)
       |> assure_photo_size()
-      |> Photos.csv_content()
+      |> Photos.csv_content(:base)
 
+    handle_csv_response(conn, client.name, gallery.name, album.name, csv_data)
+  end
+
+  def download_lightroom_csv(conn, %{"hash" => hash, "order_number" => order_number}) do
+    %{job: %{client: client}} =
+      gallery = Galleries.get_gallery_by_hash!(hash) |> Repo.preload(job: [:client])
+
+    %{digitals: digitals, album: album} = Orders.get!(gallery, order_number)
+
+    csv_data =
+      digitals
+      |> Enum.map(& &1.photo)
+      |> Photos.csv_content(:lightroom)
+
+    handle_csv_response(conn, client.name, gallery.name, album.name, csv_data)
+  end
+
+  defp handle_csv_response(conn, client_name, gallery_name, album_name, csv_data) do
     file_name =
-      ~s(#{Date.utc_today() |> Date.to_string()}_#{client.name}_#{gallery.name}_#{album.name}.csv)
+      ~s(#{Date.utc_today() |> Date.to_string()}_#{client_name}_#{gallery_name}_#{album_name}.csv)
 
     conn
     |> put_resp_content_type("text/csv")
@@ -73,10 +91,15 @@ defmodule PicselloWeb.GalleryDownloadsController do
 
   defp assure_photo_size({with_size, without_size}) do
     without_size
-    |> Task.async_stream(fn %{original_url: url, id: id} ->
-      {:ok, %{status: 200, body: body}} = PhotoStorage.path_to_url(url) |> Tesla.get()
-      %{id: id, size: byte_size(body)}
-    end)
+    |> Task.async_stream(
+      fn %{original_url: url, id: id} ->
+        case PhotoStorage.path_to_url(url) |> Tesla.get() do
+          {:ok, %{status: 200, body: body}} -> %{id: id, size: byte_size(body)}
+          _ -> %{id: id, size: 123_456}
+        end
+      end,
+      timeout: 15_000
+    )
     |> Enum.map(&elem(&1, 1))
     |> then(&Photos.update_photos_in_bulk(without_size, &1))
     |> then(fn {:ok, photos} -> photos end)

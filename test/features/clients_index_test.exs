@@ -1,4 +1,5 @@
 defmodule Picsello.ClientsIndexTest do
+  @moduledoc false
   use Picsello.FeatureCase, async: true
   import Ecto.Query
 
@@ -136,7 +137,8 @@ defmodule Picsello.ClientsIndexTest do
     session
     |> click(css("#hamburger-menu"))
     |> click(link("Clients", count: 2, at: 1))
-    |> find(css("#intro_hints_only"), &click(&1, button("Add client")))
+    |> sleep(300)
+    |> click(button("Add client"))
     |> fill_in(text_field("Email"), with: "jane@example.com")
     |> wait_for_enabled_submit_button(text: "Save")
     |> click(button("Save"))
@@ -201,17 +203,21 @@ defmodule Picsello.ClientsIndexTest do
     |> visit("/clients")
     |> click(button("Manage", count: 3, at: 0))
     |> click(button("Create gallery"))
-    |> click(button("Next", count: 2, at: 0))
-    |> click(css("label", text: "Wedding"))
-    |> find(select("# of Shoots"), &click(&1, option("2")))
-    |> wait_for_enabled_submit_button(text: "Next")
-    |> within_modal(&click(&1, button("Next")))
-    |> scroll_into_view(testid("print"))
-    |> click(radio_button("Gallery does not include Print Credits"))
-    |> click(button("Edit settings"))
-    |> scroll_into_view(css("#download_status_unlimited"))
-    |> click(css("#download_status_unlimited"))
-    |> within_modal(&click(&1, button("Save")))
+    |> within_modal(fn modal ->
+      modal
+      |> click(button("Next", at: 1))
+      |> scroll_into_view(css("label", text: "Wedding"))
+      |> click(css("label", text: "Wedding"))
+      |> find(select("# of Shoots"), &click(&1, option("2")))
+      |> wait_for_enabled_submit_button(text: "Next")
+      |> click(button("Next"))
+      |> scroll_into_view(testid("print"))
+      |> click(radio_button("Gallery does not include Print Credits"))
+      |> click(button("Edit settings"))
+      |> scroll_into_view(css("#download_status_unlimited"))
+      |> click(css("#download_status_unlimited"))
+      |> click(button("Save"))
+    end)
     |> click(button("Great!"))
     |> assert_url_contains("galleries")
   end

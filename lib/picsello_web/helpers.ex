@@ -5,6 +5,8 @@ defmodule PicselloWeb.Helpers do
   alias Picsello.Cart.Order
   alias Picsello.Galleries
 
+  def booking_events_url(), do: Routes.calendar_booking_events_url(Endpoint, :index)
+
   def jobs_url(), do: Routes.job_url(Endpoint, :jobs)
 
   def job_url(id), do: Routes.job_url(Endpoint, :jobs, id)
@@ -45,6 +47,13 @@ defmodule PicselloWeb.Helpers do
       |> URI.parse()
       |> Map.put(:fragment, type)
       |> URI.to_string()
+
+  def client_booking_event_url(_slug, nil), do: nil
+
+  def client_booking_event_url(slug, id) do
+    Endpoint
+    |> Routes.client_booking_event_url(:show, slug, id)
+  end
 
   def ngettext(singular, plural, count) do
     Gettext.dngettext(PicselloWeb.Gettext, "picsello", singular, plural, count, %{})

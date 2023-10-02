@@ -40,7 +40,49 @@ defmodule PicselloWeb.GalleryLive.ClientShow.Cart.Summary do
       <.inner_content {assigns} />
 
       <%= render_slot(@inner_block) %>
+
+      <.payment_options {assigns} />
     </div>
+    """
+  end
+
+  defp payment_options(
+         %{caller: caller, gallery: %{organization: %{payment_options: payment_options}}} =
+           assigns
+       )
+       when caller in ~w(cart proofing_album_cart)a do
+    assigns =
+      Enum.into(assigns, %{
+        payment_options: payment_options
+      })
+
+    ~H"""
+    <div class="px-5 mb-5">
+        <h3 class="uppercase text-base-250">Online payment options</h3>
+        <div class="mr-auto flex flex-wrap items-center gap-4 mt-2">
+          <.payment_icon icon="payment-card" option="Cards" />
+          <%= if(@payment_options.allow_cash) do %>
+            <.payment_icon icon="payment-offline" option="Manual payments (check/cash/Venmo/Etc)" />
+          <% end %>
+          <%= if(@payment_options.allow_afterpay_clearpay) do %>
+            <.payment_icon icon="payment-afterpay" option="Afterpay" />
+          <% end %>
+          <%= if(@payment_options.allow_affirm) do %>
+            <.payment_icon icon="payment-affirm" option="Affirm ($50.00 min.)" />
+          <% end %>
+          <%= if(@payment_options.allow_klarna) do %>
+            <.payment_icon icon="payment-klarna" option="Klarna" />
+          <% end %>
+          <%= if(@payment_options.allow_cashapp) do %>
+            <.payment_icon icon="payment-cashapp" option="Cashapp Pay" />
+          <% end %>
+        </div>
+    </div>
+    """
+  end
+
+  defp payment_options(assigns) do
+    ~H"""
     """
   end
 
@@ -108,6 +150,15 @@ defmodule PicselloWeb.GalleryLive.ClientShow.Cart.Summary do
         <dd class="self-center hidden toggle lg:block justify-self-end">-<%= Money.neg(value) %></dd>
       <% end %>
     </dl>
+    """
+  end
+
+  defp payment_icon(assigns) do
+    ~H"""
+    <div class="flex gap-1 items-center text-sm">
+      <.icon name={@icon} class="w-4 h-4" />
+      <%= @option %>
+    </div>
     """
   end
 
@@ -231,9 +282,10 @@ defmodule PicselloWeb.GalleryLive.ClientShow.Cart.Summary do
 
       credited ->
         credit = length(credited)
+        gallery = Picsello.Repo.get(Gallery, gallery_id)
 
         [
-          {credit(%Gallery{id: gallery_id}, credit, caller),
+          {credit(gallery, credit, caller),
            credited |> Enum.reduce(Money.new(0, currency), &Money.subtract(&2, &1.price))}
         ]
     end

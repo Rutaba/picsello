@@ -22,10 +22,11 @@ defmodule PicselloWeb.JobLive.Show do
       title_header: 1,
       card_title: 1,
       process_cancel_upload: 2,
-      renew_uploads: 3
+      renew_uploads: 3,
+      complete_job_component: 1
     ]
 
-  import PicselloWeb.GalleryLive.Shared, only: [expired_at: 1, new_gallery_path: 2]
+  import PicselloWeb.GalleryLive.Shared, only: [expired_at: 1]
 
   @upload_options [
     accept: ~w(.pdf .docx .txt),
@@ -62,15 +63,7 @@ defmodule PicselloWeb.JobLive.Show do
   @impl true
   def handle_event("confirm_job_complete", %{}, socket) do
     socket
-    |> PicselloWeb.ConfirmationComponent.open(%{
-      confirm_event: "complete_job",
-      confirm_label: "Yes, complete",
-      confirm_class: "btn-primary",
-      subtitle:
-        "After you complete the job this becomes read-only. This action cannot be undone.",
-      title: "Are you sure you want to complete this job?",
-      icon: "warning-blue"
-    })
+    |> complete_job_component()
     |> noreply()
   end
 
@@ -154,15 +147,7 @@ defmodule PicselloWeb.JobLive.Show do
   @impl true
   def handle_info({:action_event, "confirm_job_complete"}, socket) do
     socket
-    |> PicselloWeb.ConfirmationComponent.open(%{
-      confirm_event: "complete_job",
-      confirm_label: "Yes, complete",
-      confirm_class: "btn-primary",
-      subtitle:
-        "After you complete the job this becomes read-only. This action cannot be undone.",
-      title: "Are you sure you want to complete this job?",
-      icon: "warning-blue"
-    })
+    |> complete_job_component()
     |> noreply()
   end
 
@@ -211,10 +196,9 @@ defmodule PicselloWeb.JobLive.Show do
     |> noreply()
   end
 
+  @impl true
   def handle_info({:redirect_to_gallery, gallery}, socket) do
-    socket
-    |> push_redirect(to: new_gallery_path(socket, gallery))
-    |> noreply()
+    PicselloWeb.Live.Shared.handle_info({:redirect_to_gallery, gallery}, socket)
   end
 
   @impl true
@@ -256,7 +240,7 @@ defmodule PicselloWeb.JobLive.Show do
     case Picsello.Galleries.gallery_current_status(gallery) do
       :none_created when type == :finals ->
         %{
-          button_text: "Create Finals",
+          button_text: "Create finals",
           button_click: "create-gallery",
           button_disabled: !parent_has_orders?,
           text: text(:finals, :none_created, parent_has_orders?),
@@ -383,7 +367,7 @@ defmodule PicselloWeb.JobLive.Show do
               <div class="flex justify-between w-full">
                 <.card_content gallery={gallery} icon_name="proofing" title="Client Proofing" padding="pr-3" {assigns} />
                 <div class="h-full w-px bg-base-200"/>
-                <.card_content gallery={child || %Gallery{type: :finals, orders: []}} parent_id={gallery.id} parent_has_orders?={orders != []} icon_name="finals" title="Client Finals" padding="pl-3" {assigns} />
+                <.card_content gallery={child || %Gallery{type: :finals, orders: []}} parent_id={gallery.id} parent_has_orders?={Enum.any?(orders, & &1.placed_at)} icon_name="finals" title="Client Finals" padding="pl-3" {assigns} />
               </div>
             </div>
           </div>
@@ -405,7 +389,7 @@ defmodule PicselloWeb.JobLive.Show do
         </div>
         <span class="mt-0.5 ml-3 text-base font-bold"><%= @title %></span>
       </div>
-      <.inner_section {assigns} btn_class="px-4" socket={@socket} />
+      <.inner_section {assigns} btn_class="px-2" socket={@socket} />
     </div>
     """
   end
@@ -418,7 +402,7 @@ defmodule PicselloWeb.JobLive.Show do
           p_class: "text-base h-12",
           btn_section_class: "mt-2",
           btn_class: "px-3",
-          count: Enum.count(orders),
+          count: Enum.count(orders, & &1.placed_at),
           parent_has_orders?: true,
           parent_id: nil
         }
@@ -430,7 +414,7 @@ defmodule PicselloWeb.JobLive.Show do
         <p class={"text-base-250 font-normal #{@p_class}"}>
           <%= text %>
           <%= unless status in [:no_photo, :none_created] do %>
-            - <%= if @count == 0, do: "No", else: @count %> orders
+            - <%= if @count == 0, do: "No orders", else: "#{@count} " <> ngettext("order", "orders", @count) %>
           <% end %>
         </p>
         <div {testid("card-buttons")} class={"flex self-end items-center gap-4 #{@btn_section_class}"} >

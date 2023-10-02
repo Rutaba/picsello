@@ -595,26 +595,6 @@ defmodule PicselloWeb.GalleryLive.Photos.Index do
     |> noreply()
   end
 
-  @impl true
-  def handle_event("gallery-created", %{"galleryType" => "finals"}, socket) do
-    socket |> assign(:first_visit?, true) |> noreply()
-  end
-
-  @impl true
-  def handle_event("gallery-created", %{"galleryType" => type}, socket) do
-    {title, subtitle} = success_component_items()[type]
-
-    socket
-    |> PicselloWeb.SuccessComponent.open(%{
-      title: title,
-      subtitle: subtitle,
-      close_label: "Great!",
-      close_class: "bg-black text-white",
-      for: type
-    })
-    |> noreply()
-  end
-
   def handle_event(
         "folder-information",
         %{"folder" => folder, "sub_folders" => sub_folders},
@@ -730,6 +710,8 @@ defmodule PicselloWeb.GalleryLive.Photos.Index do
       |> Galleries.get_photos_by_ids(selected_photos)
       |> Enum.each(&ProcessingManager.start(&1, Watermark.build(name, gallery)))
     end
+
+    Galleries.sort_album_photo_positions_by_name(String.to_integer(album_id))
 
     socket
     |> close_modal()
@@ -948,7 +930,7 @@ defmodule PicselloWeb.GalleryLive.Photos.Index do
   def handle_info(:update_photo_gallery_state, socket) do
     socket
     |> assign_show_favorite_toggle()
-    |> noreply()
+    |> process_favorites(@per_page)
   end
 
   defp assigns(socket, gallery_id, album \\ nil) do
@@ -1151,16 +1133,12 @@ defmodule PicselloWeb.GalleryLive.Photos.Index do
     """
   end
 
-  defp success_component_items() do
-    %{
-      "proofing" => {
-        "Set Up Your Proofing Gallery",
-        "Your proofing gallery is up and running! Your first proofing album lives within your gallery for this job."
-      },
-      "standard" => {
-        "Gallery Created!",
-        "Hooray! Your gallery has been created. You're now ready to upload photos."
-      }
-    }
+  defp grid_padding(error_count, first_visit?) do
+    cond do
+      first_visit? && error_count != 0 -> "pt-80 mt-4"
+      first_visit? && error_count == 0 -> "pt-72"
+      error_count == 0 -> "lg:pt-44 pt-48"
+      true -> "pt-64"
+    end
   end
 end

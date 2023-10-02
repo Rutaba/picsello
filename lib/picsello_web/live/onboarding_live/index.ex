@@ -110,10 +110,13 @@ defmodule PicselloWeb.OnboardingLive.Index do
       <%= for org <- inputs_for(@f, :organization) do %>
         <%= hidden_inputs_for org %>
 
-        <.form_field label="Photography business name" error={:name} prefix="Photography business name" f={org} mt={0} >
-          <%= input org, :name, phx_debounce: "500", placeholder: "Business name", class: @input_class %>
+        <.form_field label="What’s the name of your photography business?" error={:name} prefix="Photography business name" f={org} mt={0} >
+          <%= input org, :name, phx_debounce: "500", placeholder: "Jack Nimble Photography", class: @input_class %>
+          <p class="italic text-sm text-gray-400 mt-2">We generate a URL for your Public Profile based on your business name. Here’s a preview: <%= PicselloWeb.Router.Helpers.profile_url(PicselloWeb.Endpoint, :index, input_value(org, :slug)) %></p>
         </.form_field>
+
       <% end %>
+      <hr class="mt-6 border-base-200" />
 
       <%= for onboarding <- inputs_for(@f, :onboarding) do %>
 
@@ -230,7 +233,7 @@ defmodule PicselloWeb.OnboardingLive.Index do
     |> assign(
       step: 3,
       color_class: "bg-blue-gallery-200",
-      step_title: "Customize your account",
+      step_title: "Customize your business",
       subtitle: "",
       page_title: "Onboarding Step 3"
     )
@@ -281,7 +284,7 @@ defmodule PicselloWeb.OnboardingLive.Index do
         <div class="flex items-end justify-between sm:items-center">
           <.icon name="logo-shoot-higher" class="w-32 h-12 sm:h-20 sm:w-48" />
 
-          <a title="previous" href="#" phx-click="previous" class="cursor-pointer sm:py-2">
+          <a title="previous" phx-click="previous" class="cursor-pointer sm:py-2">
             <ul class="flex items-center">
               <%= for step <- 1..3 do %>
                 <li class={classes(
@@ -364,12 +367,20 @@ defmodule PicselloWeb.OnboardingLive.Index do
     |> Multi.insert(:global_gallery_settings, fn %{user: %{organization: organization}} ->
       GSGallery.price_changeset(%GSGallery{}, %{organization_id: organization.id})
     end)
-    |> Multi.insert(:user_currencies, fn %{user: %{organization: organization}} ->
-      UserCurrency.currency_changeset(%UserCurrency{}, %{
-        organization_id: organization.id,
-        currency: "USD"
-      })
-    end)
+    |> Multi.insert(
+      :user_currencies,
+      fn %{user: %{organization: organization}} ->
+        UserCurrency.currency_changeset(
+          %UserCurrency{},
+          %{
+            organization_id: organization.id,
+            currency: "USD"
+          }
+        )
+      end,
+      conflict_target: [:organization_id],
+      on_conflict: :nothing
+    )
     |> Multi.run(:subscription, fn _repo, %{user: user} ->
       with :ok <-
              Subscriptions.subscription_base(user, "month",

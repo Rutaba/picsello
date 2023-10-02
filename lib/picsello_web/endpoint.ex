@@ -58,6 +58,7 @@ defmodule PicselloWeb.Endpoint do
   plug Plug.Parsers,
     parsers: [:urlencoded, :multipart, :json],
     pass: ["*/*"],
+    length: Application.compile_env!(:picsello, :plug_parser_length),
     json_decoder: Phoenix.json_library()
 
   plug Sentry.PlugContext

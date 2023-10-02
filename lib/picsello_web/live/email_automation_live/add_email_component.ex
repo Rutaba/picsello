@@ -10,7 +10,7 @@ defmodule PicselloWeb.EmailAutomationLive.AddEmailComponent do
   import PicselloWeb.Shared.ShortCodeComponent, only: [short_codes_select: 1]
   import PicselloWeb.EmailAutomationLive.Shared
 
-  alias Picsello.{Repo, EmailPresets, EmailPresets.EmailPreset}
+  alias Picsello.{Repo, EmailPresets, EmailPresets.EmailPreset, Utils}
   alias Ecto.Changeset
 
   @steps [:timing, :edit_email, :preview_email]
@@ -31,6 +31,7 @@ defmodule PicselloWeb.EmailAutomationLive.AddEmailComponent do
     socket
     |> assign(assigns)
     |> assign(job_types: job_types)
+    |> assign(job: nil)
     |> assign(email_presets: email_presets)
     |> assign(email_preset: List.first(email_presets))
     |> assign(steps: @steps)
@@ -147,11 +148,15 @@ defmodule PicselloWeb.EmailAutomationLive.AddEmailComponent do
   def handle_event(
         "submit",
         %{"step" => "edit_email"},
-        %{assigns: %{email_preset_changeset: changeset} = assigns} = socket
+        %{
+          assigns:
+            %{email_preset_changeset: changeset, current_user: current_user, job: job} = assigns
+        } = socket
       ) do
     body_html =
       Ecto.Changeset.get_field(changeset, :body_template)
-      |> :bbmustache.render(get_sample_values(), key_type: :atom)
+      |> :bbmustache.render(get_sample_values(current_user, job), key_type: :atom)
+      |> Utils.normalize_body_template()
 
     Process.send_after(self(), {:load_template_preview, __MODULE__, body_html}, 50)
 
@@ -201,7 +206,8 @@ defmodule PicselloWeb.EmailAutomationLive.AddEmailComponent do
             <div class="mr-auto md:hidden flex w-full">
               <.multi_select
                 id="job_types_mobile"
-                select_class="w-full"
+                select_class="w-full font-bold"
+                placeholder_class="opacity-100"
                 hide_tags={true}
                 placeholder="Add to:"
                 search_on={false}
@@ -225,7 +231,8 @@ defmodule PicselloWeb.EmailAutomationLive.AddEmailComponent do
             <div class="mr-auto hidden md:flex">
               <.multi_select
                 id="job_types"
-                select_class="w-52"
+                select_class="w-52 font-bold"
+                placeholder_class="opacity-100"
                 hide_tags={true}
                 placeholder="Add to:"
                 search_on={false}
@@ -241,10 +248,6 @@ defmodule PicselloWeb.EmailAutomationLive.AddEmailComponent do
   end
 
   defp step_number(name, steps), do: Enum.find_index(steps, &(&1 == name)) + 1
-
-  defp next_step(%{step: step, steps: steps}) do
-    Enum.at(steps, Enum.find_index(steps, &(&1 == step)) + 1)
-  end
 
   def step_buttons(%{step: step} = assigns) when step in [:timing, :edit_email] do
     ~H"""
@@ -265,79 +268,109 @@ defmodule PicselloWeb.EmailAutomationLive.AddEmailComponent do
   def step(%{step: :timing} = assigns) do
     ~H"""
       <div class="rounded-lg border-base-200 border">
-        <div class="bg-base-200 p-4 flex rounded-t-lg">
-          <div class="flex flex-row items-center">
-            <div class="w-8 h-8 rounded-full bg-white flex items-center justify-center mr-3">
-              <.icon name="envelope" class="w-5 h-5 text-blue-planning-300" />
+
+        <div class="bg-base-200 p-4 flex flex-col lg:flex-row rounded-t-lg">
+              <div class="flex items-center">
+                <div>
+                  <div class="w-8 h-8 rounded-full bg-white flex items-center justify-center mr-3">
+                    <.icon name="envelope" class="w-5 h-5 text-blue-planning-300" />
+                  </div>
+                </div>
+                <div class="text-blue-planning-300 text-lg"><b>Send email:</b> <%= @pipeline.name %></div>
+              </div>
+              <div class="flex lg:ml-auto items-center mt-3 lg:mt-0">
+                <div class="w-8 h-8 rounded-full bg-blue-planning-300 flex items-center justify-center mr-3">
+                  <.icon name="play-icon" class="w-4 h-4 fill-current text-white" />
+                </div>
+                <span class="font-semibold">Job Automation</span>
+              </div>
             </div>
-            <span class="text-blue-planning-300 text-lg"><b>Send email:</b> <%= @pipeline.name %></span>
-          </div>
-          <div class="flex ml-auto items-center">
-            <div class="w-8 h-8 rounded-full bg-blue-planning-300 flex items-center justify-center mr-3">
-              <.icon name="play-icon" class="w-4 h-4 fill-current text-white" />
-            </div>
-            <span>Job Automation</span>
-          </div>
-        </div>
 
         <% f = to_form(@email_preset_changeset) %>
         <%= hidden_input f, :subject_template %>
         <%= hidden_input f, :template_id %>
         <%= hidden_input f, :body_template %>
 
-        <div class="flex flex-col md:px-14 px-6 py-6">
-          <b>Automation timing</b>
-          <span class="text-base-250">Choose when you’d like your automation to run</span>
-          <div class="flex gap-4 flex-col my-4">
-            <label class="flex items-center cursor-pointer">
-              <%= radio_button(f, :immediately, true, class: "w-5 h-5 mr-4 radio") %>
-              <p class="font-semibold">Send immediately when event happens</p>
-            </label>
-            <label class="flex items-center cursor-pointer">
-              <%= radio_button(f, :immediately, false, class: "w-5 h-5 mr-4 radio") %>
-              <p class="font-semibold">Send at a certain time</p>
-            </label>
-            <%= unless input_value(f, :immediately) do %>
-              <div class="flex flex-col ml-8 md:w-1/2">
-                <div class="flex w-full my-2">
-                  <div class="w-1/5">
-                    <%= input f, :count, class: "border-base-200 hover:border-blue-planning-300 cursor-pointer w-full" %>
+        <div class="flex flex-col px-6 py-6 md:px-14">
+          <div class="flex flex-col lg:flex-row ">
+            <div class="flex flex-col w-full lg:w-1/2 lg:pr-6 md:border-base-200 pr-6">
+              <b>Automation timing</b>
+              <span class="text-base-250">Choose when you’d like your automation to run</span>
+              <div class="flex gap-4 flex-col my-4">
+                <label class="flex items-center cursor-pointer">
+                  <%= radio_button(f, :immediately, true, class: "w-5 h-5 mr-4 radio") %>
+                  <p class="font-semibold">Send immediately when event happens</p>
+                </label>
+                <label class="flex items-center cursor-pointer">
+                  <%= radio_button(f, :immediately, false, class: "w-5 h-5 mr-4 radio") %>
+                  <p class="font-semibold">Send at a certain time</p>
+                </label>
+                <%= unless input_value(f, :immediately) do %>
+                  <div class="flex flex-col ml-8">
+                    <div class="flex w-full my-2">
+                      <div class="w-1/5 min-w-[40px]">
+                        <%= input f, :count, class: "border-base-200 hover:border-blue-planning-300 cursor-pointer w-full text-center" %>
+                      </div>
+                        <div class="ml-2 w-3/5">
+                        <%= select f, :calendar, ["Hour", "Day", "Month", "Year"], wrapper_class: "mt-4", class: "w-full bg-white p-3 border rounded-lg border-base-200", phx_update: "update" %>
+                      </div>
+                      <div class="ml-2 w-3/5">
+                        <%= select f, :sign, make_sign_options(@pipeline.state), wrapper_class: "mt-4", class: "w-full bg-white p-3 border rounded-lg border-base-200", phx_update: "update" %>
+                      </div>
+                    </div>
+                    <%= if message = @email_preset_changeset.errors[:count] do %>
+                      <div class="flex py-1 w-full text-red-sales-300 text-sm"><%= translate_error(message) %></div>
+                    <% end %>
                   </div>
-                    <div class="ml-2 w-3/5">
-                    <%= select f, :calendar, ["Hour", "Day", "Month", "Year"], wrapper_class: "mt-4", class: "w-full py-3 border rounded-lg border-base-200", phx_update: "update" %>
-                  </div>
-                  <div class="ml-2 w-3/5">
-                    <%= select f, :sign, make_sign_options(@pipeline.state), wrapper_class: "mt-4", class: "w-full py-3 border rounded-lg border-base-200", phx_update: "update" %>
-                  </div>
-                </div>
-                <%= if message = @email_preset_changeset.errors[:count] do %>
-                  <div class="flex py-1 w-full text-red-sales-300 text-sm"><%= translate_error(message) %></div>
                 <% end %>
               </div>
-            <% end %>
-          </div>
-          <b>Email Status</b>
-          <span class="text-base-250">Choose is if this email step is enabled or not to send</span>
-
-          <div>
-            <label class="flex pt-4">
-              <%= checkbox f, :status, class: "peer hidden", checked: Changeset.get_field(@email_preset_changeset, :status) == :active %>
-              <div class="hidden peer-checked:flex cursor-pointer">
-                <div class="rounded-full bg-blue-planning-300 border border-base-100 w-14 p-1 flex justify-end mr-4">
-                  <div class="rounded-full h-5 w-5 bg-base-100"></div>
-                </div>
-                Email enabled
+              <%= if message = @email_preset_changeset.errors[:status] do %>
+                <div class="flex py-1 w-full text-red-sales-300 text-sm"><%= translate_error(message) %></div>
+              <% end %>
               </div>
-              <div class="flex peer-checked:hidden cursor-pointer">
-                <div class="rounded-full w-14 p-1 flex mr-4 border border-blue-planning-300">
-                  <div class="rounded-full h-5 w-5 bg-blue-planning-300"></div>
+              <%= unless input_value(f, :immediately) do %>
+                <div class="flex flex-col w-full lg:w-1/2 lg:pl-6 lg:border-l md:border-base-200">
+                  <b>Email Automation sequence conditions</b>
+                  <span class="text-base-250">Choose to run automatically or when conditions are met</span>
+                  <div class="flex gap-4 flex-col my-4">
+                    <label class="flex items-center cursor-pointer">
+                      <%= radio_button(f, :normally, true, class: "w-5 h-5 mr-4 radio") %>
+                      <p class="font-semibold">Run automation normally</p>
+                    </label>
+                    <label class="flex items-center cursor-pointer">
+                      <%= radio_button(f, :normally, false, class: "w-5 h-5 mr-4 radio") %>
+                      <p class="font-semibold">Run automation only if:</p>
+                    </label>
+                    <%= if input_value(f, :normally) === "false" do %>
+                      <div class="flex my-2 ml-8">
+                        <%= select_field f, :condition, ["Client doesn’t respond by email send time", "Month", "Year"], wrapper_class: "mt-4", class: "w-full pr-10 border rounded-lg border-base-200", phx_update: "update" %>
+                      </div>
+                    <% end %>
+                  </div>
                 </div>
-                Email disabled
-              </div>
-            </label>
-            <%= if message = @email_preset_changeset.errors[:status] do %>
-              <div class="flex py-1 w-full text-red-sales-300 text-sm"><%= translate_error(message) %></div>
-            <% end %>
+              <% end %>
+            </div>
+            <hr class="my-4 flex md:hidden">
+            <div>
+              <b>Email Status</b>
+              <span class="text-base-250">Choose is if this email step is enabled or not to send</span>
+              <div>
+              <label class="flex pt-4">
+                <%= checkbox f, :status, class: "peer hidden", checked: Changeset.get_field(@email_preset_changeset, :status) == :active %>
+                <div class="hidden peer-checked:flex cursor-pointer">
+                  <div class="rounded-full bg-blue-planning-300 border border-base-100 w-14 p-1 flex justify-end mr-4">
+                    <div class="rounded-full h-5 w-5 bg-base-100"></div>
+                  </div>
+                  Email enabled
+                </div>
+                <div class="flex peer-checked:hidden cursor-pointer">
+                  <div class="rounded-full w-14 p-1 flex mr-4 border border-blue-planning-300">
+                    <div class="rounded-full h-5 w-5 bg-blue-planning-300"></div>
+                  </div>
+                  Email disabled
+                </div>
+              </label>
+            </div>
           </div>
         </div>
       </div>
@@ -390,7 +423,7 @@ defmodule PicselloWeb.EmailAutomationLive.AddEmailComponent do
             </div>
 
             <div class={"flex flex-col w-full md:w-1/3 md:ml-2 min-h-[16rem] md:mt-0 mt-6 #{!@show_variables && "hidden"}"}>
-              <.short_codes_select id="short-codes" show_variables={"#{@show_variables}"} target={@myself} job_type={@pipeline.email_automation_category.type} />
+              <.short_codes_select id="short-codes" show_variables={"#{@show_variables}"} target={@myself} job_type={@pipeline.email_automation_category.type} current_user={@current_user}/>
             </div>
           </div>
         </div>
@@ -414,7 +447,7 @@ defmodule PicselloWeb.EmailAutomationLive.AddEmailComponent do
           </div>
         <% content -> %>
           <div class="flex justify-center p-2 mt-4 rounded-lg bg-base-200">
-            <iframe srcdoc={content} class="w-[30rem]" scrolling="no" phx-hook="IFrameAutoHeight" id="template-preview">
+            <iframe srcdoc={content} class="w-[30rem]" scrolling="no" phx-hook="IFrameAutoHeight" phx-update="ignore" id="template-preview">
             </iframe>
           </div>
       <% end %>
@@ -448,19 +481,6 @@ defmodule PicselloWeb.EmailAutomationLive.AddEmailComponent do
 
     socket
     |> email_preset_changeset(email_preset, automation_params)
-  end
-
-  defp maybe_normalize_params(nil), do: nil
-
-  defp maybe_normalize_params(params) do
-    {_, params} =
-      get_and_update_in(
-        params,
-        ["status"],
-        &{&1, if(&1 == "true", do: :active, else: :disabled)}
-      )
-
-    params
   end
 
   defp save(
@@ -506,7 +526,8 @@ defmodule PicselloWeb.EmailAutomationLive.AddEmailComponent do
       {:ok, %{email_preset: email_preset}} ->
         send(
           self(),
-          {:update_automation, %{message: "Successfully created", email_preset: email_preset}}
+          {:update_automation,
+           %{message: "Email template successfully created", email_preset: email_preset}}
         )
 
         :ok

@@ -34,6 +34,13 @@ defmodule PicselloWeb.GalleryLive.Albums.Index do
     |> assign(:gallery_id, gallery_id)
     |> assign(:albums, albums)
     |> assign(:gallery, gallery)
+    |> then(fn
+      %{assigns: %{albums: []}} = socket ->
+        push_redirect(socket, to: Routes.gallery_photos_index_path(socket, :index, gallery_id))
+
+      socket ->
+        socket
+    end)
     |> is_mobile(params)
     |> noreply()
   end
@@ -313,7 +320,7 @@ defmodule PicselloWeb.GalleryLive.Albums.Index do
   defp thumbnail_url(%{thumbnail_photo: photo}), do: preview_url(photo)
 
   defp album_params(albums) do
-    if List.last(albums).is_client_liked && length(albums) == 1,
+    if length(albums) == 1 && List.last(albums).is_client_liked,
       do: %{name: "All Photos", thumbnail_photo: nil, id: "unsorted-photos"},
       else: %{name: "Unsorted Photos", thumbnail_photo: nil, id: "unsorted-photos"}
   end

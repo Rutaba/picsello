@@ -10,7 +10,7 @@ defmodule PicselloWeb.Live.Calendar.BookingEventWizard do
   import PicselloWeb.Shared.Quill, only: [quill_input: 1]
   import PicselloWeb.ClientBookingEventLive.Shared, only: [blurred_thumbnail: 1]
   import PicselloWeb.Live.Calendar.Shared, only: [is_checked: 2]
-  alias Picsello.{BookingEvent, BookingEvents, Packages}
+  alias Picsello.{Payments, BookingEvent, BookingEvents, Packages}
 
   @impl true
   def update(assigns, socket) do
@@ -91,9 +91,11 @@ defmodule PicselloWeb.Live.Calendar.BookingEventWizard do
 
   def wizard_state(assigns) do
     ~H"""
-      <%= for field <- BookingEvent.__schema__(:fields) -- [:dates], input_value(@form, field) do %>
+      <%= for field <- BookingEvent.__schema__(:fields) -- [:dates, :include_questionnaire?], input_value(@form, field) do %>
         <%= hidden_input @form, field, id: nil %>
       <% end %>
+
+      <%= hidden_input @form, :include_questionnaire?, id: nil %>
 
       <%= inputs_for @form, :dates, fn d -> %>
         <%= for field <- BookingEvent.EventDate.__schema__(:fields) -- [:time_blocks], input_value(d, field) do %>
@@ -195,14 +197,23 @@ defmodule PicselloWeb.Live.Calendar.BookingEventWizard do
         </div>
       </div>
     <% end %>
+
+    <%= if @can_edit? do %>
+      <h3 class="font-bold text-xl mt-6">Questionnaire</h3>
+      <label class="flex my-4 cursor-pointer">
+        <%= checkbox(@f, :include_questionnaire?, class: "w-6 h-6 mt-1 checkbox") %>
+        <p class="ml-3">Include questionnaire in booking event?</p>
+      </label>
+    <% end %>
+
     <div class={classes("hidden sm:flex items-center border-b-8 border-blue-planning-300 font-semibold text-lg pb-3 mt-4 text-base-250", %{"justify-between" => @can_edit?})}>
       <%= for title <- ["Package name", "Package Pricing", "Select package"] do %>
         <%= if (!@can_edit? and title !=  "Select package") || @can_edit? do %>
             <div class={classes("w-1/3", %{"last:text-center" => @can_edit?})}><%= title %></div>
         <% end %>
-
       <% end %>
     </div>
+
     <%= if @package_templates == [] do %>
       <div class="flex flex-col md:flex-row mt-2 lg:mt-8">
           <img src="/images/empty-state.png" class="my-auto block"/>
@@ -221,14 +232,14 @@ defmodule PicselloWeb.Live.Calendar.BookingEventWizard do
       </div>
     <% end %>
     <%= if @can_edit? do %>
-        <%= for package <- @package_templates do %>
-          <% checked = is_checked(input_value(@f, :package_template_id), package) %>
-          <label class={classes(%{"cursor-not-allowed pointer-events-none" => !@can_edit?})}>
-            <.package_row package={package} checked={checked}>
-              <input class={classes("w-5 h-5 mr-2.5 radio", %{"checked" => checked})} type="radio" name={input_name(@f, :package_template_id)} value={package.id} />
-            </.package_row>
-          </label>
-        <% end %>
+      <%= for package <- @package_templates do %>
+        <% checked = is_checked(input_value(@f, :package_template_id), package) %>
+        <label class={classes(%{"cursor-not-allowed pointer-events-none" => !@can_edit?})}>
+          <.package_row package={package} checked={checked}>
+            <input class={classes("w-5 h-5 mr-2.5 radio", %{"checked" => checked})} type="radio" name={input_name(@f, :package_template_id)} value={package.id} />
+          </.package_row>
+        </label>
+      <% end %>
     <% else %>
       <% package_id = input_value(@f, :package_template_id) |> to_integer() %>
       <% package = Enum.filter(@package_templates, fn template -> template.id == package_id end) |> List.first() %>
@@ -302,7 +313,7 @@ defmodule PicselloWeb.Live.Calendar.BookingEventWizard do
           <% end %>
         </div>
       </div>
-      <div class={classes("p-4 grid gap-5 lg:grid-cols-3 grid-cols-1", %{"hidden" => Enum.member?(@collapsed_dates, @f.index)})} {intro_hints_only("intro_hints_only")}>
+      <div class={classes("p-4 grid gap-5 lg:grid-cols-3 grid-cols-1", %{"hidden" => Enum.member?(@collapsed_dates, @f.index)})}>
         <div class="flex flex-col">
           <h3 class="text-md font-bold">When is your event?</h3>
           <%= labeled_input @f, :date, type: :date_input, label: "Select Date", min: Date.utc_today(), disabled: is_date_booked(@event_form, input_value(@f, :date)) %>
@@ -327,10 +338,10 @@ defmodule PicselloWeb.Live.Calendar.BookingEventWizard do
               </div>
               <div class="flex items-center justify-between w-full mt-2 lg:mt-6">
                   <%= if get_is_break!(@changeset, @f.index,t.index) do %>
-                    <span class="italic text-base-250 ml-2"> Break Block <.intro_hint class="ml-2 hidden lg:inline-block" content="Breaks are important so you can catch your breath!"/></span>
+                    <span class="italic text-base-250 ml-2"> Break Block <.tooltip class="ml-2 hidden lg:inline-block" content="Breaks are important so you can catch your breath!" id={"break-#{@f.index}-#{t.index}"} /></span>
                   <% end %>
                   <%= if get_is_hidden!(@changeset, @f.index,t.index) do %>
-                    <span class="italic text-base-250 ml-2"> Hidden Block <.intro_hint class="ml-2 hidden lg:inline-block" content="This is a great way to add some urgency for clients to book!"/></span>
+                    <span class="italic text-base-250 ml-2"> Hidden Block <.tooltip class="ml-2 hidden lg:inline-block" content="This is a great way to add some urgency for clients to book!" id={"hidden-#{@f.index}-#{t.index}"}/></span>
                   <% end %>
                 <div class="flex ml-auto">
                   <div data-offset="0" phx-hook="Select" id={"manage-event-#{@f.index}-#{t.index}"} class={classes(%{"pointer-events-none opacity-40" => t |> current |> Map.get(:is_break)})}>
@@ -541,9 +552,18 @@ defmodule PicselloWeb.Live.Calendar.BookingEventWizard do
   @impl true
   def handle_event("submit", %{"step" => "customize", "booking_event" => params}, socket) do
     params = Map.put_new(params, "buffer_minutes", "")
-    %{assigns: %{changeset: changeset}} = socket = assign_changeset(socket, params)
 
-    case BookingEvents.upsert_booking_event(changeset) do
+    %{assigns: %{changeset: changeset, current_user: current_user}} =
+      socket = assign_changeset(socket, params)
+
+    if [:charges_enabled, :loading] |> Enum.member?(Payments.status(current_user)) do
+      changeset
+    else
+      changeset
+      |> Ecto.Changeset.put_change(:status, :disabled)
+    end
+    |> BookingEvents.upsert_booking_event()
+    |> case do
       {:ok, booking_event} ->
         successfull_save(socket, booking_event)
 
@@ -566,7 +586,9 @@ defmodule PicselloWeb.Live.Calendar.BookingEventWizard do
          action \\ nil
        ) do
     changeset =
-      booking_event |> BookingEvent.changeset(params, step: step) |> Map.put(:action, action)
+      booking_event
+      |> BookingEvent.changeset(params, step: step)
+      |> Map.put(:action, action)
 
     dates =
       changeset

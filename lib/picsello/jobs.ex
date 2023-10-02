@@ -1,7 +1,6 @@
 defmodule Picsello.Jobs do
   @moduledoc "context module for jobs"
   alias Picsello.{
-    Accounts.User,
     Repo,
     Client,
     Job,
@@ -42,16 +41,19 @@ defmodule Picsello.Jobs do
   end
 
   def get_jobs(query, %{sort_by: sort_by, sort_direction: sort_direction} = opts) do
-    shoots =
-      from(s in Shoot,
-        where: s.starts_at < ^current_datetime(),
-        select: %{starts_at: s.starts_at, job_id: s.job_id},
-        limit: 1
-      )
-
     from(j in query,
-      left_join: job_status in assoc(j, :job_status),
-      left_join: shoots in subquery(shoots),
+      as: :j,
+      left_join: shoots in assoc(j, :shoots),
+      # inner_lateral_join:
+      #   sorted_shoot in subquery(
+      #     from Shoot,
+      #       as: :s,
+      #       where: [job_id: parent_as(:j).id],
+      #       order_by: [{^sort_direction, field(as(:s), :starts_at)}],
+      #       limit: 1,
+      #       select: [:id, :starts_at, :job_id]
+      #   ),
+      # on: sorted_shoot.id == shoots.id,
       left_join: package in assoc(j, :package),
       left_join: payment_schedules in assoc(j, :payment_schedules),
       where: ^filters_where(opts),
@@ -71,7 +73,7 @@ defmodule Picsello.Jobs do
     from(j in query,
       limit: ^limit,
       offset: ^offset,
-      preload: [:client, :package, :job_status, :payment_schedules, :booking_proposals]
+      preload: [:client, :package, :job_status, :payment_schedules, :booking_proposals, :shoots]
     )
   end
 
@@ -118,29 +120,19 @@ defmodule Picsello.Jobs do
     job |> Job.unarchive_changeset() |> Repo.update()
   end
 
-  def maybe_upsert_client(%Ecto.Multi{} = multi, %Client{} = new_client, %User{} = current_user) do
-    old_client =
-      Repo.get_by(Client,
-        email: new_client.email |> String.downcase(),
-        organization_id: current_user.organization_id
-      )
+  def maybe_upsert_client(%Ecto.Multi{} = multi, client, current_user) do
+    client = Map.put(client, :email, client.email |> String.downcase())
 
-    maybe_upsert_client(multi, old_client, new_client, current_user.organization_id)
-  end
-
-  defp maybe_upsert_client(multi, %Client{id: id} = old_client, _new_client, _organization_id)
-       when id != nil do
-    Ecto.Multi.put(multi, :client, old_client)
-  end
-
-  defp maybe_upsert_client(multi, nil = _old_client, new_client, organization_id) do
-    Ecto.Multi.insert(
-      multi,
+    multi
+    |> Ecto.Multi.insert(
       :client,
-      new_client
+      client
       |> Map.take([:name, :email, :phone])
-      |> Map.put(:organization_id, organization_id)
-      |> Client.create_changeset()
+      |> Map.put(:organization_id, current_user.organization_id)
+      |> Client.create_changeset(),
+      on_conflict: {:replace, [:email, :archived_at]},
+      conflict_target: [:organization_id, :email],
+      returning: [:id]
     )
   end
 
@@ -233,63 +225,63 @@ defmodule Picsello.Jobs do
 
   defp filter_completed_jobs(dynamic) do
     dynamic(
-      [j, client, job_status],
+      [j, client, status],
       ^dynamic and
-        job_status.current_status == :completed
+        status.current_status == :completed
     )
   end
 
   defp filter_active(dynamic, "jobs") do
     dynamic(
-      [j, client, job_status],
+      [j, client, status],
       ^dynamic and
-        job_status.current_status not in [:completed, :archived]
+        status.current_status not in [:completed, :archived]
     )
   end
 
   defp filter_active(dynamic, "leads") do
     dynamic(
-      [j, client, job_status],
+      [j, client, status],
       ^dynamic and
-        job_status.current_status == :sent
+        status.current_status == :sent
     )
   end
 
   defp filter_new_leads(dynamic) do
     dynamic(
-      [j, client, job_status],
+      [j, client, status],
       ^dynamic and
-        job_status.current_status == :not_sent
+        status.current_status == :not_sent
     )
   end
 
   defp filter_awaiting_contract_leads(dynamic) do
     dynamic(
-      [j, client, job_status],
+      [j, client, status],
       ^dynamic and
-        job_status.current_status == :accepted
+        status.current_status == :accepted
     )
   end
 
   defp filter_awaiting_questionnaire_leads(dynamic) do
     dynamic(
-      [j, client, job_status],
+      [j, client, status],
       ^dynamic and
-        job_status.current_status == :signed_with_questionnaire
+        status.current_status == :signed_with_questionnaire
     )
   end
 
   defp filter_pending_invoice_leads(dynamic) do
     dynamic(
-      [j, client, job_status],
+      [j, client, status],
       ^dynamic and
-        job_status.current_status in [:signed_without_questionnaire, :answered]
+        status.current_status in [:signed_without_questionnaire, :answered]
     )
   end
 
   defp filter_archived(dynamic) do
     dynamic(
-      [j, client, job_status],
+      [j, client, status],
       ^dynamic and
         not is_nil(j.archived_at)
     )
@@ -297,7 +289,7 @@ defmodule Picsello.Jobs do
 
   defp filter_overdue_jobs(dynamic) do
     dynamic(
-      [j, client, job_status, job_status_, shoots, package, payment_schedules],
+      [j, client, status, shoots, package, payment_schedules],
       ^dynamic and payment_schedules.due_at <= ^current_datetime() and
         is_nil(payment_schedules.paid_at)
     )
@@ -310,7 +302,7 @@ defmodule Picsello.Jobs do
   end
 
   defp group_by_clause(query, :starts_at) do
-    group_by(query, [j, client, job_status, job_status_, shoots], [j.id, shoots.starts_at])
+    group_by(query, [j, client, status, shoots], [j.id, shoots.starts_at])
   end
 
   defp group_by_clause(query, _) do
@@ -319,7 +311,7 @@ defmodule Picsello.Jobs do
 
   defp filter_order_by(:starts_at, order) do
     [
-      {order, dynamic([j, client, job_status, job_status_, shoots], field(shoots, :starts_at))}
+      {order, dynamic([j, client, status, shoots], field(shoots, :starts_at))}
     ]
   end
 

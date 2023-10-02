@@ -20,6 +20,8 @@ defmodule PicselloWeb.Live.EmailAutomations.Index do
     Repo
   }
 
+  alias PicselloWeb.ConfirmationComponent
+
   @impl true
   def mount(params, _session, socket) do
     socket
@@ -118,20 +120,19 @@ defmodule PicselloWeb.Live.EmailAutomations.Index do
         %{"email-id" => email_id},
         socket
       ) do
-    email_delete =
-      to_integer(email_id)
-      |> EmailAutomations.delete_email()
+    email_delete = to_integer(email_id)
 
-    case email_delete do
-      {:ok, _} ->
-        socket
-        |> put_flash(:success, "Successfully created")
-
-      _ ->
-        socket
-        |> put_flash(:error, "Failed to delete email")
-    end
-    |> assign_automation_pipelines()
+    socket
+    |> assign(:email_id, email_delete)
+    |> ConfirmationComponent.open(%{
+      close_label: "No! Get me out of here",
+      confirm_event: "confirm-delete-email",
+      confirm_label: "Yes, delete",
+      icon: "warning-orange",
+      subtitle:
+        "Do you wish to permanently delete this email template. It will remove the email from the current email automation pipeline sub-category!",
+      title: "Are you sure you want to delete this email template?"
+    })
     |> noreply()
   end
 
@@ -164,12 +165,31 @@ defmodule PicselloWeb.Live.EmailAutomations.Index do
     case EmailAutomations.update_pipeline_and_settings_status(id, active) do
       {_count, nil} ->
         socket
-        |> put_flash(:success, "Pipeline successfully #{message}")
+        |> put_flash(:success, "Email template successfully #{message}")
 
       _error ->
         socket
-        |> put_flash(:error, "Failed to update pipeline s tatus")
+        |> put_flash(:error, "Failed to update email template status")
     end
+    |> assign_automation_pipelines()
+    |> noreply()
+  end
+
+  @impl true
+  def handle_info(
+        {:confirm_event, "confirm-delete-email"},
+        %{assigns: %{email_id: email_id}} = socket
+      ) do
+    case EmailAutomations.delete_email(email_id) do
+      {:ok, _} ->
+        socket
+        |> put_flash(:success, "Email template successfully deleted")
+
+      _ ->
+        socket
+        |> put_flash(:success, "Failed to delete the email template")
+    end
+    |> close_modal()
     |> assign_automation_pipelines()
     |> noreply()
   end
@@ -187,7 +207,8 @@ defmodule PicselloWeb.Live.EmailAutomations.Index do
          } = socket,
          %{
            "email_id" => email_id,
-           "pipeline_id" => pipeline_id
+           "pipeline_id" => pipeline_id,
+           "index" => index
          },
          module
        ) do
@@ -198,7 +219,8 @@ defmodule PicselloWeb.Live.EmailAutomations.Index do
       job_type: selected_job_type.jobtype,
       pipeline: get_pipline(pipeline_id),
       email_id: to_integer(email_id),
-      email: EmailAutomations.get_email_by_id(to_integer(email_id))
+      email: EmailAutomations.get_email_by_id(to_integer(email_id)),
+      index: to_integer(index)
     })
   end
 
@@ -213,7 +235,7 @@ defmodule PicselloWeb.Live.EmailAutomations.Index do
             <div class="flex flex-col">
               <span class="text-blue-planning-300 text-xl font-bold ml-3">
                 <%= @pipeline.name %>
-                <span class="text-base-300 ml-2 rounded-md bg-white px-2 text-sm font-bold whitespace-nowrap"><%= Enum.count(@pipeline.emails)%> emails</span>
+                <span class="text-base-300 ml-2 rounded-md bg-white px-2 text-sm font-bold whitespace-nowrap"><%= Enum.count(@pipeline.emails) %> <%= ngettext("email", "emails", Enum.count(@pipeline.emails)) %></span>
               </span>
               <div class="text-base-250 text-sm ml-3">
                 <%= @pipeline.description %>
@@ -264,18 +286,18 @@ defmodule PicselloWeb.Live.EmailAutomations.Index do
 
                 <div class="flex items-center md:mt-0 ml-auto md:pb-0 pb-6 md:pt-6">
                   <div class="custom-tooltip">
-                    <.icon_button id={"email-#{email.id}"} disabled={disabled_email?(index)} class="ml-8 mr-2 px-2 py-2" title="remove" phx-click="delete-email" phx-value-email_id={email.id} color="red-sales-300" icon="trash"/>
+                    <.icon_button id={"email-#{email.id}"} disabled={disabled_email?(index)} class="ml-8 mr-2 px-2 py-2" title={!(index === 0) && "remove"} phx-click="delete-email" phx-value-email_id={email.id} color="red-sales-300" icon="trash"/>
                     <%= if index == 0 do %>
-                      <span class="text-black font-normal w-64 text-start" style="white-space: normal;">
-                          Can't delete first email; disable the entire sequence if you don't want it to send
+                      <span class={classes("text-black font-normal w-64 text-start", %{" !-left-20" => is_state_manually_trigger(@pipeline.state)})} style="white-space: normal;">
+                          Can't delete first email, disable the entire sequence if you don't want it to send
                       </span>
                     <% end %>
                   </div>
-                  <button phx-click="edit-time-popup" phx-value-email_id={email.id}  phx-value-pipeline_id={@pipeline.id} class={classes("flex items-center px-2 py-1 btn-tertiary text-blue-planning-300  hover:border-blue-planning-300 mr-2 whitespace-nowrap", %{"hidden" => is_state_manually_trigger(@pipeline.state) and index == 0})}>
+                  <button phx-click="edit-time-popup" phx-value-index={index} phx-value-email_id={email.id}  phx-value-pipeline_id={@pipeline.id} class={classes("flex items-center px-2 py-1 btn-tertiary text-blue-planning-300  hover:border-blue-planning-300 mr-2 whitespace-nowrap", %{"hidden" => is_state_manually_trigger(@pipeline.state) and index == 0})}>
                     <.icon name="settings" class="inline-block w-4 h-4 mr-3 fill-current text-blue-planning-300" />
                     Edit time
                   </button>
-                  <button phx-click="edit-email-popup" phx-value-email_id={email.id} phx-value-pipeline_id={@pipeline.id} class="flex items-center px-2 py-1 btn-tertiary bg-blue-planning-300 text-white hover:bg-blue-planning-300/75 whitespace-nowrap" >
+                  <button phx-click="edit-email-popup" phx-value-index={index} phx-value-email_id={email.id} phx-value-pipeline_id={@pipeline.id} class="flex items-center px-2 py-1 btn-tertiary bg-blue-planning-300 text-white hover:bg-blue-planning-300/75 whitespace-nowrap" >
                     <.icon name="pencil" class="inline-block w-4 h-4 mr-3 fill-current text-white" />
                     Edit email
                   </button>
@@ -286,12 +308,12 @@ defmodule PicselloWeb.Live.EmailAutomations.Index do
           <% end %>
           <div class="flex flex-row justify-between pr-6 pl-8 sm:pl-16 py-6">
             <div class="flex items-center">
-              <button phx-click="add-email-popup" phx-value-pipeline_id={@pipeline.id} data-popover-target="popover-default" type="button" class={classes("flex items-center px-2 py-1 btn-tertiary hover:border-blue-planning-300", %{"hidden" => @pipeline.state in ["pays_retainer_offline", "paid_full", "paid_offline_full"]})} >
+              <button phx-click="add-email-popup" phx-value-pipeline_id={@pipeline.id} data-popover-target="popover-default" type="button" class="flex items-center px-2 py-1 btn-tertiary hover:border-blue-planning-300" >
                 <.icon name="plus" class="inline-block w-4 h-4 mr-3 fill-current text-blue-planning-300" />
                     Add email
               </button>
             </div>
-            <%= if !is_state_manually_trigger(@pipeline.state) do %>
+            <%= if !is_state_manually_trigger(@pipeline.state) and @subcategory_slug != "payment_reminder_emails" do %>
               <div class="flex flex-row">
                 <.form :let={_} for={%{}} as={:toggle} phx-click="toggle" phx-value-pipeline_id={@pipeline.id} phx-value-active={is_pipeline_active?(@pipeline.status) |> to_string}>
                 <label class="flex">
@@ -300,13 +322,13 @@ defmodule PicselloWeb.Live.EmailAutomations.Index do
                     <div class="rounded-full bg-blue-planning-300 border border-base-100 w-16 p-1 flex justify-end mr-4">
                       <div class="rounded-full h-5 w-5 bg-base-100"></div>
                     </div>
-                    Enable automation
+                    Enable Sequence
                   </div>
                   <div testid={"disable-#{@pipeline.id}"} class="flex peer-checked:hidden cursor-pointer">
                     <div class="rounded-full w-16 p-1 flex mr-4 border border-blue-planning-300">
                       <div class="rounded-full h-5 w-5 bg-blue-planning-300"></div>
                     </div>
-                    Disable automation
+                    Disable Sequence
                   </div>
                 </label>
                 </.form>
