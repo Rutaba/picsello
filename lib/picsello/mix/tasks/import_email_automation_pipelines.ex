@@ -89,6 +89,14 @@ defmodule Mix.Tasks.ImportEmailAutomationPipelines do
         8.0
       )
 
+    {:ok, automation_gallery_send_post} =
+      maybe_insert_email_automation_slug(
+        sub_categories,
+        "Post gallery send emails",
+        "post_gallery_send_emails",
+        8.5
+      )
+
     {:ok, automation_confirmation} =
       maybe_insert_email_automation_slug(
         sub_categories,
@@ -274,6 +282,14 @@ defmodule Mix.Tasks.ImportEmailAutomationPipelines do
         email_automation_sub_category_id: automation_notification.id,
         email_automation_category_id: email_automation_gallery.id,
         position: 20.0
+      },
+      %{
+        name: "Gallery Send Feedback",
+        state: "after_gallery_send_feedback",
+        description: "This will trigger when after standard and final gallery shared",
+        email_automation_sub_category_id: automation_gallery_send_post.id,
+        email_automation_category_id: email_automation_gallery.id,
+        position: 20.5
       },
       %{
         name: "Order Received (Physical Products Only)",

@@ -286,7 +286,8 @@ defmodule PicselloWeb.EmailAutomationLive.Shared do
         #   "the prior email \"#{get_email_name(email, job_type)}\" has been sent if no response from the client"
         state in ["before_shoot", "shoot_thanks", "post_shoot"] ->
           "the shoot date"
-
+        state == "after_gallery_send_feedback" ->
+          "the gallery send"
         state == "cart_abandoned" and index == 0 ->
           "client abandons cart"
 
@@ -465,6 +466,17 @@ defmodule PicselloWeb.EmailAutomationLive.Shared do
     if is_nil(gallery.password_regenerated_at),
       do: nil,
       else: get_date_for_schedule(last_completed_email, gallery.password_regenerated_at)
+  end
+
+  def fetch_date_for_state(:after_gallery_send_feedback, email, _last_completed_email,_job,gallery,_order) do
+    today = NaiveDateTime.utc_now() |> Timex.end_of_day()
+    %{calendar: calendar, count: count} = explode_hours(email.total_hours)
+    time_calendar = get_timex_calendar(calendar)
+    cond do
+      is_nil(gallery.gallery_send_at) -> nil
+      Timex.compare(today, gallery.gallery_send_at, time_calendar) >= count -> gallery.gallery_send_at
+      true -> nil
+    end
   end
 
   def fetch_date_for_state(
@@ -774,7 +786,7 @@ defmodule PicselloWeb.EmailAutomationLive.Shared do
       |> Enum.map(fn email_data ->
         state = Map.get(email_data, :email_automation_pipeline) |> Map.get(:state)
 
-        if state not in [:order_confirmation_physical, :order_confirmation_digital] do
+        if state not in [:gallery_password_changed, :order_confirmation_physical, :order_confirmation_digital] do
           [
             gallery_id: gallery.id,
             order_id: order_id,

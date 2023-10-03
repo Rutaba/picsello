@@ -677,6 +677,26 @@ defmodule Mix.Tasks.ImportEmailPresets do
       },
       %{
         email_automation_pipeline_id:
+          get_pipeline_id_by_state(pipelines, "after_gallery_send_feedback"),
+        total_hours: EmailPreset.calculate_total_hours(7, %{calendar: "Day", sign: "+"}),
+        status: "active",
+        job_type: "wedding",
+        type: "gallery",
+        position: 0,
+        name: "Gallery - Gallery Send Feedback Email",
+        subject_template: "abc",
+        body_template: """
+        <p><span style="color: rgb(0, 0, 0);">Hello {{client_first_name}},</span></p>
+        <p><span style="color: rgb(0, 0, 0);">I had an absolute blast photographing you and would love to hear from you about your experience.</span></p>
+        <p><span style="color: rgb(0, 0, 0);">Are you enjoying your photos? Do you need help picking products for your photos? Forgive me if you have already decided, I need to schedule these emails in advance or I might forget! </span></p>
+        <p><span style="color: rgb(0, 0, 0);">Would you be willing to leave me a review? Public reviews are huge for my business. Leaving a kind review on Google will really help my small business! It would mean the world to me! </span></p>
+        <p><span style="color: rgb(0, 0, 0);">I look forward to hearing from you again next time you're in need of photography!</span></p>
+        <p><span style="color: rgb(0, 0, 0);">Thanks again! </span></p>
+        <p><span style="color: rgb(0, 0, 0);">{{email_signature}} </span></p>
+        """
+      },
+      %{
+        email_automation_pipeline_id:
           get_pipeline_id_by_state(pipelines, "order_confirmation_digital"),
         total_hours: 0,
         status: "active",
@@ -1504,6 +1524,26 @@ defmodule Mix.Tasks.ImportEmailPresets do
       },
       %{
         email_automation_pipeline_id:
+          get_pipeline_id_by_state(pipelines, "after_gallery_send_feedback"),
+        total_hours: EmailPreset.calculate_total_hours(7, %{calendar: "Day", sign: "+"}),
+        status: "active",
+        job_type: "newborn",
+        type: "gallery",
+        position: 0,
+        name: "Gallery - Gallery Send Feedback Email",
+        subject_template: "abc",
+        body_template: """
+        <p><span style="color: rgb(0, 0, 0);">Hello {{client_first_name}},</span></p>
+        <p><span style="color: rgb(0, 0, 0);">I had an absolute blast photographing you and would love to hear from you about your experience.</span></p>
+        <p><span style="color: rgb(0, 0, 0);">Are you enjoying your photos? Do you need help picking products for your photos? Forgive me if you have already decided, I need to schedule these emails in advance or I might forget! </span></p>
+        <p><span style="color: rgb(0, 0, 0);">Would you be willing to leave me a review? Public reviews are huge for my business. Leaving a kind review on Google will really help my small business! It would mean the world to me! </span></p>
+        <p><span style="color: rgb(0, 0, 0);">I look forward to hearing from you again next time you're in need of photography!</span></p>
+        <p><span style="color: rgb(0, 0, 0);">Thanks again! </span></p>
+        <p><span style="color: rgb(0, 0, 0);">{{email_signature}} </span></p>
+        """
+      },
+      %{
+        email_automation_pipeline_id:
           get_pipeline_id_by_state(pipelines, "order_confirmation_digital"),
         total_hours: 0,
         status: "active",
@@ -2307,6 +2347,26 @@ defmodule Mix.Tasks.ImportEmailPresets do
         <p><span style="color: rgb(0, 0, 0);">Your Gallery password has been successfully changed. If you did not make this change, please let me know!</span></p>
         <p><span style="color: rgb(0, 0, 0);">Thanks! </span></p>
         <p><span style="color: rgb(0, 0, 0);">{{email_signature}}</span></p>
+        """
+      },
+      %{
+        email_automation_pipeline_id:
+          get_pipeline_id_by_state(pipelines, "after_gallery_send_feedback"),
+        total_hours: EmailPreset.calculate_total_hours(7, %{calendar: "Day", sign: "+"}),
+        status: "active",
+        job_type: "family",
+        type: "gallery",
+        position: 0,
+        name: "Gallery - Gallery Send Feedback Email",
+        subject_template: "abc",
+        body_template: """
+        <p><span style="color: rgb(0, 0, 0);">Hello {{client_first_name}},</span></p>
+        <p><span style="color: rgb(0, 0, 0);">I had an absolute blast photographing you and would love to hear from you about your experience.</span></p>
+        <p><span style="color: rgb(0, 0, 0);">Are you enjoying your photos? Do you need help picking products for your photos? Forgive me if you have already decided, I need to schedule these emails in advance or I might forget! </span></p>
+        <p><span style="color: rgb(0, 0, 0);">Would you be willing to leave me a review? Public reviews are huge for my business. Leaving a kind review on Google will really help my small business! It would mean the world to me! </span></p>
+        <p><span style="color: rgb(0, 0, 0);">I look forward to hearing from you again next time you're in need of photography!</span></p>
+        <p><span style="color: rgb(0, 0, 0);">Thanks again! </span></p>
+        <p><span style="color: rgb(0, 0, 0);">{{email_signature}} </span></p>
         """
       },
       %{
@@ -3117,6 +3177,26 @@ defmodule Mix.Tasks.ImportEmailPresets do
       },
       %{
         email_automation_pipeline_id:
+          get_pipeline_id_by_state(pipelines, "after_gallery_send_feedback"),
+        total_hours: EmailPreset.calculate_total_hours(7, %{calendar: "Day", sign: "+"}),
+        status: "active",
+        job_type: "mini",
+        type: "gallery",
+        position: 0,
+        name: "Gallery - Gallery Send Feedback Email",
+        subject_template: "abc",
+        body_template: """
+        <p><span style="color: rgb(0, 0, 0);">Hello {{client_first_name}},</span></p>
+        <p><span style="color: rgb(0, 0, 0);">I had an absolute blast photographing you and would love to hear from you about your experience.</span></p>
+        <p><span style="color: rgb(0, 0, 0);">Are you enjoying your photos? Do you need help picking products for your photos? Forgive me if you have already decided, I need to schedule these emails in advance or I might forget! </span></p>
+        <p><span style="color: rgb(0, 0, 0);">Would you be willing to leave me a review? Public reviews are huge for my business. Leaving a kind review on Google will really help my small business! It would mean the world to me! </span></p>
+        <p><span style="color: rgb(0, 0, 0);">I look forward to hearing from you again next time you're in need of photography!</span></p>
+        <p><span style="color: rgb(0, 0, 0);">Thanks again! </span></p>
+        <p><span style="color: rgb(0, 0, 0);">{{email_signature}} </span></p>
+        """
+      },
+      %{
+        email_automation_pipeline_id:
           get_pipeline_id_by_state(pipelines, "order_confirmation_digital"),
         total_hours: 0,
         status: "active",
@@ -3919,6 +3999,26 @@ defmodule Mix.Tasks.ImportEmailPresets do
         <p><span style="color: rgb(0, 0, 0);">Your Gallery password has been successfully changed. If you did not make this change, please let me know!</span></p>
         <p><span style="color: rgb(0, 0, 0);">Thanks! </span></p>
         <p><span style="color: rgb(0, 0, 0);">{{email_signature}}</span></p>
+        """
+      },
+      %{
+        email_automation_pipeline_id:
+          get_pipeline_id_by_state(pipelines, "after_gallery_send_feedback"),
+        total_hours: EmailPreset.calculate_total_hours(7, %{calendar: "Day", sign: "+"}),
+        status: "active",
+        job_type: "headshot",
+        type: "gallery",
+        position: 0,
+        name: "Gallery - Gallery Send Feedback Email",
+        subject_template: "abc",
+        body_template: """
+        <p><span style="color: rgb(0, 0, 0);">Hello {{client_first_name}},</span></p>
+        <p><span style="color: rgb(0, 0, 0);">I had an absolute blast photographing you and would love to hear from you about your experience.</span></p>
+        <p><span style="color: rgb(0, 0, 0);">Are you enjoying your photos? Do you need help picking products for your photos? Forgive me if you have already decided, I need to schedule these emails in advance or I might forget! </span></p>
+        <p><span style="color: rgb(0, 0, 0);">Would you be willing to leave me a review? Public reviews are huge for my business. Leaving a kind review on Google will really help my small business! It would mean the world to me! </span></p>
+        <p><span style="color: rgb(0, 0, 0);">I look forward to hearing from you again next time you're in need of photography!</span></p>
+        <p><span style="color: rgb(0, 0, 0);">Thanks again! </span></p>
+        <p><span style="color: rgb(0, 0, 0);">{{email_signature}} </span></p>
         """
       },
       %{
@@ -4729,6 +4829,26 @@ defmodule Mix.Tasks.ImportEmailPresets do
       },
       %{
         email_automation_pipeline_id:
+          get_pipeline_id_by_state(pipelines, "after_gallery_send_feedback"),
+        total_hours: EmailPreset.calculate_total_hours(7, %{calendar: "Day", sign: "+"}),
+        status: "active",
+        job_type: "portrait",
+        type: "gallery",
+        position: 0,
+        name: "Gallery - Gallery Send Feedback Email",
+        subject_template: "abc",
+        body_template: """
+        <p><span style="color: rgb(0, 0, 0);">Hello {{client_first_name}},</span></p>
+        <p><span style="color: rgb(0, 0, 0);">I had an absolute blast photographing you and would love to hear from you about your experience.</span></p>
+        <p><span style="color: rgb(0, 0, 0);">Are you enjoying your photos? Do you need help picking products for your photos? Forgive me if you have already decided, I need to schedule these emails in advance or I might forget! </span></p>
+        <p><span style="color: rgb(0, 0, 0);">Would you be willing to leave me a review? Public reviews are huge for my business. Leaving a kind review on Google will really help my small business! It would mean the world to me! </span></p>
+        <p><span style="color: rgb(0, 0, 0);">I look forward to hearing from you again next time you're in need of photography!</span></p>
+        <p><span style="color: rgb(0, 0, 0);">Thanks again! </span></p>
+        <p><span style="color: rgb(0, 0, 0);">{{email_signature}} </span></p>
+        """
+      },
+      %{
+        email_automation_pipeline_id:
           get_pipeline_id_by_state(pipelines, "order_confirmation_digital"),
         total_hours: 0,
         status: "active",
@@ -5530,6 +5650,26 @@ defmodule Mix.Tasks.ImportEmailPresets do
         <p><span style="color: rgb(0, 0, 0);">Your Gallery password has been successfully changed. If you did not make this change, please let me know!</span></p>
         <p><span style="color: rgb(0, 0, 0);">Thanks! </span></p>
         <p><span style="color: rgb(0, 0, 0);">{{email_signature}}</span></p>
+        """
+      },
+      %{
+        email_automation_pipeline_id:
+          get_pipeline_id_by_state(pipelines, "after_gallery_send_feedback"),
+        total_hours: EmailPreset.calculate_total_hours(7, %{calendar: "Day", sign: "+"}),
+        status: "active",
+        job_type: "boudoir",
+        type: "gallery",
+        position: 0,
+        name: "Gallery - Gallery Send Feedback Email",
+        subject_template: "abc",
+        body_template: """
+        <p><span style="color: rgb(0, 0, 0);">Hello {{client_first_name}},</span></p>
+        <p><span style="color: rgb(0, 0, 0);">I had an absolute blast photographing you and would love to hear from you about your experience.</span></p>
+        <p><span style="color: rgb(0, 0, 0);">Are you enjoying your photos? Do you need help picking products for your photos? Forgive me if you have already decided, I need to schedule these emails in advance or I might forget! </span></p>
+        <p><span style="color: rgb(0, 0, 0);">Would you be willing to leave me a review? Public reviews are huge for my business. Leaving a kind review on Google will really help my small business! It would mean the world to me! </span></p>
+        <p><span style="color: rgb(0, 0, 0);">I look forward to hearing from you again next time you're in need of photography!</span></p>
+        <p><span style="color: rgb(0, 0, 0);">Thanks again! </span></p>
+        <p><span style="color: rgb(0, 0, 0);">{{email_signature}} </span></p>
         """
       },
       %{
@@ -6341,6 +6481,26 @@ defmodule Mix.Tasks.ImportEmailPresets do
       },
       %{
         email_automation_pipeline_id:
+          get_pipeline_id_by_state(pipelines, "after_gallery_send_feedback"),
+        total_hours: EmailPreset.calculate_total_hours(7, %{calendar: "Day", sign: "+"}),
+        status: "active",
+        job_type: "other",
+        type: "gallery",
+        position: 0,
+        name: "Gallery - Gallery Send Feedback Email",
+        subject_template: "abc",
+        body_template: """
+        <p><span style="color: rgb(0, 0, 0);">Hello {{client_first_name}},</span></p>
+        <p><span style="color: rgb(0, 0, 0);">I had an absolute blast photographing you and would love to hear from you about your experience.</span></p>
+        <p><span style="color: rgb(0, 0, 0);">Are you enjoying your photos? Do you need help picking products for your photos? Forgive me if you have already decided, I need to schedule these emails in advance or I might forget! </span></p>
+        <p><span style="color: rgb(0, 0, 0);">Would you be willing to leave me a review? Public reviews are huge for my business. Leaving a kind review on Google will really help my small business! It would mean the world to me! </span></p>
+        <p><span style="color: rgb(0, 0, 0);">I look forward to hearing from you again next time you're in need of photography!</span></p>
+        <p><span style="color: rgb(0, 0, 0);">Thanks again! </span></p>
+        <p><span style="color: rgb(0, 0, 0);">{{email_signature}} </span></p>
+        """
+      },
+      %{
+        email_automation_pipeline_id:
           get_pipeline_id_by_state(pipelines, "order_confirmation_digital"),
         total_hours: 0,
         status: "active",
@@ -7147,6 +7307,26 @@ defmodule Mix.Tasks.ImportEmailPresets do
       },
       %{
         email_automation_pipeline_id:
+          get_pipeline_id_by_state(pipelines, "after_gallery_send_feedback"),
+        total_hours: EmailPreset.calculate_total_hours(7, %{calendar: "Day", sign: "+"}),
+        status: "active",
+        job_type: "maternity",
+        type: "gallery",
+        position: 0,
+        name: "Gallery - Gallery Send Feedback Email",
+        subject_template: "abc",
+        body_template: """
+        <p><span style="color: rgb(0, 0, 0);">Hello {{client_first_name}},</span></p>
+        <p><span style="color: rgb(0, 0, 0);">I had an absolute blast photographing you and would love to hear from you about your experience.</span></p>
+        <p><span style="color: rgb(0, 0, 0);">Are you enjoying your photos? Do you need help picking products for your photos? Forgive me if you have already decided, I need to schedule these emails in advance or I might forget! </span></p>
+        <p><span style="color: rgb(0, 0, 0);">Would you be willing to leave me a review? Public reviews are huge for my business. Leaving a kind review on Google will really help my small business! It would mean the world to me! </span></p>
+        <p><span style="color: rgb(0, 0, 0);">I look forward to hearing from you again next time you're in need of photography!</span></p>
+        <p><span style="color: rgb(0, 0, 0);">Thanks again! </span></p>
+        <p><span style="color: rgb(0, 0, 0);">{{email_signature}} </span></p>
+        """
+      },
+      %{
+        email_automation_pipeline_id:
           get_pipeline_id_by_state(pipelines, "order_confirmation_digital"),
         total_hours: 0,
         status: "active",
@@ -7949,6 +8129,26 @@ defmodule Mix.Tasks.ImportEmailPresets do
         <p><span style="color: rgb(0, 0, 0);">Your Gallery password has been successfully changed. If you did not make this change, please let me know!</span></p>
         <p><span style="color: rgb(0, 0, 0);">Thanks! </span></p>
         <p><span style="color: rgb(0, 0, 0);">{{email_signature}}</span></p>
+        """
+      },
+      %{
+        email_automation_pipeline_id:
+          get_pipeline_id_by_state(pipelines, "after_gallery_send_feedback"),
+        total_hours: EmailPreset.calculate_total_hours(7, %{calendar: "Day", sign: "+"}),
+        status: "active",
+        job_type: "event",
+        type: "gallery",
+        position: 0,
+        name: "Gallery - Gallery Send Feedback Email",
+        subject_template: "abc",
+        body_template: """
+        <p><span style="color: rgb(0, 0, 0);">Hello {{client_first_name}},</span></p>
+        <p><span style="color: rgb(0, 0, 0);">I had an absolute blast photographing you and would love to hear from you about your experience.</span></p>
+        <p><span style="color: rgb(0, 0, 0);">Are you enjoying your photos? Do you need help picking products for your photos? Forgive me if you have already decided, I need to schedule these emails in advance or I might forget! </span></p>
+        <p><span style="color: rgb(0, 0, 0);">Would you be willing to leave me a review? Public reviews are huge for my business. Leaving a kind review on Google will really help my small business! It would mean the world to me! </span></p>
+        <p><span style="color: rgb(0, 0, 0);">I look forward to hearing from you again next time you're in need of photography!</span></p>
+        <p><span style="color: rgb(0, 0, 0);">Thanks again! </span></p>
+        <p><span style="color: rgb(0, 0, 0);">{{email_signature}} </span></p>
         """
       },
       %{

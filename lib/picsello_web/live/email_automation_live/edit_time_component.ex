@@ -163,7 +163,7 @@ defmodule PicselloWeb.EmailAutomationLive.EditTimeComponent do
                     </div>
                   <% end %>
                 </div>
-                <%= unless current(@changeset) |> Map.get(:immediately) do %>
+                <%!-- <%= unless current(@changeset) |> Map.get(:immediately) do %>
                   <div class="flex flex-col w-full lg:w-1/2 lg:pl-6 lg:border-l md:border-base-200">
                     <b>Email Automation sequence conditions</b>
                     <span class="text-base-250">Choose to run automatically or when conditions are met</span>
@@ -183,7 +183,7 @@ defmodule PicselloWeb.EmailAutomationLive.EditTimeComponent do
                       <% end %>
                     </div>
                   </div>
-                <% end %>
+                <% end %> --%>
               </div>
               <hr class="my-4 md:hidden flex" />
               <div class="mt-4">
