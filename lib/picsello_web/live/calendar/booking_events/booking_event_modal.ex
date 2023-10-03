@@ -5,10 +5,10 @@ defmodule PicselloWeb.Live.Calendar.BookingEventModal do
   import PicselloWeb.ShootLive.Shared, only: [duration_options: 0]
   import PicselloWeb.LiveModal, only: [close_x: 1, footer: 1]
   import PicselloWeb.PackageLive.Shared, only: [current: 1]
-  alias Picsello.{BookingEventDate, BookingEventDates, Repo}
-  alias PicselloWeb.Calendar.BookingEvents.Shared
-  alias Ecto.Multi
   import Ecto.Changeset
+
+  alias Picsello.{BookingEvents, BookingEventDate, BookingEventDates, Repo}
+  alias Ecto.Multi
 
   @occurences [0, 5, 10, 15, 20, 30, 45, 60]
 
@@ -24,7 +24,8 @@ defmodule PicselloWeb.Live.Calendar.BookingEventModal do
       socket ->
         socket |> assign_changeset(%{})
     end
-    |> then(fn %{assigns: %{booking_date: %{date: date, booking_event_id: booking_event_id}}} = socket ->
+    |> then(fn %{assigns: %{booking_date: %{date: date, booking_event_id: booking_event_id}}} =
+                 socket ->
       socket
       |> assign(
         :has_booking?,
@@ -250,7 +251,7 @@ defmodule PicselloWeb.Live.Calendar.BookingEventModal do
   defp get_repeat_dates(changeset) do
     selected_days = get_field(changeset, :repeat_on) |> Enum.map(&Map.from_struct(&1))
     booking_event_date = current(changeset)
-    Shared.calculate_dates(booking_event_date, selected_days)
+    BookingEvents.calculate_dates(booking_event_date, selected_days)
   end
 
   defp successfull_save(socket, booking_event_date) do

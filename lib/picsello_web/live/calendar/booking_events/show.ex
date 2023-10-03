@@ -31,11 +31,17 @@ defmodule PicselloWeb.Live.Calendar.BookingEvents.Show do
   end
 
   @impl true
-  def handle_params(%{"id" => event_id}, _session, socket) do
+  def handle_params(
+        %{"id" => event_id},
+        _session,
+        %{assigns: %{current_user: %{organization_id: organization_id}}} = socket
+      ) do
+    booking_event = BookingEvents.get_booking_event!(organization_id, event_id)
     socket
     |> assign(:id, to_integer(event_id))
     |> assign(:edit_name, false)
-    |> BEShared.assign_booking_event()
+    |> assign(:booking_event, booking_event)
+    |> BEShared.assign_events(booking_event)
     |> assign_changeset(%{})
     |> assign(:booking_slot_tab_active, "list")
     |> assign(:booking_slot_tabs, booking_slot_tabs())
@@ -97,39 +103,6 @@ defmodule PicselloWeb.Live.Calendar.BookingEvents.Show do
   end
 
   @impl true
-  def handle_event(
-        "duplicate-date",
-        %{"id" => date_id},
-        %{assigns: %{current_user: %{organization_id: org_id}, booking_event: booking_event}} =
-          socket
-      ) do
-    to_duplicate_date = %BookingEventDate{
-      booking_event_id: booking_event.id,
-      organization_id: org_id
-    }
-
-    duplicate_date =
-      booking_event
-      |> BEShared.get_booking_date(to_integer(date_id))
-      |> Map.from_struct()
-
-    to_duplicate_date =
-      to_duplicate_date
-      |> Map.put(:session_length, duplicate_date.session_length)
-      |> Map.put(:session_gap, duplicate_date.session_gap)
-      |> Map.put(
-        :slots,
-        duplicate_date.slots
-        |> BookingEventDates.transform_slots()
-      )
-      |> Map.put(:time_blocks, duplicate_date.time_blocks)
-
-    socket
-    |> open_wizard(%{booking_date: to_duplicate_date, title: "Duplicate Date"})
-    |> noreply()
-  end
-
-  @impl true
   def handle_event("confirm-delete-date", %{"id" => date_id}, socket) do
     socket
     |> PicselloWeb.ConfirmationComponent.open(%{
@@ -147,12 +120,21 @@ defmodule PicselloWeb.Live.Calendar.BookingEvents.Show do
   def handle_event(
         "send-email",
         %{"id" => date_id},
-        %{assigns: %{booking_event: booking_event}} = socket
+        %{assigns: %{current_user: current_user, booking_event: booking_event}} = socket
       ) do
-    clients = BEShared.get_booking_event_clients(booking_event, date_id)
+    clients = BEShared.get_booking_event_clients(booking_event, to_integer(date_id))
 
     socket
-    |> BEShared.do_open_email(%{"to" => clients |> hd(), "bcc" => tl(clients)})
+    |> ClientMessageComponent.open(%{
+      current_user: current_user,
+      modal_title: "Send booking event email",
+      show_client_email: true,
+      show_subject: true,
+      presets: [],
+      send_button: "Send",
+      recipients: %{"to" => clients |> hd(), "bcc" => tl(clients)}
+    })
+    |> noreply()
   end
 
   @impl true
@@ -290,7 +272,10 @@ defmodule PicselloWeb.Live.Calendar.BookingEvents.Show do
   end
 
   @impl true
-  def handle_info({:update, %{booking_event_date: _booking_date}}, socket) do
+  def handle_info(
+        {:update, %{booking_event_date: _booking_date}},
+        %{assigns: %{booking_event: booking_event}} = socket
+      ) do
     socket
     |> put_flash(:success, "Booking event date saved successfully")
     |> BEShared.assign_events(booking_event)
@@ -298,11 +283,14 @@ defmodule PicselloWeb.Live.Calendar.BookingEvents.Show do
   end
 
   @impl true
-  def handle_info({:confirm_event, "delete-date-" <> id}, socket) do
-    case BookingEventDates.delete_booking_date(to_integer(id)) do
+  def handle_info(
+        {:confirm_event, "delete-date-" <> id},
+        %{assigns: %{booking_event: booking_event}} = socket
+      ) do
+    case BookingEventDates.delete_booking_event_date(to_integer(id)) do
       {:ok, _} ->
         socket
-        |> BEShared.assign_booking_event()
+        |> BEShared.assign_events(booking_event)
         |> put_flash(:success, "Event date deleted successfully")
 
       {:error, _} ->
@@ -315,25 +303,11 @@ defmodule PicselloWeb.Live.Calendar.BookingEvents.Show do
 
   @impl true
   def handle_info(
-        {:update, %{package: package}},
+        {:update, %{package: _package}},
         %{assigns: %{booking_event: booking_event}} = socket
       ) do
-    package_template =
-      package
-      |> Repo.preload([:package_payment_schedules, :contract, :questionnaire_template],
-        force: true
-      )
-
-    booking_event = %{
-      booking_event
-      | package_template: package_template,
-        package_template_id: package_template.id
-    }
-
     socket
-    |> assign(booking_event: booking_event)
-    |> assign(package: package_template)
-    |> assign(:payments_description, BEShared.payments_description(booking_event))
+    |> BEShared.assign_events(booking_event)
     |> put_flash(:success, "Package details saved sucessfully.")
     |> noreply()
   end
@@ -459,7 +433,7 @@ defmodule PicselloWeb.Live.Calendar.BookingEvents.Show do
           <%= for booking_event_date <- @booking_event_dates do %>
             <div class={classes("mt-10 p-3 border-2 rounded-lg border-base-200", %{"border-red-sales-300" => is_nil(booking_event_date.date)})}>
               <div class="flex mb-1">
-                <p class="text-2xl font-bold"> <%= BEShared.date_formatter(booking_event_date.date) %> </p>
+                <p class="text-2xl font-bold"> <%= date_formatter(booking_event_date.date) %> </p>
                 <button class="flex text-blue-planning-300 ml-auto items-center justify-center whitespace-nowrap" phx-click="toggle-section" phx-value-section_id="first">
                   View details
                   <.icon name={if Enum.member?(@collapsed_sections, "first"), do: "up", else: "down"} class="mt-1.5 md:mt-1 w-4 h-4 ml-2 stroke-current stroke-3 text-blue-planning-300"/>
@@ -477,7 +451,9 @@ defmodule PicselloWeb.Live.Calendar.BookingEvents.Show do
                   <div class="col-span-2"><%= title %></div>
                 <% end %>
                 </div>
-                <.render_slots booking_event_date={booking_event_date} {assigns} />
+                <%= Enum.with_index(booking_event_date.slots, fn slot, slot_index -> %>
+                  <.slots_description current_user={@current_user} client={slot.client} booking_event_date={booking_event_date} booking_event={@booking_event} booking_slot_tab_active={@booking_slot_tab_active} slot_index={slot_index} slot={slot} button_actions={slot_actions(slot.status)} />
+                <% end) %>
                 <div class="flex justify-end gap-2">
                   <.icon_button icon="envelope" phx-click="send-email" phx-value-id={booking_event_date.id} color="blue-planning-300"/>
                   <.icon_button icon="pencil" phx-click="edit-date" phx-value-id={booking_event_date.id} color="blue-planning-300"/>
@@ -516,21 +492,6 @@ defmodule PicselloWeb.Live.Calendar.BookingEvents.Show do
         </div>
       <% end %>
     </div>
-    """
-  end
-
-  defp render_slots(assigns) do
-    ~H"""
-    <%= for slot <- @booking_event_date.slots do %>
-      <%= case slot.status do %>
-        <% "open" -> %>
-          <.slots_description client={slot.client} booking_event={@booking_event} booking_slot_tab_active={@booking_slot_tab_active} slot={slot} button_actions={hidden_slot_actions()} />
-        <% "hide" -> %>
-          <.slots_description client={slot.client} booking_event={@booking_event} booking_slot_tab_active={@booking_slot_tab_active} slot={slot} button_actions={open_slot_actions()} />
-        <% _ -> %>
-          <.slots_description client={slot.client} booking_event={@booking_event} booking_slot_tab_active={@booking_slot_tab_active} slot={slot} button_actions={booked_slot_actions()} />
-      <% end %>
-    <% end %>
     """
   end
 
@@ -881,19 +842,4 @@ defmodule PicselloWeb.Live.Calendar.BookingEvents.Show do
       description
     end
   end
-
-  defp get_booking_date(booking_event, date_id),
-    do:
-      booking_event.dates
-      |> Enum.filter(fn date -> date.id == date_id end)
-      |> hd()
-
-  defp get_booking_event_clients(booking_event, date_id),
-    do:
-      booking_event.dates
-      |> Enum.filter(fn date -> date.id == date_id end)
-      |> hd()
-      |> Map.get(:slots)
-      |> Enum.filter(fn slot -> Map.get(slot, :client) end)
-      |> Enum.reduce([], fn slot, acc -> [slot.client.email | acc] end)
 end

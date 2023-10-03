@@ -14,7 +14,7 @@ defmodule PicselloWeb.Live.Calendar.BookingEvents.Index do
     socket
     |> assign(:page_title, "Booking Events")
     |> assign(stripe_status: Payments.status(current_user))
-    |> assign_events()
+    |> assign_defaults()
     |> assign_booking_events()
     |> ok()
   end
@@ -429,7 +429,7 @@ defmodule PicselloWeb.Live.Calendar.BookingEvents.Index do
     """
   end
 
-  defp assign_events(socket) do
+  defp assign_defaults(socket) do
     socket
     |> assign(:event_status, "all")
     |> assign(:sort_by, "name")

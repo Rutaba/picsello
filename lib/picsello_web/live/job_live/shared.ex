@@ -178,7 +178,11 @@ defmodule PicselloWeb.JobLive.Shared do
     |> noreply()
   end
 
-  def handle_event("search", %{"search_phrase" => search_phrase}, socket) do
+  def handle_event(
+        "search",
+        %{"search_phrase" => search_phrase},
+        %{assigns: %{clients: clients}} = socket
+      ) do
     if blank?(search_phrase) do
       socket
       |> assign(:search_phrase, nil)
@@ -1716,6 +1720,20 @@ defmodule PicselloWeb.JobLive.Shared do
     )
     |> assign_documents_uploads(socket)
   end
+
+  def complete_job_component(socket),
+    do:
+      socket
+      |> ConfirmationComponent.open(%{
+        confirm_event: "complete_job",
+        confirm_label: "Yes, mark complete",
+        confirm_class: "btn-primary",
+        close_label: "Cancel",
+        subtitle:
+          "Mark jobs complete when the session has transpired and you have delivered a final gallery of images. Your client can still access and order digital images, print products and you can still create new galleries as needed.\n\nNote, this action CANNOT be undone.",
+        title: "Well done—another job successfully completed!",
+        icon: "confetti"
+      })
 
   def search_assigns(socket) do
     socket

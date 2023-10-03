@@ -1042,7 +1042,10 @@ defmodule PicselloWeb.HomeLive.Index do
     ]
   end
 
-  defp assign_tab_data(%{assigns: %{current_user: %{organization: organization}} = current_user} = socket, tab) do
+  defp assign_tab_data(
+         %{assigns: %{current_user: %{organization: organization}} = current_user} = socket,
+         tab
+       ) do
     case tab do
       "clients" ->
         socket |> assign(:clients, Clients.get_recent_clients(current_user))
@@ -1063,7 +1066,7 @@ defmodule PicselloWeb.HomeLive.Index do
           BookingEvents.get_booking_events(organization.id,
             filters: %{sort_by: :inserted_at, sort_direction: :desc}
           )
-          |> Enum.filter(fn b_e -> Enum.any?(b_e.dates, & &1["date"] not in [nil, ""]) end)
+          |> Enum.filter(fn b_e -> Enum.any?(b_e.dates, &(&1["date"] not in [nil, ""])) end)
           |> Enum.map(fn booking_event ->
             BEShared.put_url_booking_event(booking_event, organization, socket)
           end)

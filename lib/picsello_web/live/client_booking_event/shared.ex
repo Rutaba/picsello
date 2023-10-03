@@ -4,7 +4,7 @@ defmodule PicselloWeb.ClientBookingEventLive.Shared do
   """
   import PicselloWeb.LiveHelpers
   import Phoenix.Component
-  import PicselloWeb.Gettext, only: [dyn_gettext: 1, ngettext: 3]
+  import PicselloWeb.Gettext, only: [ngettext: 3]
 
   def blurred_thumbnail(assigns) do
     ~H"""

@@ -437,7 +437,7 @@ I look forward to capturing these memories for you!"}
            socket
        ) do
     if booking_countdown <= 0 && !PaymentSchedules.paid_any?(job) do
-      case Picsello.BookingEvents.expire_booking(job) do
+      case Picsello.BookingEvents.expire_booking_job(job) do
         {:ok, _} ->
           socket
           |> redirect_to_expired_booking_event(organization, job.booking_event)

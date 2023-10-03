@@ -6,8 +6,9 @@ defmodule PicselloWeb.Calendar.BookingEvents.Shared do
 
   import Phoenix.LiveView
   import PicselloWeb.LiveHelpers
+  import PicselloWeb.Gettext, only: [ngettext: 3]
   import PicselloWeb.Live.Shared, only: [make_popup: 2]
-  import PicselloWeb.Helpers, only: [job_url: 1, ngettext: 3]
+  import PicselloWeb.Helpers, only: [job_url: 1]
   import PicselloWeb.GalleryLive.Shared, only: [add_message_and_notify: 3]
 
   alias PicselloWeb.{
@@ -54,6 +55,7 @@ defmodule PicselloWeb.Calendar.BookingEvents.Shared do
       to_duplicate_booking_event.dates
       |> Enum.map(fn t ->
         t
+        |> Map.replace(:name, nil)
         |> Map.replace(:date, nil)
         |> Map.replace(:slots, BookingEventDates.transform_slots(t.slots))
       end)
@@ -164,7 +166,7 @@ defmodule PicselloWeb.Calendar.BookingEvents.Shared do
     |> case do
       {:ok, event} ->
         socket
-        |> assign_events(BookingEvents.preload_booking_event(event))
+        |> assign_events(event)
         |> put_flash(:success, "Event enabled successfully")
 
       {:error, _} ->
@@ -185,7 +187,7 @@ defmodule PicselloWeb.Calendar.BookingEvents.Shared do
     |> case do
       {:ok, event} ->
         socket
-        |> assign_events(BookingEvents.preload_booking_event(event))
+        |> assign_events(event)
         |> put_flash(:success, "Event unarchive successfully")
 
       {:error, _} ->
@@ -243,7 +245,7 @@ defmodule PicselloWeb.Calendar.BookingEvents.Shared do
         %{assigns: %{current_user: current_user, booking_event: booking_event}} = socket
       ) do
     [booking_event_date_id, slot_client_id, slot_index] =
-      convert_string_to_integer([booking_event_date_id, slot_client_id, slot_index])
+      to_integer([booking_event_date_id, slot_client_id, slot_index])
 
     booking_event_dates = get_booking_date(booking_event, booking_event_date_id)
 
@@ -360,8 +362,7 @@ defmodule PicselloWeb.Calendar.BookingEvents.Shared do
         %{"booking_event_date_id" => booking_event_date_id, "slot_index" => slot_index},
         %{assigns: %{current_user: current_user, booking_event: booking_event}} = socket
       ) do
-    [booking_event_date_id, slot_index] =
-      convert_string_to_integer([booking_event_date_id, slot_index])
+    [booking_event_date_id, slot_index] = to_integer([booking_event_date_id, slot_index])
 
     booking_event_date = get_booking_date(booking_event, booking_event_date_id)
     slot = Enum.at(booking_event_date.slots, slot_index)
@@ -471,12 +472,12 @@ defmodule PicselloWeb.Calendar.BookingEvents.Shared do
            slot_index: slot_index,
            slot_update_args: slot_update_args
          }},
-        socket
+        %{assigns: %{booking_event: booking_event}} = socket
       ) do
     case BookingEventDates.update_slot_status(booking_event_date_id, slot_index, slot_update_args) do
       {:ok, _booking_event_date} ->
         socket
-        |> assign_booking_event()
+        |> assign_events(booking_event)
         |> put_flash(:success, "Slot changed successfully")
 
       {:error, _} ->
@@ -544,7 +545,7 @@ defmodule PicselloWeb.Calendar.BookingEvents.Shared do
       class = "underline text-blue-planning-300"
 
       socket
-      |> assign_booking_event()
+      |> assign_events(booking_event)
       |> make_popup(
         icon: nil,
         title: "Reschedule Session",
@@ -601,7 +602,7 @@ defmodule PicselloWeb.Calendar.BookingEvents.Shared do
          }) do
       {:ok, _} ->
         socket
-        |> assign_booking_event()
+        |> assign_events(booking_event)
         |> put_flash(:success, "Session cancelled successfully!")
 
       {:error, _} ->
@@ -619,7 +620,7 @@ defmodule PicselloWeb.Calendar.BookingEvents.Shared do
     case BookingEvents.disable_booking_event(id, current_user.organization_id) do
       {:ok, event} ->
         socket
-        |> assign_events(BookingEvents.preload_booking_event(event))
+        |> assign_events(event)
         |> put_flash(:success, "Event disabled successfully")
 
       {:error, _} ->
@@ -637,7 +638,7 @@ defmodule PicselloWeb.Calendar.BookingEvents.Shared do
     case BookingEvents.archive_booking_event(id, current_user.organization_id) do
       {:ok, event} ->
         socket
-        |> assign_events(BookingEvents.preload_booking_event(event))
+        |> assign_events(event)
         |> put_flash(:success, "Event archive successfully")
 
       {:error, _} ->
@@ -692,7 +693,7 @@ defmodule PicselloWeb.Calendar.BookingEvents.Shared do
     class = "underline text-blue-planning-300"
 
     socket
-    |> assign_booking_event()
+    |> assign_events(booking_event)
     |> make_popup(
       icon: nil,
       title: "Reserve Session",
@@ -836,14 +837,23 @@ defmodule PicselloWeb.Calendar.BookingEvents.Shared do
         %{assigns: %{booking_event: _booking_event, current_user: %{organization: organization}}} =
           socket,
         event
-      ),
-      do: assign(socket, :booking_event, put_url_booking_event(event, organization, socket))
+      ) do
+    %{package_template: package_template} = booking_event =
+      event
+      |> BookingEvents.preload_booking_event()
+      |> put_url_booking_event(organization, socket)
+
+    socket
+    |> assign(:booking_event, booking_event)
+    |> assign(:package, package_template)
+    |> assign(:payments_description, payments_description(booking_event))
+  end
 
   def assign_events(%{assigns: %{booking_events: _booking_events}} = socket, _event),
     do: Index.assign_booking_events(socket)
 
   def count_booked_slots(slot),
-    do: Enum.count(slot, fn s -> s.status == :booked || s.status == :reserved end)
+    do: Enum.count(slot, fn s -> s.status in [:booked, :reserved] end)
 
   def count_available_slots(slot), do: Enum.count(slot, fn s -> s.status == :open end)
   def count_hidden_slots(slot), do: Enum.count(slot, fn s -> s.status == :hidden end)
@@ -871,6 +881,37 @@ defmodule PicselloWeb.Calendar.BookingEvents.Shared do
         )
       )
 
+  def get_booking_date(booking_event, date_id),
+    do:
+      booking_event.dates
+      |> Enum.filter(fn date -> date.id == date_id end)
+      |> hd()
+
+  def get_booking_event_clients(booking_event, date_id),
+    do:
+      booking_event.dates
+      |> Enum.filter(fn date -> date.id == date_id end)
+      |> hd()
+      |> Map.get(:slots)
+      |> Enum.filter(fn slot -> Map.get(slot, :client) end)
+      |> Enum.reduce([], fn slot, acc -> [slot.client.email | acc] end)
+
+  def slot_client(user, slot_client_id) do
+    Clients.get_client(user, id: slot_client_id)
+  end
+
+  def slot_client_name(user, slot_client_id) do
+    case slot_client(user, slot_client_id) do
+      nil ->
+        "Not found"
+
+      client ->
+        client
+        |> Map.get(:name)
+        |> Utils.capitalize_all_words()
+    end
+  end
+
   # to cater different handle_event and info calls
   # if we get booking-event-id in params (1st argument) it returns the id
   # otherwise get the id from socket
@@ -879,6 +920,38 @@ defmodule PicselloWeb.Calendar.BookingEvents.Shared do
   defp fetch_booking_event_id(%{}, %{assigns: %{booking_event: booking_event}}),
     do: booking_event.id
 
-  def calculate_dates(booking_event_date, selected_days),
-    do: BookingEvents.calculate_dates(booking_event_date, selected_days)
+  defp payments_description(%{package_template: nil}), do: nil
+
+  defp payments_description(%{
+          package_template: %{package_payment_schedules: package_payment_schedules} = package
+        }) do
+    currency_symbol = Money.Currency.symbol!(package.currency)
+    total_price = Package.price(package)
+    {first_payment, remaining_payments} = package_payment_schedules |> List.pop_at(0)
+
+    payment_count = Enum.count(remaining_payments)
+
+    count_text =
+      if payment_count > 0,
+        do: ngettext(", 1 other payment", ", %{count} other payments", payment_count),
+        else: nil
+
+    if first_payment do
+      interval_text =
+        if first_payment.interval do
+          "#{first_payment.due_interval}"
+        else
+          "#{first_payment.count_interval} #{first_payment.time_interval} #{first_payment.shoot_interval}"
+        end
+
+      if first_payment.percentage do
+        amount = (total_price.amount / 10_000 * first_payment.percentage) |> Kernel.trunc()
+        "#{currency_symbol}#{amount}.00 #{interval_text}"
+      else
+        "#{first_payment.price} #{interval_text}"
+      end <> "#{count_text}"
+    else
+      nil
+    end
+  end
 end
