@@ -1,6 +1,7 @@
 @import 'tailwindcss/base';
 @import 'tailwindcss/components';
 @import 'tailwindcss/utilities';
+@import 'tippy.js/dist/tippy.css';
 @import './components/buttons.css';
 @import 'components/gallery.css';
 @import './components/shoppingCart.css';
@@ -86,7 +87,7 @@ html {
 }
 
 .modal-banner {
-  @apply -mx-4 sm:-mx-8 px-4 sm:px-8;
+  @apply px-4 sm:px-8;
 }
 
 .dialog {
@@ -112,12 +113,6 @@ canvas {
   width: 100%;
   box-sizing: border-box;
 
-  .item {
-    display: flex;
-    position: absolute;
-    z-index: 1;
-  }
-
   .item.muuri-item-dragging {
     z-index: 3;
   }
@@ -130,17 +125,26 @@ canvas {
     z-index: 0;
   }
 
+  .muuri-item > div {
+    width: 100%;
+  }
+
   .item-content {
     position: relative;
     overflow: hidden;
     width: 100%;
+
+    &.preview {
+      @apply h-full;
+    }
   }
 
   .item {
-    @apply m-[5px] w-[200px];
+    @apply flex absolute items-center m-[5px] w-[calc(100%-10px)] sm:w-[calc(33.33%-10px)] lg:w-[calc(20%-10px)] z-10;
 
+    
     .galleryItem {
-      height: 100%;
+      @apply h-full;
     }
 
     &:hover {
@@ -192,6 +196,18 @@ canvas {
 
     svg {
       filter: drop-shadow(3px 5px 2px rgba(0, 0, 0, 0.4));
+    }
+  }
+}
+
+.client-app {
+  .muuri.grid {
+    .item-content {
+      @apply h-full;
+    }
+    
+    .item {
+      @apply md:w-[calc(25%-10px)] w-full items-center bg-gray-100;
     }
   }
 }

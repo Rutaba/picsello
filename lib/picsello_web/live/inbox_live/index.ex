@@ -3,6 +3,7 @@ defmodule PicselloWeb.InboxLive.Index do
   use PicselloWeb, :live_view
   alias Picsello.{Job, Repo, ClientMessage, Messages, Notifiers.ClientNotifier}
   import Ecto.Query
+  import Picsello.Galleries.Workers.PhotoStorage, only: [path_to_url: 1]
 
   @impl true
   def mount(_params, _session, socket) do
@@ -50,7 +51,7 @@ defmodule PicselloWeb.InboxLive.Index do
               <div class="flex items-center flex-col text-orange-inbox-300 text-xl">
                 <.icon name="envelope" class="text-orange-inbox-300 w-20 h-32" />
                 <p>You don’t have any new messages.</p>
-                <p>Go to a job or lead to send a new message. <.intro_hint content="You haven’t sent any booking proposals or client communications yet - once you have, those conversations will all be logged here, and you’ll be able to send and receive messages to your clients. " /></p>
+                <p>Go to a job or lead to send a new message. <.tooltip id="inbox-lead" content="You haven’t sent any booking proposals or client communications yet - once you have, those conversations will all be logged here, and you’ll be able to send and receive messages to your clients. " /></p>
               </div>
             </div>
           <% true -> %>
@@ -124,7 +125,7 @@ defmodule PicselloWeb.InboxLive.Index do
                 <div class="flex-1 h-px bg-orange-inbox-300"></div>
               </div>
             <% end %>
-            <div {testid("thread-message")} {scroll_to_message(message)} class={classes("m-2 max-w-sm sm:max-w-xl", %{"self-end" => message.outbound, "self-start" => !message.outbound})} style="scroll-margin-bottom: 7rem">
+            <div {testid("thread-message")} {scroll_to_message(message)} class={classes("m-2 max-w-lg sm:max-w-xl scroll-mb-28", %{"self-end" => message.outbound, "self-start" => !message.outbound})}>
               <div class={classes("mb-3 flex justify-between items-end text-base-250", %{"flex-row-reverse" => !message.outbound})}>
                 <div class="text-xs"><%= message.date %></div>
                 <div class="mx-1">
@@ -133,11 +134,26 @@ defmodule PicselloWeb.InboxLive.Index do
                   <% end %>
                 </div>
               </div>
-              <div class="relative border rounded p-6">
+              <div class="relative border rounded p-4">
                 <%= if message.unread do %>
                   <div class="absolute bg-orange-inbox-300 rounded-full -top-2 -right-2 w-4 h-4"></div>
                 <% end %>
                 <span class="whitespace-pre-line"><%= raw message.body %></span>
+
+                <%= unless Enum.empty?(message.client_message_attachments) do %>
+                  <div class="p-2 border mt-4 rounded-lg">
+                    <h4 class="text-sm mb-2 font-bold">Client attachments:</h4>
+                    <div class="flex flex-col gap-2">
+                      <%= for client_attachment <- message.client_message_attachments do %>
+                        <a href={path_to_url(client_attachment.url)} target="_blank">
+                          <div class="text-sm text-blue-planning-300 bg-base-200 border border-base-200 hover:bg-white transition-colors duration-300 px-2 py-1 rounded-lg flex items-center">
+                            <.icon name="paperclip" class="w-4 h-4 mr-1" /> <%= client_attachment.name %>
+                          </div>
+                        </a>
+                      <% end %>
+                    </div>
+                  </div>
+                <% end %>
               </div>
             </div>
           <% end %>
@@ -195,7 +211,7 @@ defmodule PicselloWeb.InboxLive.Index do
   def handle_event("confirm-delete", %{}, socket) do
     socket
     |> PicselloWeb.ConfirmationComponent.open(%{
-      close_label: "No, go back",
+      close_label: "Cancel",
       confirm_event: "delete",
       confirm_label: "Yes, delete",
       icon: "warning-orange",
@@ -275,6 +291,7 @@ defmodule PicselloWeb.InboxLive.Index do
         order_by: [asc: message.inserted_at]
       )
       |> Repo.all()
+      |> Repo.preload(:client_message_attachments)
 
     thread_messages =
       client_messages
@@ -301,7 +318,8 @@ defmodule PicselloWeb.InboxLive.Index do
                   is_first_unread: Enum.member?(unread_message_ids, message.id),
                   scroll:
                     message.id == message_id_to_scroll || index == length(client_messages) - 1,
-                  unread: message.read_at == nil
+                  unread: message.read_at == nil,
+                  client_message_attachments: message.client_message_attachments
                 }
               ]
         }

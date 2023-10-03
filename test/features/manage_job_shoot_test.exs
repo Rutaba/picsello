@@ -1,4 +1,5 @@
 defmodule Picsello.ManageJobShootTest do
+  @moduledoc false
   use Picsello.FeatureCase, async: true
 
   alias Picsello.{Shoot, Repo}
@@ -75,13 +76,13 @@ defmodule Picsello.ManageJobShootTest do
     session
     |> visit(shoot_path(job, 1))
     |> click(button("edit shoot"))
-    |> click(link("Add an address"))
+    |> click(css("a", text: "Add an address"))
     |> fill_in(text_field("Shoot Address"), with: address)
     |> click(button("Save"))
     |> assert_has(definition("Shoot Location", text: "In Client's Home #{address}"))
     |> click(button("edit shoot"))
     |> assert_has(text_field("Shoot Address", value: address))
-    |> click(link("Remove address"))
+    |> click(css("a", text: "Remove address"))
     |> click(button("Save"))
     |> assert_has(definition("Shoot Location", text: "In Client's Home"))
   end

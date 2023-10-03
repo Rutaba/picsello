@@ -8,6 +8,7 @@ defmodule PicselloWeb.Live.Shared do
   import Phoenix.HTML.Form
 
   import PicselloWeb.LiveModal, only: [footer: 1]
+  import PicselloWeb.GalleryLive.Shared, only: [new_gallery_path: 2]
 
   import PicselloWeb.PackageLive.Shared,
     only: [package_basic_fields: 1, digital_download_fields: 1, current: 1]
@@ -269,7 +270,7 @@ defmodule PicselloWeb.Live.Shared do
   def make_popup(socket, opts) do
     socket
     |> ConfirmationComponent.open(%{
-      close_label: opts[:close_label] || "No, go back",
+      close_label: opts[:close_label] || "Cancel",
       confirm_event: opts[:event],
       class: "dialog-photographer",
       confirm_class: Keyword.get(opts, :confirm_class, "btn-warning"),
@@ -330,7 +331,7 @@ defmodule PicselloWeb.Live.Shared do
         </div>
       </div>
 
-      <dl class="flex flex-col justify-between mt-4 text-lg font-bold sm:flex-row">
+      <dl class="flex flex-col justify-between mt-4 text-lg font-bold sm:flex-row" {testid("remaining-balance")}>
         <dt>Remaining balance to collect with Picsello</dt>
         <dd class="w-full p-6 py-2 mt-2 text-center rounded-lg sm:w-32 text-green-finances-300 bg-green-finances-100/30 sm:mt-0"><%= total_remaining_amount(@package_changeset) %></dd>
       </dl>
@@ -357,7 +358,7 @@ defmodule PicselloWeb.Live.Shared do
       <h3 class="font-bold">Balance to collect: <%= total_remaining_amount(@package_changeset) %></h3>
 
       <div class={classes("flex items-center bg-blue-planning-100 rounded-lg my-4 py-4", %{"hidden" => !@remaining_amount_zero?})}}>
-        <.intro_hint class="ml-4" content={"#"}/>
+        <.tooltip class="ml-4" content={"#"} id="currency" />
         <div class="pl-2">
           <b>Since your remaining balance is <%=@currency_symbol%>0.00, we'll mark your job as paid for.</b> Make sure to follow up with any emails as needed to your client.
         </div>
@@ -823,11 +824,16 @@ defmodule PicselloWeb.Live.Shared do
     end
   end
 
-  defp get_template(%{assigns: %{job: job}}) do
-    Questionnaire.for_job(job)
+  def handle_info({:redirect_to_gallery, gallery}, socket) do
+    socket
+    |> put_flash(:success, "Gallery created—You’re now ready to upload photos!")
+    |> push_redirect(to: new_gallery_path(socket, gallery))
+    |> noreply()
   end
 
-  defp get_template(%{assigns: %{package: package}}) do
-    Questionnaire.for_package(package)
-  end
+  defp get_template(%{assigns: %{job: job}}),
+    do: Questionnaire.for_job(job)
+
+  defp get_template(%{assigns: %{package: package}}),
+    do: Questionnaire.for_package(package)
 end

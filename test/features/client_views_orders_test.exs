@@ -1,4 +1,5 @@
 defmodule Picsello.ClientViewsOrdersTest do
+  @moduledoc false
   use Picsello.FeatureCase, async: true
   use Oban.Testing, repo: Picsello.Repo
   import Money.Sigils

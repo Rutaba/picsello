@@ -35,12 +35,14 @@ defmodule PicselloWeb.HomeLive.Index do
     QuestionnaireFormComponent
   }
 
+  alias PicselloWeb.Calendar.BookingEvents.Shared, as: BEShared
+
   import PicselloWeb.JobLive.Shared, only: [status_badge: 1, open_email_compose: 1]
   import PicselloWeb.ClientBookingEventLive.Shared, only: [blurred_thumbnail: 1]
   import PicselloWeb.Gettext, only: [ngettext: 3]
 
   import PicselloWeb.GalleryLive.Shared,
-    only: [new_gallery_path: 2, clip_board: 2, cover_photo_url: 1, disabled?: 1]
+    only: [clip_board: 2, cover_photo_url: 1, disabled?: 1]
 
   import Ecto.Query
   import Ecto.Changeset, only: [get_change: 2]
@@ -444,7 +446,7 @@ defmodule PicselloWeb.HomeLive.Index do
       ) do
     socket
     |> PicselloWeb.ConfirmationComponent.open(%{
-      close_label: "No, go back",
+      close_label: "Cancel",
       confirm_event: "delete_gallery",
       confirm_label: "Yes, delete",
       icon: "warning-orange",
@@ -510,9 +512,7 @@ defmodule PicselloWeb.HomeLive.Index do
 
   @impl true
   def handle_info({:redirect_to_gallery, gallery}, socket) do
-    socket
-    |> push_redirect(to: new_gallery_path(socket, gallery))
-    |> noreply()
+    PicselloWeb.Live.Shared.handle_info({:redirect_to_gallery, gallery}, socket)
   end
 
   @impl true
@@ -1042,7 +1042,7 @@ defmodule PicselloWeb.HomeLive.Index do
     ]
   end
 
-  defp assign_tab_data(%{assigns: %{current_user: current_user}} = socket, tab) do
+  defp assign_tab_data(%{assigns: %{current_user: %{organization: organization}} = current_user} = socket, tab) do
     case tab do
       "clients" ->
         socket |> assign(:clients, Clients.get_recent_clients(current_user))
@@ -1060,20 +1060,12 @@ defmodule PicselloWeb.HomeLive.Index do
         socket
         |> assign(
           :booking_events,
-          BookingEvents.get_booking_events(current_user.organization_id,
+          BookingEvents.get_booking_events(organization.id,
             filters: %{sort_by: :inserted_at, sort_direction: :desc}
           )
+          |> Enum.filter(fn b_e -> Enum.any?(b_e.dates, & &1["date"] not in [nil, ""]) end)
           |> Enum.map(fn booking_event ->
-            booking_event
-            |> Map.put(
-              :url,
-              Routes.client_booking_event_url(
-                socket,
-                :show,
-                current_user.organization.slug,
-                booking_event.id
-              )
-            )
+            BEShared.put_url_booking_event(booking_event, organization, socket)
           end)
         )
 
@@ -1265,7 +1257,7 @@ defmodule PicselloWeb.HomeLive.Index do
               <% end %>
             </div>
             <div class="text-base-250 font-normal ">
-              <%= if Map.has_key?(@data, :client_link_hash), do: @data.inserted_at |> Calendar.strftime("%m/%d/%y") |> String.trim("0"), else: @data.dates |> hd() |> Map.get(:date) |> Calendar.strftime("%m/%d/%y") |> String.trim("0") %> - <%= @count %> <%= if @count == 1, do: "booking", else: "bookings" %> so far
+              <%= if Map.has_key?(@data, :client_link_hash), do: @data.inserted_at |> Calendar.strftime("%m/%d/%y") |> String.trim("0"), else: @data.dates |> hd() |> Map.get("date") |> String.trim("0") %> - <%= @count %> <%= if @count == 1, do: "booking", else: "bookings" %> so far
             </div>
             <div class="flex md:gap-2 gap-3">
               <button {testid("copy-link")} id={"copy-link-#{@data.id}"} class={classes("flex  w-full md:w-auto items-center justify-center text-center px-1 py-0.5 font-sans border rounded-lg btn-tertiary text-blue-planning-300", %{"pointer-events-none text-gray-300 border-gray-200" => @data.status in [:archive, :disabled]})} data-clipboard-text={if Map.has_key?(@data, :client_link_hash), do: clip_board(@socket, @data), else: @data.url} phx-hook="Clipboard">
@@ -1361,7 +1353,7 @@ defmodule PicselloWeb.HomeLive.Index do
       "missing-payment-method" =>
         {!Picsello.Subscriptions.subscription_payment_method?(current_user), org_card},
       "create-lead" => {leads_empty?, org_card},
-      "black-friday" => {Subscriptions.monthly?(current_user.subscription), org_card}
+      "black-friday" => {Subscriptions.interval(current_user.subscription) == "month", org_card}
     }
 
     case params |> Map.fetch(concise_name) do
@@ -1488,7 +1480,7 @@ defmodule PicselloWeb.HomeLive.Index do
     ~H"""
     <li class={"relative #{Map.get(assigns, :class)}"} {@attrs}>
       <%= if @badge do %>
-        <div {testid "badge"} class={classes("absolute -top-2.5 right-5 leading-none w-5 h-5 rounded-full pb-0.5 flex items-center justify-center text-xs", %{"bg-base-300 text-white" => @badge > 0, "bg-gray-300" => @badge == 0})}>
+          <div {testid "badge"} class={classes("absolute -top-2.5 right-5 leading-none w-5 h-5 rounded-full pb-0.5 flex items-center justify-center text-xs", %{"bg-base-300 text-white" => @badge > 0, "bg-gray-300" => @badge == 0})}>
           <%= if @badge > 0, do: @badge %>
         </div>
       <% end %>
@@ -1496,7 +1488,7 @@ defmodule PicselloWeb.HomeLive.Index do
         <div class="h-full p-5 ml-3 bg-white">
             <h1 class="text-lg font-bold">
             <.icon name={@icon} width="23" height="20" class={"inline-block mr-2 rounded-sm fill-current text-#{@color}"} />
-            <%= @title %> <%= if @hint_content do %><.intro_hint content={@hint_content} /><% end %>
+            <%= @title %> <%= if @hint_content do %><.tooltip id="tooltip-#{@title}" content={@hint_content} /><% end %>
           </h1>
           <%= render_slot(@inner_block) %>
         </div>

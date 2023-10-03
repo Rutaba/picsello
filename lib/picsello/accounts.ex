@@ -17,6 +17,7 @@ defmodule Picsello.Accounts do
 
   ## Database getters
 
+  @spec get_user_by_email(String.t()) :: User.t() | nil
   @doc """
   Gets a user by email.
 
@@ -257,7 +258,7 @@ defmodule Picsello.Accounts do
       where: user.id in subquery(query),
       join: org in assoc(user, :organization),
       left_join: subscription in assoc(user, :subscription),
-      preload: [:subscription, [organization: :organization_job_types]]
+      preload: [:nylas_detail, :subscription, [organization: :organization_job_types]]
     )
     |> Repo.one()
   end
@@ -358,6 +359,14 @@ defmodule Picsello.Accounts do
     end
   end
 
+  @spec reset_user_password(
+          %{
+            :__struct__ => atom | %{:__changeset__ => map, optional(any) => any},
+            :id => any,
+            optional(atom) => any
+          },
+          :invalid | %{optional(:__struct__) => none, optional(atom | binary) => any}
+        ) :: {:error, any} | {:ok, any}
   @doc """
   Resets the user password.
 
@@ -441,5 +450,10 @@ defmodule Picsello.Accounts do
       {:error, changeset} ->
         {:error, changeset}
     end
+  end
+
+  @spec preload_address(User.t()) :: User.t()
+  def preload_address(%User{} = user) do
+    Repo.preload(user, [organization: :address], force: true)
   end
 end

@@ -1,69 +1,61 @@
-<div class="pt-6 px-6 py-2 center-container">
-    <div class="flex text-4xl items-center">
-      <.back_button to={Routes.home_path(@socket, :index)} class="lg:hidden"/>
-      <.crumbs class="text-sm text-base-250">
-        <:crumb to={Routes.home_path(@socket, :index)}>Home</:crumb>
-        <:crumb>Contracts</:crumb>
-      </.crumbs>
-    </div>
-
-    <hr class="mt-2 border-white" />
-
-    <div class="flex justify-between lg:mt-2 md:justify-start">
-      <div class="flex">
-        <div>
-          <.back_button to={Routes.home_path(@socket, :index)} class="hidden lg:flex mt-2"/>
-        </div>
-
-        <div>
-          <h1 class="text-4xl font-bold">Your Contracts</h1>
-          <div class="max-w-4xl mt-2 text-base-250">
-            <p>Create and manage all of your global contracts here. We have default contracts for you to start with or go ahead and copy and paste in your own copy. Then you can set a default contract in your packages!</p>
-          </div>
-        </div>
-      </div>
-      <div class="fixed bottom-0 left-0 right-0 z-10 flex flex-shrink-0 w-full sm:p-0 p-6 mt-auto sm:mt-0 sm:bottom-auto sm:ml-auto sm:static sm:items-start sm:w-auto bg-white">
-        <button type="button" title="create Contract" href="#" class="w-full md:w-auto btn-primary text-center" phx-click="create-contract">Create contract</button>
+<.settings_nav socket={@socket} live_action={@live_action} current_user={@current_user} container_class="sm:pb-0 pb-28">
+  <div class="flex flex-col justify-between flex-1 mt-5 sm:flex-row">
+    <div>
+      <h1 class="text-2xl font-bold" {testid("settings-heading")}>Contracts</h1>
+      <div class="max-w-4xl mt-2 text-base-250">
+        <p>Create and manage all of your global contracts here. We have default contracts for you to start with or go ahead and copy and paste in your own copy. Then you can set a default contract in your packages!</p>
       </div>
     </div>
-    <hr class="mt-4 sm:mt-10" />
-</div>
+    <div class="fixed bottom-0 left-0 right-0 z-20 flex flex-shrink-0 w-full p-6 mt-auto bg-white sm:mt-0 sm:bottom-auto sm:static sm:items-start sm:w-auto">
+      <button type="button" title="create Contract" class="w-full md:w-auto btn-primary text-center" phx-click="create-contract">Create contract</button>
+    </div>
+  </div>
 
-<div class="p-6 center-container pb-12">
+  <hr class="my-4" />
+
   <%= if show_intro?(@current_user, "intro_contract") === "true" do %>
     <.empty_state_base wrapper_class="border rounded-lg p-4 mb-8" tour_embed="https://demo.arcade.software/J7LVwwRlcenKLiB7vKf3?embed" headline="Meet Contracts" eyebrow_text="Contract Product Tour" body="Explore our defaults in the table below or create your own and add to your packages to get the info you need and save time." third_party_padding="calc(66.66666666666666% + 41px)" close_event="intro-close-contract">
-      <button type="button" title="create Contract" href="#" class="w-full md:w-auto btn-tertiary flex-shrink-0 text-center" phx-click="create-contract">Create contract</button>
+      <button type="button" title="create Contract" class="w-full md:w-auto btn-tertiary flex-shrink-0 text-center" phx-click="create-contract">Create contract</button>
     </.empty_state_base>
   <% end %>
-    <div class="hidden sm:grid sm:grid-cols-12 gap-2 border-b-8 border-blue-planning-300 font-semibold text-lg pb-6">
-        <div class="sm:col-span-5">Name</div>
-        <div class="sm:col-span-2">Job Type</div>
-    </div>
-    <%= for contract <- @contracts do %>
-    <div class="grid sm:grid-cols-12 gap-2 border p-3 sm:pt-0 sm:px-0 sm:pb-4 sm:border-b sm:border-t-0 sm:border-x-0 rounded-lg sm:rounded-none border-gray-100 mt-4" {testid("contracts-row")}>
-        <div class="sm:col-span-5 flex flex-wrap items-center gap-x-4 col-y-3">
-            <button {if contract.organization_id, do: %{phx_click: "edit-contract", phx_value_contract_id: contract.id}, else: %{phx_click: "view-contract", phx_value_contract_id: contract.id}} class="block text-xl text-left underline text-blue-planning-300 mt-2"> 
-              <%= if String.length(contract.name) < 30 do
-                contract.name || "-"
-              else
-                "#{contract.name |> String.slice(0..30)} ..."
-              end %>
-            </button>
-            <%= if !contract.organization_id do %>
-            <div><.badge color={:gray}>View Only</.badge></div>
-          <% else %>
-            <p class="w-full text-sm text-base-250">Created <%= contract.inserted_at |> Calendar.strftime("%m/%d/%Y") %></p>
-          <% end %>
-          <%= if contract.status == :archive do %>
-            <div {testid("archived-badge")}><.badge color={:gray}>Archived</.badge></div>
-          <% end %>
-        </div>
-        <div class="sm:col-span-2">
-            <span class="sm:hidden font-bold">Job type: </span> <%= contract.job_type %>
-        </div>
-        <div class="sm:col-span-3 flex justify-end">
-            <.actions_cell contract={contract} />
+  <div {testid("filter_and_sort_bar")} class="flex flex-col px-5 center-container px-1.5 lg:flex-row-reverse mb-0 md:mb-10"> 
+    <.select_dropdown class="w-full" title="Contract Status" id="status" selected_option={@contract_status} options_list={contract_status_options()}/>
+    <.select_dropdown class="w-full" title="Job Type" id="type" selected_option={@job_type} options_list={job_type_options()}/>
+  </div>
+  <div class="hidden sm:grid sm:grid-cols-12 gap-2 border-b-8 border-blue-planning-300 font-semibold text-lg pb-6">
+      <div class="sm:col-span-5">Name</div>
+      <div class="sm:col-span-2">Job Type</div>
+  </div>
+    <%= if Enum.empty?(@contracts) && (@job_type !== "all" || @contract_status !== "all") do %>
+          <p class="text-center mt-8 text-lg lg:text-2xl text-base-250">No contracts match your filters</p>
+    <% else %>
+      <%= for contract <- @contracts do %>
+        <div class="grid sm:grid-cols-12 gap-2 border p-3 sm:pt-0 sm:px-0 sm:pb-4 sm:border-b sm:border-t-0 sm:border-x-0 rounded-lg sm:rounded-none border-gray-100 mt-4" {testid("contracts-row")}>
+          <div class="sm:col-span-5 flex flex-wrap items-center gap-x-4 col-y-3">
+              <button {if contract.organization_id, do: %{phx_click: "edit-contract", phx_value_contract_id: contract.id}, else: %{phx_click: "view-contract", phx_value_contract_id: contract.id}} class="block text-xl text-left underline text-blue-planning-300 mt-2"> 
+                <%= if String.length(contract.name) < 30 do
+                  contract.name || "-"
+                else
+                  "#{contract.name |> String.slice(0..30)} ..."
+                end %>
+              </button>
+              <%= if !contract.organization_id do %>
+              <div><.badge color={:gray}>View Only</.badge></div>
+            <% else %>
+              <p class="w-full text-sm text-base-250">Created <%= contract.inserted_at |> Calendar.strftime("%m/%d/%Y") %></p>
+            <% end %>
+            <%= if contract.status == :archive do %>
+              <div {testid("archived-badge")}><.badge color={:gray}>Archived</.badge></div>
+            <% end %>
           </div>
-    </div>
-  <% end %>
-</div>
+          <div class="sm:col-span-2">
+              <span class="sm:hidden font-bold">Job type: </span> <%= if is_nil(contract.job_type), do: contract.job_type, else: String.capitalize(contract.job_type) %>
+          </div>
+          <div class="sm:col-span-3 flex justify-end">
+              <.actions_cell contract={contract} />
+          </div>
+        </div>
+      <% end %>
+    <% end %>
+  <.pagination_component wrapper_class="mb-8 sm:mb-0" pagination_changeset={@pagination_changeset} limit_options={[4, 8, 12, 16]} />
+</.settings_nav>

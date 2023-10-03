@@ -1,4 +1,5 @@
 defmodule Picsello.UserSettingsTest do
+  @moduledoc false
   use Picsello.FeatureCase, async: true
   require Ecto.Query
   alias Picsello.{Repo}
@@ -89,13 +90,12 @@ defmodule Picsello.UserSettingsTest do
     |> click(testid("subnav-Settings"))
     |> click(link("Finances"))
     |> scroll_to_bottom()
-    |> assert_has(css("label", text: "Disabled"))
-    |> click(css("label", text: "Disabled"))
-    |> click(button("Yes, allow cash/check"))
-    |> assert_has(css("label", text: "Enabled"))
+    |> assert_has(css("h3", text: "Via Stripe Online"))
+    |> assert_has(css("label", text: "Disabled", count: 5))
+    |> assert_has(css("h3", text: "Via Manual Methods"))
+    |> click(css("label", text: "Disabled", count: 5, at: 4))
 
-    user = user |> Repo.reload()
-
-    assert %{allow_cash_payment: true} = user
+    organization = user.organization |> Repo.reload()
+    assert %{payment_options: %{allow_cash: true}} = organization
   end
 end

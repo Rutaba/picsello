@@ -469,19 +469,30 @@ defmodule PicselloWeb.PackageLive.Shared do
               <% end %>
             </div>
             <div>
-              <span class="flex flex-row items-center mb-2"><.icon name="tick" class="w-6 h-5 mr-1 text-green-finances-300" /><%= get_buy_all(@download_changeset) %> buy all</span>
               <%= if (@download_changeset |> current |> Map.get(:status)) !=  :unlimited do %>
+                <span class="flex flex-row items-center mb-2">
+                  <%= if check?(@download_changeset, :is_buy_all) do %>
+                    <.icon name="tick" class="w-6 h-5 mr-1 text-green-finances-300" />
+                    <%= get_buy_all(@download_changeset) %> buy all
+                  <% else %>
+                    <.icon name="close" class="w-6 h-6 mr-1 fill-red-sales-300" />
+                    Buy all not set
+                  <% end %>
+                </span>
                 <button class={classes("underline text-blue-planning-300 mt-auto inline-block w-max", %{"hidden" => @show_digitals in ["digitals", "image_price", "buy_all"]})} type="button" phx-target={@target} phx-value-type="buy_all" phx-click="edit-digitals">Edit upsell options</button>
               <% end %>
             </div>
           </div>
         </div>
-        <b class="flex w-1/5"><%= if digitals_total(@download_changeset) == nil do%>
-            -
-          <% else %>
-            <%= digitals_total(@download_changeset) %>
-          <% end %>
-        </b>
+        <%= if @for not in [:create_gallery, :import_job] do %>
+          <b class="flex w-1/5">
+            <%= if digitals_total(@download_changeset) == nil do %>
+              -
+            <% else %>
+              <%= digitals_total(@download_changeset) %>
+            <% end %>
+          </b>
+        <% end %>
       </div>
 
       <div class={classes("border border-solid mt-6 rounded-lg md:w-1/2", %{"hidden" => @show_digitals !== "digitals"})}>
@@ -679,7 +690,7 @@ defmodule PicselloWeb.PackageLive.Shared do
   defp make_digital_text(download_changeset) do
     case download_changeset |> current() |> Map.get(:status) do
       :unlimited ->
-        "all images"
+        "All images"
 
       _ ->
         ngettext("%{count} image", "%{count} images", get_digitals_count(download_changeset))

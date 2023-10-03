@@ -1,38 +1,80 @@
 defmodule PicselloWeb.Live.Calendar.Index do
   @moduledoc false
   use PicselloWeb, :live_view
-  import PicselloWeb.Live.Calendar.Shared, only: [back_button: 1]
+  alias Picsello.{Jobs, Shoots, NylasCalendar, Repo}
+  import PicselloWeb.Live.Calendar.Shared
+  alias PicselloWeb.Shared.PopupComponent
+  alias PicselloWeb.Calendar.Shared.DetailComponent
 
   @impl true
-  def mount(_params, _session, socket) do
+  @spec mount(any, map, Phoenix.LiveView.Socket.t()) :: {:ok, Phoenix.LiveView.Socket.t()}
+  def mount(
+        _params,
+        _session,
+        %{assigns: %{current_user: %{nylas_detail: nylas_detail}}} = socket
+      ) do
+    {:ok, nylas_url} = NylasCalendar.generate_login_link()
+
     socket
+    |> assign(:nylas_url, nylas_url)
+    |> assign(:show_calendar_setup, is_nil(nylas_detail.oauth_token))
     |> assign(:page_title, "Calendar")
     |> ok()
   end
 
   @impl true
-  def render(assigns) do
-    ~H"""
-    <div class="p-6 center-container">
-      <div class="flex items-end justify-between mt-4 md:justify-start">
-        <div class="flex text-4xl font-bold items-center">
-          <.back_button to={Routes.home_path(@socket, :index)} class="mt-2"/>
-          Calendar
-        </div>
-        <.live_link to={Routes.calendar_settings_path(@socket, :settings)} class="btn-tertiary flex items-center md:ml-auto md:mr-3 text-blue-planning-300">
-          <.icon name="settings" class="inline-block w-6 h-6 mr-2 text-blue-planning-300" />
-          Settings
-        </.live_link>
-        <div class="fixed bottom-0 left-0 right-0 z-4 flex flex-shrink-0 w-full sm:p-0 p-6 mt-auto sm:mt-0 sm:bottom-auto sm:static sm:items-start sm:w-auto">
-          <.live_link to={Routes.calendar_booking_events_index_path(@socket, :index)} class="w-full md:w-auto btn-primary text-center">
-            Manage booking events
-          </.live_link>
-        </div>
-      </div>
+  def handle_event("event-detail", %{"event" => %{"extendedProps" => props} = event}, socket) do
+    socket
+    |> PopupComponent.open(%{
+      module_component: DetailComponent,
+      confirm_event: "open-event",
+      title: event["title"],
+      opts:
+        props
+        |> build_opts()
+        |> Map.merge(%{
+          start_date: build_datetime(event["start"]),
+          end_date: build_datetime(event["end"] || event["start"]),
+          url: props["other"]["url"]
+        })
+    })
+    |> noreply()
+  end
 
-      <hr class="my-4 sm:my-10" />
-      <div phx-hook="Calendar" phx-update="replace" class="w-full" id="calendar" data-time-zone={@current_user.time_zone} data-feed-path={Routes.calendar_feed_path(@socket, :index)}></div>
-    </div>
-    """
+  defdelegate handle_event(event, params, socket), to: PicselloWeb.Live.Calendar.Shared
+
+  defp build_opts(%{"other" => %{"calendar" => "external"} = other}) do
+    %{
+      calender: "external",
+      location: other["location"],
+      conferencing: other["conferencing"],
+      description: other["description"],
+      organizer_email: other["organizer_email"],
+      status: other["status"]
+    }
+  end
+
+  defp build_opts(%{"other" => %{"calendar" => "internal", "job_id" => job_id}}) do
+    shoot = Shoots.get_latest_shoot(job_id) || %{}
+    %{client: client} = job_id |> Jobs.get_job_by_id() |> Repo.preload(:client)
+
+    %{
+      calender: "internal",
+      location: Map.get(shoot, :location),
+      address: Map.get(shoot, :address),
+      client_name: client.name,
+      client_phone: client.phone
+    }
+  end
+
+  defp build_datetime(value) do
+    case DateTime.from_iso8601(value) do
+      {:error, :invalid_format} ->
+        {:ok, %Date{} = date} = Date.from_iso8601(value)
+        date
+
+      {:ok, datetime, diff} ->
+        DateTime.add(datetime, diff, :second)
+    end
   end
 end

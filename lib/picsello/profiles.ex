@@ -73,7 +73,7 @@ defmodule Picsello.Profiles do
     def url_validation_errors(url) do
       case URI.parse(url) do
         %{scheme: nil} ->
-          ("https://" <> url) |> url_validation_errors()
+          ["is invalid"]
 
         %{scheme: scheme, host: "" <> host} when scheme in ["http", "https"] ->
           label = "[a-zA-Z0-9\\-]{1,63}+"
@@ -97,7 +97,8 @@ defmodule Picsello.Profiles do
     import Picsello.Accounts.User, only: [validate_email_format: 1]
     import PicselloWeb.Gettext
 
-    @fields ~w[name email phone job_type message]a
+    @fields ~w[name email phone referred_by referral_name job_type message]a
+    @required_fields ~w[name email phone job_type message]a
 
     embedded_schema do
       for field <- @fields do
@@ -109,18 +110,36 @@ defmodule Picsello.Profiles do
       contact
       |> cast(attrs, @fields)
       |> validate_email_format()
-      |> validate_required(@fields)
+      |> validate_required(@required_fields)
     end
 
-    def to_string(%__MODULE__{} = contact) do
+    def message_for(%__MODULE__{} = contact) do
+      msg = """
+        name: #{contact.name}
+        email: #{contact.email}
+        phone: #{contact.phone}
       """
-          name: #{contact.name}
-         email: #{contact.email}
-         phone: #{contact.phone}
-      job type: #{dyn_gettext(contact.job_type)}
-       message: #{contact.message}
-      """
+
+      build_message(contact, msg) <>
+        """
+          job type: #{dyn_gettext(contact.job_type)}
+          message: #{contact.message}
+        """
     end
+
+    defp build_message(%{referred_by: nil}, msg), do: msg
+
+    defp build_message(%{referral_name: nil, referred_by: ref_by}, msg),
+      do: msg <> referred_by(ref_by)
+
+    defp build_message(%{referral_name: ref_name, referred_by: ref_by}, msg),
+      do: msg <> referred_by(ref_by) <> referral_name(ref_name)
+
+    defp referred_by(nil), do: nil
+    defp referred_by(value), do: "referred by: #{value}"
+
+    defp referral_name(nil), do: nil
+    defp referral_name(value), do: "referral name: #{value}"
   end
 
   def contact_changeset(contact, attrs) do
@@ -169,7 +188,7 @@ defmodule Picsello.Profiles do
           |> Ecto.Multi.insert(
             :client,
             contact
-            |> Map.take([:name, :email, :phone])
+            |> Map.take([:name, :email, :phone, :referred_by, :referral_name])
             |> Map.put(:organization_id, organization_id)
             |> Client.create_changeset(),
             on_conflict: {:replace, [:email, :archived_at]},
@@ -186,7 +205,7 @@ defmodule Picsello.Profiles do
               %{
                 job_id: &1.lead.id,
                 subject: "New lead from profile",
-                body_text: Contact.to_string(contact)
+                body_text: Contact.message_for(contact)
               },
               [:job_id]
             )

@@ -1,4 +1,5 @@
 defmodule Picsello.UserEditsPublicProfileTest do
+  @moduledoc false
   use Picsello.FeatureCase, async: true
   require Ecto.Query
 
@@ -14,7 +15,7 @@ defmodule Picsello.UserEditsPublicProfileTest do
       )
       |> onboard!
 
-    insert(:brand_link, user: user)
+    insert(:brand_link, user: user, show_on_profile?: true)
 
     insert(:package_template,
       user: user,
@@ -49,7 +50,6 @@ defmodule Picsello.UserEditsPublicProfileTest do
     |> assert_text("Event")
     |> assert_has(radio_button("Wedding", visible: false))
     |> assert_has(radio_button("Event", visible: false))
-    |> assert_has(link("See our full portfolio"))
     |> assert_has(css("a[href*='/photographer/mary-jane-photos']", text: "View"))
     |> click(button("Close"))
     |> assert_path(Routes.profile_settings_path(PicselloWeb.Endpoint, :index))
@@ -68,10 +68,6 @@ defmodule Picsello.UserEditsPublicProfileTest do
     |> fill_in(text_field("organization_brand_links_0_link"), with: "http://google.com")
     |> click(button("Save"))
     |> assert_has(css("a[href='http://google.com']", text: "See our full portfolio"))
-    |> click(button("Edit Link"))
-    |> fill_in(text_field("organization_brand_links_0_link"), with: "")
-    |> click(button("Save"))
-    |> assert_has(css("a[href='#']", text: "See our full portfolio"))
   end
 
   feature "user edits description", %{session: session, user: %{organization: organization}} do

@@ -12,6 +12,11 @@ defmodule PicselloWeb.ClientBookingEventLive.Book do
       profile_footer: 1
     ]
 
+  import PicselloWeb.ClientBookingEventLive.Shared,
+    only: [
+      maybe_event_disable_or_archive: 1
+    ]
+
   import PicselloWeb.ClientBookingEventLive.DatePicker, only: [date_picker: 1]
   require Logger
 
@@ -30,12 +35,14 @@ defmodule PicselloWeb.ClientBookingEventLive.Book do
       })
     end)
     |> assign_available_times()
+    |> maybe_event_disable_or_archive()
     |> ok()
   end
 
   @impl true
   def render(assigns) do
     ~H"""
+    <%= if @status == :active do %>
     <div class="center-container px-8 pt-6 mx-auto min-h-screen flex flex-col">
       <div class="flex">
         <.photographer_logo organization={@organization} />
@@ -76,6 +83,11 @@ defmodule PicselloWeb.ClientBookingEventLive.Book do
 
       <.profile_footer color={@color} photographer={@photographer} organization={@organization} />
     </div>
+    <% else %>
+      <div class="center-container px-8 pt-6 mx-auto min-h-screen flex flex-col">
+        <h1 class="text-1x text-center font-bold"> No available times </h1>
+      </div>
+    <% end %>
     """
   end
 
@@ -196,7 +208,7 @@ defmodule PicselloWeb.ClientBookingEventLive.Book do
     booking = current(changeset)
 
     [booking_date | _] =
-      BookingEventDates.get_booking_events_dates_with_same_date(booking_event.id, booking.date)
+      BookingEventDates.get_booking_events_dates_with_same_date([booking_event.id], booking.date)
 
     socket |> assign(booking_date: booking_date)
   end

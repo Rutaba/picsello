@@ -15,8 +15,13 @@
         />
         <div class="flex gap-2 ml-auto py-2">
             <.actions id="header" main_button_class="h-12" archive_option={false} booking_event={@booking_event} button_actions={header_actions(@booking_event)} />
-            <.icon_button icon="eye" color="blue-planning-300" class="text-black" disabled={BEShared.incomplete_status?(@booking_event)}>Client preview</.icon_button>
-            <.button_simple disabled={BEShared.incomplete_status?(@booking_event)}>Copy Link</.button_simple>
+            <.icon_button icon="eye" color="blue-planning-300" class="text-black" disabled={BEShared.incomplete_status?(@booking_event)} href={@booking_event.url} target="_blank" rel="noopener noreferrer">Client preview</.icon_button>
+             <button id={"copy-event-link-#{@booking_event.id}"} class={"btn-primary whitespace-nowrap"} data-clipboard-text={@booking_event.url} phx-hook="Clipboard" disabled={BEShared.incomplete_status?(@booking_event)}>
+                Copy Link
+                <div class="hidden p-1 text-sm rounded shadow text-blue-planning-300" role="tooltip">
+                    Copied!
+                </div>
+            </button>
         </div>
     </div>
     <div class="ml-2 pb-1.5 mt-10 w-20 text-center border-b-4 border-blue-planning-300 text-blue-planning-300 font-bold">
@@ -57,6 +62,8 @@
                         <.booking_slot_tabs_nav booking_event={@booking_event} booking_slot_tab_active={@booking_slot_tab_active} booking_slot_tabs={@booking_slot_tabs} socket={@socket} />
                         <.booking_slot_tabs_content booking_event_dates={@booking_event.dates} {assigns} />
 
+                    <% end %>
+                    
                     <div class={classes("mt-10 p-3 border-2 flex items-center rounded-lg border-base-200", %{"border-red-sales-300" => !@package})}>
                         <div class="flex flex-col w-full">
                             <div class="mr-2 flex items-center gap-3">

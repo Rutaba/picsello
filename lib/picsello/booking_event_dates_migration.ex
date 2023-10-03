@@ -141,7 +141,7 @@ defmodule Picsello.BookingEventDatesMigration do
       status =
         cond do
           is_break -> :break
-          is_hidden -> :hide
+          is_hidden -> :hidden
           true -> slot_time.status
         end
 
@@ -242,7 +242,7 @@ defmodule Picsello.BookingEventDatesMigration do
           is_slot_booked(booking_event.buffer_minutes, slot_start, slot_end, start_time, end_time)
         end)
 
-      status = if is_available, do: :open, else: :book
+      status = if is_available, do: :open, else: :booked
       Map.put(slot_time, :status, status)
     end)
   end

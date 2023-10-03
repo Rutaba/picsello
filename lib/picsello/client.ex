@@ -18,6 +18,8 @@ defmodule Picsello.Client do
     field :name, :string
     field :phone, :string
     field :address, :string
+    field :referred_by, :string
+    field :referral_name, :string
     field :notes, :string
     field :stripe_customer_id, :string
     field :archived_at, :utc_datetime
@@ -35,10 +37,20 @@ defmodule Picsello.Client do
   """
   def create_changeset(client \\ %__MODULE__{}, attrs) do
     client
-    |> cast(attrs, [:name, :email, :organization_id, :phone, :address, :notes])
+    |> cast(attrs, [
+      :name,
+      :email,
+      :organization_id,
+      :phone,
+      :address,
+      :notes,
+      :referred_by,
+      :referral_name
+    ])
     |> validate_required([:name, :email, :organization_id])
     |> downcase_email()
     |> User.validate_email_format()
+    |> validate_lengths()
     |> unique_constraint([:email, :organization_id])
   end
 
@@ -49,6 +61,7 @@ defmodule Picsello.Client do
     |> downcase_email()
     |> validate_archived_email()
     |> User.validate_email_format()
+    |> validate_lengths()
     |> unsafe_validate_unique([:email, :organization_id], Picsello.Repo)
     |> unique_constraint([:email, :organization_id])
   end
@@ -58,6 +71,7 @@ defmodule Picsello.Client do
     |> cast(attrs, [:name, :email, :phone, :address, :notes, :organization_id])
     |> downcase_email()
     |> User.validate_email_format()
+    |> validate_lengths()
     |> validate_required([:email, :organization_id])
     |> validate_archived_email()
     |> unsafe_validate_unique([:email, :organization_id], Picsello.Repo)
@@ -84,6 +98,12 @@ defmodule Picsello.Client do
 
   def notes_changeset(client \\ %__MODULE__{}, attrs) do
     client |> cast(attrs, [:notes])
+  end
+
+  defp validate_lengths(changeset) do
+    changeset
+    |> validate_length(:name, max: 200)
+    |> validate_length(:address, max: 255)
   end
 
   defp validate_required_name(changeset) do

@@ -3,7 +3,7 @@ defmodule PicselloWeb.Live.ClientLive.Index do
   use PicselloWeb, :live_view
 
   import PicselloWeb.GalleryLive.Index, only: [update_gallery_listing: 1]
-  import PicselloWeb.GalleryLive.Shared, only: [add_message_and_notify: 3, new_gallery_path: 2]
+  import PicselloWeb.GalleryLive.Shared, only: [add_message_and_notify: 3]
 
   import PicselloWeb.Shared.CustomPagination,
     only: [
@@ -187,12 +187,12 @@ defmodule PicselloWeb.Live.ClientLive.Index do
 
     socket
     |> ConfirmationComponent.open(%{
-      close_label: "No, go back",
+      close_label: "Cancel",
       confirm_event: "unarchive_" <> to_string(client.id),
-      confirm_label: "Yes, Unarchive",
+      confirm_label: "Yes, unarchive",
       icon: "warning-orange",
-      title: "Unarchive Client?",
-      subtitle: "Are you sure you wish to Unarchive #{client.name || "this client"}?"
+      title: "Are you sure you want to unarchive this client?",
+      subtitle: "You'll be unarchiving #{client.name || "this client"}"
     })
     |> noreply()
   end
@@ -412,9 +412,7 @@ defmodule PicselloWeb.Live.ClientLive.Index do
 
   @impl true
   def handle_info({:redirect_to_gallery, gallery}, socket) do
-    socket
-    |> push_redirect(to: new_gallery_path(socket, gallery))
-    |> noreply()
+    PicselloWeb.Live.Shared.handle_info({:redirect_to_gallery, gallery}, socket)
   end
 
   @impl true
@@ -484,8 +482,8 @@ defmodule PicselloWeb.Live.ClientLive.Index do
       <ul class="absolute z-30 hidden w-full md:w-32 mt-2 bg-white toggle rounded-md popover-content border shadow-lg">
         <%= for option <- @options_list do %>
           <li id={option.id} target-class="toggle-it" parent-class="toggle" toggle-type="selected-active" phx-hook="ToggleSiblings"
-          class="flex items-center py-1.5 hover:bg-blue-planning-100 hover:rounded-md">
-            <button id={option.id} class="album-select" phx-click={"apply-filter-#{@id}"} phx-value-option={option.id}><%= option.title %></button>
+          class="flex items-center py-1.5 hover:bg-blue-planning-100 hover:rounded-md" phx-click={"apply-filter-#{@id}"} phx-value-option={option.id}>
+            <button id={option.id} class="album-select"><%= option.title %></button>
             <%= if option.id == @selected_option do %>
               <.icon name="tick" class="w-6 h-5 mr-1 toggle-it text-blue-planning-300" />
             <% end %>
@@ -604,12 +602,12 @@ defmodule PicselloWeb.Live.ClientLive.Index do
     do:
       socket
       |> ConfirmationComponent.open(%{
-        close_label: "No, go back",
+        close_label: "Cancel",
         confirm_event: "archive_" <> to_string(client.id),
         confirm_label: "Yes, archive",
         icon: "warning-orange",
-        title: "Archive Client?",
-        subtitle: "Are you sure you wish to archive #{client.name || "this client"}?"
+        title: "Are you sure you want to archive this client?",
+        subtitle: "You'll be archiving #{client.name || "this client"}?"
       })
       |> noreply()
 
@@ -725,4 +723,15 @@ defmodule PicselloWeb.Live.ClientLive.Index do
       %{title: "Archive", action: "confirm-archive", icon: "trash"}
     ]
   end
+
+  @referrals ["Friend", "Other"]
+  def referred_by_name(referred_by, referral_name) when referred_by in @referrals do
+    if referral_name do
+      "#{referred_by} - #{referral_name}"
+    else
+      "#{referred_by}"
+    end
+  end
+
+  def referred_by_name(_referred_by, _referral_name), do: "-"
 end

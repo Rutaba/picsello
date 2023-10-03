@@ -56,8 +56,8 @@ defmodule Picsello.BookingEvent do
 
     defp validate_time_blocks(changeset) do
       blocks = changeset |> get_field(:time_blocks)
-
-      filter_blocks = Enum.filter(blocks, fn block -> !block.is_break end)
+      sort_blocks = Enum.sort_by(blocks, &{&1.start_time, &1.end_time})
+      filter_blocks = Enum.filter(sort_blocks, fn block -> !block.is_break end)
 
       overlap_times =
         for(
@@ -89,6 +89,7 @@ defmodule Picsello.BookingEvent do
     field :address, :string
     field :thumbnail_url, :string
     field :show_on_profile?, :boolean, default: false
+    field :include_questionnaire?, :boolean, default: true
     field(:status, Ecto.Enum, values: [:active, :disabled, :archive])
     belongs_to :package_template, Picsello.Package
     belongs_to :organization, Picsello.Organization
@@ -149,12 +150,6 @@ defmodule Picsello.BookingEvent do
     booking_event |> change(status: :active)
   end
 
-  def update_package_template(booking_event, attrs) do
-    booking_event
-    |> cast(attrs, [:package_template_id])
-    |> validate_required([:package_template_id])
-  end
-
   def update_customize(booking_event, attrs) do
     booking_event
     |> cast(attrs, [
@@ -167,6 +162,12 @@ defmodule Picsello.BookingEvent do
       :description,
       :thumbnail_url
     ])
+  end
+
+  def update_package_template(booking_event, attrs) do
+    booking_event
+    |> cast(attrs, [:package_template_id, :include_questionnaire?])
+    |> validate_required([:package_template_id])
   end
 
   defp update_details(booking_event, attrs) do

@@ -1,4 +1,5 @@
 defmodule Picsello.ResetPasswordErrorTest do
+  @moduledoc false
   use Picsello.FeatureCase, async: true
 
   @tag capture_log: true

@@ -1,4 +1,5 @@
 defmodule Picsello.GalleryAlbumTest do
+  @moduledoc false
   use Picsello.FeatureCase, async: true
 
   setup :onboarded
@@ -126,7 +127,7 @@ defmodule Picsello.GalleryAlbumTest do
     |> visit("/galleries/#{gallery_id}/albums/#{album_id}")
     |> assert_has(css(".item", count: photos_count))
     |> force_simulate_click(css("#photo-#{List.first(photo_ids)}-view"))
-    |> assert_has(css("span", text: "/images/print.png"))
+    |> assert_text("/images/print.png")
   end
 
   test "Album, delete single photo", %{

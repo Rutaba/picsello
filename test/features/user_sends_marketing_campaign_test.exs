@@ -1,4 +1,5 @@
 defmodule Picsello.UserSendsMarketingCampaignTest do
+  @moduledoc false
   use Picsello.FeatureCase, async: false
   use Oban.Testing, repo: Picsello.Repo
   alias Picsello.{Repo, Campaign}

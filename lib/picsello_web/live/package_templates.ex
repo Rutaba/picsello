@@ -95,7 +95,7 @@ defmodule PicselloWeb.Live.PackageTemplates do
     <.settings_nav socket={@socket} live_action={@live_action} current_user={@current_user} container_class="sm:pb-0 pb-28">
       <div class={classes("flex flex-col justify-between flex-1 mt-5 sm:flex-row", %{"flex-grow-0" => Enum.any?(@templates) })}>
         <div>
-          <h1 class="text-2xl font-bold">Package Templates</h1>
+          <h1 class="text-2xl font-bold" {testid("settings-heading")}>Packages</h1>
 
           <p class="max-w-2xl my-2 text-base-250">
             Create reusable pricing and shoot templates to make it easier to manage leads. Looking to learn more about your pricing? <%= live_redirect to: Routes.calculator_path(@socket, :index), title: "Check out our helpful calculator!", class: "underline text-blue-planning-300 intro-calculator" do %>Check out our helpful calculator!<% end %>
@@ -115,7 +115,7 @@ defmodule PicselloWeb.Live.PackageTemplates do
 
       <hr class="my-4" />
       <div class={classes("lg:mt-10", %{"hidden" => is_nil(@is_mobile)})}>
-        <div class="flex flex-col lg:flex-row lg:mt-8">
+        <div class="flex flex-col lg:flex-row">
           <div class={classes("lg:block", %{"hidden" => !@is_mobile})}>
             <div class="h-auto">
               <div id={"replace-#{@package_name}"} phx-update="replace" class="w-full p-5 mt-auto sm:mt-0 sm:bottom-auto sm:static sm:items-start sm:w-auto grid grid-cols-1 bg-base-200 rounded-xl lg:w-80 gap-y-1">
@@ -375,7 +375,7 @@ defmodule PicselloWeb.Live.PackageTemplates do
       socket
       |> assign(:archive_package_id, package_id)
       |> PicselloWeb.ConfirmationComponent.open(%{
-        close_label: "No! Get me out of here",
+        close_label: "Cancel",
         confirm_event: "archive_unarchive",
         confirm_label: if(type == "archive", do: "Yes, archive", else: "Yes, unarchive"),
         icon: "warning-orange",

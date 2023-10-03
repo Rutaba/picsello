@@ -5,13 +5,13 @@ defmodule PicselloWeb.ClientMessageComponent do
   import PicselloWeb.LiveModal, only: [close_x: 1, footer: 1]
   import PicselloWeb.Shared.Quill, only: [quill_input: 1]
   import Picsello.Messages, only: [get_emails: 2]
-
-  alias Picsello.{Repo, Job, Clients}
+  alias Picsello.{Repo, Job, Clients, AdminGlobalSettings}
 
   @default_assigns %{
     composed_event: :message_composed,
     modal_title: "Send an email",
     send_button: "Send Email",
+    client: nil,
     show_cc: false,
     show_bcc: false,
     show_client_email: true,
@@ -28,12 +28,17 @@ defmodule PicselloWeb.ClientMessageComponent do
     |> assign_new(:recipients, fn ->
       if Map.has_key?(assigns, :client), do: %{"to" => assigns.client.email}, else: nil
     end)
+    |> then(&(&1 |> assign(:show_bcc, Map.has_key?(&1.assigns.recipients, "bcc"))))
     |> assign(:search_results, [])
     |> assign(:search_phrase, nil)
     |> assign(:current_focus, -1)
     |> assign_new(:bcc_email_error, fn -> nil end)
     |> assign_new(:cc_email_error, fn -> nil end)
     |> assign_new(:to_email_error, fn -> nil end)
+    |> assign(
+      :admin_global_settings,
+      AdminGlobalSettings.get_all_active_settings() |> Map.new(&{&1.slug, &1})
+    )
     |> then(fn %{assigns: assigns} = socket ->
       socket
       |> assign_changeset(:validate, Map.take(assigns, [:subject, :body_text, :body_html]))
@@ -124,17 +129,17 @@ defmodule PicselloWeb.ClientMessageComponent do
 
   @impl true
   def handle_event("validate_bcc_email", %{"value" => email}, socket) do
-    validate_email(email, "bcc", socket)
+    socket |> validate_emails(email, "bcc") |> noreply()
   end
 
   @impl true
   def handle_event("validate_cc_email", %{"value" => email}, socket) do
-    validate_email(email, "cc", socket)
+    socket |> validate_emails(email, "cc") |> noreply()
   end
 
   @impl true
   def handle_event("validate_to_email", %{"value" => email}, socket) do
-    validate_email(email, "to", socket)
+    socket |> validate_emails(email, "to") |> noreply()
   end
 
   @impl true
@@ -329,7 +334,11 @@ defmodule PicselloWeb.ClientMessageComponent do
     end
   end
 
-  defp prepend_email(email, type, %{assigns: %{recipients: recipients}} = socket) do
+  defp prepend_email(
+         email,
+         type,
+         %{assigns: %{recipients: recipients}} = socket
+       ) do
     email_list =
       recipients
       |> Map.get(type, [])
@@ -340,44 +349,80 @@ defmodule PicselloWeb.ClientMessageComponent do
       if is_list(email_list), do: List.insert_at(email_list, -1, email), else: [email, email_list]
 
     socket
-    |> assign(:recipients, Map.put(recipients, type, email_list))
-    |> then(fn socket -> socket |> re_assign_clients() end)
+    |> validate_emails(email_list, type)
     |> assign(:search_results, [])
     |> assign(:search_phrase, nil)
   end
 
-  defp validate_email(
-         email,
-         type,
-         %{assigns: %{recipients: recipients, current_user: user}} = socket
+  @error_2 ~s(please enter valid client emails that already exist in the system)
+  @error_3 ~s(please enter valid emails)
+
+  @to_slug ~s(to_limit)
+  @cc_slug ~s(cc_limit)
+  @bcc_slug ~s(bcc_limit)
+
+  defp validate_emails(
+         %{
+           assigns: %{
+             recipients: recipients,
+             current_user: user,
+             admin_global_settings: admin_global_settings
+           }
+         } = socket,
+         emails,
+         type
        ) do
-    email_list =
-      email
-      |> String.downcase()
-      |> String.split(";", trim: true)
-      |> Enum.map(fn email ->
-        String.trim(email)
-      end)
+    email_list = split_into_list(emails)
 
-    valid_emails? =
-      Enum.any?(email_list) &&
-        Enum.all?(email_list, fn email ->
-          Repo.exists?(Clients.get_client_query(user, email: email))
-        end)
+    %{value: value} =
+      case type do
+        "to" -> admin_global_settings[@to_slug]
+        "cc" -> admin_global_settings[@cc_slug]
+        "bcc" -> admin_global_settings[@bcc_slug]
+      end
 
-    if valid_emails? do
-      socket
-      |> assign(:"#{type}_email_error", nil)
-    else
-      socket
-      |> assign(
-        :"#{type}_email_error",
-        "please enter valid client emails that already exist in the system"
-      )
-    end
+    value = String.to_integer(value)
+
+    error =
+      length(email_list) > value &&
+        "Limit reached, #{ngettext("1 email", "%{count} emails", value)} allowed, Contact support to increase limit"
+
+    error = if error, do: error, else: do_validate_emails(email_list, type, user)
+
+    socket
+    |> assign(:"#{type}_email_error", error)
     |> assign(:recipients, Map.put(recipients, type, email_list))
-    |> then(fn socket -> re_assign_clients(socket) end)
-    |> noreply()
+    |> re_assign_clients()
+  end
+
+  defp do_validate_emails(email_list, type, _user) when type in ~w(cc bcc) do
+    Enum.any?(email_list) &&
+      Enum.all?(email_list, fn email ->
+        String.match?(email, Picsello.Accounts.User.email_regex())
+      end)
+      |> if(do: nil, else: @error_3)
+  end
+
+  defp do_validate_emails(email_list, type, user) when type == ~s(to) do
+    Enum.any?(email_list) &&
+      email_list
+      |> Enum.all?(
+        &(user
+          |> Clients.get_client_query(email: &1)
+          |> Repo.exists?())
+      )
+      |> if(do: nil, else: @error_2)
+  end
+
+  defp split_into_list(emails) when is_list(emails), do: emails
+
+  defp split_into_list(emails) do
+    emails
+    |> String.downcase()
+    |> String.split(";", trim: true)
+    |> Enum.map(fn email ->
+      String.trim(email)
+    end)
   end
 
   defp remove_client_name(
@@ -410,7 +455,7 @@ defmodule PicselloWeb.ClientMessageComponent do
       <div class="w-full md:w-1/3 md:ml-6">
         <%= form_tag("#", [phx_change: :search, phx_target: @myself]) do %>
           <div class="relative flex flex-col w-full md:flex-row">
-            <a href='#' class="absolute top-0 bottom-0 flex flex-row items-center justify-center overflow-hidden text-xs text-gray-400 left-2">
+            <a class="absolute top-0 bottom-0 flex flex-row items-center justify-center overflow-hidden text-xs text-gray-400 left-2">
               <%= if (Enum.any?(@search_results) && @search_phrase) do %>
                 <span phx-click="clear-search" phx-target={@myself} class="cursor-pointer">
                   <.icon name="close-x" class="w-4 ml-1 fill-current stroke-current stroke-2 close-icon text-blue-planning-300" />

@@ -1,4 +1,5 @@
 defmodule Picsello.ClientBuysGreetingCardTest do
+  @moduledoc false
   use Picsello.FeatureCase, async: true
   import Money.Sigils
 

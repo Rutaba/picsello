@@ -121,7 +121,9 @@ defmodule Picsello.FeatureCase do
 
     def wait_for_enabled_submit_button(session, opts \\ []) do
       try do
-        session |> assert_has(css("button:not(:disabled)[type='submit']", opts))
+        session
+        |> sleep(100)
+        |> assert_has(css("button:not(:disabled)[type='submit']", opts))
       rescue
         _ ->
           session
@@ -162,8 +164,8 @@ defmodule Picsello.FeatureCase do
         ) do
       session
       |> maybe_visit_log_in()
-      |> fill_in(text_field("Email"), with: email)
-      |> fill_in(text_field("Password"), with: password)
+      |> fill_in(css("#user_email"), with: email)
+      |> fill_in(css("#user_password"), with: password)
       |> wait_for_enabled_submit_button()
       |> click(button("Login"))
       |> then(&wait_for_path_to_change_from(&1, @sign_in_path))

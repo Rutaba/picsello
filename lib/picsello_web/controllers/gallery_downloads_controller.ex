@@ -52,10 +52,28 @@ defmodule PicselloWeb.GalleryDownloadsController do
       |> Enum.map(& &1.photo)
       |> Enum.split_with(& &1.size)
       |> assure_photo_size()
-      |> Photos.csv_content()
+      |> Photos.csv_content(:base)
 
+    handle_csv_response(conn, client.name, gallery.name, album.name, csv_data)
+  end
+
+  def download_lightroom_csv(conn, %{"hash" => hash, "order_number" => order_number}) do
+    %{job: %{client: client}} =
+      gallery = Galleries.get_gallery_by_hash!(hash) |> Repo.preload(job: [:client])
+
+    %{digitals: digitals, album: album} = Orders.get!(gallery, order_number)
+
+    csv_data =
+      digitals
+      |> Enum.map(& &1.photo)
+      |> Photos.csv_content(:lightroom)
+
+    handle_csv_response(conn, client.name, gallery.name, album.name, csv_data)
+  end
+
+  defp handle_csv_response(conn, client_name, gallery_name, album_name, csv_data) do
     file_name =
-      ~s(#{Date.utc_today() |> Date.to_string()}_#{client.name}_#{gallery.name}_#{album.name}.csv)
+      ~s(#{Date.utc_today() |> Date.to_string()}_#{client_name}_#{gallery_name}_#{album_name}.csv)
 
     conn
     |> put_resp_content_type("text/csv")

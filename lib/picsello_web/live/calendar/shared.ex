@@ -30,4 +30,16 @@ defmodule PicselloWeb.Live.Calendar.Shared do
       false
     end
   end
+
+  @spec handle_event(<<_::160>>, any, Phoenix.LiveView.Socket.t()) ::
+          {:noreply, Phoenix.LiveView.Socket.t()}
+  def handle_event(
+        "toggle_connect_modal",
+        _,
+        %Phoenix.LiveView.Socket{assigns: %{nylas_url: nylas_url}} = socket
+      ) do
+    socket
+    |> PicselloWeb.Live.Calendar.Shared.ConnectModal.open(%{nylas_url: nylas_url})
+    |> noreply()
+  end
 end

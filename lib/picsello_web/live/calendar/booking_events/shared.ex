@@ -12,7 +12,8 @@ defmodule PicselloWeb.Calendar.BookingEvents.Shared do
     PackageLive.WizardComponent
   }
 
-  alias Picsello.{BookingEvents, BookingEvent, BookingEventDate, Repo}
+  alias PicselloWeb.Router.Helpers, as: Routes
+  alias Picsello.{Repo, BookingEvent, BookingEvents, BookingEventDate, BookingEventDates}
   alias BookingEventDate.SlotBlock
   alias Ecto.Multi
 
@@ -35,7 +36,7 @@ defmodule PicselloWeb.Calendar.BookingEvents.Shared do
       |> Enum.map(fn t ->
         t
         |> Map.replace(:date, nil)
-        |> Map.replace(:slots, edit_slots_status(t))
+        |> Map.replace(:slots, BookingEventDates.transform_slots(t.slots))
       end)
 
     multi =
@@ -136,11 +137,11 @@ defmodule PicselloWeb.Calendar.BookingEvents.Shared do
   def handle_event(
         "enable-event",
         params,
-        %{assigns: %{current_user: current_user}} = socket
+        %{assigns: %{current_user: %{organization: organization}}} = socket
       ) do
     params
     |> fetch_booking_event_id(socket)
-    |> BookingEvents.enable_booking_event(current_user.organization_id)
+    |> BookingEvents.enable_booking_event(organization.id)
     |> case do
       {:ok, event} ->
         socket
@@ -157,11 +158,11 @@ defmodule PicselloWeb.Calendar.BookingEvents.Shared do
   def handle_event(
         "unarchive-event",
         params,
-        %{assigns: %{current_user: current_user}} = socket
+        %{assigns: %{current_user: %{organization: organization}}} = socket
       ) do
     params
     |> fetch_booking_event_id(socket)
-    |> BookingEvents.enable_booking_event(current_user.organization_id)
+    |> BookingEvents.enable_booking_event(organization.id)
     |> case do
       {:ok, event} ->
         socket
@@ -251,15 +252,11 @@ defmodule PicselloWeb.Calendar.BookingEvents.Shared do
 
   This function is useful for modifying the status of booking event date slots, typically used to control their visibility
   """
-  @spec edit_slots_status(map()) :: [%SlotBlock{}]
+  @spec edit_slots_status(map()) :: [SlotBlock.t()]
   def edit_slots_status(%{slots: slots}) do
     slots
     |> Enum.map(fn s ->
-      if s.status == :hide do
-        %{s | status: :hide}
-      else
-        %{s | status: :open}
-      end
+      if s.status == :hidden, do: %{s | is_hide: true}, else: s
     end)
   end
 
@@ -293,17 +290,21 @@ defmodule PicselloWeb.Calendar.BookingEvents.Shared do
   @spec to_map(data :: [struct()]) :: [map()]
   def to_map(data), do: Enum.map(data, &Map.from_struct(&1))
 
-  def assign_events(%{assigns: %{booking_event: _booking_event}} = socket, event),
-    do: assign(socket, :booking_event, event)
+  def assign_events(
+        %{assigns: %{booking_event: _booking_event, current_user: %{organization: organization}}} =
+          socket,
+        event
+      ),
+      do: assign(socket, :booking_event, put_url_booking_event(event, organization, socket))
 
   def assign_events(%{assigns: %{booking_events: _booking_events}} = socket, _event),
     do: Index.assign_booking_events(socket)
 
   def count_booked_slots(slot),
-    do: Enum.count(slot, fn s -> s.status == :book || s.status == :reserve end)
+    do: Enum.count(slot, fn s -> s.status in [:booked, :reserved] end)
 
   def count_available_slots(slot), do: Enum.count(slot, fn s -> s.status == :open end)
-  def count_hidden_slots(slot), do: Enum.count(slot, fn s -> s.status == :hide end)
+  def count_hidden_slots(slot), do: Enum.count(slot, fn s -> s.status == :hidden end)
 
   def date_formatter(date), do: "#{Timex.month_name(date.month)} #{date.day}, #{date.year}"
 
@@ -317,6 +318,19 @@ defmodule PicselloWeb.Calendar.BookingEvents.Shared do
   # will be true if the status matches in the array <status_list>
   def disabled?(booking_event, status_list), do: booking_event.status in status_list
 
+  def put_url_booking_event(booking_event, organization, socket),
+    do:
+      booking_event
+      |> Map.put(
+        :url,
+        Routes.client_booking_event_url(
+          socket,
+          :show,
+          organization.slug,
+          booking_event.id
+        )
+      )
+
   # to cater different handle_event and info calls
   # if we get booking-event-id in params (1st argument) it returns the id
   # otherwise get the id from socket
@@ -327,5 +341,4 @@ defmodule PicselloWeb.Calendar.BookingEvents.Shared do
 
   def calculate_dates(booking_event_date, selected_days),
     do: BookingEvents.calculate_dates(booking_event_date, selected_days)
-
 end

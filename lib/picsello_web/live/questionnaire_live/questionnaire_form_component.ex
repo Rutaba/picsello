@@ -68,10 +68,10 @@ defmodule PicselloWeb.QuestionnaireFormComponent do
                   <button class="bg-red-sales-100 border border-red-sales-300 hover:border-transparent rounded-lg flex items-center p-2" type="button" phx-click="delete-question" phx-target={@myself} phx-value-id={f_questions.index} {testid("delete-question")}>
                     <.icon name="trash" class="inline-block w-4 h-4 fill-current text-red-sales-300" />
                   </button>
-                  <button class={classes("bg-white border hover:border-white rounded-lg flex items-center p-2", %{"pointer-events-none hover:border opacity-40 cursor-disabled" => questions_length(f) === f_questions.index + 1})} type="button" phx-click="reorder-question" phx-target={@myself} phx-value-direction="down" phx-disable-with={questions_length(f) === f_questions.index + 1} disabled={questions_length(f) === f_questions.index + 1} {testid("reorder-question-down")}>
+                  <button class={classes("bg-white border hover:border-white rounded-lg flex items-center p-2", %{"pointer-events-none hover:border opacity-40 cursor-disabled" => questions_length(f) === f_questions.index + 1})} type="button" phx-click="reorder-question" phx-target={@myself} phx-value-direction="down" phx-value-index={f_questions.index} phx-disable-with={questions_length(f) === f_questions.index + 1} disabled={questions_length(f) === f_questions.index + 1} {testid("reorder-question-down")}>
                     <.icon name="down" class="inline-block w-4 h-4 stroke-current stroke-3 text-black" />
                   </button>
-                  <button class={classes("bg-white border hover:border-white rounded-lg flex items-center p-2", %{"pointer-events-none hover:border opacity-40 cursor-disabled" => f_questions.index === 0})} type="button" phx-click="reorder-question" phx-target={@myself} phx-value-direction="up" phx-disable-with={f_questions.index === 0} disabled={f_questions.index === 0} {testid("reorder-question-up")}>
+                  <button class={classes("bg-white border hover:border-white rounded-lg flex items-center p-2", %{"pointer-events-none hover:border opacity-40 cursor-disabled" => f_questions.index === 0})} type="button" phx-click="reorder-question" phx-target={@myself} phx-value-direction="up" phx-value-index={f_questions.index} phx-disable-with={f_questions.index === 0} disabled={f_questions.index === 0} {testid("reorder-question-up")}>
                     <.icon name="up" class="inline-block w-4 h-4 stroke-current stroke-3 text-black" />
                   </button>
                 </div>
@@ -189,14 +189,16 @@ defmodule PicselloWeb.QuestionnaireFormComponent do
   @impl true
   def handle_event(
         "reorder-question",
-        %{"direction" => direction},
+        %{"direction" => direction, "index" => index},
         %{assigns: %{questionnaire: questionnaire, changeset: changeset}} = socket
       ) do
+    index = String.to_integer(index)
+
     questions =
       changeset
       |> Ecto.Changeset.get_field(:questions)
       |> Enum.map(&Map.from_struct/1)
-      |> swap(direction)
+      |> swap(direction, index)
 
     socket
     |> assign_changeset(
@@ -477,21 +479,23 @@ defmodule PicselloWeb.QuestionnaireFormComponent do
 
   defp insert_or_update?(_), do: :insert
 
-  defp swap(questions, direction) do
+  defp swap(questions, direction, index) do
     case direction do
       "up" ->
-        {el, list} = questions |> List.pop_at(0)
-
-        list |> List.insert_at(length(list), el)
+        swap_insert(index - 1, index, questions)
 
       "down" ->
-        {el, list} = questions |> List.pop_at(length(questions) - 1)
-
-        [el | list]
+        swap_insert(index + 1, index, questions)
 
       _ ->
         questions
     end
+  end
+
+  defp swap_insert(new_index, index, questions) do
+    {el, list} = questions |> List.pop_at(index)
+
+    list |> List.insert_at(new_index, el)
   end
 
   defp merge_changes(opts, %{changes: changes}) do

@@ -1,7 +1,7 @@
 defmodule Picsello.BookingEvents do
   @moduledoc "context module for booking events"
   alias Picsello.{Repo, BookingEvent, Job, Package}
-  alias Ecto.Multi
+  alias Ecto.{Multi, Changeset}
   alias Picsello.Workers.ExpireBooking
   import Ecto.Query
 
@@ -264,7 +264,7 @@ defmodule Picsello.BookingEvents do
     if available_slots > 0 do
       Enum.reduce_while(slot, [], fn x, acc ->
         %{slot_start: slot_time, slot_end: slot_end} =
-          if x != available_slots - 1 do
+          if x != available_slots do
             %{
               slot_start: start_time |> Time.add(duration_buffer * x),
               slot_end: start_time |> Time.add(duration_buffer * (x + 1))
@@ -495,12 +495,19 @@ defmodule Picsello.BookingEvents do
           |> Map.put(:schedule_date, get_schedule_date(schedule, shoot_date))
         end)
 
-      opts = %{
-        payment_schedules: payment_schedules,
-        action: :insert,
-        total_price: Package.price(package_template),
-        questionnaire: Picsello.Questionnaire.for_package(package_template)
-      }
+      opts =
+        if booking_event.include_questionnaire?,
+          do: %{
+            payment_schedules: payment_schedules,
+            action: :insert,
+            total_price: Package.price(package_template),
+            questionnaire: Picsello.Questionnaire.for_package(package_template)
+          },
+          else: %{
+            payment_schedules: payment_schedules,
+            action: :insert,
+            total_price: Package.price(package_template)
+          }
 
       package_template
       |> Map.put(:is_template, false)
@@ -519,10 +526,15 @@ defmodule Picsello.BookingEvents do
         |> Map.put(:duration_minutes, booking_date.session_length)
       )
     end)
-    |> Multi.insert(:proposal, fn changes ->
+    |> Ecto.Multi.insert(:proposal, fn changes ->
+      questionnaire_id =
+        if booking_event.include_questionnaire?,
+          do: changes.package_update.questionnaire_template_id,
+          else: nil
+
       Picsello.BookingProposal.create_changeset(%{
         job_id: changes.job.id,
-        questionnaire_id: changes.package_update.questionnaire_template_id
+        questionnaire_id: questionnaire_id
       })
     end)
     |> Oban.insert(:oban_job, fn changes ->
@@ -633,10 +645,10 @@ defmodule Picsello.BookingEvents do
 
   def preload_booking_event(event),
     do:
-      Repo.preload(event, [
-        :dates,
+      Repo.preload(event,
+        dates: [slots: :client],
         package_template: [:package_payment_schedules, :contract, :questionnaire_template]
-      ])
+      )
 
   @doc """
   This function, overlap_time?, takes a list of time blocks represented as maps and determines if there is any overlap between consecutive time blocks based on their end and start times.

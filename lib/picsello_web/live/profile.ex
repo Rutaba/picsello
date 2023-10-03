@@ -91,7 +91,7 @@ defmodule PicselloWeb.Live.Profile do
 
         <.rich_text_content edit={@edit} field_name="description" field_value={@description} />
 
-        <%= if @website || @edit do %>
+        <%= if @website do %>
           <div class="flex items-center py-6">
             <a href={website_url(@website)} style="text-decoration-thickness: 2px" class="block pt-2 underline underline-offset-1 font-light">See our full portfolio</a>
             <%= if @edit do %>
@@ -157,7 +157,7 @@ defmodule PicselloWeb.Live.Profile do
         <%= live_component PicselloWeb.Live.Profile.ClientFormComponent, id: "client-component", organization: @organization, color: @color, job_types: @job_types, job_type: @job_type %>
       </div>
 
-      <.profile_footer color={@color} photographer={@photographer} organization={@organization} />
+      <.profile_footer color={@color} photographer={@photographer} organization={@organization} include_font_bold?={false} />
     </div>
 
 
@@ -174,7 +174,7 @@ defmodule PicselloWeb.Live.Profile do
     </div>
     <div class="flex items-center">
       <span class="w-auto mt-1">
-        <span class="font-semibold mr-5">
+        <span class="mr-5">
           <%= @job_types |> Enum.with_index |> Enum.map(fn({job_type, i}) -> %>
             <%= if i > 0 do %><span>&nbsp;|&nbsp;</span><% end %>
             <span {testid("job-type")} class="text-xl whitespace-nowrap font-light"><%= dyn_gettext job_type %></span>
@@ -248,7 +248,7 @@ defmodule PicselloWeb.Live.Profile do
   def handle_event("confirm-delete-image", %{"image-field" => image_field}, socket) do
     socket
     |> PicselloWeb.ConfirmationComponent.open(%{
-      close_label: "No! Get me out of here",
+      close_label: "Cancel",
       confirm_event: "delete-" <> image_field,
       confirm_label: "Yes, delete",
       icon: "warning-orange",
@@ -390,7 +390,7 @@ defmodule PicselloWeb.Live.Profile do
 
     ~H"""
     <form id={"#{@image_upload.name}-form"} phx-submit="save-image" class={"flex #{@class}"} phx-change="validate-image" phx-drop-target={@image_upload.ref}>
-      <label class={"w-full h-full flex items-center p-4 font-bold font-sans border border-#{@icon_class} border-2 border-dashed rounded-lg cursor-pointer #{@label_class}"}>
+      <label class={"w-full h-full flex items-center p-4 font-sans border border-#{@icon_class} border-2 border-dashed rounded-lg cursor-pointer #{@label_class}"}>
         <%= if @image && Enum.any?(@image_upload.entries) do %>
           <.progress image={@image_upload} class="m-4"/>
         <% else %>
@@ -413,7 +413,7 @@ defmodule PicselloWeb.Live.Profile do
   defp logo_image(assigns) do
     ~H"""
     <div class="relative flex flex-wrap items-center justify-left">
-      <.photographer_logo organization={@organization} />
+      <.photographer_logo organization={@organization} include_font_bold?={false} />
       <%= if @edit do %>
         <%= if @organization.profile.logo && @organization.profile.logo.url do %>
           <div class="my-8 sm:my-0 sm:ml-8"><.edit_image_button image={@uploads.logo} image_field={"logo"}/></div>

@@ -70,6 +70,12 @@ defmodule PicselloWeb.GalleryLive.Shared do
     end
   end
 
+  def handle_event("download-photo", %{"uri" => uri}, socket) do
+    socket
+    |> push_event("download", %{uri: uri})
+    |> noreply
+  end
+
   def handle_info({:validate, %{"gallery" => %{"name" => name}}}, socket) do
     socket
     |> assign_gallery_changeset(%{name: name})
@@ -271,6 +277,36 @@ defmodule PicselloWeb.GalleryLive.Shared do
     )
   end
 
+  defp editor_urls(
+         %{assigns: %{gallery_client: gallery_client, album: %Album{is_finals: true} = album}} =
+           socket
+       ) do
+    [
+      complete_url:
+        Routes.gallery_client_album_url(socket, :proofing_album, album.client_link_hash) <>
+          "?editorId=%EDITOR_ID%",
+      secondary_url:
+        Routes.gallery_client_album_url(socket, :proofing_album, album.client_link_hash) <>
+          "?editorId=%EDITOR_ID%&clone=true&clientEmail=#{gallery_client.email}",
+      cancel_url: Routes.gallery_client_album_url(socket, :proofing_album, album.client_link_hash)
+    ]
+  end
+
+  defp editor_urls(
+         %{assigns: %{gallery_client: gallery_client, gallery: %Galleries.Gallery{} = gallery}} =
+           socket
+       ) do
+    [
+      complete_url:
+        Routes.gallery_client_index_url(socket, :index, gallery.client_link_hash) <>
+          "?editorId=%EDITOR_ID%",
+      secondary_url:
+        Routes.gallery_client_index_url(socket, :index, gallery.client_link_hash) <>
+          "?editorId=%EDITOR_ID%&clone=true&clientEmail=#{gallery_client.email}",
+      cancel_url: Routes.gallery_client_index_url(socket, :index, gallery.client_link_hash)
+    ]
+  end
+
   def get_all_gallery_albums(gallery_id) do
     case client_liked_album(gallery_id) do
       nil -> Albums.get_albums_by_gallery_id(gallery_id)
@@ -420,7 +456,15 @@ defmodule PicselloWeb.GalleryLive.Shared do
   def assign_cart_count(socket, gallery) do
     case get_unconfirmed_order(socket, preload: [:products, :digitals]) do
       {:ok, order} ->
-        socket |> assign(order: order) |> assign_cart_count(gallery)
+        digitals =
+          order
+          |> Map.get(:digitals, [])
+          |> Map.new(&{&1.photo_id, &1})
+
+        socket
+        |> assign(order: order)
+        |> assign_cart_count(gallery)
+        |> assign(digitals: digitals)
 
       _ ->
         socket |> assign(cart_count: 0, order: nil)
@@ -432,9 +476,6 @@ defmodule PicselloWeb.GalleryLive.Shared do
     |> assign(credits: credits(gallery))
     |> assign(order: order)
     |> assign_cart_count(gallery)
-    |> close_modal()
-    |> put_flash(:success, "Added!")
-    |> noreply()
   end
 
   def inprogress_upload_broadcast(gallery_id, entries) do
@@ -479,7 +520,8 @@ defmodule PicselloWeb.GalleryLive.Shared do
         selection_filter: false,
         client_liked_album: false,
         selected_photos: [],
-        has_orders: true
+        has_orders: true,
+        favorite_album?: false
       })
 
     any_client_liked_photo? =
@@ -498,7 +540,7 @@ defmodule PicselloWeb.GalleryLive.Shared do
       </div>
       <ul class="absolute z-30 hidden w-full mt-2 bg-white border rounded-md popover-content border-base-200">
         <%= render_slot(@inner_block) %>
-        <%= if @has_orders do %>
+        <%= if @has_orders && !@favorite_album? do %>
         <li class={classes("flex items-center py-1 bg-base-200 rounded-b-md hover:opacity-75", %{"hidden" => @selection_filter || @client_liked_album || @any_client_liked_photo?})}>
           <button phx-click={@delete_event} phx-value-id={@delete_value} class="flex items-center w-full h-6 py-2.5 pl-2 overflow-hidden font-sans text-gray-700 transition duration-300 ease-in-out text-ellipsis hover:opacity-75">
             <%= @delete_title %>
@@ -1127,30 +1169,6 @@ defmodule PicselloWeb.GalleryLive.Shared do
   defp proofing_and_final_album_url(socket, album) do
     album = Albums.set_album_hash(album)
     Routes.gallery_client_album_url(socket, :proofing_album, album.client_link_hash)
-  end
-
-  defp editor_urls(%{assigns: %{album: %Album{is_finals: true} = album}} = socket) do
-    [
-      complete_url:
-        Routes.gallery_client_album_url(socket, :proofing_album, album.client_link_hash) <>
-          "?editorId=%EDITOR_ID%",
-      secondary_url:
-        Routes.gallery_client_album_url(socket, :proofing_album, album.client_link_hash) <>
-          "?editorId=%EDITOR_ID%&clone=true",
-      cancel_url: Routes.gallery_client_album_url(socket, :proofing_album, album.client_link_hash)
-    ]
-  end
-
-  defp editor_urls(%{assigns: %{gallery: %Galleries.Gallery{} = gallery}} = socket) do
-    [
-      complete_url:
-        Routes.gallery_client_index_url(socket, :index, gallery.client_link_hash) <>
-          "?editorId=%EDITOR_ID%",
-      secondary_url:
-        Routes.gallery_client_index_url(socket, :index, gallery.client_link_hash) <>
-          "?editorId=%EDITOR_ID%&clone=true",
-      cancel_url: Routes.gallery_client_index_url(socket, :index, gallery.client_link_hash)
-    ]
   end
 
   defp tracking_info(%{whcc_order: %{orders: sub_orders}}, %{editor_id: editor_id}) do
