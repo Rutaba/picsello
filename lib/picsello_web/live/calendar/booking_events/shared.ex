@@ -390,6 +390,24 @@ defmodule PicselloWeb.Calendar.BookingEvents.Shared do
     |> noreply()
   end
 
+  def handle_event(
+        "send-email",
+        %{"id" => date_id},
+        socket
+      ),
+  do:
+    socket
+    |> open_compose(to_integer(date_id))
+
+  def handle_event(
+        "send-email",
+        %{},
+        socket
+      ),
+  do:
+    socket
+    |> open_compose()
+
   def handle_info(
         {:update_templates, %{templates: templates}},
         %{assigns: %{modal_pid: modal_pid}} = socket
@@ -887,14 +905,20 @@ defmodule PicselloWeb.Calendar.BookingEvents.Shared do
       |> Enum.filter(fn date -> date.id == date_id end)
       |> hd()
 
+  def get_booking_event_clients(booking_event, nil),
+  do:
+    booking_event.dates
+    |> Enum.map(fn date ->
+      get_clients(date)
+    end)
+    |> List.flatten()
+
   def get_booking_event_clients(booking_event, date_id),
     do:
       booking_event.dates
       |> Enum.filter(fn date -> date.id == date_id end)
       |> hd()
-      |> Map.get(:slots)
-      |> Enum.filter(fn slot -> Map.get(slot, :client) end)
-      |> Enum.reduce([], fn slot, acc -> [slot.client.email | acc] end)
+      |> get_clients()
 
   def slot_client(user, slot_client_id) do
     Clients.get_client(user, id: slot_client_id)
@@ -910,6 +934,29 @@ defmodule PicselloWeb.Calendar.BookingEvents.Shared do
         |> Map.get(:name)
         |> Utils.capitalize_all_words()
     end
+  end
+
+  defp open_compose(%{assigns: %{current_user: current_user, booking_event: booking_event}} = socket, date_id \\ nil) do
+    clients = get_booking_event_clients(booking_event, date_id)
+
+    socket
+    |> ClientMessageComponent.open(%{
+      current_user: current_user,
+      modal_title: "Send booking event email",
+      show_client_email: true,
+      show_subject: true,
+      presets: [],
+      send_button: "Send",
+      recipients: %{"to" => clients |> hd(), "bcc" => tl(clients)}
+    })
+    |> noreply()
+  end
+
+  defp get_clients(date) do
+    date
+      |> Map.get(:slots)
+      |> Enum.filter(fn slot -> Map.get(slot, :client) end)
+      |> Enum.reduce([], fn slot, acc -> [slot.client.email | acc] end)
   end
 
   # to cater different handle_event and info calls

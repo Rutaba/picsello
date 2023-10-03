@@ -21,7 +21,6 @@ defmodule PicselloWeb.Live.Calendar.BookingEvents.Show do
   alias PicselloWeb.Live.Calendar.{BookingEventModal, EditMarketingEvent}
   alias PicselloWeb.BookingProposalLive.{QuestionnaireComponent, ContractComponent}
   alias PicselloWeb.Calendar.BookingEvents.Shared, as: BEShared
-  alias PicselloWeb.ClientMessageComponent
 
   @impl true
   def mount(_params, _session, socket) do
@@ -112,27 +111,6 @@ defmodule PicselloWeb.Live.Calendar.BookingEvents.Show do
       icon: "warning-orange",
       title: "Are you sure?",
       subtitle: "Are you sure you want to delete this date from the event?"
-    })
-    |> noreply()
-  end
-
-  @impl true
-  def handle_event(
-        "send-email",
-        %{"id" => date_id},
-        %{assigns: %{current_user: current_user, booking_event: booking_event}} = socket
-      ) do
-    clients = BEShared.get_booking_event_clients(booking_event, to_integer(date_id))
-
-    socket
-    |> ClientMessageComponent.open(%{
-      current_user: current_user,
-      modal_title: "Send booking event email",
-      show_client_email: true,
-      show_subject: true,
-      presets: [],
-      send_button: "Send",
-      recipients: %{"to" => clients |> hd(), "bcc" => tl(clients)}
     })
     |> noreply()
   end
@@ -779,7 +757,7 @@ defmodule PicselloWeb.Live.Calendar.BookingEvents.Show do
 
   def header_actions(%{status: status}) do
     common_actions = [
-      %{title: "Create marketing email", action: "open-compose", icon: "envelope"},
+      %{title: "Create marketing email", action: "send-email", icon: "envelope"},
       %{title: "Duplicate", action: "duplicate-event", icon: "duplicate-2"}
     ]
 
