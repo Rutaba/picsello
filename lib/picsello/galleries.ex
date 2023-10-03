@@ -237,6 +237,26 @@ defmodule Picsello.Galleries do
     |> Repo.all()
   end
 
+  @doc """
+  Get unsorted photo count from gallery.
+  """
+  def get_gallery_unsorted_photo_count(gallery_id) do
+    from(p in Photos.active_photos(),
+      where: p.gallery_id == ^gallery_id and is_nil(p.album_id)
+    )
+    |> Repo.aggregate(:count, [])
+  end
+
+  @doc """
+  Get all photo count from gallery.
+  """
+  def get_gallery_photo_count(gallery_id) do
+    from(p in Photos.active_photos(),
+      where: p.gallery_id == ^gallery_id
+    )
+    |> Repo.aggregate(:count, [])
+  end
+
   defp conditions(id, opts) do
     exclude_album = Keyword.get(opts, :exclude_album, false)
     album_id = Keyword.get(opts, :album_id, false)

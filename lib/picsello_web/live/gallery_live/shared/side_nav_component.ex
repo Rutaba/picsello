@@ -3,6 +3,7 @@ defmodule PicselloWeb.GalleryLive.Shared.SideNavComponent do
   use PicselloWeb, :live_component
   import PicselloWeb.GalleryLive.Shared
   import Picsello.Utils, only: [products_currency: 0]
+  import Picsello.Albums, only: [get_all_albums_photo_count: 1]
 
   alias Picsello.Galleries
   alias Phoenix.PubSub
@@ -20,7 +21,23 @@ defmodule PicselloWeb.GalleryLive.Shared.SideNavComponent do
         } = params,
         socket
       ) do
-    albums = get_all_gallery_albums(gallery.id)
+    total_count = Galleries.get_gallery_photo_count(gallery.id)
+    unsorted_count = Galleries.get_gallery_unsorted_photo_count(gallery.id)
+    albums_count = get_all_albums_photo_count(gallery.id)
+
+    albums =
+      get_all_gallery_albums(gallery.id)
+      |> Enum.map(
+        &Map.put(
+          &1,
+          :photos_count,
+          Enum.filter(albums_count, fn %{album_id: album_id, count: _} ->
+            album_id == &1.id
+          end)
+          |> List.first()
+          |> Map.get(:count, 0)
+        )
+      )
 
     if connected?(socket) do
       PubSub.subscribe(Picsello.PubSub, "photos_error:#{gallery.id}")
@@ -45,6 +62,8 @@ defmodule PicselloWeb.GalleryLive.Shared.SideNavComponent do
     |> assign(:edit_name, true)
     |> assign(:is_mobile, is_mobile)
     |> assign(:albums, albums)
+    |> assign(:unsorted_count, unsorted_count)
+    |> assign(:total_count, total_count)
     |> assign(:arrow_show, arrow_show)
     |> assign(:album_dropdown_show, album_dropdown_show)
     |> assign(:selected_album, album)
@@ -115,20 +134,33 @@ defmodule PicselloWeb.GalleryLive.Shared.SideNavComponent do
   end
 
   defp li(assigns) do
-    assigns = Enum.into(assigns, %{is_proofing: false, is_finals: false})
+    assigns = Enum.into(assigns, %{is_proofing: false, is_finals: false, photos_count: nil})
 
     ~H"""
     <div class={"#{@class}"}>
       <%= live_redirect to: @route do %>
         <li class="group">
-          <button class={"#{@button_class} flex items-center h-6 py-4 pl-12 w-full pr-6 overflow-hidden text-xs transition duration-300 ease-in-out rounded-lg text-ellipsis whitespace-nowrap group-hover:!text-blue-planning-300"}>
-              <.icon name={@name} class={"w-4 h-4 stroke-2 fill-current #{@button_class} mr-2 group-hover:!text-blue-planning-300"}/>
-              <%= if @is_finals, do: "Proofing " %>
-              <%= if @is_proofing || @is_finals, do: String.capitalize(@title), else: @title %>
+          <button class={"#{@button_class} flex items-center justify-between h-6 py-4 pl-12 w-full pr-6 overflow-hidden text-xs transition duration-300 ease-in-out rounded-lg text-ellipsis whitespace-nowrap group-hover:!text-blue-planning-300"}>
+              <div class="flex items-center justify-between">
+                <.icon name={@name} class={"w-4 h-4 stroke-2 fill-current #{@button_class} mr-2 group-hover:!text-blue-planning-300"}/>
+                <%= if @is_finals, do: "Proofing " %>
+                <%= if @is_proofing || @is_finals, do: String.capitalize(@title), else: @title %>
+              </div>
+              <%= if @photos_count do %>
+                <.photo_count photos_count={@photos_count} />
+              <% end %>
           </button>
         </li>
       <% end %>
     </div>
+    """
+  end
+
+  defp photo_count(assigns) do
+    assigns = Enum.into(assigns, %{photos_count: 0})
+
+    ~H"""
+      <span class="bg-white px-1 py-0.5 rounded-full min-w-[30px] font-normal text-xs flex items-center justify-center ml-auto"><%= @photos_count %></span>
     """
   end
 
