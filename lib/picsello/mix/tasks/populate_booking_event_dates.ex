@@ -9,7 +9,6 @@ defmodule Mix.Tasks.PopulateBookingEventDates do
 
   alias Picsello.{Repo, BookingEvent, BookingEventDatesMigration, BookingEventDate}
 
-
   def run(_) do
     load_app()
 
