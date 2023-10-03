@@ -485,7 +485,8 @@ defmodule Picsello.BookingEvents do
     |> Multi.insert(:job, fn changes ->
       Picsello.Job.create_changeset(%{
         type: package_template.job_type,
-        client_id: changes.client.id
+        client_id: changes.client.id,
+        is_reserved?: slot_status == :reserved
       })
       |> Changeset.put_change(:booking_event_id, booking_event.id)
     end)
@@ -688,7 +689,12 @@ defmodule Picsello.BookingEvents do
   def preload_booking_event(event),
     do:
       Repo.preload(event,
-        dates: [slots: [:client, :job]],
+        dates:
+          from(d in BookingEventDate,
+            where: d.booking_event_id == ^event.id,
+            order_by: d.date,
+            preload: [slots: [:client, :job]]
+          ),
         package_template: [:package_payment_schedules, :contract, :questionnaire_template]
       )
 

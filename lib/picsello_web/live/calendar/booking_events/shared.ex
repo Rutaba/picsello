@@ -164,9 +164,9 @@ defmodule PicselloWeb.Calendar.BookingEvents.Shared do
     |> fetch_booking_event_id(socket)
     |> BookingEvents.enable_booking_event(organization.id)
     |> case do
-      {:ok, event} ->
+      {:ok, _event} ->
         socket
-        |> assign_events(event)
+        |> assign_events()
         |> put_flash(:success, "Event enabled successfully")
 
       {:error, _} ->
@@ -185,9 +185,9 @@ defmodule PicselloWeb.Calendar.BookingEvents.Shared do
     |> fetch_booking_event_id(socket)
     |> BookingEvents.enable_booking_event(organization.id)
     |> case do
-      {:ok, event} ->
+      {:ok, _event} ->
         socket
-        |> assign_events(event)
+        |> assign_events()
         |> put_flash(:success, "Event unarchive successfully")
 
       {:error, _} ->
@@ -395,18 +395,18 @@ defmodule PicselloWeb.Calendar.BookingEvents.Shared do
         %{"id" => date_id},
         socket
       ),
-  do:
-    socket
-    |> open_compose(to_integer(date_id))
+      do:
+        socket
+        |> open_compose(to_integer(date_id))
 
   def handle_event(
         "send-email",
         %{},
         socket
       ),
-  do:
-    socket
-    |> open_compose()
+      do:
+        socket
+        |> open_compose()
 
   def handle_info(
         {:update_templates, %{templates: templates}},
@@ -490,12 +490,12 @@ defmodule PicselloWeb.Calendar.BookingEvents.Shared do
            slot_index: slot_index,
            slot_update_args: slot_update_args
          }},
-        %{assigns: %{booking_event: booking_event}} = socket
+        socket
       ) do
     case BookingEventDates.update_slot_status(booking_event_date_id, slot_index, slot_update_args) do
       {:ok, _booking_event_date} ->
         socket
-        |> assign_events(booking_event)
+        |> assign_events()
         |> put_flash(:success, "Slot changed successfully")
 
       {:error, _} ->
@@ -563,7 +563,7 @@ defmodule PicselloWeb.Calendar.BookingEvents.Shared do
       class = "underline text-blue-planning-300"
 
       socket
-      |> assign_events(booking_event)
+      |> assign_events()
       |> make_popup(
         icon: nil,
         title: "Reschedule Session",
@@ -620,7 +620,7 @@ defmodule PicselloWeb.Calendar.BookingEvents.Shared do
          }) do
       {:ok, _} ->
         socket
-        |> assign_events(booking_event)
+        |> assign_events()
         |> put_flash(:success, "Session cancelled successfully!")
 
       {:error, _} ->
@@ -636,9 +636,9 @@ defmodule PicselloWeb.Calendar.BookingEvents.Shared do
         %{assigns: %{current_user: current_user}} = socket
       ) do
     case BookingEvents.disable_booking_event(id, current_user.organization_id) do
-      {:ok, event} ->
+      {:ok, _event} ->
         socket
-        |> assign_events(event)
+        |> assign_events()
         |> put_flash(:success, "Event disabled successfully")
 
       {:error, _} ->
@@ -654,9 +654,9 @@ defmodule PicselloWeb.Calendar.BookingEvents.Shared do
         %{assigns: %{current_user: current_user}} = socket
       ) do
     case BookingEvents.archive_booking_event(id, current_user.organization_id) do
-      {:ok, event} ->
+      {:ok, _event} ->
         socket
-        |> assign_events(event)
+        |> assign_events()
         |> put_flash(:success, "Event archive successfully")
 
       {:error, _} ->
@@ -711,7 +711,7 @@ defmodule PicselloWeb.Calendar.BookingEvents.Shared do
     class = "underline text-blue-planning-300"
 
     socket
-    |> assign_events(booking_event)
+    |> assign_events()
     |> make_popup(
       icon: nil,
       title: "Reserve Session",
@@ -852,12 +852,13 @@ defmodule PicselloWeb.Calendar.BookingEvents.Shared do
   def to_map(data), do: Enum.map(data, &Map.from_struct(&1))
 
   def assign_events(
-        %{assigns: %{booking_event: _booking_event, current_user: %{organization: organization}}} =
-          socket,
-        event
+        %{assigns: %{booking_event: %{id: event_id}, current_user: %{organization: organization}}} =
+          socket
       ) do
-    %{package_template: package_template} = booking_event =
-      event
+    %{package_template: package_template} =
+      booking_event =
+      organization.id
+      |> BookingEvents.get_booking_event!(event_id)
       |> BookingEvents.preload_booking_event()
       |> put_url_booking_event(organization, socket)
 
@@ -867,7 +868,7 @@ defmodule PicselloWeb.Calendar.BookingEvents.Shared do
     |> assign(:payments_description, payments_description(booking_event))
   end
 
-  def assign_events(%{assigns: %{booking_events: _booking_events}} = socket, _event),
+  def assign_events(%{assigns: %{booking_events: _booking_events}} = socket),
     do: Index.assign_booking_events(socket)
 
   def count_booked_slots(slot),
@@ -906,12 +907,12 @@ defmodule PicselloWeb.Calendar.BookingEvents.Shared do
       |> hd()
 
   def get_booking_event_clients(booking_event, nil),
-  do:
-    booking_event.dates
-    |> Enum.map(fn date ->
-      get_clients(date)
-    end)
-    |> List.flatten()
+    do:
+      booking_event.dates
+      |> Enum.map(fn date ->
+        get_clients(date)
+      end)
+      |> List.flatten()
 
   def get_booking_event_clients(booking_event, date_id),
     do:
@@ -936,7 +937,10 @@ defmodule PicselloWeb.Calendar.BookingEvents.Shared do
     end
   end
 
-  defp open_compose(%{assigns: %{current_user: current_user, booking_event: booking_event}} = socket, date_id \\ nil) do
+  defp open_compose(
+         %{assigns: %{current_user: current_user, booking_event: booking_event}} = socket,
+         date_id \\ nil
+       ) do
     clients = get_booking_event_clients(booking_event, date_id)
 
     socket
@@ -954,9 +958,9 @@ defmodule PicselloWeb.Calendar.BookingEvents.Shared do
 
   defp get_clients(date) do
     date
-      |> Map.get(:slots)
-      |> Enum.filter(fn slot -> Map.get(slot, :client) end)
-      |> Enum.reduce([], fn slot, acc -> [slot.client.email | acc] end)
+    |> Map.get(:slots)
+    |> Enum.filter(fn slot -> Map.get(slot, :client) end)
+    |> Enum.reduce([], fn slot, acc -> [slot.client.email | acc] end)
   end
 
   # to cater different handle_event and info calls
@@ -970,8 +974,8 @@ defmodule PicselloWeb.Calendar.BookingEvents.Shared do
   defp payments_description(%{package_template: nil}), do: nil
 
   defp payments_description(%{
-          package_template: %{package_payment_schedules: package_payment_schedules} = package
-        }) do
+         package_template: %{package_payment_schedules: package_payment_schedules} = package
+       }) do
     currency_symbol = Money.Currency.symbol!(package.currency)
     total_price = Package.price(package)
     {first_payment, remaining_payments} = package_payment_schedules |> List.pop_at(0)

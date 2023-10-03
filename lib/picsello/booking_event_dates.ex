@@ -72,11 +72,11 @@ defmodule Picsello.BookingEventDates do
     |> Repo.one!()
   end
 
-  def delete_booking_date(id) do
-    id
-    |> get_booking_date()
-    |> Repo.delete()
-  end
+  def delete_booking_date(id),
+    do:
+      id
+      |> get_booking_date()
+      |> Repo.delete()
 
   @doc """
   Retrieves a list of booking event dates associated with the given booking event ID.

@@ -35,12 +35,11 @@ defmodule PicselloWeb.Live.Calendar.BookingEvents.Show do
         _session,
         %{assigns: %{current_user: %{organization_id: organization_id}}} = socket
       ) do
-    booking_event = BookingEvents.get_booking_event!(organization_id, event_id)
     socket
     |> assign(:id, to_integer(event_id))
     |> assign(:edit_name, false)
-    |> assign(:booking_event, booking_event)
-    |> BEShared.assign_events(booking_event)
+    |> assign(:booking_event, BookingEvents.get_booking_event!(organization_id, event_id))
+    |> BEShared.assign_events()
     |> assign_changeset(%{})
     |> assign(:booking_slot_tab_active, "list")
     |> assign(:booking_slot_tabs, booking_slot_tabs())
@@ -98,6 +97,39 @@ defmodule PicselloWeb.Live.Calendar.BookingEvents.Show do
 
     socket
     |> open_wizard(%{booking_date: edit_booking_date, title: "Edit Date"})
+    |> noreply()
+  end
+
+  @impl true
+  def handle_event(
+        "duplicate-date",
+        %{"id" => date_id},
+        %{assigns: %{current_user: %{organization_id: org_id}, booking_event: booking_event}} =
+          socket
+      ) do
+    to_duplicate_date = %BookingEventDate{
+      booking_event_id: booking_event.id,
+      organization_id: org_id
+    }
+
+    duplicate_date =
+      booking_event
+      |> BEShared.get_booking_date(to_integer(date_id))
+      |> Map.from_struct()
+
+    to_duplicate_date =
+      to_duplicate_date
+      |> Map.put(:session_length, duplicate_date.session_length)
+      |> Map.put(:session_gap, duplicate_date.session_gap)
+      |> Map.put(
+        :slots,
+        duplicate_date.slots
+        |> BookingEventDates.transform_slots()
+      )
+      |> Map.put(:time_blocks, duplicate_date.time_blocks)
+
+    socket
+    |> open_wizard(%{booking_date: to_duplicate_date, title: "Duplicate Date"})
     |> noreply()
   end
 
@@ -252,23 +284,23 @@ defmodule PicselloWeb.Live.Calendar.BookingEvents.Show do
   @impl true
   def handle_info(
         {:update, %{booking_event_date: _booking_date}},
-        %{assigns: %{booking_event: booking_event}} = socket
+        socket
       ) do
     socket
     |> put_flash(:success, "Booking event date saved successfully")
-    |> BEShared.assign_events(booking_event)
+    |> BEShared.assign_events()
     |> noreply()
   end
 
   @impl true
   def handle_info(
         {:confirm_event, "delete-date-" <> id},
-        %{assigns: %{booking_event: booking_event}} = socket
+        socket
       ) do
     case BookingEventDates.delete_booking_event_date(to_integer(id)) do
       {:ok, _} ->
         socket
-        |> BEShared.assign_events(booking_event)
+        |> BEShared.assign_events()
         |> put_flash(:success, "Event date deleted successfully")
 
       {:error, _} ->
@@ -282,10 +314,10 @@ defmodule PicselloWeb.Live.Calendar.BookingEvents.Show do
   @impl true
   def handle_info(
         {:update, %{package: _package}},
-        %{assigns: %{booking_event: booking_event}} = socket
+        socket
       ) do
     socket
-    |> BEShared.assign_events(booking_event)
+    |> BEShared.assign_events()
     |> put_flash(:success, "Package details saved sucessfully.")
     |> noreply()
   end

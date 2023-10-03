@@ -428,7 +428,7 @@ I look forward to capturing these memories for you!"}
   end
 
   def show_booking_countdown?(job) do
-    job.booking_event && !PaymentSchedules.paid_any?(job) &&
+    job.booking_event && !job.is_reserved? && !PaymentSchedules.paid_any?(job) &&
       !PaymentSchedules.is_with_cash?(job)
   end
 
