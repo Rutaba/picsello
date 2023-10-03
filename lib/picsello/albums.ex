@@ -52,6 +52,20 @@ defmodule Picsello.Albums do
     end)
   end
 
+  @doc """
+  Get photo count for each album.
+  """
+  def get_all_albums_photo_count(gallery_id) do
+    from(a in Album,
+      left_join: photos in subquery(Picsello.Photos.watermarked_query()),
+      on: a.id == photos.album_id,
+      where: a.gallery_id == ^gallery_id,
+      group_by: a.id,
+      select: %{album_id: a.id, count: count(photos.id)}
+    )
+    |> Repo.all()
+  end
+
   def change_album(%Album{} = album, params \\ %{}) do
     album |> Album.update_changeset(params)
   end
