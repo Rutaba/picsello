@@ -74,7 +74,6 @@ defmodule PicselloWeb.EmailAutomationLive.EditTimeComponent do
            }
          } = socket
        ) do
-
     case Repo.insert(email_preset_changeset,
            on_conflict: {:replace, [:total_hours, :condition, :status]},
            conflict_target: :id
@@ -91,7 +90,6 @@ defmodule PicselloWeb.EmailAutomationLive.EditTimeComponent do
       {:error, changeset} ->
         socket
         |> assign(changeset: changeset)
-
     end
   end
 

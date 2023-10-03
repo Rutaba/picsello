@@ -3,7 +3,6 @@ defmodule PicselloWeb.Shared.ShortCodeComponent do
     Helper functions to use the Short Codes
   """
   use PicselloWeb, :live_component
-  alias Picsello.UserCurrencies
 
   @impl true
   def render(assigns) do
@@ -82,8 +81,7 @@ defmodule PicselloWeb.Shared.ShortCodeComponent do
               Client Event Link
             </a>
             """,
-            description:
-              "Link to the client booking-event"
+            description: "Link to the client booking-event"
           }
         ]
       }

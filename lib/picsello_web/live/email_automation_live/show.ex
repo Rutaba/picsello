@@ -143,7 +143,6 @@ defmodule PicselloWeb.Live.EmailAutomations.Show do
         %{"email_preview_id" => id},
         %{assigns: %{current_user: current_user, job: job}} = socket
       ) do
-
     user_currency = UserCurrencies.get_user_currency(current_user.organization_id).currency
 
     body_html =

@@ -64,30 +64,15 @@ defmodule PicselloWeb.EmailAutomationLive.Shared do
               job: job,
               current_user: current_user,
               email_preset_changeset: changeset,
-              first_red_section: first_red_section_value,
-              second_red_section: second_red_section_value,
               module_name: module_name
             } = assigns
         } = socket
       ) do
-    first_red_section =
-      get_plain_text(Ecto.Changeset.get_field(changeset, :body_template), "first_red_section")
-
-    second_red_section =
-      get_plain_text(Ecto.Changeset.get_field(changeset, :body_template), "second_red_section")
-
     user_currency = UserCurrencies.get_user_currency(current_user.organization_id).currency
 
     body_html =
       Ecto.Changeset.get_field(changeset, :body_template)
-      |> :bbmustache.render(
-        get_sample_values(current_user, job, user_currency)
-        |> Map.merge(%{
-          first_red_section: assign_section_value(first_red_section_value, first_red_section),
-          second_red_section: assign_section_value(second_red_section_value, second_red_section)
-        }),
-        key_type: :atom
-      )
+      |> :bbmustache.render(get_sample_values(current_user, job, user_currency), key_type: :atom)
       |> Utils.normalize_body_template()
 
     Process.send_after(self(), {:load_template_preview, module_name, body_html}, 50)
@@ -97,20 +82,6 @@ defmodule PicselloWeb.EmailAutomationLive.Shared do
     |> assign(step: next_step(assigns))
     |> noreply()
   end
-
-  defp assign_section_value(section_value, section_to_compare),
-    do:
-      if(is_nil(section_to_compare),
-        do: false,
-        else: get_section_value(section_value, section_to_compare)
-      )
-
-  defp get_section_value(paragraph1, paragraph2),
-    do:
-      if(String.bag_distance(paragraph1, paragraph2) < 0.80,
-        do: true,
-        else: false
-      )
 
   def make_email_presets_options(email_presets) do
     email_presets
@@ -289,8 +260,10 @@ defmodule PicselloWeb.EmailAutomationLive.Shared do
         #   "the prior email \"#{get_email_name(email, job_type)}\" has been sent if no response from the client"
         state in ["before_shoot", "shoot_thanks", "post_shoot"] ->
           "the shoot date"
+
         state == "after_gallery_send_feedback" ->
           "the gallery send"
+
         state == "cart_abandoned" and index == 0 ->
           "client abandons cart"
 
@@ -471,14 +444,27 @@ defmodule PicselloWeb.EmailAutomationLive.Shared do
       else: get_date_for_schedule(last_completed_email, gallery.password_regenerated_at)
   end
 
-  def fetch_date_for_state(:after_gallery_send_feedback, email, _last_completed_email, _job, gallery, _order) do
+  def fetch_date_for_state(
+        :after_gallery_send_feedback,
+        email,
+        _last_completed_email,
+        _job,
+        gallery,
+        _order
+      ) do
     today = NaiveDateTime.utc_now() |> Timex.end_of_day()
     %{calendar: calendar, count: count} = explode_hours(email.total_hours)
     time_calendar = get_timex_calendar(calendar)
+
     cond do
-      is_nil(gallery.gallery_send_at) -> nil
-      Timex.compare(today, gallery.gallery_send_at, time_calendar) >= count -> gallery.gallery_send_at
-      true -> nil
+      is_nil(gallery.gallery_send_at) ->
+        nil
+
+      Timex.compare(today, gallery.gallery_send_at, time_calendar) >= count ->
+        gallery.gallery_send_at
+
+      true ->
+        nil
     end
   end
 
@@ -789,7 +775,11 @@ defmodule PicselloWeb.EmailAutomationLive.Shared do
       |> Enum.map(fn email_data ->
         state = Map.get(email_data, :email_automation_pipeline) |> Map.get(:state)
 
-        if state not in [:gallery_password_changed, :order_confirmation_physical, :order_confirmation_digital] do
+        if state not in [
+             :gallery_password_changed,
+             :order_confirmation_physical,
+             :order_confirmation_digital
+           ] do
           [
             gallery_id: gallery.id,
             order_id: order_id,

@@ -154,6 +154,7 @@ defmodule PicselloWeb.EmailAutomationLive.AddEmailComponent do
         } = socket
       ) do
     user_currency = UserCurrencies.get_user_currency(current_user.organization_id).currency
+
     body_html =
       Ecto.Changeset.get_field(changeset, :body_template)
       |> :bbmustache.render(get_sample_values(current_user, job, user_currency), key_type: :atom)

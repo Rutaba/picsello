@@ -68,7 +68,6 @@ defmodule Picsello.EmailPresets.JobResolver do
   defp package(%__MODULE__{job: job}), do: Picsello.Repo.preload(job, :package).package
 
   defp noop(%__MODULE__{}), do: nil
-  defp show_red_section(%__MODULE__{}), do: false
 
   defp helpers(%__MODULE__{helpers: helpers}), do: helpers
 
@@ -186,8 +185,6 @@ defmodule Picsello.EmailPresets.JobResolver do
         &case photographer(&1) do
           %Picsello.Accounts.User{name: name} -> name |> String.split() |> hd
           _ -> nil
-        end,
-      "first_red_section" => &show_red_section/1,
-      "second_red_section" => &show_red_section/1
+        end
     }
 end

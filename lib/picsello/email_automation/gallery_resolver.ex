@@ -59,8 +59,6 @@ defmodule Picsello.EmailPresets.GalleryResolver do
     end
   end
 
-  defp show_red_section(%__MODULE__{}), do: false
-
   defp helpers(%__MODULE__{helpers: helpers}), do: helpers
 
   def vars,
@@ -113,8 +111,6 @@ defmodule Picsello.EmailPresets.GalleryResolver do
           </a>
           """
         ),
-      "album_password" => &(&1 |> gallery() |> Map.get(:password)),
-      "first_red_section" => &show_red_section/1,
-      "second_red_section" => &show_red_section/1
+      "album_password" => &(&1 |> gallery() |> Map.get(:password))
     }
 end
