@@ -869,7 +869,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         <p>Hi {{client_first_name}}</p>
         <p>I hope this email finds you well. I noticed that you recently started the booking process for a photography session with {{photography_company_s_name}}, but it seems that your booking was left incomplete.</p>
         <p>I understand that life can get busy, and I want to make sure you don't miss out on capturing those special moments.</p>
-        <p>To complete your booking now, simply follow this link: {{booking_event_client_url}}
+        <p>To complete your booking now, simply follow this link: {{booking_event_client_link}}
         <p>{{email_signature}}</p>
         """
       },
@@ -1716,7 +1716,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         <p>Hi {{client_first_name}}</p>
         <p>I hope this email finds you well. I noticed that you recently started the booking process for a photography session with {{photography_company_s_name}}, but it seems that your booking was left incomplete.</p>
         <p>I understand that life can get busy, and I want to make sure you don't miss out on capturing those special moments.</p>
-        <p>To complete your booking now, simply follow this link: {{booking_event_client_url}}
+        <p>To complete your booking now, simply follow this link: {{booking_event_client_link}}
         <p>{{email_signature}}</p>
         """
       },
@@ -2543,7 +2543,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         <p>Hi {{client_first_name}}</p>
         <p>I hope this email finds you well. I noticed that you recently started the booking process for a photography session with {{photography_company_s_name}}, but it seems that your booking was left incomplete.</p>
         <p>I understand that life can get busy, and I want to make sure you don't miss out on capturing those special moments.</p>
-        <p>To complete your booking now, simply follow this link: {{booking_event_client_url}}
+        <p>To complete your booking now, simply follow this link: {{booking_event_client_link}}
         <p>{{email_signature}}</p>
         """
       },
@@ -3369,7 +3369,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         <p>Hi {{client_first_name}}</p>
         <p>I hope this email finds you well. I noticed that you recently started the booking process for a photography session with {{photography_company_s_name}}, but it seems that your booking was left incomplete.</p>
         <p>I understand that life can get busy, and I want to make sure you don't miss out on capturing those special moments.</p>
-        <p>To complete your booking now, simply follow this link: {{booking_event_client_url}}
+        <p>To complete your booking now, simply follow this link: {{booking_event_client_link}}
         <p>{{email_signature}}</p>
         """
       },
@@ -4195,7 +4195,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         <p>Hi {{client_first_name}}</p>
         <p>I hope this email finds you well. I noticed that you recently started the booking process for a photography session with {{photography_company_s_name}}, but it seems that your booking was left incomplete.</p>
         <p>I understand that life can get busy, and I want to make sure you don't miss out on capturing those special moments.</p>
-        <p>To complete your booking now, simply follow this link: {{booking_event_client_url}}
+        <p>To complete your booking now, simply follow this link: {{booking_event_client_link}}
         <p>{{email_signature}}</p>
         """
       },
@@ -5021,7 +5021,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         <p>Hi {{client_first_name}}</p>
         <p>I hope this email finds you well. I noticed that you recently started the booking process for a photography session with {{photography_company_s_name}}, but it seems that your booking was left incomplete.</p>
         <p>I understand that life can get busy, and I want to make sure you don't miss out on capturing those special moments.</p>
-        <p>To complete your booking now, simply follow this link: {{booking_event_client_url}}
+        <p>To complete your booking now, simply follow this link: {{booking_event_client_link}}
         <p>{{email_signature}}</p>
         """
       },
@@ -5846,7 +5846,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         <p>Hi {{client_first_name}}</p>
         <p>I hope this email finds you well. I noticed that you recently started the booking process for a photography session with {{photography_company_s_name}}, but it seems that your booking was left incomplete.</p>
         <p>I understand that life can get busy, and I want to make sure you don't miss out on capturing those special moments.</p>
-        <p>To complete your booking now, simply follow this link: {{booking_event_client_url}}
+        <p>To complete your booking now, simply follow this link: {{booking_event_client_link}}
         <p>{{email_signature}}</p>
         """
       },
@@ -6673,7 +6673,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         <p>Hi {{client_first_name}}</p>
         <p>I hope this email finds you well. I noticed that you recently started the booking process for a photography session with {{photography_company_s_name}}, but it seems that your booking was left incomplete.</p>
         <p>I understand that life can get busy, and I want to make sure you don't miss out on capturing those special moments.</p>
-        <p>To complete your booking now, simply follow this link: {{booking_event_client_url}}
+        <p>To complete your booking now, simply follow this link: {{booking_event_client_link}}
         <p>{{email_signature}}</p>
         """
       },
@@ -7499,7 +7499,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         <p>Hi {{client_first_name}}</p>
         <p>I hope this email finds you well. I noticed that you recently started the booking process for a photography session with {{photography_company_s_name}}, but it seems that your booking was left incomplete.</p>
         <p>I understand that life can get busy, and I want to make sure you don't miss out on capturing those special moments.</p>
-        <p>To complete your booking now, simply follow this link: {{booking_event_client_url}}
+        <p>To complete your booking now, simply follow this link: {{booking_event_client_link}}
         <p>{{email_signature}}</p>
         """
       },
@@ -8325,7 +8325,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         <p>Hi {{client_first_name}}</p>
         <p>I hope this email finds you well. I noticed that you recently started the booking process for a photography session with {{photography_company_s_name}}, but it seems that your booking was left incomplete.</p>
         <p>I understand that life can get busy, and I want to make sure you don't miss out on capturing those special moments.</p>
-        <p>To complete your booking now, simply follow this link: {{booking_event_client_url}}
+        <p>To complete your booking now, simply follow this link: {{booking_event_client_link}}
         <p>{{email_signature}}</p>
         """
       }

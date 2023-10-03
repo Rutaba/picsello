@@ -30,7 +30,8 @@ defmodule PicselloWeb.Live.EmailAutomations.Show do
     EmailAutomations,
     EmailAutomationSchedules,
     Repo,
-    Utils
+    Utils,
+    UserCurrencies
   }
 
   import PicselloWeb.EmailAutomationLive.Shared
@@ -142,9 +143,12 @@ defmodule PicselloWeb.Live.EmailAutomations.Show do
         %{"email_preview_id" => id},
         %{assigns: %{current_user: current_user, job: job}} = socket
       ) do
+
+    user_currency = UserCurrencies.get_user_currency(current_user.organization_id).currency
+
     body_html =
       EmailAutomationSchedules.get_schedule_by_id(id).body_template
-      |> :bbmustache.render(get_sample_values(current_user, job), key_type: :atom)
+      |> :bbmustache.render(get_sample_values(current_user, job, user_currency), key_type: :atom)
       |> Utils.normalize_body_template()
 
     template_preview = Marketing.template_preview(current_user, body_html)

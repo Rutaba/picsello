@@ -3,6 +3,7 @@ defmodule PicselloWeb.Shared.ShortCodeComponent do
     Helper functions to use the Short Codes
   """
   use PicselloWeb, :live_component
+  alias Picsello.UserCurrencies
 
   @impl true
   def render(assigns) do
@@ -11,7 +12,7 @@ defmodule PicselloWeb.Shared.ShortCodeComponent do
     assigns =
       assigns
       |> Enum.into(%{
-        variables_list: variables_codes(assigns.job_type, assigns.current_user, job)
+        variables_list: variables_codes(assigns.job_type, assigns.current_user, job, "USD")
       })
 
     ~H"""
@@ -58,7 +59,7 @@ defmodule PicselloWeb.Shared.ShortCodeComponent do
     """
   end
 
-  def variables_codes(job_type, current_user, job) do
+  def variables_codes(job_type, current_user, job, user_currency) do
     leads = [
       %{
         type: "lead",
@@ -69,6 +70,20 @@ defmodule PicselloWeb.Shared.ShortCodeComponent do
             sample: "two weeks",
             description:
               "Image turnaround time in number of weeks; image turnaround time is _ weeks"
+          },
+          %{
+            id: 2,
+            name: "booking_event_client_link",
+            sample: """
+            <a
+              style="border:1px solid #1F1C1E;display:inline-block;background:white;color:#1F1C1E;font-family:Montserrat, sans-serif;font-size:18px;font-weight:normal;line-height:120%;margin:0;text-decoration:none;text-transform:none;padding:10px 15px;mso-padding-alt:0px;border-radius:0px;"
+              target="_blank"
+              href="https://bookingeventclientlinkhere.com">
+              Client Event Link
+            </a>
+            """,
+            description:
+              "Link to the client booking-event"
           }
         ]
       }
@@ -76,8 +91,8 @@ defmodule PicselloWeb.Shared.ShortCodeComponent do
 
     other =
       case job_type do
-        :job -> job_variables()
-        :gallery -> job_variables() ++ gallery_variables()
+        :job -> job_variables(user_currency)
+        :gallery -> job_variables(user_currency) ++ gallery_variables()
         _ -> []
       end
 
@@ -231,7 +246,7 @@ defmodule PicselloWeb.Shared.ShortCodeComponent do
     ]
   end
 
-  defp job_variables() do
+  defp job_variables(user_currency) do
     [
       %{
         type: "job",
@@ -252,19 +267,19 @@ defmodule PicselloWeb.Shared.ShortCodeComponent do
           %{
             id: 3,
             name: "invoice_amount",
-            sample: "450 USD",
+            sample: "450 #{user_currency}",
             description: "Invoice amount; use in context with payments and balances due"
           },
           %{
             id: 4,
             name: "payment_amount",
-            sample: "775 USD",
+            sample: "775 #{user_currency}",
             description: "Current payment being made"
           },
           %{
             id: 5,
             name: "remaining_amount",
-            sample: "650 USD",
+            sample: "650 #{user_currency}",
             description: "Outstanding balance due; use in context with payments, invoices"
           },
           %{
@@ -283,7 +298,7 @@ defmodule PicselloWeb.Shared.ShortCodeComponent do
           %{
             id: 8,
             name: "session_time",
-            sample: "1:00:00 PM",
+            sample: "1:00 PM",
             description: "Start time for the photoshoot shoot/session; formatted as 10:00 pm"
           },
           %{

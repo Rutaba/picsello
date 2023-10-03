@@ -18,7 +18,8 @@ defmodule PicselloWeb.EmailAutomationLive.Shared do
     EmailAutomation.EmailSchedule,
     EmailAutomation.EmailScheduleHistory,
     Repo,
-    Utils
+    Utils,
+    UserCurrencies
   }
 
   # @impl true
@@ -75,10 +76,12 @@ defmodule PicselloWeb.EmailAutomationLive.Shared do
     second_red_section =
       get_plain_text(Ecto.Changeset.get_field(changeset, :body_template), "second_red_section")
 
+    user_currency = UserCurrencies.get_user_currency(current_user.organization_id).currency
+
     body_html =
       Ecto.Changeset.get_field(changeset, :body_template)
       |> :bbmustache.render(
-        get_sample_values(current_user, job)
+        get_sample_values(current_user, job, user_currency)
         |> Map.merge(%{
           first_red_section: assign_section_value(first_red_section_value, first_red_section),
           second_red_section: assign_section_value(second_red_section_value, second_red_section)
@@ -167,8 +170,8 @@ defmodule PicselloWeb.EmailAutomationLive.Shared do
     |> Enum.map(&%{id: &1.job_type, label: &1.job_type, selected: &1.job_type == job_type.name})
   end
 
-  def get_sample_values(user, job) do
-    ShortCodeComponent.variables_codes(:gallery, user, job)
+  def get_sample_values(user, job, user_currency) do
+    ShortCodeComponent.variables_codes(:gallery, user, job, user_currency)
     |> Enum.map(&Enum.map(&1.variables, fn variable -> {variable.name, variable.sample} end))
     |> List.flatten()
     |> Map.new(fn {k, v} -> {String.to_atom(k), v} end)
@@ -468,7 +471,7 @@ defmodule PicselloWeb.EmailAutomationLive.Shared do
       else: get_date_for_schedule(last_completed_email, gallery.password_regenerated_at)
   end
 
-  def fetch_date_for_state(:after_gallery_send_feedback, email, _last_completed_email,_job,gallery,_order) do
+  def fetch_date_for_state(:after_gallery_send_feedback, email, _last_completed_email, _job, gallery, _order) do
     today = NaiveDateTime.utc_now() |> Timex.end_of_day()
     %{calendar: calendar, count: count} = explode_hours(email.total_hours)
     time_calendar = get_timex_calendar(calendar)

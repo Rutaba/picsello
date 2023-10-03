@@ -26,7 +26,7 @@ defmodule Picsello.Workers.ScheduleAutomationEmail do
       |> Enum.map(fn job_pipeline ->
         gallery = Task.async(fn -> get_gallery(job_pipeline.gallery_id) end) |> Task.await()
         job = Task.async(fn -> EmailAutomations.get_job(job_pipeline.job_id) end) |> Task.await()
-        job = if is_nil(gallery.id), do: job, else: gallery.job
+        job = if is_nil(job_pipeline.gallery_id), do: job, else: gallery.job
         send_email_by(job, gallery, job_pipeline)
       end)
     end)

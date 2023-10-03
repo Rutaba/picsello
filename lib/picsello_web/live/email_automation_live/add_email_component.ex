@@ -10,7 +10,7 @@ defmodule PicselloWeb.EmailAutomationLive.AddEmailComponent do
   import PicselloWeb.Shared.ShortCodeComponent, only: [short_codes_select: 1]
   import PicselloWeb.EmailAutomationLive.Shared
 
-  alias Picsello.{Repo, EmailPresets, EmailPresets.EmailPreset, Utils}
+  alias Picsello.{Repo, EmailPresets, EmailPresets.EmailPreset, Utils, UserCurrencies}
   alias Ecto.Changeset
 
   @steps [:timing, :edit_email, :preview_email]
@@ -153,9 +153,10 @@ defmodule PicselloWeb.EmailAutomationLive.AddEmailComponent do
             %{email_preset_changeset: changeset, current_user: current_user, job: job} = assigns
         } = socket
       ) do
+    user_currency = UserCurrencies.get_user_currency(current_user.organization_id).currency
     body_html =
       Ecto.Changeset.get_field(changeset, :body_template)
-      |> :bbmustache.render(get_sample_values(current_user, job), key_type: :atom)
+      |> :bbmustache.render(get_sample_values(current_user, job, user_currency), key_type: :atom)
       |> Utils.normalize_body_template()
 
     Process.send_after(self(), {:load_template_preview, __MODULE__, body_html}, 50)
