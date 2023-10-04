@@ -249,6 +249,7 @@ defmodule PicselloWeb.Live.Calendar.BookingEvents.Show do
         %{assigns: %{collapsed_sections: collapsed_sections}} = socket
       ) do
     section_id = to_integer(section_id)
+
     collapsed_sections =
       if Enum.member?(collapsed_sections, section_id) do
         Enum.filter(collapsed_sections, &(&1 != section_id))
@@ -618,8 +619,8 @@ defmodule PicselloWeb.Live.Calendar.BookingEvents.Show do
         <div class="z-10 flex flex-col hidden w-auto bg-white border rounded-lg shadow-lg popover-content">
           <%= for %{title: title, action: action, icon: icon} <- @button_actions do %>
             <%= if icon == "anchor" && BookingProposal.url(@proposal.id) do %>
-              <.icon_button icon="anchor" color="blue-planning-300" class="flex text-base-300 items-center px-3 py-2 hover:font-bold rounded-lg" id="copy-calendar-link" phx-click="link-copied" data-clipboard-text={BookingProposal.url(@proposal.id)} phx-hook="Clipboard">
-                <span>Copy booking link</span>
+              <.icon_button icon={icon} color="blue-planning-300" class="flex text-base-300 items-center px-3 py-2 hover:font-bold rounded-lg" id="copy-calendar-link" phx-click={action} data-clipboard-text={BookingProposal.url(@proposal.id)} phx-hook="Clipboard">
+                <span>title</span>
               </.icon_button>
             <% else %>
               <.icon_button icon={icon} color="blue-planning-300" phx-click={action} phx-value-booking_event_date_id={@id} phx-value-slot_client_id={@slot_client_id} phx-value-slot_job_id={@slot_job_id} phx-value-slot_index={@slot_index} class="flex text-base-300 items-center px-3 py-2 rounded-lg hover:font-bold">
@@ -838,7 +839,7 @@ defmodule PicselloWeb.Live.Calendar.BookingEvents.Show do
     ]
 
     if(status == :reserved,
-      do: actions ++ [%{title: "Copy booking link", action: "", icon: "anchor"}],
+      do: actions ++ [%{title: "Copy booking link", action: "link-copied", icon: "anchor"}],
       else: actions
     ) ++ [%{title: "Cancel", action: "cancel", icon: "cross"}]
   end

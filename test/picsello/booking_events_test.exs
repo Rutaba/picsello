@@ -210,16 +210,16 @@ defmodule Picsello.BookingEventsTest do
     end
   end
 
-  describe "expire_booking/1" do
+  describe "expire_booking_job_job/1" do
     test "does not archive when lead is already converted to job" do
       lead = insert(:lead) |> promote_to_job()
-      assert {:ok, _} = BookingEvents.expire_booking(lead)
+      assert {:ok, _} = BookingEvents.expire_booking_job_job(lead)
       assert %{archived_at: nil} = lead |> Repo.reload()
     end
 
     test "updates lead archived_at" do
       lead = insert(:lead)
-      assert {:ok, _} = BookingEvents.expire_booking(lead)
+      assert {:ok, _} = BookingEvents.expire_booking_job_job(lead)
       assert %{archived_at: %DateTime{}} = lead |> Repo.reload()
     end
 
@@ -232,13 +232,13 @@ defmodule Picsello.BookingEventsTest do
         {:ok, %Stripe.Session{}}
       end)
 
-      assert {:ok, _} = BookingEvents.expire_booking(lead)
+      assert {:ok, _} = BookingEvents.expire_booking_job(lead)
     end
 
     test "does not expires stripe session when stripe id is not set" do
       lead = insert(:lead)
       insert(:payment_schedule, job: lead)
-      assert {:ok, _} = BookingEvents.expire_booking(lead)
+      assert {:ok, _} = BookingEvents.expire_booking_job(lead)
     end
   end
 end
