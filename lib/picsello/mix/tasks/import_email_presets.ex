@@ -332,7 +332,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         job_type: "wedding",
         type: "job",
         position: 0,
-        name: "Pre-Shoot - week before email",
+        name: "Pre-Shoot",
         subject_template: "One week reminder from {{photography_company_s_name}}",
         body_template: """
         <p><span style="color: rgb(0, 0, 0);">Hello {{client_first_name}}, </span></p>
@@ -352,7 +352,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         job_type: "wedding",
         type: "job",
         position: 0,
-        name: "Pre-Shoot - day before email",
+        name: "Pre-Shoot",
         subject_template: "The Big Day Tomorrow | {{photography_company_s_name}}",
         body_template: """
         <p><span style="color: rgb(0, 0, 0);">Hello {{client_first_name}}, </span></p>
@@ -1159,7 +1159,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         job_type: "newborn",
         type: "job",
         position: 0,
-        name: "Pre-Shoot - week before email",
+        name: "Pre-Shoot",
         subject_template: "One week reminder from {{photography_company_s_name}}",
         body_template: """
         <p><span style="color: rgb(0, 0, 0);">Hello {{client_first_name}}, </span></p>
@@ -1179,7 +1179,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         job_type: "newborn",
         type: "job",
         position: 0,
-        name: "Pre-Shoot - day before email",
+        name: "Pre-Shoot",
         subject_template: "Our Shoot Tomorrow|{{photography_company_s_name}}",
         body_template: """
         <p><span style="color: rgb(0, 0, 0);">Hello {{client_first_name}}, </span></p>
@@ -2006,7 +2006,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         job_type: "family",
         type: "job",
         position: 0,
-        name: "Pre-Shoot - week before email",
+        name: "Pre-Shoot",
         subject_template: "One week reminder from {{photography_company_s_name}}",
         body_template: """
         <p><span style="color: rgb(0, 0, 0);">Hello {{client_first_name}}, </span></p>
@@ -2026,7 +2026,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         job_type: "family",
         type: "job",
         position: 0,
-        name: "Pre-Shoot - day before email",
+        name: "Pre-Shoot",
         subject_template: "The Big Day Tomorrow | {{photography_company_s_name}}",
         body_template: """
         <p><span style="color: rgb(0, 0, 0);">Hello {{client_first_name}}, </span></p>
@@ -2832,7 +2832,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         job_type: "mini",
         type: "job",
         position: 0,
-        name: "Pre-Shoot - week before email",
+        name: "Pre-Shoot",
         subject_template: "One week reminder from {{photography_company_s_name}}",
         body_template: """
         <p><span style="color: rgb(0, 0, 0);">Hello {{client_first_name}}, </span></p>
@@ -2852,7 +2852,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         job_type: "mini",
         type: "job",
         position: 0,
-        name: "Pre-Shoot - day before email",
+        name: "Pre-Shoot",
         subject_template: "The Big Day Tomorrow | {{photography_company_s_name}}",
         body_template: """
         <p><span style="color: rgb(0, 0, 0);">Hello {{client_first_name}}, </span></p>
@@ -3658,7 +3658,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         job_type: "headshot",
         type: "job",
         position: 0,
-        name: "Pre-Shoot - week before email",
+        name: "Pre-Shoot",
         subject_template: "One week reminder from {{photography_company_s_name}}",
         body_template: """
         <p><span style="color: rgb(0, 0, 0);">Hello {{client_first_name}}, </span></p>
@@ -3678,7 +3678,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         job_type: "headshot",
         type: "job",
         position: 0,
-        name: "Pre-Shoot - day before email",
+        name: "Pre-Shoot",
         subject_template: "The Big Day Tomorrow | {{photography_company_s_name}}",
         body_template: """
         <p><span style="color: rgb(0, 0, 0);">Hello {{client_first_name}}, </span></p>
@@ -4484,7 +4484,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         job_type: "portrait",
         type: "job",
         position: 0,
-        name: "Pre-Shoot - week before email",
+        name: "Pre-Shoot",
         subject_template: "One week reminder from {{photography_company_s_name}}",
         body_template: """
         <p><span style="color: rgb(0, 0, 0);">Hello {{client_first_name}}, </span></p>
@@ -4504,7 +4504,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         job_type: "portrait",
         type: "job",
         position: 0,
-        name: "Pre-Shoot - day before email",
+        name: "Pre-Shoot",
         subject_template: "The Big Day Tomorrow | {{photography_company_s_name}}",
         body_template: """
         <p><span style="color: rgb(0, 0, 0);">Hello {{client_first_name}}, </span></p>
@@ -5309,7 +5309,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         job_type: "boudoir",
         type: "job",
         position: 0,
-        name: "Pre-Shoot - week before email",
+        name: "Pre-Shoot",
         subject_template: "One week reminder from {{photography_company_s_name}}",
         body_template: """
         <p><span style="color: rgb(0, 0, 0);">Hello {{client_first_name}}, </span></p>
@@ -5329,7 +5329,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         job_type: "boudoir",
         type: "job",
         position: 0,
-        name: "Pre-Shoot - day before email",
+        name: "Pre-Shoot",
         subject_template: "The Big Day Tomorrow | {{photography_company_s_name}}",
         body_template: """
         <p><span style="color: rgb(0, 0, 0);">Hello {{client_first_name}}, </span></p>
@@ -6136,7 +6136,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         job_type: "other",
         type: "job",
         position: 0,
-        name: "Pre-Shoot - week before email",
+        name: "Pre-Shoot",
         subject_template: "One week reminder from {{photography_company_s_name}}",
         body_template: """
         <p><span style="color: rgb(0, 0, 0);">Hello {{client_first_name}}, </span></p>
@@ -6156,7 +6156,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         job_type: "other",
         type: "job",
         position: 0,
-        name: "Pre-Shoot - day before email",
+        name: "Pre-Shoot",
         subject_template: "The Big Day Tomorrow | {{photography_company_s_name}}",
         body_template: """
         <p><span style="color: rgb(0, 0, 0);">Hello {{client_first_name}}, </span></p>
@@ -6962,7 +6962,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         job_type: "maternity",
         type: "job",
         position: 0,
-        name: "Pre-Shoot - week before email",
+        name: "Pre-Shoot",
         subject_template: "One week reminder from {{photography_company_s_name}}",
         body_template: """
         <p><span style="color: rgb(0, 0, 0);">Hello {{client_first_name}}, </span></p>
@@ -6982,7 +6982,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         job_type: "maternity",
         type: "job",
         position: 0,
-        name: "Pre-Shoot - day before email",
+        name: "Pre-Shoot",
         subject_template: "The Big Day Tomorrow | {{photography_company_s_name}}",
         body_template: """
         <p><span style="color: rgb(0, 0, 0);">Hello {{client_first_name}}, </span></p>
@@ -7788,7 +7788,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         job_type: "event",
         type: "job",
         position: 0,
-        name: "Pre-Shoot - week before email",
+        name: "Pre-Shoot",
         subject_template: "One week reminder from {{photography_company_s_name}}",
         body_template: """
         <p><span style="color: rgb(0, 0, 0);">Hello {{client_first_name}}, </span></p>
@@ -7808,7 +7808,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         job_type: "event",
         type: "job",
         position: 0,
-        name: "Pre-Shoot - day before email",
+        name: "Pre-Shoot",
         subject_template: "The Big Day Tomorrow | {{photography_company_s_name}}",
         body_template: """
         <p><span style="color: rgb(0, 0, 0);">Hello {{client_first_name}}, </span></p>
@@ -8351,6 +8351,20 @@ defmodule Mix.Tasks.ImportEmailPresets do
         |> then(&Repo.insert_all("email_presets", &1))
       end
     end)
+  end
+
+  def assign_default_presets_new_user(organization_id) do
+    email_presets =
+      get_all_default_email_presets()
+      |> Enum.map(fn map ->
+        Map.put(map, :organization_id, organization_id)
+      end)
+
+    Repo.insert_all("email_presets", email_presets)
+  end
+
+  defp get_all_default_email_presets() do
+    from(ep in EmailPreset, where: is_nil(ep.organization_id)) |> Repo.all()
   end
 
   defp email_preset_query(attrs) do
