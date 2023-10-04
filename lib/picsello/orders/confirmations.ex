@@ -21,6 +21,7 @@ defmodule Picsello.Orders.Confirmations do
   }
 
   alias Picsello.WHCC.Order.Created, as: WHCCOrder
+  import Picsello.Zapier.GalleryOrders, only: [gallery_order_whcc_update: 1]
 
   import Ecto.Query, only: [from: 2]
   import Ecto.Multi, only: [new: 0, put: 3, update: 3, run: 3, merge: 2, append: 2, insert: 3]
@@ -114,6 +115,36 @@ defmodule Picsello.Orders.Confirmations do
     |> Repo.transaction()
   end
 
+  @doc """
+    Handles notifying zapier of order status
+    for realtime notifications
+  """
+  def send_zapier_notification(
+        %{
+          id: id,
+          number: number,
+          gallery_id: gallery_id,
+          whcc_order: whcc_order,
+          gallery: %{job: %{client: %{organization: organization}}}
+        } = _order,
+        status
+      ) do
+    gallery_order_whcc_update(%{
+      order_id: id,
+      order_number: number,
+      order_total: 0,
+      gallery_id: gallery_id,
+      photographer_email: organization.user.email,
+      whcc_status: status,
+      whcc_confirmation_id: whcc_order.confirmation_id,
+      whcc_confirmed_at: whcc_order.confirmed_at,
+      whcc_orders: Enum.map(whcc_order.orders, &Map.from_struct/1),
+      whcc_environment: Keyword.get(Application.get_env(:picsello, :whcc), :url)
+    })
+  end
+
+  def send_zapier_notification(_, _), do: nil
+
   defp load_open_invoice(repo, %{order: order}) do
     {:ok, order |> Invoices.open_invoice_for_order_query() |> repo.one()}
   end
@@ -171,6 +202,8 @@ defmodule Picsello.Orders.Confirmations do
         {:ok, order, :already_confirmed}
 
       {:ok, %{place_order: order}} ->
+        send_zapier_notification(order, "order_placed")
+
         {:ok, order, :confirmed}
 
       {:error, _, _, %{session: %{payment_intent: intent_id}, stripe_options: stripe_options}} =

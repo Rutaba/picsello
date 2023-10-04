@@ -13,6 +13,8 @@ defmodule Picsello.Orders do
     Repo
   }
 
+  import Picsello.Orders.Confirmations, only: [send_zapier_notification: 2]
+
   import Ecto.Query, only: [from: 2, preload: 2]
 
   def all(gallery_id) do
@@ -60,12 +62,12 @@ defmodule Picsello.Orders do
     do: bundle_price != nil || digitals != []
 
   def client_paid?(%{id: order_id}),
-    do: Repo.exists?(from orders in client_paid_query(), where: orders.id == ^order_id)
+    do: Repo.exists?(from(orders in client_paid_query(), where: orders.id == ^order_id))
 
   def photographer_paid?(%{id: order_id}),
     do:
       not Repo.exists?(
-        from invoice in Invoice, where: invoice.order_id == ^order_id and invoice.status != :paid
+        from(invoice in Invoice, where: invoice.order_id == ^order_id and invoice.status != :paid)
       )
 
   def client_paid_query, do: client_paid_query(orders())
@@ -166,6 +168,11 @@ defmodule Picsello.Orders do
         |> case do
           {:ok, updated_order} ->
             maybe_send_shipping_notification(payload, updated_order, helpers)
+
+            updated_order
+            |> Repo.preload(gallery: [job: [client: [organization: [:user]]]])
+            |> send_zapier_notification("updated_order")
+
             {:ok, updated_order}
 
           error ->
