@@ -154,10 +154,13 @@ defmodule PicselloWeb.EmailAutomationLive.AddEmailComponent do
         } = socket
       ) do
     user_currency = UserCurrencies.get_user_currency(current_user.organization_id).currency
+    total_hours = Ecto.Changeset.get_field(changeset, :total_hours)
 
     body_html =
       Ecto.Changeset.get_field(changeset, :body_template)
-      |> :bbmustache.render(get_sample_values(current_user, job, user_currency), key_type: :atom)
+      |> :bbmustache.render(get_sample_values(current_user, job, user_currency, total_hours),
+        key_type: :atom
+      )
       |> Utils.normalize_body_template()
 
     Process.send_after(self(), {:load_template_preview, __MODULE__, body_html}, 50)
@@ -395,7 +398,7 @@ defmodule PicselloWeb.EmailAutomationLive.AddEmailComponent do
         <div class="grid grid-row md:grid-cols-3 gap-6">
           <label class="flex flex-col">
             <b>Select email preset</b>
-            <%= select_field f, :template_id, make_email_presets_options(@email_presets), class: "border-base-200 hover:border-blue-planning-300 cursor-pointer pr-8 mt-2" %>
+            <%= select_field f, :template_id, make_email_presets_options(@email_presets, @pipeline.state), class: "border-base-200 hover:border-blue-planning-300 cursor-pointer pr-8 mt-2" %>
           </label>
 
           <label class="flex flex-col">

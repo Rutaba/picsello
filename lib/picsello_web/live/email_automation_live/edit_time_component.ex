@@ -113,7 +113,7 @@ defmodule PicselloWeb.EmailAutomationLive.EditTimeComponent do
                     <.icon name="envelope" class="w-5 h-5 text-blue-planning-300" />
                   </div>
                 </div>
-                <div class="text-blue-planning-300 text-lg"><b>Send email:</b> <%= Shared.get_email_name(@email, nil) %></div>
+                <div class="text-blue-planning-300 text-lg"><b>Send email:</b> <%= Shared.get_email_name(@email, nil, 0) %></div>
               </div>
               <div class="flex lg:ml-auto items-center mt-2 lg:mt-0">
                 <div class="w-8 h-8 rounded-full bg-blue-planning-300 flex items-center justify-center mr-3">

@@ -13,7 +13,7 @@ defmodule PicselloWeb.Live.EmailAutomations.Show do
       sort_emails: 2,
       get_pipline: 1,
       get_email_schedule_text: 6,
-      get_email_name: 2,
+      get_email_name: 3,
       explode_hours: 1,
       get_preceding_email: 2,
       fetch_date_for_state_maybe_manual: 6
@@ -144,10 +144,14 @@ defmodule PicselloWeb.Live.EmailAutomations.Show do
         %{assigns: %{current_user: current_user, job: job}} = socket
       ) do
     user_currency = UserCurrencies.get_user_currency(current_user.organization_id).currency
+    email_schedule = EmailAutomationSchedules.get_schedule_by_id(id)
 
     body_html =
-      EmailAutomationSchedules.get_schedule_by_id(id).body_template
-      |> :bbmustache.render(get_sample_values(current_user, job, user_currency), key_type: :atom)
+      email_schedule.body_template
+      |> :bbmustache.render(
+        get_sample_values(current_user, job, user_currency, email_schedule.total_hours),
+        key_type: :atom
+      )
       |> Utils.normalize_body_template()
 
     template_preview = Marketing.template_preview(current_user, body_html)
@@ -287,7 +291,7 @@ defmodule PicselloWeb.Live.EmailAutomations.Show do
                     Completed <%= get_completed_date(email.reminded_at) %>
                   <% end %>
                   <p class="text-black text-xl">
-                    <%= get_email_name(email, @type) %>
+                    <%= get_email_name(email, @type, index) %>
                   </p>
                   <div class="flex items-center bg-white">
                     <div class="w-4 h-4 mr-2">

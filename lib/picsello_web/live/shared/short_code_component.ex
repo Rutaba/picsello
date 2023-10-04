@@ -3,7 +3,7 @@ defmodule PicselloWeb.Shared.ShortCodeComponent do
     Helper functions to use the Short Codes
   """
   use PicselloWeb, :live_component
-
+  alias PicselloWeb.EmailAutomationLive.Shared
   @impl true
   def render(assigns) do
     job = Map.get(assigns, :job, nil)
@@ -11,7 +11,7 @@ defmodule PicselloWeb.Shared.ShortCodeComponent do
     assigns =
       assigns
       |> Enum.into(%{
-        variables_list: variables_codes(assigns.job_type, assigns.current_user, job, "USD")
+        variables_list: variables_codes(assigns.job_type, assigns.current_user, job, "USD", 0)
       })
 
     ~H"""
@@ -58,7 +58,9 @@ defmodule PicselloWeb.Shared.ShortCodeComponent do
     """
   end
 
-  def variables_codes(job_type, current_user, job, user_currency) do
+  def variables_codes(job_type, current_user, job, user_currency, total_hours) do
+    %{calendar: calendar, count: count, sign: sign} = Shared.get_email_meta(total_hours)
+
     leads = [
       %{
         type: "lead",
@@ -82,6 +84,12 @@ defmodule PicselloWeb.Shared.ShortCodeComponent do
             </a>
             """,
             description: "Link to the client booking-event"
+          },
+          %{
+            id: 3,
+            name: "total_time",
+            sample: "#{count} #{calendar} #{sign}",
+            description: "Email send at certain time"
           }
         ]
       }
@@ -192,6 +200,11 @@ defmodule PicselloWeb.Shared.ShortCodeComponent do
   defp client_variables(job) do
     name = get_client_data(job)
 
+    {client_full_name, client_first_name} =
+      if name,
+        do: {name, name |> String.split(" ") |> List.first()},
+        else: {"client full name", "client first name"}
+
     [
       %{
         type: "client",
@@ -199,13 +212,13 @@ defmodule PicselloWeb.Shared.ShortCodeComponent do
           %{
             id: 1,
             name: "client_first_name",
-            sample: name |> String.split(" ") |> List.first(),
+            sample: client_first_name,
             description: "Client first name to personalize emails"
           },
           %{
             id: 2,
             name: "client_full_name",
-            sample: name,
+            sample: client_full_name,
             description: "Client full name to personalize emails"
           }
         ]
@@ -322,9 +335,9 @@ defmodule PicselloWeb.Shared.ShortCodeComponent do
     Map.get(user.organization, :name, "John lee") |> String.capitalize()
   end
 
-  defp get_client_data(nil), do: "Jane Goodrich"
+  defp get_client_data(nil), do: nil
 
   defp get_client_data(job) do
-    Map.get(job.client, :name, "John Goodrich") |> String.capitalize()
+    Map.get(job.client, :name, nil) |> String.capitalize()
   end
 end
