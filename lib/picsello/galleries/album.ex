@@ -13,13 +13,13 @@ defmodule Picsello.Galleries.Album do
   ]
 
   schema "albums" do
-    field :name, :string
-    field :position, :float
-    field :client_link_hash, :string
-    field :is_proofing, :boolean, default: false
-    field :is_finals, :boolean, default: false
-    field :show, :boolean, virtual: true, default: true
-    field :is_client_liked, :boolean, virtual: true, default: false
+    field(:name, :string)
+    field(:position, :float)
+    field(:client_link_hash, :string)
+    field(:is_proofing, :boolean, default: false)
+    field(:is_finals, :boolean, default: false)
+    field(:show, :boolean, virtual: true, default: true)
+    field(:is_client_liked, :boolean, virtual: true, default: false)
     belongs_to(:gallery, Gallery)
     belongs_to(:thumbnail_photo, Photo, on_replace: :nilify)
     has_many(:photos, Photo)
@@ -68,6 +68,14 @@ defmodule Picsello.Galleries.Album do
   def update_thumbnail(album, photo) do
     album |> change() |> put_assoc(:thumbnail_photo, photo)
   end
+
+  defp topic(album), do: "album:#{album.id}"
+
+  def subscribe(album),
+    do: Phoenix.PubSub.subscribe(Picsello.PubSub, topic(album)) |> IO.inspect()
+
+  def broadcast(album, message),
+    do: Phoenix.PubSub.broadcast(Picsello.PubSub, topic(album), message) |> IO.inspect()
 
   defp validate_name(changeset),
     do: validate_length(changeset, :name, max: 35)

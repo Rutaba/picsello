@@ -8,10 +8,11 @@ defmodule PicselloWeb.GalleryLive.ClientAlbum do
 
   import PicselloWeb.GalleryLive.Shared
 
-  alias Picsello.{Repo, Galleries, GalleryProducts, Albums, Cart, Orders}
+  alias Picsello.{Repo, Galleries, GalleryProducts, Albums, Galleries.Album, Cart, Orders}
   alias PicselloWeb.GalleryLive.Photos.Photo.ClientPhoto
   alias Picsello.Galleries.PhotoProcessing.ProcessingManager
   alias Picsello.Galleries.Watermark
+  alias PicselloWeb.GalleryLive.Shared.DownloadLinkComponent
 
   @per_page 12
 
@@ -29,10 +30,13 @@ defmodule PicselloWeb.GalleryLive.ClientAlbum do
 
   @impl true
   def handle_params(%{"album_id" => album_id}, _, socket) do
+    album = Albums.get_album!(album_id)
+    if connected?(socket), do: Album.subscribe(album)
+
     socket
     |> assign(
       :album,
-      %{is_proofing: false, is_finals: false} = Albums.get_album!(album_id)
+      %{is_proofing: false, is_finals: false} = album
     )
     |> assign(:is_proofing, false)
     |> assigns()
@@ -209,6 +213,14 @@ defmodule PicselloWeb.GalleryLive.ClientAlbum do
     |> noreply()
   end
 
+  def handle_info({:pack, :ok, %{packable: %{id: packable_id}, status: status}}, socket) do
+    IO.inspect(status)
+    IO.inspect(packable_id)
+    DownloadLinkComponent.update_status(packable_id, status)
+
+    noreply(socket)
+  end
+
   defp assigns(
          %{assigns: %{album: album, gallery: gallery, client_email: client_email} = assigns} =
            socket
@@ -265,23 +277,12 @@ defmodule PicselloWeb.GalleryLive.ClientAlbum do
     <div class="text-lg font-bold lg:text-3xl">Your Photos</div>
     <div class="flex flex-col lg:flex-row justify-between lg:items-center my-4 w-full">
       <div class="flex items-center mt-4">
-        <%= if !Enum.empty?(@album_order_photos) || @album.is_finals do %>
-          <.button
-          element="a"
-          icon="download"
-          icon_class="h-4 w-4 fill-current"
-          class="py-1.5 px-8"
-          download
-          href={Routes.gallery_downloads_path(
-              @socket, :download_all,
-              @gallery.client_link_hash,
-              photo_ids: if @album.is_finals do generate_download_photo_ids(@album.photos) else generate_download_photo_ids(@album_order_photos) end,
-              is_client: true
-          )}>
-          Download purchased photos
-          </.button>
+        <%= if Enum.any?(@album_order_photos) || @album.is_finals do %>
+          <.download_link packable={@album} class="mr-4 px-8 font-medium text-base-300 bg-base-100 border border-base-300 min-w-[12rem] hover:text-base-100 hover:bg-base-300">
+            Download purchased photos
+            <.icon name="download" class="w-4 h-4 ml-2 fill-current" />
+          </.download_link>
         <% end %>
-
         <.photos_count photos_count={@photos_count} class="ml-4" />
       </div>
       <.toggle_filter title="Show favorites only" event="toggle_favorites" applied?={@favorites_filter} album_favorites_count={@album_favorites_count}/>
@@ -363,9 +364,5 @@ defmodule PicselloWeb.GalleryLive.ClientAlbum do
     """
   end
 
-  defp generate_download_photo_ids(photos) do
-    photos
-    |> Enum.map(& &1.id)
-    |> Enum.join(",")
-  end
+  defdelegate download_link(assigns), to: DownloadLinkComponent
 end
