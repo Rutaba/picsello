@@ -124,21 +124,25 @@ defmodule Picsello.Orders.Confirmations do
           id: id,
           number: number,
           gallery_id: gallery_id,
-          whcc_order: whcc_order,
+          whcc_order: %{
+            confirmation_id: confirmation_id,
+            confirmed_at: confirmed_at,
+            orders: whcc_orders
+          },
           gallery: %{job: %{client: %{organization: organization}}}
-        } = _order,
+        } = order,
         status
       ) do
     gallery_order_whcc_update(%{
       order_id: id,
       order_number: number,
-      order_total: 0,
+      order_total: Order.product_total(order),
       gallery_id: gallery_id,
       photographer_email: organization.user.email,
       whcc_status: status,
-      whcc_confirmation_id: whcc_order.confirmation_id,
-      whcc_confirmed_at: whcc_order.confirmed_at,
-      whcc_orders: Enum.map(whcc_order.orders, &Map.from_struct/1),
+      whcc_confirmation_id: confirmation_id,
+      whcc_confirmed_at: confirmed_at,
+      whcc_orders: Enum.map(whcc_orders, &Map.from_struct/1),
       whcc_environment: Keyword.get(Application.get_env(:picsello, :whcc), :url)
     })
   end
