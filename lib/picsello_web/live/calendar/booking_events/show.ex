@@ -248,6 +248,7 @@ defmodule PicselloWeb.Live.Calendar.BookingEvents.Show do
         %{"section_id" => section_id},
         %{assigns: %{collapsed_sections: collapsed_sections}} = socket
       ) do
+    section_id = to_integer(section_id)
     collapsed_sections =
       if Enum.member?(collapsed_sections, section_id) do
         Enum.filter(collapsed_sections, &(&1 != section_id))
@@ -455,9 +456,9 @@ defmodule PicselloWeb.Live.Calendar.BookingEvents.Show do
             <div class={classes("mt-10 p-3 border-2 rounded-lg border-base-200", %{"border-red-sales-300" => is_nil(booking_event_date.date)})}>
               <div class="flex mb-1">
                 <p class="text-2xl font-bold"> <%= date_formatter(booking_event_date.date) %> </p>
-                <button class="flex text-blue-planning-300 ml-auto items-center justify-center whitespace-nowrap" phx-click="toggle-section" phx-value-section_id="first">
+                <button class="flex text-blue-planning-300 ml-auto items-center justify-center whitespace-nowrap" phx-click="toggle-section" phx-value-section_id={booking_event_date.id}>
                   View details
-                  <.icon name={if Enum.member?(@collapsed_sections, "first"), do: "up", else: "down"} class="mt-1.5 md:mt-1 w-4 h-4 ml-2 stroke-current stroke-3 text-blue-planning-300"/>
+                  <.icon name={if Enum.member?(@collapsed_sections, booking_event_date.id), do: "up", else: "down"} class="mt-1.5 md:mt-1 w-4 h-4 ml-2 stroke-current stroke-3 text-blue-planning-300"/>
                 </button>
               </div>
               <div class="flex">
@@ -466,7 +467,7 @@ defmodule PicselloWeb.Live.Calendar.BookingEvents.Show do
                 <p class="text-blue-planning-300"><b><%= BEShared.count_hidden_slots(booking_event_date.slots) %></b> hidden</p>
               </div>
               <hr class="block md:hidden my-2">
-              <%= if Enum.member?(@collapsed_sections, "first") do %>
+              <%= if Enum.member?(@collapsed_sections, booking_event_date.id) do %>
                 <div class="hidden md:grid grid-cols-7 border-b-4 border-blue-planning-300 font-bold text-lg my-4">
                 <%= for title <- ["Time", "Status", "Client"] do %>
                   <div class="col-span-2"><%= title %></div>
