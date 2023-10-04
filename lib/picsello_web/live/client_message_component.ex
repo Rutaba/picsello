@@ -293,7 +293,8 @@ defmodule PicselloWeb.ClientMessageComponent do
           optional(:enable_size) => boolean,
           optional(:enable_image) => boolean,
           optional(:recipients) => map(),
-          optional(:manual_toggle) => boolean
+          optional(:manual_toggle) => boolean,
+          optional(:email_schedule) => any
         }) :: Phoenix.LiveView.Socket.t()
   def open(%{assigns: assigns} = socket, opts \\ %{}),
     do:

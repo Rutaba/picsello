@@ -10,7 +10,7 @@ defmodule PicselloWeb.EmailAutomationLive.AddEmailComponent do
   import PicselloWeb.Shared.ShortCodeComponent, only: [short_codes_select: 1]
   import PicselloWeb.EmailAutomationLive.Shared
 
-  alias Picsello.{Repo, EmailPresets, EmailPresets.EmailPreset, Utils}
+  alias Picsello.{Repo, EmailPresets, EmailPresets.EmailPreset, Utils, UserCurrencies}
   alias Ecto.Changeset
 
   @steps [:timing, :edit_email, :preview_email]
@@ -153,9 +153,14 @@ defmodule PicselloWeb.EmailAutomationLive.AddEmailComponent do
             %{email_preset_changeset: changeset, current_user: current_user, job: job} = assigns
         } = socket
       ) do
+    user_currency = UserCurrencies.get_user_currency(current_user.organization_id).currency
+    total_hours = Ecto.Changeset.get_field(changeset, :total_hours)
+
     body_html =
       Ecto.Changeset.get_field(changeset, :body_template)
-      |> :bbmustache.render(get_sample_values(current_user, job), key_type: :atom)
+      |> :bbmustache.render(get_sample_values(current_user, job, user_currency, total_hours),
+        key_type: :atom
+      )
       |> Utils.normalize_body_template()
 
     Process.send_after(self(), {:load_template_preview, __MODULE__, body_html}, 50)
@@ -328,7 +333,7 @@ defmodule PicselloWeb.EmailAutomationLive.AddEmailComponent do
                 <div class="flex py-1 w-full text-red-sales-300 text-sm"><%= translate_error(message) %></div>
               <% end %>
               </div>
-              <%= unless input_value(f, :immediately) do %>
+              <%!-- <%= unless input_value(f, :immediately) do %>
                 <div class="flex flex-col w-full lg:w-1/2 lg:pl-6 lg:border-l md:border-base-200">
                   <b>Email Automation sequence conditions</b>
                   <span class="text-base-250">Choose to run automatically or when conditions are met</span>
@@ -348,7 +353,7 @@ defmodule PicselloWeb.EmailAutomationLive.AddEmailComponent do
                     <% end %>
                   </div>
                 </div>
-              <% end %>
+              <% end %> --%>
             </div>
             <hr class="my-4 flex md:hidden">
             <div>
@@ -393,7 +398,7 @@ defmodule PicselloWeb.EmailAutomationLive.AddEmailComponent do
         <div class="grid grid-row md:grid-cols-3 gap-6">
           <label class="flex flex-col">
             <b>Select email preset</b>
-            <%= select_field f, :template_id, make_email_presets_options(@email_presets), class: "border-base-200 hover:border-blue-planning-300 cursor-pointer pr-8 mt-2" %>
+            <%= select_field f, :template_id, make_email_presets_options(@email_presets, @pipeline.state), class: "border-base-200 hover:border-blue-planning-300 cursor-pointer pr-8 mt-2" %>
           </label>
 
           <label class="flex flex-col">

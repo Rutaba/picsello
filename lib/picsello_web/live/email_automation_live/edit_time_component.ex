@@ -74,7 +74,6 @@ defmodule PicselloWeb.EmailAutomationLive.EditTimeComponent do
            }
          } = socket
        ) do
-
     case Repo.insert(email_preset_changeset,
            on_conflict: {:replace, [:total_hours, :condition, :status]},
            conflict_target: :id
@@ -91,7 +90,6 @@ defmodule PicselloWeb.EmailAutomationLive.EditTimeComponent do
       {:error, changeset} ->
         socket
         |> assign(changeset: changeset)
-
     end
   end
 
@@ -115,7 +113,7 @@ defmodule PicselloWeb.EmailAutomationLive.EditTimeComponent do
                     <.icon name="envelope" class="w-5 h-5 text-blue-planning-300" />
                   </div>
                 </div>
-                <div class="text-blue-planning-300 text-lg"><b>Send email:</b> <%= Shared.get_email_name(@email, nil) %></div>
+                <div class="text-blue-planning-300 text-lg"><b>Send email:</b> <%= Shared.get_email_name(@email, nil, 0) %></div>
               </div>
               <div class="flex lg:ml-auto items-center mt-2 lg:mt-0">
                 <div class="w-8 h-8 rounded-full bg-blue-planning-300 flex items-center justify-center mr-3">
@@ -163,7 +161,7 @@ defmodule PicselloWeb.EmailAutomationLive.EditTimeComponent do
                     </div>
                   <% end %>
                 </div>
-                <%= unless current(@changeset) |> Map.get(:immediately) do %>
+                <%!-- <%= unless current(@changeset) |> Map.get(:immediately) do %>
                   <div class="flex flex-col w-full lg:w-1/2 lg:pl-6 lg:border-l md:border-base-200">
                     <b>Email Automation sequence conditions</b>
                     <span class="text-base-250">Choose to run automatically or when conditions are met</span>
@@ -183,7 +181,7 @@ defmodule PicselloWeb.EmailAutomationLive.EditTimeComponent do
                       <% end %>
                     </div>
                   </div>
-                <% end %>
+                <% end %> --%>
               </div>
               <hr class="my-4 md:hidden flex" />
               <div class="mt-4">

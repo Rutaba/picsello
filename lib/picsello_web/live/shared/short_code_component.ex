@@ -3,7 +3,7 @@ defmodule PicselloWeb.Shared.ShortCodeComponent do
     Helper functions to use the Short Codes
   """
   use PicselloWeb, :live_component
-
+  alias PicselloWeb.EmailAutomationLive.Shared
   @impl true
   def render(assigns) do
     job = Map.get(assigns, :job, nil)
@@ -11,7 +11,7 @@ defmodule PicselloWeb.Shared.ShortCodeComponent do
     assigns =
       assigns
       |> Enum.into(%{
-        variables_list: variables_codes(assigns.job_type, assigns.current_user, job)
+        variables_list: variables_codes(assigns.job_type, assigns.current_user, job, "USD", 0)
       })
 
     ~H"""
@@ -58,7 +58,9 @@ defmodule PicselloWeb.Shared.ShortCodeComponent do
     """
   end
 
-  def variables_codes(job_type, current_user, job) do
+  def variables_codes(job_type, current_user, job, user_currency, total_hours) do
+    %{calendar: calendar, count: count, sign: sign} = Shared.get_email_meta(total_hours)
+
     leads = [
       %{
         type: "lead",
@@ -69,6 +71,25 @@ defmodule PicselloWeb.Shared.ShortCodeComponent do
             sample: "two weeks",
             description:
               "Image turnaround time in number of weeks; image turnaround time is _ weeks"
+          },
+          %{
+            id: 2,
+            name: "booking_event_client_link",
+            sample: """
+            <a
+              style="border:1px solid #1F1C1E;display:inline-block;background:white;color:#1F1C1E;font-family:Montserrat, sans-serif;font-size:18px;font-weight:normal;line-height:120%;margin:0;text-decoration:none;text-transform:none;padding:10px 15px;mso-padding-alt:0px;border-radius:0px;"
+              target="_blank"
+              href="https://bookingeventclientlinkhere.com">
+              Client Event Link
+            </a>
+            """,
+            description: "Link to the client booking-event"
+          },
+          %{
+            id: 3,
+            name: "total_time",
+            sample: "#{count} #{calendar} #{sign}",
+            description: "Email send at certain time"
           }
         ]
       }
@@ -76,8 +97,8 @@ defmodule PicselloWeb.Shared.ShortCodeComponent do
 
     other =
       case job_type do
-        :job -> job_variables()
-        :gallery -> job_variables() ++ gallery_variables()
+        :job -> job_variables(user_currency)
+        :gallery -> job_variables(user_currency) ++ gallery_variables()
         _ -> []
       end
 
@@ -179,6 +200,11 @@ defmodule PicselloWeb.Shared.ShortCodeComponent do
   defp client_variables(job) do
     name = get_client_data(job)
 
+    {client_full_name, client_first_name} =
+      if name,
+        do: {name, name |> String.split(" ") |> List.first()},
+        else: {"client full name", "client first name"}
+
     [
       %{
         type: "client",
@@ -186,13 +212,13 @@ defmodule PicselloWeb.Shared.ShortCodeComponent do
           %{
             id: 1,
             name: "client_first_name",
-            sample: name |> String.split(" ") |> List.first(),
+            sample: client_first_name,
             description: "Client first name to personalize emails"
           },
           %{
             id: 2,
             name: "client_full_name",
-            sample: name,
+            sample: client_full_name,
             description: "Client full name to personalize emails"
           }
         ]
@@ -231,7 +257,7 @@ defmodule PicselloWeb.Shared.ShortCodeComponent do
     ]
   end
 
-  defp job_variables() do
+  defp job_variables(user_currency) do
     [
       %{
         type: "job",
@@ -252,19 +278,19 @@ defmodule PicselloWeb.Shared.ShortCodeComponent do
           %{
             id: 3,
             name: "invoice_amount",
-            sample: "450 USD",
+            sample: "450 #{user_currency}",
             description: "Invoice amount; use in context with payments and balances due"
           },
           %{
             id: 4,
             name: "payment_amount",
-            sample: "775 USD",
+            sample: "775 #{user_currency}",
             description: "Current payment being made"
           },
           %{
             id: 5,
             name: "remaining_amount",
-            sample: "650 USD",
+            sample: "650 #{user_currency}",
             description: "Outstanding balance due; use in context with payments, invoices"
           },
           %{
@@ -283,7 +309,7 @@ defmodule PicselloWeb.Shared.ShortCodeComponent do
           %{
             id: 8,
             name: "session_time",
-            sample: "1:00:00 PM",
+            sample: "1:00 PM",
             description: "Start time for the photoshoot shoot/session; formatted as 10:00 pm"
           },
           %{
@@ -309,9 +335,9 @@ defmodule PicselloWeb.Shared.ShortCodeComponent do
     Map.get(user.organization, :name, "John lee") |> String.capitalize()
   end
 
-  defp get_client_data(nil), do: "Jane Goodrich"
+  defp get_client_data(nil), do: nil
 
   defp get_client_data(job) do
-    Map.get(job.client, :name, "John Goodrich") |> String.capitalize()
+    Map.get(job.client, :name, nil) |> String.capitalize()
   end
 end

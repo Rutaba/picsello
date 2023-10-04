@@ -24,9 +24,6 @@ defmodule PicselloWeb.EmailAutomationLive.EditEmailScheduleComponent do
         socket
       ) do
     job_types = get_selected_job_types(job_types, job_type)
-    first_red_section = get_plain_text(email.body_template, "first_red_section")
-    second_red_section = get_plain_text(email.body_template, "second_red_section")
-
     email_presets = EmailPresets.email_automation_presets(type, job_type.name, pipeline_id)
 
     socket
@@ -38,14 +35,6 @@ defmodule PicselloWeb.EmailAutomationLive.EditEmailScheduleComponent do
     |> assign(step: :edit_email)
     |> assign(show_variables: false)
     |> assign(email_preset_changeset: EmailSchedule.changeset(email, %{}))
-    |> assign(
-      :first_red_section,
-      if(first_red_section, do: first_red_section |> String.replace("\n", ""), else: nil)
-    )
-    |> assign(
-      :second_red_section,
-      if(second_red_section, do: second_red_section |> String.replace("\n", ""), else: nil)
-    )
     |> assign_new(:template_preview, fn -> nil end)
     |> ok()
   end

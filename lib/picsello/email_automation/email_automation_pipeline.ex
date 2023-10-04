@@ -16,7 +16,7 @@ defmodule Picsello.EmailAutomation.EmailAutomationPipeline do
     job:
       ~w(job post_shoot shoot_thanks offline_payment paid_full paid_offline_full balance_due before_shoot thanks_booking pays_retainer pays_retainer_offline booking_proposal payment_confirmation_client shoot_reminder)a,
     gallery:
-      ~w[manual_gallery_send_link gallery_send_link cart_abandoned gallery_expiration_soon gallery_password_changed order_confirmation_physical order_confirmation_digital order_confirmation_digital_physical digitals_ready_download order_shipped order_delayed order_arrived gallery_shipping_to_client gallery_shipping_to_photographer album_send_link proofs_send_link manual_send_proofing_gallery manual_send_proofing_gallery_finals]a
+      ~w[manual_gallery_send_link gallery_send_link after_gallery_send_feedback cart_abandoned gallery_expiration_soon gallery_password_changed order_confirmation_physical order_confirmation_digital order_confirmation_digital_physical digitals_ready_download order_shipped order_delayed order_arrived gallery_shipping_to_client gallery_shipping_to_photographer album_send_link proofs_send_link manual_send_proofing_gallery manual_send_proofing_gallery_finals]a
   }
   @states @states_by_type |> Map.values() |> List.flatten()
 

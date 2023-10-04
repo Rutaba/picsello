@@ -18,7 +18,8 @@ defmodule PicselloWeb.EmailAutomationLive.Shared do
     EmailAutomation.EmailSchedule,
     EmailAutomation.EmailScheduleHistory,
     Repo,
-    Utils
+    Utils,
+    UserCurrencies
   }
 
   # @impl true
@@ -63,26 +64,16 @@ defmodule PicselloWeb.EmailAutomationLive.Shared do
               job: job,
               current_user: current_user,
               email_preset_changeset: changeset,
-              first_red_section: first_red_section_value,
-              second_red_section: second_red_section_value,
               module_name: module_name
             } = assigns
         } = socket
       ) do
-    first_red_section =
-      get_plain_text(Ecto.Changeset.get_field(changeset, :body_template), "first_red_section")
-
-    second_red_section =
-      get_plain_text(Ecto.Changeset.get_field(changeset, :body_template), "second_red_section")
+    user_currency = UserCurrencies.get_user_currency(current_user.organization_id).currency
+    total_hours = Ecto.Changeset.get_field(changeset, :total_hours)
 
     body_html =
       Ecto.Changeset.get_field(changeset, :body_template)
-      |> :bbmustache.render(
-        get_sample_values(current_user, job)
-        |> Map.merge(%{
-          first_red_section: assign_section_value(first_red_section_value, first_red_section),
-          second_red_section: assign_section_value(second_red_section_value, second_red_section)
-        }),
+      |> :bbmustache.render(get_sample_values(current_user, job, user_currency, total_hours),
         key_type: :atom
       )
       |> Utils.normalize_body_template()
@@ -95,23 +86,13 @@ defmodule PicselloWeb.EmailAutomationLive.Shared do
     |> noreply()
   end
 
-  defp assign_section_value(section_value, section_to_compare),
-    do:
-      if(is_nil(section_to_compare),
-        do: false,
-        else: get_section_value(section_value, section_to_compare)
-      )
-
-  defp get_section_value(paragraph1, paragraph2),
-    do:
-      if(String.bag_distance(paragraph1, paragraph2) < 0.80,
-        do: true,
-        else: false
-      )
-
-  def make_email_presets_options(email_presets) do
+  def make_email_presets_options(email_presets, state) do
     email_presets
-    |> Enum.map(fn %{id: id, name: name} -> {name, id} end)
+    |> sort_emails(state)
+    |> Enum.with_index(fn email, index ->
+      name = get_email_name(email, nil, index)
+      {name, email.id}
+    end)
   end
 
   def make_sign_options(state) do
@@ -167,8 +148,8 @@ defmodule PicselloWeb.EmailAutomationLive.Shared do
     |> Enum.map(&%{id: &1.job_type, label: &1.job_type, selected: &1.job_type == job_type.name})
   end
 
-  def get_sample_values(user, job) do
-    ShortCodeComponent.variables_codes(:gallery, user, job)
+  def get_sample_values(user, job, user_currency, total_hours) do
+    ShortCodeComponent.variables_codes(:gallery, user, job, user_currency, total_hours)
     |> Enum.map(&Enum.map(&1.variables, fn variable -> {variable.name, variable.sample} end))
     |> List.flatten()
     |> Map.new(fn {k, v} -> {String.to_atom(k), v} end)
@@ -268,6 +249,14 @@ defmodule PicselloWeb.EmailAutomationLive.Shared do
     Enum.any?(job_types, &Map.get(&1, :selected, false))
   end
 
+  defp get_email_schedule_name(0, _index, name), do: name
+  defp get_email_schedule_name(_hours, 0, name), do: name
+
+  defp get_email_schedule_name(hours, _index, name) do
+    %{calendar: calendar, count: count, sign: sign} = get_email_meta(hours)
+    "#{name} - #{count} #{calendar} #{sign} previous email"
+  end
+
   def get_email_schedule_text(0, state, _, index, _job_type, _organization_id) do
     if state?(state) && index == 0 do
       "Photographer Sends"
@@ -287,28 +276,37 @@ defmodule PicselloWeb.EmailAutomationLive.Shared do
         state in ["before_shoot", "shoot_thanks", "post_shoot"] ->
           "the shoot date"
 
+        state == "after_gallery_send_feedback" ->
+          "the gallery send"
+
         state == "cart_abandoned" and index == 0 ->
           "client abandons cart"
 
         state == "cart_abandoned" ->
-          "sending \"#{get_email_name(email, job_type)}\""
+          "sending \"#{get_email_name(email, job_type, 0)}\""
 
         state == "gallery_expiration_soon" ->
           "gallery expiration date"
 
         state in ["client_contact", "manual_thank_you_lead", "manual_booking_proposal_sent"] ->
-          "sending \"#{get_email_name(email, job_type)}\" and if no response from the client"
+          "sending \"#{get_email_name(email, job_type, 0)}\" and if no response from the client"
 
         true ->
-          "the prior email \"#{get_email_name(email, job_type)}\" has been sent if no response from the client"
+          "the prior email \"#{get_email_name(email, job_type, 0)}\" has been sent if no response from the client"
       end
 
     "Send #{count} #{calendar} #{sign} #{sub_text}"
   end
 
-  def get_email_name(email, job_type) do
+  def get_email_name(email, job_type, index) do
     type = if job_type, do: job_type, else: String.capitalize(email.job_type)
-    if email.private_name, do: email.private_name, else: "#{type} - " <> email.name
+
+    if email.private_name do
+      email.private_name
+    else
+      name = "#{type} - " <> email.name
+      get_email_schedule_name(email.total_hours, index, name)
+    end
   end
 
   def email_header(assigns) do
@@ -322,7 +320,7 @@ defmodule PicselloWeb.EmailAutomationLive.Shared do
           </div>
         </div>
         <div class="flex flex-col ml-2">
-          <p><b> <%= @email.type |> Atom.to_string() |> String.capitalize()%>:</b> <%= get_email_name(@email, nil) %></p>
+          <p><b> <%= @email.type |> Atom.to_string() |> String.capitalize()%>:</b> <%= get_email_name(@email, nil, 0) %></p>
           <p class="text-sm text-base-250">
             <%= if @email.total_hours == 0 do %>
               <%= get_email_schedule_text(0, @pipeline.state, nil, @index, nil, nil) %>
@@ -341,7 +339,7 @@ defmodule PicselloWeb.EmailAutomationLive.Shared do
     if email, do: email, else: List.last(emails)
   end
 
-  defp get_email_meta(hours) do
+  def get_email_meta(hours) do
     %{calendar: calendar, count: count, sign: sign} = explode_hours(hours)
     sign = if sign == "+", do: "after", else: "before"
     calendar = calendar_text(calendar, count)
@@ -465,6 +463,30 @@ defmodule PicselloWeb.EmailAutomationLive.Shared do
     if is_nil(gallery.password_regenerated_at),
       do: nil,
       else: get_date_for_schedule(last_completed_email, gallery.password_regenerated_at)
+  end
+
+  def fetch_date_for_state(
+        :after_gallery_send_feedback,
+        email,
+        _last_completed_email,
+        _job,
+        gallery,
+        _order
+      ) do
+    today = NaiveDateTime.utc_now() |> Timex.end_of_day()
+    %{calendar: calendar, count: count} = explode_hours(email.total_hours)
+    time_calendar = get_timex_calendar(calendar)
+
+    cond do
+      is_nil(gallery.gallery_send_at) ->
+        nil
+
+      Timex.compare(today, gallery.gallery_send_at, time_calendar) >= count ->
+        gallery.gallery_send_at
+
+      true ->
+        nil
+    end
   end
 
   def fetch_date_for_state(
@@ -774,7 +796,11 @@ defmodule PicselloWeb.EmailAutomationLive.Shared do
       |> Enum.map(fn email_data ->
         state = Map.get(email_data, :email_automation_pipeline) |> Map.get(:state)
 
-        if state not in [:order_confirmation_physical, :order_confirmation_digital] do
+        if state not in [
+             :gallery_password_changed,
+             :order_confirmation_physical,
+             :order_confirmation_digital
+           ] do
           [
             gallery_id: gallery.id,
             order_id: order_id,
@@ -886,7 +912,7 @@ defmodule PicselloWeb.EmailAutomationLive.Shared do
   Returns a string
   """
   def get_plain_text(html_text, to_search) do
-    if(html_text |> String.contains?(to_search)) do
+    if html_text |> String.contains?(to_search) do
       html_text
       |> String.split("{{##{to_search}}}")
       |> Enum.at(1)

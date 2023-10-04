@@ -26,8 +26,6 @@ defmodule PicselloWeb.EmailAutomationLive.EditEmailComponent do
         socket
       ) do
     job_types = get_selected_job_types(job_types, job_type)
-    first_red_section = get_plain_text(email.body_template, "first_red_section")
-    second_red_section = get_plain_text(email.body_template, "second_red_section")
     email_presets = EmailPresets.email_automation_presets(type, job_type.name, pipeline_id)
 
     socket
@@ -40,14 +38,6 @@ defmodule PicselloWeb.EmailAutomationLive.EditEmailComponent do
     |> assign(step: :edit_email)
     |> assign(show_variables: false)
     |> assign(email_preset_changeset: EmailPreset.changeset(email, %{}))
-    |> assign(
-      :first_red_section,
-      if(first_red_section, do: first_red_section |> String.replace("\n", ""), else: nil)
-    )
-    |> assign(
-      :second_red_section,
-      if(second_red_section, do: second_red_section |> String.replace("\n", ""), else: nil)
-    )
     |> assign_new(:template_preview, fn -> nil end)
     |> ok()
   end
@@ -254,7 +244,7 @@ defmodule PicselloWeb.EmailAutomationLive.EditEmailComponent do
         <div class="grid grid-row md:grid-cols-3 gap-6">
           <label class="flex flex-col">
             <b>Select email preset</b>
-            <%= select_field f, :id, make_email_presets_options(@email_presets), class: "border-base-200 hover:border-blue-planning-300 cursor-pointer pr-8 mt-2" %>
+            <%= select_field f, :id, make_email_presets_options(@email_presets, @pipeline.state), class: "border-base-200 hover:border-blue-planning-300 cursor-pointer pr-8 mt-2" %>
           </label>
 
           <label class="flex flex-col">

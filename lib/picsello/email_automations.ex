@@ -123,7 +123,7 @@ defmodule Picsello.EmailAutomations do
     data =
       for {key, func} <- resolver_module.vars(), into: %{} do
         {key, func.(resolver)}
-      end
+      end |> Map.put("total_time", preset.total_hours)
 
     %{
       preset
