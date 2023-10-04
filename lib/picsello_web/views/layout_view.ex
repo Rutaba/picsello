@@ -152,7 +152,8 @@ defmodule PicselloWeb.LayoutView do
             icon: "calendar",
             path: Routes.calendar_booking_events_path(socket, :index)
           },
-          %{title: "Leads", icon: "three-people", path: Routes.job_path(socket, :leads)}
+          %{title: "Leads", icon: "three-people", path: Routes.job_path(socket, :leads)},
+          %{title: "Marketing", icon: "bullhorn", path: Routes.marketing_path(socket, :index)}
         ]
       },
       %{
@@ -186,17 +187,6 @@ defmodule PicselloWeb.LayoutView do
         ]
       },
       %{
-        heading: "Market",
-        items: [
-          %{
-            title: "Public Profile",
-            icon: "website",
-            path: Routes.profile_settings_path(socket, :index)
-          },
-          %{title: "Marketing", icon: "bullhorn", path: Routes.marketing_path(socket, :index)}
-        ]
-      },
-      %{
         heading: "Settings",
         items: [
           %{
@@ -220,6 +210,11 @@ defmodule PicselloWeb.LayoutView do
             path: Routes.questionnaires_index_path(socket, :index)
           },
           %{
+            title: "Calendar",
+            icon: "calendar",
+            path: Routes.calendar_settings_path(socket, :settings)
+          },
+          %{
             title: "Gallery",
             icon: "gallery-settings",
             path: Routes.gallery_global_settings_index_path(socket, :edit)
@@ -233,6 +228,11 @@ defmodule PicselloWeb.LayoutView do
             title: "Brand",
             icon: "brand",
             path: Routes.brand_settings_path(socket, :index)
+          },
+          %{
+            title: "Public Profile",
+            icon: "website",
+            path: Routes.profile_settings_path(socket, :index)
           },
           %{
             title: "Account",
@@ -276,6 +276,11 @@ defmodule PicselloWeb.LayoutView do
         title: "Questionnaires",
         icon: "questionnaire",
         path: Routes.questionnaires_index_path(socket, :index)
+      },
+      %{
+        title: "Calendar",
+        icon: "calendar",
+        path: Routes.calendar_settings_path(socket, :settings)
       },
       %{
         title: "Gallery",

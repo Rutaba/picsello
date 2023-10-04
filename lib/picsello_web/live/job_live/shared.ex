@@ -176,7 +176,7 @@ defmodule PicselloWeb.JobLive.Shared do
       ) do
     socket
     |> ConfirmationComponent.open(%{
-      close_label: "No, go back",
+      close_label: "Cancel",
       confirm_event: "delete_docs",
       confirm_label: "Yes, delete",
       icon: "warning-orange",
@@ -473,7 +473,7 @@ defmodule PicselloWeb.JobLive.Shared do
     |> ConfirmationComponent.open(%{
       close_label: "Cancel",
       confirm_event: "#{action_string}-entity",
-      confirm_label: "Yes, #{action_string} the #{type.singular}",
+      confirm_label: "Yes, #{action_string}",
       icon: "warning-orange",
       title: "Are you sure you want to #{action_string} this #{type.singular}?",
       subtitle:

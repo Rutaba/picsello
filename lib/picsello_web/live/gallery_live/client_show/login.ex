@@ -7,6 +7,11 @@ defmodule PicselloWeb.GalleryLive.ClientShow.Login do
   @impl true
   def mount(%{"hash" => hash}, _session, socket) do
     socket
+    |> assign(%{
+      meta_attrs: %{
+        robots: "noindex, nofollow"
+      }
+    })
     |> assigns(socket.assigns.live_action, hash)
     |> then(
       &open_modal(

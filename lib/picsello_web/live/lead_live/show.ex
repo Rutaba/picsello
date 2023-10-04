@@ -203,9 +203,9 @@ defmodule PicselloWeb.LeadLive.Show do
   def handle_event("confirm_archive_lead", %{}, socket) do
     socket
     |> PicselloWeb.ConfirmationComponent.open(%{
-      close_label: "No! Get me out of here",
+      close_label: "Cancel",
       confirm_event: "archive",
-      confirm_label: "Yes, archive the lead",
+      confirm_label: "Yes, archive",
       icon: "warning-orange",
       title: "Are you sure you want to archive this lead?"
     })
@@ -215,7 +215,7 @@ defmodule PicselloWeb.LeadLive.Show do
   def handle_event("confirm_unarchive_lead", %{}, socket) do
     socket
     |> PicselloWeb.ConfirmationComponent.open(%{
-      close_label: "No! Get me out of here",
+      close_label: "Cancel",
       confirm_event: "unarchive-lead",
       confirm_label: "Yes, unarchive the lead",
       icon: "warning-orange",
