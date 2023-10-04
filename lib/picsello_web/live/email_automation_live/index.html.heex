@@ -34,7 +34,7 @@
               <div class="flex items-center lg:h-11 pr-4 lg:pl-2 lg:py-4 pl-3 py-3 overflow-hidden text-sm transition duration-300 ease-in-out rounded-lg text-ellipsis" >
                 <a class="flex w-full">
                   <div class="flex items-center justify-start">
-                    <div class="justify-start ml-3">
+                    <div testid={type.job_type} class="justify-start ml-3">
                       <span class={classes("capitalize hover:text-blue-planning-300", %{"text-blue-planning-300" => @selected_job_type.job_type == type.job_type})} ><%= type.job_type%> </span>
                     </div>
                   </div>

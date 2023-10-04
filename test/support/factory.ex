@@ -758,7 +758,8 @@ defmodule Picsello.Factory do
         body_template: "this is my body",
         name: "use this email preset!",
         type: :job,
-        position: 0
+        position: 0,
+        status: :active
       }
       |> merge_attributes(attrs)
 
