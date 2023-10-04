@@ -7,21 +7,97 @@ defmodule Picsello.EmailAutomationsTest do
 
   setup do
     user = Picsello.Repo.one(from(u in Picsello.Accounts.User))
-    for {state, index} <- Enum.with_index(["client_contact", "manual_thank_you_lead", "manual_booking_proposal_sent"]) do
-      insert(:email_preset, name: "Use this email preset #{index+1}", job_type: "wedding", organization_id: user.organization_id, status: :active, email_automation_pipeline_id: index+1, state: state, type: "lead")
-    end
-    insert(:email_preset, name: "Use this email preset #{2}", job_type: "wedding", organization_id: user.organization_id, status: :active, email_automation_pipeline_id: 2, state: "manual_thank_you_lead", type: "lead")
-    insert(:email_preset, name: "Use this email preset #{2}", job_type: "wedding", organization_id: user.organization_id, status: :active, email_automation_pipeline_id: 2, state: "manual_thank_you_lead", type: "lead")
 
-    for {state, index} <- Enum.with_index(["pays_retainer", "pays_retainer_offline", "thanks_booking", "before_shoot", "balance_due", "offline_payment", "paid_offline_full", "paid_full", "shoot_thanks", "post_shoot"]) do
-      insert(:email_preset, name: "Use this email preset #{index+4}", job_type: "wedding", organization_id: user.organization_id, status: :active, email_automation_pipeline_id: index+4, state: state, type: "job")
+    for {state, index} <-
+          Enum.with_index([
+            "client_contact",
+            "manual_thank_you_lead",
+            "manual_booking_proposal_sent"
+          ]) do
+      insert(:email_preset,
+        name: "Use this email preset #{index + 1}",
+        job_type: "wedding",
+        organization_id: user.organization_id,
+        status: :active,
+        email_automation_pipeline_id: index + 1,
+        state: state,
+        type: "lead"
+      )
     end
 
-    for {state, index} <- Enum.with_index(["manual_gallery_send_link", "cart_abandoned", "gallery_expiration_soon", "gallery_password_changed", "manual_send_proofing_gallery", "manual_send_proofing_gallery_finals", "order_confirmation_physical", "order_confirmation_digital", "order_confirmation_digital_physical", "digitals_ready_download", "order_shipped", "order_delayed", "order_arrived"]) do
-      insert(:email_preset, name: "Use this email preset #{index+14}", job_type: "wedding", organization_id: user.organization_id, status: :active, email_automation_pipeline_id: index+14, state: state, type: "gallery")
+    insert(:email_preset,
+      name: "Use this email preset #{2}",
+      job_type: "wedding",
+      organization_id: user.organization_id,
+      status: :active,
+      email_automation_pipeline_id: 2,
+      state: "manual_thank_you_lead",
+      type: "lead"
+    )
+
+    insert(:email_preset,
+      name: "Use this email preset #{2}",
+      job_type: "wedding",
+      organization_id: user.organization_id,
+      status: :active,
+      email_automation_pipeline_id: 2,
+      state: "manual_thank_you_lead",
+      type: "lead"
+    )
+
+    for {state, index} <-
+          Enum.with_index([
+            "pays_retainer",
+            "pays_retainer_offline",
+            "thanks_booking",
+            "before_shoot",
+            "balance_due",
+            "offline_payment",
+            "paid_offline_full",
+            "paid_full",
+            "shoot_thanks",
+            "post_shoot"
+          ]) do
+      insert(:email_preset,
+        name: "Use this email preset #{index + 4}",
+        job_type: "wedding",
+        organization_id: user.organization_id,
+        status: :active,
+        email_automation_pipeline_id: index + 4,
+        state: state,
+        type: "job"
+      )
     end
 
-    email = Picsello.Repo.get_by(Picsello.EmailPresets.EmailPreset, name: "Use this email preset 1")
+    for {state, index} <-
+          Enum.with_index([
+            "manual_gallery_send_link",
+            "cart_abandoned",
+            "gallery_expiration_soon",
+            "gallery_password_changed",
+            "manual_send_proofing_gallery",
+            "manual_send_proofing_gallery_finals",
+            "order_confirmation_physical",
+            "order_confirmation_digital",
+            "order_confirmation_digital_physical",
+            "digitals_ready_download",
+            "order_shipped",
+            "order_delayed",
+            "order_arrived"
+          ]) do
+      insert(:email_preset,
+        name: "Use this email preset #{index + 14}",
+        job_type: "wedding",
+        organization_id: user.organization_id,
+        status: :active,
+        email_automation_pipeline_id: index + 14,
+        state: state,
+        type: "gallery"
+      )
+    end
+
+    email =
+      Picsello.Repo.get_by(Picsello.EmailPresets.EmailPreset, name: "Use this email preset 1")
 
     {:ok, user: user, email: email}
   end
@@ -58,7 +134,8 @@ defmodule Picsello.EmailAutomationsTest do
     |> find(css("div[testid='wedding']"), fn div ->
       assert_has(div, css(".text-blue-planning-300", count: 0))
     end)
-    |> click(css("span", text: "Event", count: 2, at: 0))                 # But actually there is one element, Why 2 are visible in test?
+    # But actually there is one element, Why 2 are visible in test?
+    |> click(css("span", text: "Event", count: 2, at: 0))
     |> assert_has(css("h2", text: "Event Automations", count: 1))
     |> assert_has(css("h2", text: "Newborn Automations", count: 0))
     |> assert_has(css("h2", text: "Wedding Automations", count: 0))
@@ -86,7 +163,9 @@ defmodule Picsello.EmailAutomationsTest do
     end)
   end
 
-  feature "testing total number of pipelines on email-automations setting page", %{session: session} do
+  feature "testing total number of pipelines on email-automations setting page", %{
+    session: session
+  } do
     session
     |> visit("/email-automations")
     |> find(css("div[testid='main-section-of-page']"), fn div ->
@@ -94,7 +173,10 @@ defmodule Picsello.EmailAutomationsTest do
     end)
   end
 
-  feature "Testing dropdowns-toggles for sub-category and pipeline sections", %{session: session, email: email} do
+  feature "Testing dropdowns-toggles for sub-category and pipeline sections", %{
+    session: session,
+    email: email
+  } do
     email_preset = (email.job_type |> String.capitalize()) <> " - " <> email.name
 
     session
@@ -106,7 +188,8 @@ defmodule Picsello.EmailAutomationsTest do
     |> assert_has(css("span", text: "Client contacts you", count: 1))
     |> assert_has(button("Edit time", count: 0))
     |> click(css("span", text: "Client contacts you"))
-    |> assert_has(css("div", text: email_preset, count: 11))            # Why 11 are visible? We inserted only 1?
+    # Why 11 are visible? We inserted only 1?
+    |> assert_has(css("div", text: email_preset, count: 11))
     |> assert_has(button("Edit time", count: 1))
     |> click(css("span", text: "Client contacts you"))
     |> assert_has(css("div", text: email_preset, count: 0))
@@ -118,14 +201,29 @@ defmodule Picsello.EmailAutomationsTest do
     |> visit("/email-automations")
     |> click(css("span", text: "Wedding"))
     |> click(css("span", text: "Client contacts you"))
-    |> assert_has(css("span", text: "Can't delete first email, disable the entire sequence if you don't want it to send", count: 0))
+    |> assert_has(
+      css("span",
+        text:
+          "Can't delete first email, disable the entire sequence if you don't want it to send",
+        count: 0
+      )
+    )
     |> send_keys([:down_arrow, :down_arrow, :down_arrow, :down_arrow, :down_arrow])
-    |> sleep(1000)  # must need this sleep
+    # must need this sleep
+    |> sleep(1000)
     |> find(css(".custom-tooltip"), fn x -> hover(x, css("button")) end)
-    |> assert_has(css("span", text: "Can't delete first email, disable the entire sequence if you don't want it to send", count: 1))
+    |> assert_has(
+      css("span",
+        text:
+          "Can't delete first email, disable the entire sequence if you don't want it to send",
+        count: 1
+      )
+    )
   end
 
-  feature "toggle to disable/enable the entire pipeline and its effects on UI", %{session: session} do
+  feature "toggle to disable/enable the entire pipeline and its effects on UI", %{
+    session: session
+  } do
     session
     |> visit("/email-automations")
     |> click(css("span", text: "Wedding"))
@@ -227,7 +325,9 @@ defmodule Picsello.EmailAutomationsTest do
     |> assert_has(css("span", text: "Disabled", count: 0))
   end
 
-  feature "Manually triggered automation's first email, does not have edit time button", %{session: session} do
+  feature "Manually triggered automation's first email, does not have edit time button", %{
+    session: session
+  } do
     session
     |> visit("/email-automations")
     |> scroll_into_view(css("span", text: "Thank you for contacting me"))
@@ -287,7 +387,9 @@ defmodule Picsello.EmailAutomationsTest do
     # Onward: Step 2 of Modal not tested, due to mock issue.
     |> assert_text("Preview Wedding Email")
     |> assert_text("Lead:")
-    |> assert_text("Check out how your client will see your emails. We’ve put in some placeholder data to visualize the variables.")
+    |> assert_text(
+      "Check out how your client will see your emails. We’ve put in some placeholder data to visualize the variables."
+    )
     |> assert_has(css("span", text: "Step 2", count: 1))
     |> assert_has(css("span", text: "Step 1", count: 0))
     |> click(button("Go back"))

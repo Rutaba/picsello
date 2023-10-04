@@ -7,20 +7,100 @@ defmodule Picsello.EmailAutomationsTest do
 
   setup do
     user = Picsello.Repo.one(from(u in Picsello.Accounts.User))
-    for {state, index} <- Enum.with_index(["client_contact", "manual_thank_you_lead", "manual_booking_proposal_sent"]) do
-    insert(:email_preset, job_type: "wedding", organization_id: user.organization_id, status: :active, email_automation_pipeline_id: index+1, state: "client_contact", type: "lead")
+
+    for {state, index} <-
+          Enum.with_index([
+            "client_contact",
+            "manual_thank_you_lead",
+            "manual_booking_proposal_sent"
+          ]) do
+      insert(:email_preset,
+        job_type: "wedding",
+        organization_id: user.organization_id,
+        status: :active,
+        email_automation_pipeline_id: index + 1,
+        state: "client_contact",
+        type: "lead"
+      )
     end
-    insert(:email_preset, name: "Use this email preset #{2}", job_type: "wedding", organization_id: user.organization_id, status: :active, email_automation_pipeline_id: 2, state: "manual_thank_you_lead", type: "lead")
-    insert(:email_preset, name: "Use this email preset #{3}", job_type: "wedding", organization_id: user.organization_id, status: :active, email_automation_pipeline_id: 2, state: "manual_thank_you_lead", type: "lead")
-    insert(:email_preset, name: "Use this email preset #{4}", job_type: "wedding", organization_id: user.organization_id, status: :active, email_automation_pipeline_id: 2, state: "manual_thank_you_lead", type: "lead")
 
+    insert(:email_preset,
+      name: "Use this email preset #{2}",
+      job_type: "wedding",
+      organization_id: user.organization_id,
+      status: :active,
+      email_automation_pipeline_id: 2,
+      state: "manual_thank_you_lead",
+      type: "lead"
+    )
 
-    for {state, index} <- Enum.with_index(["pays_retainer", "pays_retainer_offline", "thanks_booking", "before_shoot", "balance_due", "offline_payment", "paid_offline_full", "paid_full", "shoot_thanks", "post_shoot"]) do
-      insert(:email_preset, job_type: "wedding", organization_id: user.organization_id, status: :active, email_automation_pipeline_id: index+4, state: state, type: "job")
+    insert(:email_preset,
+      name: "Use this email preset #{3}",
+      job_type: "wedding",
+      organization_id: user.organization_id,
+      status: :active,
+      email_automation_pipeline_id: 2,
+      state: "manual_thank_you_lead",
+      type: "lead"
+    )
+
+    insert(:email_preset,
+      name: "Use this email preset #{4}",
+      job_type: "wedding",
+      organization_id: user.organization_id,
+      status: :active,
+      email_automation_pipeline_id: 2,
+      state: "manual_thank_you_lead",
+      type: "lead"
+    )
+
+    for {state, index} <-
+          Enum.with_index([
+            "pays_retainer",
+            "pays_retainer_offline",
+            "thanks_booking",
+            "before_shoot",
+            "balance_due",
+            "offline_payment",
+            "paid_offline_full",
+            "paid_full",
+            "shoot_thanks",
+            "post_shoot"
+          ]) do
+      insert(:email_preset,
+        job_type: "wedding",
+        organization_id: user.organization_id,
+        status: :active,
+        email_automation_pipeline_id: index + 4,
+        state: state,
+        type: "job"
+      )
     end
 
-    for {state, index} <- Enum.with_index(["manual_gallery_send_link", "cart_abandoned", "gallery_expiration_soon", "gallery_password_changed", "manual_send_proofing_gallery", "manual_send_proofing_gallery_finals", "order_confirmation_physical", "order_confirmation_digital", "order_confirmation_digital_physical", "digitals_ready_download", "order_shipped", "order_delayed", "order_arrived"]) do
-      insert(:email_preset, job_type: "wedding", organization_id: user.organization_id, status: :active, email_automation_pipeline_id: index+14, state: state, type: "gallery")
+    for {state, index} <-
+          Enum.with_index([
+            "manual_gallery_send_link",
+            "cart_abandoned",
+            "gallery_expiration_soon",
+            "gallery_password_changed",
+            "manual_send_proofing_gallery",
+            "manual_send_proofing_gallery_finals",
+            "order_confirmation_physical",
+            "order_confirmation_digital",
+            "order_confirmation_digital_physical",
+            "digitals_ready_download",
+            "order_shipped",
+            "order_delayed",
+            "order_arrived"
+          ]) do
+      insert(:email_preset,
+        job_type: "wedding",
+        organization_id: user.organization_id,
+        status: :active,
+        email_automation_pipeline_id: index + 14,
+        state: state,
+        type: "gallery"
+      )
     end
 
     {:ok, user: user}
@@ -51,7 +131,8 @@ defmodule Picsello.EmailAutomationsTest do
       assert_has(div, css("div", text: "Jobs", count: 2))
       assert_has(div, css("div", text: "Galleries", count: 0))
     end)
-    |> assert_has(css("div[testid='pipeline-section']", count: 12))       # should be 13 but one pipeline of lead is not visible in test, but in real.
+    # should be 13 but one pipeline of lead is not visible in test, but in real.
+    |> assert_has(css("div[testid='pipeline-section']", count: 12))
   end
 
   feature "testing categories and pipelines related to a job", %{session: session} do
@@ -85,7 +166,8 @@ defmodule Picsello.EmailAutomationsTest do
     |> assert_has(css("div[testid='pipeline-section']", count: 10))
   end
 
-  feature "testing categories and pipelines related to a job when it is created from gallery. Then effect of adding more galleries", %{session: session} do
+  feature "testing categories and pipelines related to a job when it is created from gallery. Then effect of adding more galleries",
+          %{session: session} do
     session
     |> click(button("Galleries"))
     |> click(button("Create a gallery", count: 2, at: 0))
@@ -105,7 +187,6 @@ defmodule Picsello.EmailAutomationsTest do
     |> find(css("div[data-testid='inbox']"), fn div ->
       click(div, button("View all"))
     end)
-
     |> click(css("span", text: "Client Pays Retainer", count: 2, at: 0))
     |> assert_has(css("button", text: "Send now", count: 1))
     |> assert_has(css("button[disabled]", text: "Send now", count: 0))
@@ -113,7 +194,6 @@ defmodule Picsello.EmailAutomationsTest do
     |> click(css("button", text: "Send now"))
     |> click(css("button", text: "Yes, send email"))
     |> assert_has(css("button[disabled]", text: "Send now", count: 1))
-
     |> find(css("div[testid='main-area']", count: 2, at: 0), fn div ->
       assert_has(div, css("div", text: "Leads", count: 0))
       assert_has(div, css("div", text: "Jobs", count: 2))
@@ -156,7 +236,9 @@ defmodule Picsello.EmailAutomationsTest do
     end)
   end
 
-  feature "'Start sequence', 'stop email', 'send now' buttons testing and their effects on UI", %{session: session} do
+  feature "'Start sequence', 'stop email', 'send now' buttons testing and their effects on UI", %{
+    session: session
+  } do
     session
     |> click(button("Leads"))
     |> click(button("Create a lead"))
@@ -180,14 +262,17 @@ defmodule Picsello.EmailAutomationsTest do
     |> assert_has(button("Send now", count: 3))
     |> assert_has(css("button[disabled]", text: "Send now", count: 3))
     |> assert_has(css("button[testid='email_stop_button']", count: 3))
-    |> assert_has(css("button[disabled]", count: 6))              # all send now and stop buttons
+    # all send now and stop buttons
+    |> assert_has(css("button[disabled]", count: 6))
     |> click(button("Start Sequence"))
     |> click(button("Yes, send email"))
     |> assert_has(css("button[disabled]", text: "Start Sequence", count: 1))
-    |> assert_has(css("button[disabled]", count: 2))              # one start sequence, other edit email
+    # one start sequence, other edit email
+    |> assert_has(css("button[disabled]", count: 2))
     |> assert_has(css("button[disabled]", text: "Send now", count: 0))
     |> assert_has(css("use[href='/images/icons.svg#flag']", count: 0))
-    |> assert_has(css("use[href='/images/icons.svg#tick']", count: 2))      # But, we expect only one
+    # But, we expect only one
+    |> assert_has(css("use[href='/images/icons.svg#tick']", count: 2))
     |> assert_has(css("use[href='/images/icons.svg#envelope']", count: 3))
     |> click(css("button[testid='email_stop_button']", count: 3, at: 0))
     |> click(button("Yes, stop email"))
@@ -195,18 +280,20 @@ defmodule Picsello.EmailAutomationsTest do
     |> click(button("Send now", count: 3, at: 0))
     |> click(button("Yes, send email"))
     |> assert_has(css("button[disabled]", count: 5))
-    |> assert_has(css("use[href='/images/icons.svg#tick']", count: 3))      # But, we expect only two
+    # But, we expect only two
+    |> assert_has(css("use[href='/images/icons.svg#tick']", count: 3))
     |> assert_has(css("use[href='/images/icons.svg#envelope']", count: 2))
     |> click(button("Send now", count: 3, at: 1))
     |> click(button("Yes, send email"))
     |> assert_has(css("button[disabled]", count: 8))
-    |> assert_has(css("use[href='/images/icons.svg#tick']", count: 4))      # But, we expect only three
+    # But, we expect only three
+    |> assert_has(css("use[href='/images/icons.svg#tick']", count: 4))
     |> assert_has(css("use[href='/images/icons.svg#envelope']", count: 1))
     |> click(button("Send now", count: 3, at: 2))
     |> click(button("Yes, send email"))
     |> assert_has(css("button[disabled]", count: 11))
-    |> assert_has(css("use[href='/images/icons.svg#tick']", count: 5))      # But, we expect only four
+    # But, we expect only four
+    |> assert_has(css("use[href='/images/icons.svg#tick']", count: 5))
     |> assert_has(css("use[href='/images/icons.svg#envelope']", count: 0))
-
   end
 end

@@ -62,9 +62,9 @@ defmodule PicselloWeb.Shared.ShortCodeComponent do
     %{calendar: calendar, count: count, sign: sign} = Shared.get_email_meta(total_hours)
 
     total_time =
-    "#{count} #{calendar} #{sign}"
-    |> String.split()
-    |> Enum.map_join(" ", &String.capitalize/1)
+      "#{count} #{calendar} #{sign}"
+      |> String.split()
+      |> Enum.map_join(" ", &String.capitalize/1)
 
     leads = [
       %{
