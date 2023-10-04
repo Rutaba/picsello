@@ -214,8 +214,6 @@ defmodule PicselloWeb.GalleryLive.ClientAlbum do
   end
 
   def handle_info({:pack, :ok, %{packable: %{id: packable_id}, status: status}}, socket) do
-    IO.inspect(status)
-    IO.inspect(packable_id)
     DownloadLinkComponent.update_status(packable_id, status)
 
     noreply(socket)

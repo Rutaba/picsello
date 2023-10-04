@@ -72,10 +72,10 @@ defmodule Picsello.Galleries.Album do
   defp topic(album), do: "album:#{album.id}"
 
   def subscribe(album),
-    do: Phoenix.PubSub.subscribe(Picsello.PubSub, topic(album)) |> IO.inspect()
+    do: Phoenix.PubSub.subscribe(Picsello.PubSub, topic(album))
 
   def broadcast(album, message),
-    do: Phoenix.PubSub.broadcast(Picsello.PubSub, topic(album), message) |> IO.inspect()
+    do: Phoenix.PubSub.broadcast(Picsello.PubSub, topic(album), message)
 
   defp validate_name(changeset),
     do: validate_length(changeset, :name, max: 35)
