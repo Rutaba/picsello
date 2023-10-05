@@ -424,20 +424,22 @@
     <% end %>
 
     <%!-- Contract --%>
-    <section>
-      <h1>
-        Contract
-      </h1>
-      <div class="mt-4 raw_html text-base-250 min-h-[8rem]">
-        <%= raw @contract_content %>
-      </div>
-      <%= if @proposal && @proposal.accepted_at do %>
-        <p class="text-base-250">Signed <%= PicselloWeb.LiveHelpers.strftime(@photographer.time_zone, @proposal.accepted_at, "%b %d, %Y") %> by </p>
-        <div class="contract-signature">
-          <%= @proposal.signed_legal_name %>
+    <%= if @contract_content do %>
+      <section>
+        <h1>
+          Contract
+        </h1>
+        <div class="mt-4 raw_html text-base-250 min-h-[8rem]">
+          <%= raw @contract_content %>
         </div>
-      <% end %>
-    </section>
+        <%= if @proposal && @proposal.accepted_at do %>
+          <p class="text-base-250">Signed <%= PicselloWeb.LiveHelpers.strftime(@photographer.time_zone, @proposal.accepted_at, "%b %d, %Y") %> by </p>
+          <div class="contract-signature">
+            <%= @proposal.signed_legal_name %>
+          </div>
+        <% end %>
+      </section>
+    <% end %>
 
     <%!-- Questionnaire --%>
     <%= if @proposal.questionnaire_id do %>
