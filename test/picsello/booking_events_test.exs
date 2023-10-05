@@ -2,10 +2,6 @@ defmodule Picsello.BookingEventsTest do
   use Picsello.DataCase, async: true
   alias Picsello.{BookingEvents, Repo}
 
-  # setup_all do
-  #   {:ok, user: insert(:user)}
-  # end
-
   describe "create booking_event" do
     setup do
       user = insert(:user)
@@ -40,7 +36,19 @@ defmodule Picsello.BookingEventsTest do
         }
         |> BookingEvents.create_booking_event()
 
-      assert [organization_id: {"can't be blank", [validation: :required]}] == changeset.errors
+      assert changeset.errors == [organization_id: {"can't be blank", [validation: :required]}]
+    end
+
+    test "error creating booking_event because no name", %{user: user} do
+      {:error, changeset} =
+        %{
+          duration_minutes: 30,
+          buffer_minutes: 30,
+          organization_id: user.organization_id
+        }
+        |> BookingEvents.create_booking_event()
+
+      assert changeset.errors == [name: {"can't be blank", [validation: :required]}]
     end
   end
 
@@ -77,16 +85,20 @@ defmodule Picsello.BookingEventsTest do
         )
         |> Map.from_struct()
 
-        booking_event_without_timeblocks =
-          insert(:booking_event,
-            name: "testing event",
-            organization_id: user.organization_id,
-            package_template_id: template.id,
-            status: :disabled
-          )
-          |> Map.from_struct()
+      booking_event_without_timeblocks =
+        insert(:booking_event,
+          name: "testing event",
+          organization_id: user.organization_id,
+          package_template_id: template.id,
+          status: :disabled
+        )
+        |> Map.from_struct()
 
-      {:ok, user: user, package_template: template, booking_event: booking_event, booking_event_without_timeblocks: booking_event_without_timeblocks}
+      {:ok,
+       user: user,
+       package_template: template,
+       booking_event: booking_event,
+       booking_event_without_timeblocks: booking_event_without_timeblocks}
     end
 
     test "duplicate booking event created", %{booking_event: booking_event, user: user} do
@@ -109,15 +121,15 @@ defmodule Picsello.BookingEventsTest do
       assert is_nil(duplicate_event_dates.date)
     end
 
-    test "duplicate booking_event without timeblocks and slots", %{booking_event_without_timeblocks: booking_event, user: user} do
-      {:ok, %{duplicate_booking_event: duplicate_event}} = BookingEvents.duplicate_booking_event(booking_event.id, user.organization_id)
-      duplicate_event = Repo.preload(duplicate_event, :dates)
+    test "duplicate booking_event without timeblocks and slots", %{
+      booking_event_without_timeblocks: booking_event,
+      user: user
+    } do
+      {:ok, %{duplicate_booking_event: duplicate_event}} =
+        BookingEvents.duplicate_booking_event(booking_event.id, user.organization_id)
 
-      # same organization id
-      assert duplicate_event.organization_id == booking_event.organization_id
-
-      # no dates data because no time blocks
-      assert duplicate_event.dates == []
+      # event duplicated
+      assert duplicate_event = booking_event
     end
 
     test "error duplicating booking event because no package", %{user: user} do
@@ -131,6 +143,7 @@ defmodule Picsello.BookingEventsTest do
       {:error, :duplicate_booking_event, changeset, _s} =
         BookingEvents.duplicate_booking_event(booking_event.id, user.organization_id)
 
+      # error that booking event was not created
       assert changeset.errors == [
                package_template_id: {"can't be blank", [validation: :required]}
              ]
@@ -157,24 +170,36 @@ defmodule Picsello.BookingEventsTest do
       {:ok, updated_event} =
         BookingEvents.disable_booking_event(booking_event.id, user.organization_id)
 
-      assert :disabled == updated_event.status
+      assert updated_event.status == :disabled
     end
 
     test "archive a booking event", %{user: user, booking_event: booking_event} do
       {:ok, updated_event} =
         BookingEvents.archive_booking_event(booking_event.id, user.organization_id)
 
-      assert :archive == updated_event.status
+      assert updated_event.status == :archive
     end
 
-    test "enable a booking event", %{user: user, booking_event: booking_event} do
+    test "enable a disabled booking event", %{user: user, booking_event: booking_event} do
+      # event disabled
       {:ok, updated_event} =
         BookingEvents.disable_booking_event(booking_event.id, user.organization_id)
 
       {:ok, updated_event} =
-        BookingEvents.enable_booking_event(booking_event.id, user.organization_id)
+        BookingEvents.enable_booking_event(updated_event.id, user.organization_id)
 
-      assert :active == updated_event.status
+      assert updated_event.status == :active
+    end
+
+    test "enable a archived booking event", %{user: user, booking_event: booking_event} do
+      # event archived
+      {:ok, updated_event} =
+        BookingEvents.archive_booking_event(booking_event.id, user.organization_id)
+
+      {:ok, updated_event} =
+        BookingEvents.enable_booking_event(updated_event.id, user.organization_id)
+
+      assert updated_event.status == :active
     end
   end
 

@@ -13,9 +13,8 @@ defmodule PicselloWeb.Calendar.BookingEvents.Shared do
   }
 
   alias PicselloWeb.Router.Helpers, as: Routes
-  alias Picsello.{Repo, BookingEvent, BookingEvents, BookingEventDate, BookingEventDates}
+  alias Picsello.{BookingEvents, BookingEventDate}
   alias BookingEventDate.SlotBlock
-  alias Ecto.Multi
 
   def handle_event(
         "duplicate-event",
