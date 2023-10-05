@@ -151,6 +151,42 @@ defmodule Picsello.BookingEventDate do
     end)
   end
 
+  def duplicate_changeset(booking_event \\ %__MODULE__{}, attrs) do
+    booking_event
+    |> cast(attrs, [
+      :location,
+      :address,
+      :booking_event_id,
+      :session_length,
+      :session_gap,
+      :count_calendar,
+      :calendar,
+      :stop_repeating,
+      :occurences,
+      :is_repeat,
+      :repetition
+    ])
+    |> cast_embed(:time_blocks)
+    |> cast_embed(:slots)
+    |> cast_embed(:repeat_on)
+    |> validate_required([:booking_event_id, :session_length])
+    |> validate_length(:time_blocks, min: 1)
+    |> validate_length(:slots, min: 1)
+    |> validate_time_blocks()
+    |> set_default_repeat_on()
+    |> validate_booking_event_date()
+    |> then(fn changeset ->
+      if get_field(changeset, :is_repeat) do
+        changeset
+        |> validate_required([:count_calendar, :calendar])
+        |> validate_stop_repeating()
+        |> validate_repeat_date_overlapping()
+      else
+        changeset
+      end
+    end)
+  end
+
   # This is to validate whether a booking-event-date already exists within a booking-event
   defp validate_booking_event_date(changeset) do
     booking_event_id = get_field(changeset, :booking_event_id)

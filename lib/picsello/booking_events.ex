@@ -1,8 +1,9 @@
 defmodule Picsello.BookingEvents do
   @moduledoc "context module for booking events"
-  alias Picsello.{Repo, BookingEvent, Job, Package}
+  alias Picsello.{Repo, BookingEvent, BookingEventDate, BookingEventDates, Job, Package}
   alias Ecto.{Multi, Changeset}
   alias Picsello.Workers.ExpireBooking
+  alias PicselloWeb.Calendar.BookingEvents.Shared, as: BEShared
   import Ecto.Query
 
   defmodule Booking do
@@ -32,10 +33,51 @@ defmodule Picsello.BookingEvents do
     |> Repo.insert()
   end
 
-  def duplicate_booking_event(params) do
-    %BookingEvent{}
-    |> BookingEvent.duplicate_changeset(params)
-    |> Repo.insert()
+  def duplicate_booking_event(booking_event_id, organization_id) do
+    to_duplicate_booking_event =
+      get_booking_event!(
+        organization_id,
+        booking_event_id
+      )
+      |> Repo.preload([:dates])
+      |> Map.put(:status, :active)
+      |> Map.from_struct()
+
+    to_duplicate_event_dates =
+      to_duplicate_booking_event.dates
+      |> Enum.map(fn t ->
+        t
+        |> Map.replace(:date, nil)
+        |> Map.replace(:slots, BookingEventDates.transform_slots(t.slots))
+      end)
+
+    multi =
+      Multi.new()
+      |> Multi.insert(
+        :duplicate_booking_event,
+        BookingEvent.duplicate_changeset(to_duplicate_booking_event)
+      )
+
+    to_duplicate_event_dates
+    |> Enum.with_index()
+    |> Enum.reduce(multi, fn {event_date, i}, multi ->
+      multi
+      |> Multi.insert(
+        "duplicate_booking_event_date_#{i}",
+        fn %{duplicate_booking_event: event} ->
+          BookingEventDate.duplicate_changeset(%{
+            booking_event_id: event.id,
+            location: event_date.location,
+            address: event_date.address,
+            session_length: event_date.session_length,
+            session_gap: event_date.session_gap,
+            time_blocks: BEShared.to_map(event_date.time_blocks),
+            slots: BEShared.to_map(event_date.slots)
+          })
+        end
+      )
+    end)
+    |> Repo.transaction()
   end
 
   def upsert_booking_event(changeset) do

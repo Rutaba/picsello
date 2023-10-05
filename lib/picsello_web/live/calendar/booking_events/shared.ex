@@ -22,50 +22,7 @@ defmodule PicselloWeb.Calendar.BookingEvents.Shared do
         params,
         %{assigns: %{current_user: %{organization_id: org_id}}} = socket
       ) do
-    to_duplicate_booking_event =
-      BookingEvents.get_booking_event!(
-        org_id,
-        fetch_booking_event_id(params, socket)
-      )
-      |> Repo.preload([:dates])
-      |> Map.put(:status, :active)
-      |> Map.from_struct()
-
-    to_duplicate_event_dates =
-      to_duplicate_booking_event.dates
-      |> Enum.map(fn t ->
-        t
-        |> Map.replace(:date, nil)
-        |> Map.replace(:slots, BookingEventDates.transform_slots(t.slots))
-      end)
-
-    multi =
-      Multi.new()
-      |> Multi.insert(
-        :duplicate_booking_event,
-        BookingEvent.duplicate_changeset(to_duplicate_booking_event)
-      )
-
-    to_duplicate_event_dates
-    |> Enum.with_index()
-    |> Enum.reduce(multi, fn {event_date, i}, multi ->
-      multi
-      |> Multi.insert(
-        "duplicate_booking_event_date_#{i}",
-        fn %{duplicate_booking_event: event} ->
-          BookingEventDate.changeset(%{
-            booking_event_id: event.id,
-            location: event_date.location,
-            address: event_date.address,
-            session_length: event_date.session_length,
-            session_gap: event_date.session_gap,
-            time_blocks: to_map(event_date.time_blocks),
-            slots: to_map(event_date.slots)
-          })
-        end
-      )
-    end)
-    |> Repo.transaction()
+    BookingEvents.duplicate_booking_event(fetch_booking_event_id(params, socket), org_id)
     |> case do
       {:ok, %{duplicate_booking_event: new_event}} ->
         socket
