@@ -256,7 +256,7 @@ defmodule PicselloWeb.Live.EmailAutomations.Index do
           <% emails = sort_emails(@pipeline.emails, @pipeline.state) %>
           <%= for {email, index} <- Enum.with_index(emails) do %>
             <% last_index = Enum.count(emails) - 1 %>
-            <div class="px-6">
+            <div class="px-6" testid="email">
               <div class="flex md:flex-row flex-col justify-between">
                 <div class="flex h-max">
                   <div class={"h-auto pt-6 md:relative #{index != last_index && "md:before:absolute md:before:border md:before:h-full md:before:border-base-200 md:before:left-1/2 md:before:z-10 md:before:z-[-1]"}"}>
