@@ -272,16 +272,19 @@ defmodule PicselloWeb.GalleryLive.ClientAlbum do
 
   defp top_section(%{is_proofing: false} = assigns) do
     ~H"""
-    <div class="text-lg font-bold lg:text-3xl">Your Photos</div>
+    <div class="flex items-center">
+      <div class="text-lg font-bold lg:text-3xl">Your Photos</div>
+      <.photos_count photos_count={@photos_count} class="ml-4" />
+    </div>
     <div class="flex flex-col lg:flex-row justify-between lg:items-center my-4 w-full">
       <div class="flex items-center mt-4">
         <%= if Enum.any?(@album_order_photos) || @album.is_finals do %>
           <.download_link packable={@album} class="mr-4 px-8 font-medium text-base-300 bg-base-100 border border-base-300 min-w-[12rem] hover:text-base-100 hover:bg-base-300">
-            Download purchased photos
+            Download purchased album photos
             <.icon name="download" class="w-4 h-4 ml-2 fill-current" />
           </.download_link>
         <% end %>
-        <.photos_count photos_count={@photos_count} class="ml-4" />
+
       </div>
       <.toggle_filter title="Show favorites only" event="toggle_favorites" applied?={@favorites_filter} album_favorites_count={@album_favorites_count}/>
     </div>
