@@ -90,7 +90,7 @@ defmodule PicselloWeb.EmailAutomationLive.Shared do
     email_presets
     |> sort_emails(state)
     |> Enum.with_index(fn email, index ->
-      name = get_email_name(email, nil, index)
+      name = get_email_name(email, nil, index, Atom.to_string(state))
       {name, email.id}
     end)
   end
@@ -249,13 +249,22 @@ defmodule PicselloWeb.EmailAutomationLive.Shared do
     Enum.any?(job_types, &Map.get(&1, :selected, false))
   end
 
-  defp get_email_schedule_name(0, _index, name), do: name
-  defp get_email_schedule_name(_hours, 0, name), do: name
+  defp get_email_schedule_name(0, _index, _state, name), do: name
 
-  defp get_email_schedule_name(hours, _index, name) do
+  defp get_email_schedule_name(hours, 0, "before_shoot", name),
+    do: get_email_schedule_name(hours, 1, "before_shoot", name)
+
+  defp get_email_schedule_name(_hours, 0, _state, name), do: name
+
+  defp get_email_schedule_name(hours, _index, state, name) when state not in ["post_shoot"] do
     %{calendar: calendar, count: count, sign: sign} = get_email_meta(hours)
-    "#{name} - #{count} #{calendar} #{sign} previous email"
+
+    "#{name} - #{count} #{calendar} #{sign}"
+    |> String.split()
+    |> Enum.map_join(" ", &String.capitalize/1)
   end
+
+  defp get_email_schedule_name(_hours, _index, _state, name), do: name
 
   def get_email_schedule_text(0, state, _, index, _job_type, _organization_id) do
     if state?(state) && index == 0 do
@@ -283,29 +292,29 @@ defmodule PicselloWeb.EmailAutomationLive.Shared do
           "client abandons cart"
 
         state == "cart_abandoned" ->
-          "sending \"#{get_email_name(email, job_type, 0)}\""
+          "sending \"#{get_email_name(email, job_type, 0, nil)}\""
 
         state == "gallery_expiration_soon" ->
           "gallery expiration date"
 
         state in ["client_contact", "manual_thank_you_lead", "manual_booking_proposal_sent"] ->
-          "sending \"#{get_email_name(email, job_type, 0)}\" and if no response from the client"
+          "sending \"#{get_email_name(email, job_type, 0, nil)}\" and if no response from the client"
 
         true ->
-          "the prior email \"#{get_email_name(email, job_type, 0)}\" has been sent if no response from the client"
+          "the prior email \"#{get_email_name(email, job_type, 0, nil)}\" has been sent if no response from the client"
       end
 
     "Send #{count} #{calendar} #{sign} #{sub_text}"
   end
 
-  def get_email_name(email, job_type, index) do
+  def get_email_name(email, job_type, index, state) do
     type = if job_type, do: job_type, else: String.capitalize(email.job_type)
 
     if email.private_name do
       email.private_name
     else
       name = "#{type} - " <> email.name
-      get_email_schedule_name(email.total_hours, index, name)
+      get_email_schedule_name(email.total_hours, index, state, name)
     end
   end
 
@@ -320,7 +329,7 @@ defmodule PicselloWeb.EmailAutomationLive.Shared do
           </div>
         </div>
         <div class="flex flex-col ml-2">
-          <p><b> <%= @email.type |> Atom.to_string() |> String.capitalize()%>:</b> <%= get_email_name(@email, nil, 0) %></p>
+          <p><b> <%= @email.type |> Atom.to_string() |> String.capitalize()%>:</b> <%= get_email_name(@email, nil, 0, nil) %></p>
           <p class="text-sm text-base-250">
             <%= if @email.total_hours == 0 do %>
               <%= get_email_schedule_text(0, @pipeline.state, nil, @index, nil, nil) %>

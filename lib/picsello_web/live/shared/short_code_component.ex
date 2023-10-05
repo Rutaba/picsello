@@ -61,6 +61,11 @@ defmodule PicselloWeb.Shared.ShortCodeComponent do
   def variables_codes(job_type, current_user, job, user_currency, total_hours) do
     %{calendar: calendar, count: count, sign: sign} = Shared.get_email_meta(total_hours)
 
+    total_time =
+      "#{count} #{calendar} #{sign}"
+      |> String.split()
+      |> Enum.map_join(" ", &String.capitalize/1)
+
     leads = [
       %{
         type: "lead",
@@ -88,7 +93,7 @@ defmodule PicselloWeb.Shared.ShortCodeComponent do
           %{
             id: 3,
             name: "total_time",
-            sample: "#{count} #{calendar} #{sign}",
+            sample: total_time,
             description: "Email send at certain time"
           }
         ]
@@ -203,7 +208,7 @@ defmodule PicselloWeb.Shared.ShortCodeComponent do
     {client_full_name, client_first_name} =
       if name,
         do: {name, name |> String.split(" ") |> List.first()},
-        else: {"client full name", "client first name"}
+        else: {"client_full_name", "client_first_name"}
 
     [
       %{

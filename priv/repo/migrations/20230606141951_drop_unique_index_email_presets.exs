@@ -9,7 +9,6 @@ defmodule Picsello.Repo.Migrations.DropUniqueIndexEmailPresets do
     if System.get_env("MIX_ENV") != "prod" do
       flush()
       Mix.Tasks.ImportEmailAutomationPipelines.insert_email_pipelines()
-      Mix.Tasks.ImportEmailPresets.insert_emails()
     end
   end
 

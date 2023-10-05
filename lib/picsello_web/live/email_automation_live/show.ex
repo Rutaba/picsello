@@ -13,7 +13,7 @@ defmodule PicselloWeb.Live.EmailAutomations.Show do
       sort_emails: 2,
       get_pipline: 1,
       get_email_schedule_text: 6,
-      get_email_name: 3,
+      get_email_name: 4,
       explode_hours: 1,
       get_preceding_email: 2,
       fetch_date_for_state_maybe_manual: 6
@@ -291,7 +291,7 @@ defmodule PicselloWeb.Live.EmailAutomations.Show do
                     Completed <%= get_completed_date(email.reminded_at) %>
                   <% end %>
                   <p class="text-black text-xl">
-                    <%= get_email_name(email, @type, index) %>
+                    <%= get_email_name(email, @type, index, @pipeline.state) %>
                   </p>
                   <div class="flex items-center bg-white">
                     <div class="w-4 h-4 mr-2">
