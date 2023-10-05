@@ -21,23 +21,19 @@ defmodule PicselloWeb.GalleryLive.Shared.SideNavComponent do
         } = params,
         socket
       ) do
-    total_count = Galleries.get_gallery_photo_count(gallery.id)
-    unsorted_count = Galleries.get_gallery_unsorted_photo_count(gallery.id)
-    albums_count = get_all_albums_photo_count(gallery.id)
+    total_count =
+      if is_total_progress_idle?(total_progress),
+        do: Galleries.get_gallery_photo_count(gallery.id),
+        else: nil
+
+    unsorted_count =
+      if is_total_progress_idle?(total_progress),
+        do: Galleries.get_gallery_unsorted_photo_count(gallery.id),
+        else: nil
 
     albums =
       get_all_gallery_albums(gallery.id)
-      |> Enum.map(
-        &Map.put(
-          &1,
-          :photos_count,
-          Enum.filter(albums_count, fn %{album_id: album_id, count: _} ->
-            album_id == &1.id
-          end)
-          |> List.first()
-          |> Map.get(:count, 0)
-        )
-      )
+      |> maybe_album_map_count(total_progress, gallery.id)
 
     if connected?(socket) do
       PubSub.subscribe(Picsello.PubSub, "photos_error:#{gallery.id}")
@@ -194,6 +190,31 @@ defmodule PicselloWeb.GalleryLive.Shared.SideNavComponent do
       album.is_finals -> "finals"
       album.is_client_liked -> "heart-filled"
       true -> "standard_album"
+    end
+  end
+
+  defp is_total_progress_idle?(total_progress) do
+    total_progress == 0 || total_progress == 100
+  end
+
+  defp maybe_album_map_count(albums, total_progress, gallery_id) do
+    if is_total_progress_idle?(total_progress) do
+      albums_count = get_all_albums_photo_count(gallery_id)
+
+      albums
+      |> Enum.map(
+        &Map.put(
+          &1,
+          :photos_count,
+          Enum.filter(albums_count, fn %{album_id: album_id, count: _} ->
+            album_id == &1.id
+          end)
+          |> List.first()
+          |> Map.get(:count, 0)
+        )
+      )
+    else
+      albums
     end
   end
 end

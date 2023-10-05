@@ -57,7 +57,9 @@
                 </div>
                 <div class="flex items-center justify-start ml-3 flex-grow">
                   <span class={@arrow_show in ["photos", "albums"] && "text-blue-planning-300"}>Photos</span>
-                  <.photo_count photos_count={if @total_count do @total_count else @gallery.total_count end} />
+                  <%= if @total_count do %>
+                    <.photo_count photos_count={@total_count} />
+                  <% end %>
                 </div>
               </div>
               <div class="flex px-2 items-center ml-auto">
@@ -111,7 +113,7 @@
                 <% end %>
                 <%= for album <- @albums do %>
                   <ul>
-                    <.li photos_count={album.photos_count} title={album.name} is_finals={album.is_finals} is_proofing={album.is_proofing} class="block" name={icon_name(album)} button_class={if is_selected_album(album, @selected_album), do: " text-blue-planning-300", else: "text-gray-700"} route={Routes.gallery_photos_index_path(@socket, :index, @gallery.id, album.id, if(@is_mobile, do: [is_mobile: false], else: []))}/>
+                    <.li photos_count={Map.get(album, :photos_count, nil)} title={album.name} is_finals={album.is_finals} is_proofing={album.is_proofing} class="block" name={icon_name(album)} button_class={if is_selected_album(album, @selected_album), do: " text-blue-planning-300", else: "text-gray-700"} route={Routes.gallery_photos_index_path(@socket, :index, @gallery.id, album.id, if(@is_mobile, do: [is_mobile: false], else: []))}/>
                   </ul>
                 <% end %>
               <% end %>
