@@ -1,5 +1,8 @@
 defmodule Picsello.Utils do
   @moduledoc false
+
+  alias Ecto.Changeset
+
   def render(template, data),
     do: :bbmustache.render(template, data, key_type: :binary, value_serializer: &to_string/1)
 
@@ -77,6 +80,28 @@ defmodule Picsello.Utils do
     @replacements
     |> Enum.reduce(body, fn {from, to}, acc ->
       String.replace(acc, from, to)
+    end
+
+  @doc """
+  Validate phone value according to its country
+  """
+  def validate_phone(%Changeset{} = changeset, field) when is_atom(field) do
+    unless is_map_key(changeset.data, field) do
+      raise "Got unknown field #{field} while validating phone number"
+    end
+
+    changeset
+    |> Changeset.get_change(field)
+    |> then(fn
+      phone when is_nil(phone) ->
+        changeset
+
+      phone ->
+        if LivePhone.Util.valid?(phone) do
+          changeset
+        else
+          Changeset.add_error(changeset, field, "is invalid")
+        end
     end)
   end
 end

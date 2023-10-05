@@ -1447,10 +1447,13 @@ defmodule PicselloWeb.JobLive.Shared do
         <div class="rounded-lg border border-gray-300 mt-10">
           <h3 class="rounded-t-lg bg-gray-300 px-5 py-2 text-2xl font-bold">Add a new client</h3>
           <div class="row grid grid-cols-1 px-5 py-2 sm:grid-cols-3 gap-5 mt-3">
-            <%= inputs_for @form, :client, fn client_form -> %>
+            <%= for client_form <- inputs_for(@form, :client) do %>
               <%= labeled_input client_form, :email, type: :email_input, label: "Client Email", placeholder: "email@example.com", phx_debounce: "500" %>
               <%= labeled_input client_form, :name, label: "Client Name", placeholder: "First and last name", autocapitalize: "words", autocorrect: "false", spellcheck: "false", autocomplete: "name", phx_debounce: "500" %>
-              <%= labeled_input client_form, :phone, type: :telephone_input, label: "Client Phone", optional: true, placeholder: "(555) 555-5555", phx_debounce: "500" %>
+              <div class="flex flex-col" >
+                <%= label_for client_form, :phone, label: "Client Phone", optional: true %>
+                <.live_component module={LivePhone}  id={"phone"} form={client_form} field={:phone} tabindex={0}  preferred={["US", "CA"]} />
+              </div>
             <% end %>
           </div>
           <div class="flex px-5 py-5 ml-auto">
