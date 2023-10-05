@@ -8,8 +8,27 @@ defmodule Picsello.EmailAutomationsTest do
   setup do
     user = Picsello.Repo.one(from(u in Picsello.Accounts.User))
 
-    email_2 = insert(:email_preset, name: "Use this email preset 3", job_type: "wedding", organization_id: user.organization_id, status: :active, email_automation_pipeline_id: 2, state: "manual_thank_you_lead", type: "lead")
-    email_3 = insert(:email_preset, name: "Use this email preset 4", job_type: "wedding", organization_id: user.organization_id, status: :active, email_automation_pipeline_id: 2, state: "manual_thank_you_lead", type: "lead")
+    email_2 =
+      insert(:email_preset,
+        name: "Use this email preset 3",
+        job_type: "wedding",
+        organization_id: user.organization_id,
+        status: :active,
+        email_automation_pipeline_id: 2,
+        state: "manual_thank_you_lead",
+        type: "lead"
+      )
+
+    email_3 =
+      insert(:email_preset,
+        name: "Use this email preset 4",
+        job_type: "wedding",
+        organization_id: user.organization_id,
+        status: :active,
+        email_automation_pipeline_id: 2,
+        state: "manual_thank_you_lead",
+        type: "lead"
+      )
 
     for {state, index} <-
           Enum.with_index([
@@ -87,15 +106,15 @@ defmodule Picsello.EmailAutomationsTest do
             "order_shipped",
             "order_delayed",
             "order_arrived"
-            ]) do
+          ]) do
       insert(:email_preset,
-      name: "Use this email preset #{index + 14}",
-      job_type: "wedding",
-      organization_id: user.organization_id,
-      status: :active,
-      email_automation_pipeline_id: index + 14,
-      state: state,
-      type: "gallery"
+        name: "Use this email preset #{index + 14}",
+        job_type: "wedding",
+        organization_id: user.organization_id,
+        status: :active,
+        email_automation_pipeline_id: index + 14,
+        state: state,
+        type: "gallery"
       )
     end
 
@@ -172,9 +191,7 @@ defmodule Picsello.EmailAutomationsTest do
     end)
   end
 
-
   feature "Testing dropdowns-toggles for sub-category and pipeline sections", %{session: session} do
-
     session
     |> visit("/email-automations")
     |> assert_has(css("span", text: "Client contacts you", count: 1))
@@ -184,7 +201,8 @@ defmodule Picsello.EmailAutomationsTest do
     |> assert_has(css("span", text: "Client contacts you", count: 1))
     |> assert_has(button("Edit time", count: 0))
     |> click(css("span", text: "Client contacts you"))
-    |> assert_has(css("div", text: "Wedding - Use this email preset 1", count: 11))            # Why 11 are visible? We inserted only 1?
+    # Why 11 are visible? We inserted only 1?
+    |> assert_has(css("div", text: "Wedding - Use this email preset 1", count: 11))
     |> assert_has(button("Edit time", count: 1))
     |> click(css("span", text: "Client contacts you"))
     |> assert_has(css("div", text: "Wedding - Use this email preset 1", count: 0))
@@ -379,6 +397,7 @@ defmodule Picsello.EmailAutomationsTest do
     |> assert_has(css("span", text: "Step 2", count: 0))
     |> fill_in(css("input[placeholder='Inquiry Email']"), with: "Demo Name")
     |> click(button("Review"))
+
     # Onward: Step 2 of Modal not tested, due to mock issue.                              # Mock issue
     # |> assert_text("Preview Wedding Email")
     # |> assert_text("Lead:")
@@ -393,7 +412,9 @@ defmodule Picsello.EmailAutomationsTest do
     # |> assert_has(css("div", text: "Demo Name", count: 1))
   end
 
-  feature "emails, in a pipeline, are arraged with respect ot triggering time", %{session: session} do
+  feature "emails, in a pipeline, are arraged with respect ot triggering time", %{
+    session: session
+  } do
     session
     |> visit("/email-automations")
     |> scroll_into_view(css("span", text: "Inquiry and Follow Up Emails"))
@@ -401,19 +422,22 @@ defmodule Picsello.EmailAutomationsTest do
     |> assert_has(css("div[testid='email']", count: 3))
     |> find(css("div[testid='email']", count: 3, at: 0), fn div ->
       div
-      |> assert_has(css("div", text: "Wedding - Use this email preset 2", count: 4))       # But we expect only one. Why 4 here?
+      # But we expect only one. Why 4 here?
+      |> assert_has(css("div", text: "Wedding - Use this email preset 2", count: 4))
       |> assert_has(css("div", text: "Wedding - Use this email preset 3", count: 0))
       |> assert_has(css("div", text: "Wedding - Use this email preset 4", count: 0))
     end)
     |> find(css("div[testid='email']", count: 3, at: 1), fn div ->
       div
-      |> assert_has(css("div", text: "Wedding - Use this email preset 3", count: 4))       # But we expect only one. Why 4 here?
+      # But we expect only one. Why 4 here?
+      |> assert_has(css("div", text: "Wedding - Use this email preset 3", count: 4))
       |> assert_has(css("div", text: "Wedding - Use this email preset 2", count: 0))
       |> assert_has(css("div", text: "Wedding - Use this email preset 4", count: 0))
     end)
     |> find(css("div[testid='email']", count: 3, at: 2), fn div ->
       div
-      |> assert_has(css("div", text: "Wedding - Use this email preset 4", count: 4))       # But we expect only one. Why 4 here?
+      # But we expect only one. Why 4 here?
+      |> assert_has(css("div", text: "Wedding - Use this email preset 4", count: 4))
       |> assert_has(css("div", text: "Wedding - Use this email preset 2", count: 0))
       |> assert_has(css("div", text: "Wedding - Use this email preset 3", count: 0))
     end)
@@ -424,16 +448,18 @@ defmodule Picsello.EmailAutomationsTest do
     |> click(button("Save"))
     |> find(css("div[testid='email']", count: 3, at: 1), fn div ->
       div
-      |> assert_has(css("div", text: "Wedding - Use this email preset 4", count: 4))       # But we expect only one. Why 4 here?
+      # But we expect only one. Why 4 here?
+      |> assert_has(css("div", text: "Wedding - Use this email preset 4", count: 4))
       |> assert_has(css("div", text: "Wedding - Use this email preset 2", count: 0))
       |> assert_has(css("div", text: "Wedding - Use this email preset 3", count: 0))
     end)
     |> find(css("div[testid='email']", count: 3, at: 2), fn div ->
       div
-      |> assert_has(css("div", text: "Wedding - Use this email preset 3", count: 4))       # But we expect only one. Why 4 here?
+      # But we expect only one. Why 4 here?
+      |> assert_has(css("div", text: "Wedding - Use this email preset 3", count: 4))
       |> assert_has(css("div", text: "Wedding - Use this email preset 2", count: 0))
-      |> assert_has(css("div", text: "Wedding - Use this email preset 4", count: 4))       # But we expect NO, why 4 here?
+      # But we expect NO, why 4 here?
+      |> assert_has(css("div", text: "Wedding - Use this email preset 4", count: 4))
     end)
-
   end
 end
