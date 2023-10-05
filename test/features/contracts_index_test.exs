@@ -69,7 +69,7 @@ defmodule Picsello.ContractsIndexTest do
 
     session
     |> click(css("#hamburger-menu"))
-    |> click(link("Contracts"))
+    |> click(css("a", text: "Contracts", count: 2, at: 0))
     |> assert_text("Meet Contracts")
     |> scroll_to_bottom()
     |> assert_has(testid("contracts-row", count: 2))
@@ -102,16 +102,17 @@ defmodule Picsello.ContractsIndexTest do
 
     session
     |> click(css("#hamburger-menu"))
-    |> click(link("Contracts"))
+    |> click(css("a", text: "Contracts", count: 2, at: 0))
     |> assert_text("Meet Contracts")
     |> scroll_to_bottom()
     |> assert_has(testid("contracts-row", count: 3))
-    |> click(button("Manage", count: 3, at: 0))
+    |> click(button("Actions", count: 3, at: 1))
+    |> sleep(10000)
     |> click(button("Archive"))
     |> click(button("Yes, archive"))
     |> assert_flash(:success, text: "Contract archived")
     |> scroll_to_bottom()
-    |> assert_has(button("Duplicate"))
+    |> assert_has(button("Duplicate", count: 2, at: 1))
     |> refute_has(testid("archived-badge", count: 1))
     |> assert_has(button("Contract 1"))
     |> assert_has(button("Picsello Default Contract"))
@@ -120,7 +121,7 @@ defmodule Picsello.ContractsIndexTest do
 
     session
     |> click(css("#hamburger-menu"))
-    |> click(link("Contracts"))
+    |> click(css("a", text: "Contracts", count: 2, at: 0))
     |> assert_text("Meet Contracts")
     |> scroll_to_bottom()
     |> assert_has(testid("contracts-row", count: 2))

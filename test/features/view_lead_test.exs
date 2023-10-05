@@ -79,7 +79,7 @@ defmodule Picsello.ViewLeadTest do
     |> find(testid("inbox"), &click(&1, button("Send message")))
     |> within_modal(&assert_text(&1, "Send an email"))
     |> within_modal(&click(&1, button("Cancel")))
-    |> click(button("Go to inbox"))
+    |> click(button("View inbox"))
     |> assert_path(Routes.inbox_path(PicselloWeb.Endpoint, :show, lead.id))
     |> assert_has(testid("thread-card", count: 1))
     |> find(testid("thread-card"), &assert_text(&1, "Rick Sanchez Family"))
