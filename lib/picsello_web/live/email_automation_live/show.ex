@@ -416,10 +416,20 @@ defmodule PicselloWeb.Live.EmailAutomations.Show do
             }
 
           subcategory == "payment_reminder_emails" ->
-            %{text: "Transactional", date: "", email_preview_id: nil, is_completed: false}
+            %{
+              text: "Transactional",
+              date: "",
+              email_preview_id: email_schedule.id,
+              is_completed: false
+            }
 
           true ->
-            %{text: "", date: "", email_preview_id: nil, is_completed: false}
+            %{
+              text: "Next Email",
+              date: "",
+              email_preview_id: email_schedule.id,
+              is_completed: false
+            }
         end
     end
   end

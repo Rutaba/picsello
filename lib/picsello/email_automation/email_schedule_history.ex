@@ -12,10 +12,6 @@ defmodule Picsello.EmailAutomation.EmailScheduleHistory do
   schema "email_schedules_history" do
     field :total_hours, :integer, default: 0
     field :condition, :string
-    field :immediately, :boolean, default: true, virtual: true
-    field :count, :integer, virtual: true
-    field :calendar, :string, virtual: true
-    field :sign, :string, virtual: true
     field :body_template, :string
     field :name, :string
     field :subject_template, :string
@@ -36,7 +32,7 @@ defmodule Picsello.EmailAutomation.EmailScheduleHistory do
     email_preset
     |> cast(
       attrs,
-      ~w[email_automation_pipeline_id name private_name subject_template body_template total_hours condition immediately count calendar sign is_stopped reminded_at job_id gallery_id order_id organization_id]a
+      ~w[email_automation_pipeline_id name private_name subject_template body_template total_hours condition is_stopped reminded_at job_id gallery_id order_id organization_id]a
     )
     |> validate_required(~w[email_automation_pipeline_id subject_template body_template]a)
     |> check_constraint(:job_id, name: :job_gallery_constraint)
