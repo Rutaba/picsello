@@ -33,7 +33,7 @@ defmodule Picsello.EditQuestionnaireTest do
       |> assert_text("View questionnaire")
       |> click(button("Close"))
     end)
-    |> find(testid("questionnaire-row", count: 5, at: 3), fn row ->
+    |> find(testid("questionnaire-row", count: 10, at: 3), fn row ->
       row
       |> click(css("[phx-hook='Select']"))
       |> assert_text("View")
@@ -50,7 +50,7 @@ defmodule Picsello.EditQuestionnaireTest do
   feature "user sees default questionnaires and duplicates it", %{session: session} do
     session
     |> visit("/questionnaires")
-    |> find(testid("questionnaire-row", count: 5, at: 3), fn row ->
+    |> find(testid("questionnaire-row", count: 10, at: 3), fn row ->
       row
       |> click(css("[phx-hook='Select']"))
       |> click(testid("duplicate"))
@@ -89,7 +89,7 @@ defmodule Picsello.EditQuestionnaireTest do
     end)
     |> click(button("Save"))
     |> assert_flash(:success, text: "Questionnaire saved")
-    |> find(testid("questionnaire-row", count: 6, at: 0), fn row ->
+    |> find(testid("questionnaire-row", count: 11, at: 0), fn row ->
       row
       |> assert_text("Custom Other")
       |> assert_text("3")
@@ -163,7 +163,7 @@ defmodule Picsello.EditQuestionnaireTest do
     |> wait_for_enabled_submit_button()
     |> click(button("Save"))
     |> assert_flash(:success, text: "Questionnaire saved")
-    |> find(testid("questionnaire-row", count: 6, at: 0), fn row ->
+    |> find(testid("questionnaire-row", count: 11, at: 0), fn row ->
       row
       |> assert_text("My Favorite Questionnaire")
       |> assert_text("3")
@@ -280,7 +280,7 @@ defmodule Picsello.EditQuestionnaireTest do
       |> wait_for_enabled_submit_button()
       |> click(button("Save"))
       |> assert_flash(:success, text: "Questionnaire saved")
-      |> find(testid("questionnaire-row", count: 6, at: 0), fn row ->
+      |> find(testid("questionnaire-row", count: 11, at: 0), fn row ->
         row
         |> assert_text("3")
       end)
@@ -289,7 +289,7 @@ defmodule Picsello.EditQuestionnaireTest do
     feature "user duplicates questionnaire from table", %{session: session} do
       session
       |> visit("/questionnaires")
-      |> find(testid("questionnaire-row", count: 6, at: 0), fn row ->
+      |> find(testid("questionnaire-row", count: 11, at: 0), fn row ->
         row
         |> click(css("[phx-hook='Select']"))
         |> click(button("Duplicate"))
@@ -310,7 +310,7 @@ defmodule Picsello.EditQuestionnaireTest do
     feature "user deletes questionnaire", %{session: session} do
       session
       |> visit("/questionnaires")
-      |> find(testid("questionnaire-row", count: 6, at: 0), fn row ->
+      |> find(testid("questionnaire-row", count: 11, at: 0), fn row ->
         row
         |> click(css("[phx-hook='Select']"))
         |> click(button("Archive"))
