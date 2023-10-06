@@ -156,7 +156,7 @@ defmodule PicselloWeb.GalleryLive.Shared.SideNavComponent do
     assigns = Enum.into(assigns, %{photos_count: 0})
 
     ~H"""
-      <span class="bg-white px-1 py-0.5 rounded-full min-w-[30px] font-normal text-xs flex items-center justify-center ml-auto"><%= @photos_count %></span>
+      <span class="bg-white px-1 py-0.5 rounded-full min-w-[30px] font-normal text-xs flex items-center justify-center ml-auto" {testid("photo-count")}><%= @photos_count %></span>
     """
   end
 
