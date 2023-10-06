@@ -16,6 +16,7 @@ defmodule PicselloWeb.Shared.MultiSelect do
   See `multi_select/1` for details.
   """
   use Phoenix.LiveComponent
+  import PicselloWeb.Gettext, only: [ngettext: 3]
   import Phoenix.HTML
   alias Phoenix.LiveView.JS
 
@@ -262,7 +263,7 @@ defmodule PicselloWeb.Shared.MultiSelect do
               <span class={[css(:placeholder), @placeholder_class]}><%= @placeholder %></span>
             <% @hide_tags || (@selected_count > @cur_shown and not @wrap) -> %>
               <span class={css(:tag)}>
-                <span><%= @selected_count %> items selected</span>
+                <span><%= @selected_count %> <%= ngettext("item", "items", @selected_count) %> selected</span>
                 <.svg type={:close} size="4" color="" on_click="checked" params={[{"uncheck", "all"}, {"id", @id}]} target={@myself}/>
               </span>
             <% true -> %>
