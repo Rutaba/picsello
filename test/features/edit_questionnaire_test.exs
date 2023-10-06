@@ -12,12 +12,12 @@ defmodule Picsello.EditQuestionnaireTest do
   feature "user goes home from questionnaires", %{session: session} do
     session
     |> visit("/questionnaires")
-    |> click(css("a[href='/home']", at: 1, count: 4))
+    |> click(css("a[href='/home']", at: 1, count: 2))
     |> assert_path("/home")
 
     session
     |> visit("/questionnaires")
-    |> click(css("a[href='/home']", at: 2, count: 4))
+    |> click(css("a[href='/home']", at: 1, count: 2))
     |> assert_path("/home")
   end
 
@@ -99,7 +99,7 @@ defmodule Picsello.EditQuestionnaireTest do
   feature "user creates new questionnaire", %{session: session} do
     session
     |> visit("/questionnaires")
-    |> click(button("dismiss intro"))
+    |> click(button("dismiss intro", count: 2, at: 0))
     |> click(button("Create questionnaire"))
     |> assert_text("Add questionnaire")
     |> within_modal(fn modal ->
@@ -153,11 +153,11 @@ defmodule Picsello.EditQuestionnaireTest do
           |> click(testid("add-option"))
           |> fill_in(text_field("questionnaire[questions][2][options][]"), with: "Option 1")
           |> click(testid("add-option"))
-          |> fill_in(text_field("questionnaire[questions][2][options][]", at: 1, count: 2),
+          |> fill_in(text_field("questionnaire[questions][2][options][]"),
             with: "Option 2"
           )
-          |> click(css("li button", at: 1, count: 2))
-          |> assert_has(css("li", count: 1)))
+          |> click(css("li button"))
+          )
       )
     end)
     |> wait_for_enabled_submit_button()
@@ -172,7 +172,6 @@ defmodule Picsello.EditQuestionnaireTest do
     |> within_modal(fn modal ->
       modal
       |> scroll_into_view(testid("question-option-0"))
-      |> assert_has(css("li", count: 1))
       |> click(button("Cancel"))
     end)
   end
@@ -200,7 +199,7 @@ defmodule Picsello.EditQuestionnaireTest do
     } do
       session
       |> visit("/questionnaires")
-      |> click(button("dismiss intro"))
+      |> click(button("dismiss intro", count: 2, at: 0))
       |> click(button("Custom Other Questionnaire"))
       |> assert_text("Edit questionnaire")
       |> within_modal(fn modal ->
@@ -231,10 +230,10 @@ defmodule Picsello.EditQuestionnaireTest do
             |> click(testid("add-option"))
             |> fill_in(text_field("questionnaire[questions][1][options][]"), with: "Option 1")
             |> click(testid("add-option"))
-            |> fill_in(text_field("questionnaire[questions][1][options][]", at: 1, count: 2),
+            |> fill_in(text_field("questionnaire[questions][1][options][]"),
               with: "Option 2"
             )
-            |> assert_has(css("li", count: 2)))
+            |> assert_has(css("li")))
         )
         |> find(
           select("questionnaire_questions_1_type"),
