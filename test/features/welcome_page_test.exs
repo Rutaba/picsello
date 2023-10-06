@@ -217,7 +217,7 @@ defmodule Picsello.WelcomePageTest do
       |> click(button("Leads"))
       |> assert_has(testid("card-Recent Leads"))
       |> click(button("View all"))
-      |> assert_has(testid("job-row", count: 6))
+      |> assert_has(testid("job-row", count: 7))
     end
 
     feature "leads card has empty state", %{session: session, user: user} do
