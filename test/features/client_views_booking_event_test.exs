@@ -65,7 +65,7 @@ defmodule Picsello.ClientViewsBookingEventTest do
     |> visit(booking_event_url)
     |> assert_text("Mary Jane Photography")
     |> assert_has(css("h1", text: "Event 1"))
-    |> assert_text("3 images | 45 min session | In Studio")
+    |> assert_text("3 images included | 45 min session | In Studio")
     |> assert_text("Dec 10, 2050")
     |> assert_text("320 1st St N")
     |> assert_text("This is the description")

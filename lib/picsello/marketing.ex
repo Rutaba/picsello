@@ -12,6 +12,8 @@ defmodule Picsello.Marketing do
     Accounts.User
   }
 
+  import Picsello.Notifiers, only: [noreply_address: 0, email_signature: 1]
+
   def new_campaign_changeset(attrs, organization_id) do
     attrs
     |> Map.put("organization_id", organization_id)
@@ -134,7 +136,7 @@ defmodule Picsello.Marketing do
       organization_name: organization.name,
       color: organization.profile.color,
       content: body_html,
-      email_signature: Picsello.Notifiers.email_signature(organization)
+      email_signature: email_signature(organization)
     }
   end
 
@@ -160,7 +162,7 @@ defmodule Picsello.Marketing do
     |> Enum.chunk_every(1000)
     |> Enum.each(fn clients ->
       body = %{
-        from: %{email: "noreply@picsello.com", name: organization.name},
+        from: %{email: noreply_address(), name: organization.name},
         reply_to: %{email: organization.user.email, name: organization.name},
         personalizations:
           Enum.map(clients, fn client ->

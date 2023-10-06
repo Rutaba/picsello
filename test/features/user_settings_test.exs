@@ -32,8 +32,8 @@ defmodule Picsello.UserSettingsTest do
     |> fill_in(text_field("Business name"), with: " ")
     |> assert_text("Business name can't be blank")
     |> fill_in(text_field("Business name"), with: "MJ Photography")
-    |> wait_for_enabled_submit_button(text: "Change name")
-    |> click(button("Change name"))
+    |> wait_for_enabled_submit_button(text: "Edit business name")
+    |> click(button("Edit business name"))
     |> within_modal(&click(&1, button("Yes, change name")))
     |> assert_flash(:success, text: "Business name changed successfully")
 
@@ -57,7 +57,7 @@ defmodule Picsello.UserSettingsTest do
     |> click(link("Account"))
     |> assert_value(select("Timezone"), "America/Sao_Paulo")
     |> find(select("Timezone"), &click(&1, option("(GMT-05:00) America/New_York")))
-    |> click(button("Change timezone"))
+    |> click(button("Edit timezone"))
     |> assert_flash(:success, text: "Timezone changed successfully")
 
     user = user |> Repo.reload()
@@ -74,8 +74,8 @@ defmodule Picsello.UserSettingsTest do
     |> fill_in(text_field("Phone number"), with: "")
     |> assert_text("Phone number can't be blank")
     |> fill_in(text_field("Phone number"), with: "(222) 222-2222")
-    |> wait_for_enabled_submit_button(text: "Change number")
-    |> click(button("Change number"))
+    |> wait_for_enabled_submit_button(text: "Edit number")
+    |> click(button("Edit number"))
     |> assert_flash(:success, text: "Phone number updated successfully")
 
     user = user |> Repo.reload()
