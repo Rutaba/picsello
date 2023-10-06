@@ -11,7 +11,7 @@ defmodule Picsello.Notifiers.UserNotifier do
   def deliver_confirmation_instructions(user, url) do
     sendgrid_template(:confirmation_instructions_template, name: user.name, url: url)
     |> to(user.email)
-    |> from("noreply@picsello.com")
+    |> from(noreply_address())
     |> deliver_later()
   end
 
@@ -24,7 +24,7 @@ defmodule Picsello.Notifiers.UserNotifier do
       gallery_url: PicselloWeb.Helpers.gallery_url(gallery)
     )
     |> to(user.email)
-    |> from("noreply@picsello.com")
+    |> from(noreply_address())
     |> deliver_later()
   end
 
@@ -40,7 +40,7 @@ defmodule Picsello.Notifiers.UserNotifier do
       download_url: download_url
     )
     |> to(user.email)
-    |> from("noreply@picsello.com")
+    |> from(noreply_address())
     |> deliver_later()
   end
 
@@ -50,7 +50,7 @@ defmodule Picsello.Notifiers.UserNotifier do
   def deliver_reset_password_instructions(user, url) do
     sendgrid_template(:password_reset_template, name: user.name, url: url)
     |> to(user.email)
-    |> from("noreply@picsello.com")
+    |> from(noreply_address())
     |> deliver_later()
   end
 
@@ -73,7 +73,7 @@ defmodule Picsello.Notifiers.UserNotifier do
   def deliver_update_email_instructions(user, url) do
     sendgrid_template(:update_email_template, name: user.name, url: url)
     |> to(user.email)
-    |> from("noreply@picsello.com")
+    |> from(noreply_address())
     |> deliver_later()
   end
 
@@ -204,7 +204,7 @@ defmodule Picsello.Notifiers.UserNotifier do
     |> maybe_proofing_album_selection()
     |> sendgrid_template(order_confirmation_params(order, helpers))
     |> to({User.first_name(user), user.email})
-    |> from("noreply@picsello.com")
+    |> from(noreply_address())
     |> deliver_later()
   end
 
@@ -223,7 +223,7 @@ defmodule Picsello.Notifiers.UserNotifier do
 
     sendgrid_template(:photographer_order_canceled_template, params)
     |> to(user.email)
-    |> from("noreply@picsello.com")
+    |> from(noreply_address())
     |> subject("Order canceled")
     |> deliver_later()
   end
@@ -461,7 +461,7 @@ defmodule Picsello.Notifiers.UserNotifier do
   defp deliver_transactional_email(params, user) do
     sendgrid_template(:generic_transactional_template, params)
     |> to(user.email)
-    |> from("noreply@picsello.com")
+    |> from(noreply_address())
     |> deliver_later()
   end
 
