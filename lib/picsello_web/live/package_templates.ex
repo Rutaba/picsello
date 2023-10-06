@@ -234,10 +234,10 @@ defmodule PicselloWeb.Live.PackageTemplates do
                   <.package_template_row update_mode="replace" package={template} class="h-full"/>
                 <% end %>
               </div>
-              <%= if @pagination.total_count > 4 do %>
+              <%= if @pagination.total_count > 12 do %>
                 <div class="flex items-center px-6 pb-6 center-container">
                   <.form :let={f} for={@pagination_changeset} phx-change="page" class="flex items-center text-gray-500 rounded p-1 border cursor-pointer border-blue-planning-300">
-                    <%= select f, :limit, [4, 8, 12, 16], class: "cursor-pointer"%>
+                    <%= select f, :limit, [12, 24, 36, 48], class: "cursor-pointer"%>
                   </.form>
 
                   <div class="flex ml-2 text-xs font-bold text-gray-500">
