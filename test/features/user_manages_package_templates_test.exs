@@ -430,11 +430,12 @@ defmodule Picsello.UserManagesPackageTemplatesTest do
     )
   end
 
-  feature "Pagination appears only when records are more than 4",
+  feature "Pagination appears only when records are more than 12",
           %{session: session, user: user} do
     type = JobType.all() |> hd
 
-    for name <- ~w(deluxe lame premium highfive yadix) do
+    for name <-
+          ~w(deluxe lame premium highfive yadix awesome superduper fantastic horrible ehhhh awesomesauce crazy hey) do
       insert(:package_template,
         user: user,
         job_type: type,
