@@ -69,7 +69,7 @@ defmodule Picsello.ContractsIndexTest do
 
     session
     |> click(css("#hamburger-menu"))
-    |> click(css("a", text: "Contracts", count: 2, at: 0))
+    |> click(css("[title='Contracts']"))
     |> assert_text("Meet Contracts")
     |> scroll_to_bottom()
     |> assert_has(testid("contracts-row", count: 2))
@@ -102,12 +102,11 @@ defmodule Picsello.ContractsIndexTest do
 
     session
     |> click(css("#hamburger-menu"))
-    |> click(css("a", text: "Contracts", count: 2, at: 0))
+    |> click(css("[title='Contracts']"))
     |> assert_text("Meet Contracts")
     |> scroll_to_bottom()
     |> assert_has(testid("contracts-row", count: 3))
     |> click(button("Actions", count: 3, at: 1))
-    |> sleep(10000)
     |> click(button("Archive"))
     |> click(button("Yes, archive"))
     |> assert_flash(:success, text: "Contract archived")
@@ -120,7 +119,7 @@ defmodule Picsello.ContractsIndexTest do
 
     session
     |> click(css("#hamburger-menu"))
-    |> click(css("a", text: "Contracts", count: 2, at: 0))
+    |> click(css("[title='Contracts']"))
     |> assert_text("Meet Contracts")
     |> scroll_to_bottom()
     |> assert_has(testid("contracts-row", count: 2))

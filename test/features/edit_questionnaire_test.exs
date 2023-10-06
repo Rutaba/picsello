@@ -17,7 +17,7 @@ defmodule Picsello.EditQuestionnaireTest do
 
     session
     |> visit("/questionnaires")
-    |> click(css("a[href='/home']", at: 1, count: 2))
+    |> click(css("a[href='/home']", at: 0, count: 2))
     |> assert_path("/home")
   end
 
@@ -199,7 +199,7 @@ defmodule Picsello.EditQuestionnaireTest do
     } do
       session
       |> visit("/questionnaires")
-      |> click(button("dismiss intro", count: 2, at: 0))
+      |> click(button("dismiss intro", count: 2, at: 1))
       |> click(button("Custom Other Questionnaire"))
       |> assert_text("Edit questionnaire")
       |> within_modal(fn modal ->
