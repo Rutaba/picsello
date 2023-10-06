@@ -44,6 +44,7 @@ defmodule Picsello.ClientAcceptsBookingProposalTest do
           shoot_count: 1,
           questionnaire_template_id: questionnaire.id,
           base_multiplier: 0.8,
+          discount_base_price: true,
           base_price: %{amount: 100, currency: :USD}
         },
         client: %{name: "John"},
