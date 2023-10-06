@@ -30,6 +30,11 @@ defmodule Picsello.Notifiers do
     )
   end
 
+  def noreply_address(),
+    do:
+      Application.get_env(:picsello, Picsello.Mailer)
+      |> Keyword.get(:no_reply_email)
+
   defmacro __using__(_) do
     quote do
       import Picsello.Notifiers
