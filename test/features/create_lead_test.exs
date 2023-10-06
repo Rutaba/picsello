@@ -6,13 +6,12 @@ defmodule Picsello.CreateLeadTest do
   setup :authenticated
 
   setup %{user: user} do
-    client =
-      insert(:client,
-        user: user,
-        name: "Elizabeth Taylor",
-        email: "taylor@example.com",
-        phone: "(210) 111-1234"
-      )
+    insert(:client,
+      user: user,
+      name: "Elizabeth Taylor",
+      email: "taylor@example.com",
+      phone: "(210) 111-1234"
+    )
 
     base_price = %Money{amount: 10_000, currency: :USD}
     download_each_price = %Money{amount: 300, currency: :USD}
@@ -45,19 +44,18 @@ defmodule Picsello.CreateLeadTest do
       download_each_price: download_each_price
     )
 
-    template =
-      insert(:package_template,
-        user: user,
-        job_type: "event",
-        name: "best event",
-        shoot_count: 1,
-        description: "desc",
-        base_price: base_price,
-        buy_all: buy_all,
-        print_credits: print_credits,
-        download_count: 1,
-        download_each_price: download_each_price
-      )
+    insert(:package_template,
+      user: user,
+      job_type: "event",
+      name: "best event",
+      shoot_count: 1,
+      description: "desc",
+      base_price: base_price,
+      buy_all: buy_all,
+      print_credits: print_credits,
+      download_count: 1,
+      download_each_price: download_each_price
+    )
 
     Mix.Tasks.ImportQuestionnaires.run(nil)
   end
