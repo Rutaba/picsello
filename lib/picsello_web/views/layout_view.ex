@@ -539,6 +539,7 @@ defmodule PicselloWeb.LayoutView do
 
   def main_footer(assigns) do
     assigns = assign_new(assigns, :footer_class, fn -> nil end)
+
     ~H"""
     <div class="mt-12"></div>
     <footer class={"mt-auto #{@footer_class} sm:block bg-base-300 text-white"}>
