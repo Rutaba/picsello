@@ -17,7 +17,7 @@ defmodule PicselloWeb.Live.ClientLive.JobHistory do
     defstruct first_index: 1,
               last_index: 3,
               total_count: 0,
-              limit: 3,
+              limit: 12,
               after: nil,
               before: nil
   end
