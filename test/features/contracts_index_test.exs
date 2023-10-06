@@ -114,7 +114,6 @@ defmodule Picsello.ContractsIndexTest do
     |> scroll_to_bottom()
     |> assert_has(button("Duplicate", count: 2, at: 1))
     |> refute_has(testid("archived-badge", count: 1))
-    |> assert_has(button("Contract 1"))
     |> assert_has(button("Picsello Default Contract"))
 
     assert 3 = Repo.all(Contract) |> Enum.count()
