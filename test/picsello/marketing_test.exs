@@ -26,7 +26,10 @@ defmodule Picsello.MarketingTest do
 
         assert %{
                  "asm" => %{"group_id" => 123},
-                 "from" => %{"email" => "noreply@picsello.com", "name" => "Photo 1"},
+                 "from" => %{
+                   "email" => "photographer-notifications@picsello.com",
+                   "name" => "Photo 1"
+                 },
                  "reply_to" => %{"email" => "john@example.com", "name" => "Photo 1"},
                  "personalizations" => [
                    %{

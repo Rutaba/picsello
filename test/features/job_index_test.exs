@@ -206,7 +206,7 @@ defmodule Picsello.JobIndexTest do
     )
 
     template = insert(:package_template, user: user)
-    event = insert(:booking_event, package_template_id: template.id)
+    insert(:booking_event, package_template_id: template.id)
 
     insert(:lead,
       user: user,

@@ -9,7 +9,7 @@ defmodule Picsello.ContractsIndexTest do
   feature "navigate", %{session: session} do
     session
     |> click(css("#hamburger-menu"))
-    |> click(link("Contracts"))
+    |> click(css("[title='Contracts']"))
     |> assert_text("Meet Contracts")
     |> scroll_to_bottom()
     |> assert_has(testid("contracts-row", count: 1))
@@ -19,7 +19,7 @@ defmodule Picsello.ContractsIndexTest do
   feature "adds, edits, duplicates, deletes contract", %{session: session} do
     session
     |> click(css("#hamburger-menu"))
-    |> click(link("Contracts"))
+    |> click(css("[title='Contracts']"))
     |> assert_text("Meet Contracts")
     |> click(button("Create contract", count: 2, at: 0))
     |> within_modal(
@@ -69,7 +69,7 @@ defmodule Picsello.ContractsIndexTest do
 
     session
     |> click(css("#hamburger-menu"))
-    |> click(link("Contracts"))
+    |> click(css("[title='Contracts']"))
     |> assert_text("Meet Contracts")
     |> scroll_to_bottom()
     |> assert_has(testid("contracts-row", count: 2))
@@ -102,7 +102,7 @@ defmodule Picsello.ContractsIndexTest do
 
     session
     |> click(css("#hamburger-menu"))
-    |> click(link("Contracts"))
+    |> click(css("[title='Contracts']"))
     |> assert_text("Meet Contracts")
     |> scroll_to_bottom()
     |> assert_has(testid("contracts-row", count: 3))
@@ -120,7 +120,7 @@ defmodule Picsello.ContractsIndexTest do
 
     session
     |> click(css("#hamburger-menu"))
-    |> click(link("Contracts"))
+    |> click(css("[title='Contracts']"))
     |> assert_text("Meet Contracts")
     |> scroll_to_bottom()
     |> assert_has(testid("contracts-row", count: 2))

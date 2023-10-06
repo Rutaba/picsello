@@ -71,7 +71,7 @@
     </div>
     <div class="flex items-center pb-6 center-container mt-2">
         <form phx-change="page">
-        <%= select(Integer, :page_dropdown, ["3", "6", "9", "12"], wrapper_class: "mt-4", class: "focus:ring-0 focus:outline-none focus:border-blue-planning-300 border border-gray-200 rounded-lg p-3 ", name: "per-page") %>
+        <%= select(Integer, :page_dropdown, [12, 24, 36, 48], wrapper_class: "mt-4", class: "focus:ring-0 focus:outline-none focus:border-blue-planning-300 border border-gray-200 rounded-lg p-3 ", name: "per-page") %>
         </form>
 
         <div class="flex ml-2 text-xs font-bold text-gray-500">
