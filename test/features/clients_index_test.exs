@@ -216,9 +216,10 @@ defmodule Picsello.ClientsIndexTest do
       |> click(button("Edit settings"))
       |> scroll_into_view(css("#download_status_unlimited"))
       |> click(css("#download_status_unlimited"))
+      |> wait_for_enabled_submit_button(text: "Save")
       |> click(button("Save"))
     end)
-    |> click(button("Great!"))
+    |> assert_flash(:success, text: "Gallery created—")
     |> assert_url_contains("galleries")
   end
 
