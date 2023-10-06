@@ -72,10 +72,21 @@ defmodule Picsello.EmailPresets.EmailPreset do
       else
         changeset
         |> validate_required([:count])
-        |> validate_number(:count, greater_than: 0, less_than_or_equal_to: 31)
+        |> validate_count()
         |> put_change(:total_hours, calculate_hours(changeset))
       end
     end)
+  end
+
+  defp validate_count(changeset) do
+    data = changeset |> current()
+    calendar = Map.get(data, :calendar, "Hour")
+
+    case calendar do
+      "Hour" -> validate_number(changeset, :count, greater_than: 0, less_than_or_equal_to: 24)
+      "Month" -> validate_number(changeset, :count, greater_than: 0, less_than_or_equal_to: 12)
+      _ -> validate_number(changeset, :count, greater_than: 0, less_than_or_equal_to: 31)
+    end
   end
 
   # defp validate_states(changeset) do

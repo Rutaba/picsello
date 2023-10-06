@@ -260,8 +260,6 @@ defmodule PicselloWeb.EmailAutomationLive.Shared do
     %{calendar: calendar, count: count, sign: sign} = get_email_meta(hours)
 
     "#{name} - #{count} #{calendar} #{sign}"
-    |> String.split()
-    |> Enum.map_join(" ", &String.capitalize/1)
   end
 
   defp get_email_schedule_name(_hours, _index, _state, name), do: name
@@ -316,6 +314,7 @@ defmodule PicselloWeb.EmailAutomationLive.Shared do
       name = "#{type} - " <> email.name
       get_email_schedule_name(email.total_hours, index, state, name)
     end
+    |> Utils.capitalize_all_words()
   end
 
   def email_header(assigns) do

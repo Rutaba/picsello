@@ -34,7 +34,7 @@ defmodule Picsello.EmailAutomationSchedules do
 
   def get_active_email_schedule_count(job_id) do
     from(es in EmailSchedule,
-      where: not es.is_stopped and is_nil(es.reminded_at) and es.job_id == ^job_id
+      where: is_nil(es.stopped_at) and is_nil(es.reminded_at) and es.job_id == ^job_id
     )
     |> Repo.aggregate(:count)
   end
@@ -84,7 +84,7 @@ defmodule Picsello.EmailAutomationSchedules do
           pipeline.state,
           pipeline.description,
           fragment(
-            "to_jsonb(json_build_object('id', ?, 'name', ?, 'total_hours', ?, 'condition', ?, 'body_template', ?, 'subject_template', ?, 'private_name', ?, 'is_stopped', ?, 'reminded_at', ?, 'order_id', ?, 'gallery_id', ?, 'job_id', ?))",
+            "to_jsonb(json_build_object('id', ?, 'name', ?, 'total_hours', ?, 'condition', ?, 'body_template', ?, 'subject_template', ?, 'private_name', ?, 'stopped_at', ?, 'reminded_at', ?, 'order_id', ?, 'gallery_id', ?, 'job_id', ?))",
             email.id,
             email.name,
             email.total_hours,
@@ -92,7 +92,7 @@ defmodule Picsello.EmailAutomationSchedules do
             email.body_template,
             email.private_name,
             email.private_name,
-            email.is_stopped,
+            email.stopped_at,
             email.reminded_at,
             email.order_id,
             email.gallery_id,
