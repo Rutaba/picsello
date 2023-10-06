@@ -135,7 +135,7 @@ defmodule Picsello.Workers.ScheduleAutomationEmail do
 
     Logger.info("Time to send email #{is_send_time}")
 
-    if is_send_time and is_nil(schedule.reminded_at) and !schedule.is_stopped do
+    if is_send_time and is_nil(schedule.reminded_at) and is_nil(schedule.stopped_at) do
       send_email_task(type, state, schedule, job, gallery, order)
     end
   end

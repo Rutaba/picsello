@@ -27,7 +27,7 @@ defmodule Picsello.QuestionnaireTest do
     end
 
     test "when job type doesn't exist then falls back to other" do
-      assert %{job_type: "other"} =
+      assert %{job_type: "event"} =
                Questionnaire.for_job(%Job{
                  type: "event",
                  package: %Package{questionnaire_template_id: nil}
@@ -90,7 +90,7 @@ defmodule Picsello.QuestionnaireTest do
     end
 
     test "when job type doesn't exist then falls back to other" do
-      assert %{job_type: "other"} =
+      assert %{job_type: "event"} =
                Questionnaire.for_package(%Package{
                  job_type: "event",
                  questionnaire_template_id: nil
@@ -159,6 +159,21 @@ defmodule Picsello.QuestionnaireTest do
                },
                %Picsello.Questionnaire{
                  is_picsello_default: true
+               },
+               %Picsello.Questionnaire{
+                 is_picsello_default: true
+               },
+               %Picsello.Questionnaire{
+                 is_picsello_default: true
+               },
+               %Picsello.Questionnaire{
+                 is_picsello_default: true
+               },
+               %Picsello.Questionnaire{
+                 is_picsello_default: true
+               },
+               %Picsello.Questionnaire{
+                 is_picsello_default: true
                }
              ] = Questionnaire.for_organization(organization.id)
     end
@@ -199,6 +214,21 @@ defmodule Picsello.QuestionnaireTest do
       assert [
                %Picsello.Questionnaire{
                  is_picsello_default: false
+               },
+               %Picsello.Questionnaire{
+                 is_picsello_default: true
+               },
+               %Picsello.Questionnaire{
+                 is_picsello_default: true
+               },
+               %Picsello.Questionnaire{
+                 is_picsello_default: true
+               },
+               %Picsello.Questionnaire{
+                 is_picsello_default: true
+               },
+               %Picsello.Questionnaire{
+                 is_picsello_default: true
                },
                %Picsello.Questionnaire{
                  is_picsello_default: true

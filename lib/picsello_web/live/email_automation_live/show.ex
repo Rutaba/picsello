@@ -210,8 +210,9 @@ defmodule PicselloWeb.Live.EmailAutomations.Show do
   @impl true
   def handle_info({:confirm_event, "stop-email-schedule-" <> id}, socket) do
     id = String.to_integer(id)
+    stopped_at = DateTime.truncate(DateTime.utc_now(), :second)
 
-    case EmailAutomationSchedules.update_email_schedule(id, %{is_stopped: true}) do
+    case EmailAutomationSchedules.update_email_schedule(id, %{stopped_at: stopped_at}) do
       {:ok, _} -> socket |> put_flash(:success, "Email Stopped Successfully")
       _ -> socket |> put_flash(:error, "Error in Updating Email")
     end
@@ -275,23 +276,32 @@ defmodule PicselloWeb.Live.EmailAutomations.Show do
         <%= if Enum.member?(@collapsed_sections, "pipeline-#{@pipeline.id}-#{@subcategory}") do %>
           <%= Enum.with_index(sorted_emails, fn email, index -> %>
               <% last_index = Enum.count(sorted_emails) - 1 %>
+              <% is_email_disable = disable_send_stop_email(email, sorted_emails, @pipeline.state, index)%>
             <div class={classes("flex flex-col md:flex-row pl-2 pr-7 md:items-center justify-between", %{"opacity-60" => next_email.is_completed})}>
               <div class="flex flex-row ml-2 h-max">
                 <div class={"h-auto pt-3 md:relative #{index != last_index && "md:before:absolute md:before:border md:before:h-full md:before:border-base-200 md:before:left-1/2 md:before:z-10 md:before:z-[-1]"}"}>
                   <div class="flex w-8 h-8 rounded-full items-center justify-center bg-base-200 z-40">
                     <%= cond do %>
                       <% not is_nil(email.reminded_at) -> %> <.icon name="tick" class="w-5 h-5 text-blue-planning-300" />
+                      <% not is_nil(email.stopped_at) -> %> <.icon name="stop" class="w-5 h-5 text-red-sales-300" />
                       <% is_state_manually_trigger(@pipeline.state) and index == 0 -> %> <.icon name="flag" class="w-5 h-5 text-blue-planning-300" />
                       <% true -> %>  <.icon name="envelope" class="w-5 h-5 text-blue-planning-300" />
                     <% end %>
                   </div>
                 </div>
-                <span class="text-blue-planning-300 text-sm font-bold ml-4 py-3 ">
+                <span class={classes("text-sm font-bold ml-4 py-3", %{"text-blue-planning-300" => not is_nil(email.reminded_at), "text-red-sales-300" => not is_nil(email.stopped_at)})}>
                   <%= if not is_nil(email.reminded_at) do %>
-                    Completed <%= get_completed_date(email.reminded_at) %>
+                    Completed <%= get_date(email.reminded_at) %>
                   <% end %>
+                  <%= if not is_nil(email.stopped_at) do %>
+                    Stopped <%= get_date(email.stopped_at) %>
+                  <% end %>
+
                   <p class="text-black text-xl">
                     <%= get_email_name(email, @type, index, @pipeline.state) %>
+                    <%= if not is_nil(email.stopped_at) do %>
+                      <span class="ml-2 rounded-md bg-red-sales-100 text-red-sales-300 px-2 pb-1 text-sm font-bold whitespace-nowrap">Stopped</span>
+                    <% end %>
                   </p>
                   <div class="flex items-center bg-white">
                     <div class="w-4 h-4 mr-2">
@@ -306,11 +316,11 @@ defmodule PicselloWeb.Live.EmailAutomations.Show do
 
               <div class="flex justify-end mr-2">
                 <%= if not (is_state_manually_trigger(@pipeline.state) and index == 0) do %>
-                  <button testid="email_stop_button" disabled={email.is_stopped || is_nil(next_email.email_preview_id) || !is_nil(email.reminded_at) || disable_pipeline?(sorted_emails, @pipeline.state, index)} class={classes("flex flex-row items-center justify-center w-8 h-8 bg-base-200 mr-2 rounded-xl", %{"opacity-30 hover:cursor-not-allowed" => email.is_stopped || is_nil(next_email.email_preview_id) || !is_nil(email.reminded_at) || disable_pipeline?(sorted_emails, @pipeline.state, index)})} phx-click="confirm-stop-email" phx-value-email_id={email.id}>
+                  <button testid="email_stop_button" disabled={is_email_disable} class={classes("flex flex-row items-center justify-center w-8 h-8 bg-base-200 mr-2 rounded-xl", %{"opacity-30 hover:cursor-not-allowed" => is_email_disable})} phx-click="confirm-stop-email" phx-value-email_id={email.id}>
                     <.icon name="stop" class="flex flex-col items-center justify-center w-5 h-5 text-red-sales-300"/>
                   </button>
                 <% end %>
-                <button testid="email_send_OR_start_sequence" disabled={!is_nil(email.reminded_at) || disable_pipeline?(sorted_emails, @pipeline.state, index)} class={classes("h-8 flex items-center px-2 py-1 btn-tertiary text-black font-bold  hover:border-blue-planning-300 mr-2 whitespace-nowrap", %{"opacity-30 hover:cursor-not-allowed" => !is_nil(email.reminded_at) || disable_pipeline?(sorted_emails, @pipeline.state, index), "hidden" => @subcategory_slug == "payment_reminder_emails"})} phx-click="confirm-send-email" phx-value-email_id={email.id} phx-value-pipeline_id={@pipeline.id}>
+                <button testid="email_send_OR_start_sequence" disabled={is_email_disable} class={classes("h-8 flex items-center px-2 py-1 btn-tertiary text-black font-bold  hover:border-blue-planning-300 mr-2 whitespace-nowrap", %{"opacity-30 hover:cursor-not-allowed" => !is_nil(email.stopped_at) || !is_nil(email.reminded_at) || disable_pipeline?(sorted_emails, @pipeline.state, index), "hidden" => @subcategory_slug == "payment_reminder_emails"})} phx-click="confirm-send-email" phx-value-email_id={email.id} phx-value-pipeline_id={@pipeline.id}>
                   <%= if is_state_manually_trigger(@pipeline.state) and index == 0 do %>
                       Start Sequence
                     <% else %>
@@ -443,9 +453,17 @@ defmodule PicselloWeb.Live.EmailAutomations.Show do
     |> Calendar.strftime("%m/%d/%Y")
   end
 
-  defp get_completed_date(date) do
+  defp get_date(date) do
     {:ok, converted_date} = NaiveDateTime.from_iso8601(date)
     converted_date |> Calendar.strftime("%m/%d/%Y")
+  end
+
+  defp disable_send_stop_email(email, sorted_emails, state, index) do
+    cond do
+      not is_nil(email.stopped_at) -> true
+      not is_nil(email.reminded_at) -> true
+      true -> disable_pipeline?(sorted_emails, state, index)
+    end
   end
 
   defp send_email(:job, category_type, email, job, state, _order_id) do
