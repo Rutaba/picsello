@@ -35,7 +35,7 @@ defmodule Picsello.GalleryCreateTest do
     |> click(radio_button("Gallery does not include Print Credits"))
     |> scroll_into_view(css("#download_is_buy_all"))
     |> within_modal(&click(&1, button("Save")))
-    |> click(button("Great!"))
+    |> assert_flash(:success, text: "Gallery created—")
     |> assert_url_contains("galleries")
   end
 end

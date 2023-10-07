@@ -15,7 +15,7 @@ defmodule PicselloWeb.GalleryLive.Index do
     defstruct first_index: 1,
               last_index: 4,
               total_count: 0,
-              limit: 4,
+              limit: 12,
               after: nil,
               before: nil
   end
