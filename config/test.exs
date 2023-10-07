@@ -51,7 +51,8 @@ config :picsello, Picsello.Mailer,
   generic_transactional_template: "generic-transactional-id",
   marketing_template: "marketing-xyz",
   marketing_unsubscribe_id: "123" |> Integer.parse(),
-  reply_to_domain: "test-inbox.picsello.com"
+  reply_to_domain: "test-inbox.picsello.com",
+  no_reply_email: "photographer-notifications@picsello.com"
 
 config :picsello, sandbox: Picsello.Sandbox
 config :picsello, :modal_transition_ms, 0

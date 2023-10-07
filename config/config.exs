@@ -158,7 +158,8 @@ config :picsello, Picsello.Mailer,
   proofing_selection_confirmation_template:
     System.get_env("SENDGRID_PROOFING_SELECTION_CONFIMATION_TEMPLATE"),
   photographer_proofing_selection_confirmation_template:
-    System.get_env("SENDGRID_PHOTOGRAPHER_PROOFING_SELECTION_CONFIMATION_TEMPLATE")
+    System.get_env("SENDGRID_PHOTOGRAPHER_PROOFING_SELECTION_CONFIMATION_TEMPLATE"),
+  no_reply_email: System.get_env("SENDGRID_NO_REPLY_EMAIL")
 
 config :picsello, :profile_images,
   bucket: System.get_env("PUBLIC_BUCKET"),
