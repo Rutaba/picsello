@@ -60,10 +60,12 @@ defmodule Picsello.GalleryAlbumsTest do
     gallery: %{id: gallery_id} = gallery
   } do
     photo_ids = insert_photo(%{gallery: gallery, total_photos: 20})
+    photos_count = length(photo_ids)
 
     session
     |> visit("/galleries/#{gallery_id}/photos")
-    |> assert_has(css(".item", count: length(photo_ids)))
+    |> assert_has(css(".item", count: photos_count))
+    |> assert_has(testid("photo-count", text: Integer.to_string(photos_count), count: 2))
     |> visit("/galleries/#{gallery_id}/albums")
     |> scroll_into_view(css("#unsorted_actions"))
     |> click(css("#unsorted_actions"))

@@ -80,6 +80,7 @@ defmodule Picsello.GalleryUnsortedPhotosTest do
     session
     |> visit("/galleries/#{gallery_id}/photos")
     |> assert_has(css(".item", count: photos_count))
+    |> assert_has(testid("photo-count", text: Integer.to_string(photos_count), count: 2))
     |> force_simulate_click(css("#photo-#{List.first(photo_ids)}-view"))
     |> assert_text("/images/print.png")
   end
@@ -93,6 +94,7 @@ defmodule Picsello.GalleryUnsortedPhotosTest do
     session
     |> visit("/galleries/#{gallery_id}/photos")
     |> assert_has(css(".item", count: photos_count))
+    |> assert_has(testid("photo-count", text: Integer.to_string(photos_count), count: 2))
     |> assert_has(css("#item-#{List.first(photo_ids)}"))
     |> force_simulate_click(css("#photo-#{List.first(photo_ids)}-remove"))
     |> within_modal(&click(&1, button("Yes, delete")))
@@ -108,6 +110,7 @@ defmodule Picsello.GalleryUnsortedPhotosTest do
     session
     |> visit("/galleries/#{gallery_id}/photos")
     |> assert_has(css(".item", count: photos_count))
+    |> assert_has(testid("photo-count", text: Integer.to_string(photos_count), count: 2))
     |> click(css("#select"))
     |> click(button("All"))
     |> click(css("#actions"))
@@ -134,6 +137,7 @@ defmodule Picsello.GalleryUnsortedPhotosTest do
     |> assert_has(css("#drag-drop-#{gallery_id}"))
     |> visit("/galleries/#{gallery_id}/albums/#{album.id}")
     |> assert_has(css(".item", count: photos_count))
+    |> assert_has(testid("photo-count", text: Integer.to_string(photos_count), count: 2))
   end
 
   test "Unsorted Photos, show favorites only", %{
@@ -150,6 +154,7 @@ defmodule Picsello.GalleryUnsortedPhotosTest do
     |> assert_has(css(".item", count: 1))
     |> click(css("#toggle_favorites"))
     |> assert_has(css(".item", count: photos_count))
+    |> assert_has(testid("photo-count", text: Integer.to_string(photos_count), count: 2))
   end
 
   test "Unsorted Photos, create album with selected photos", %{
@@ -169,5 +174,6 @@ defmodule Picsello.GalleryUnsortedPhotosTest do
     |> assert_has(css("p", text: "Album successfully created"))
     |> assert_has(css("#page-scroll span span", test: "Test album 2"))
     |> assert_has(css(".item", count: photos_count))
+    |> assert_has(testid("photo-count", text: Integer.to_string(photos_count), count: 2))
   end
 end
