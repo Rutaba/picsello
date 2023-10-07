@@ -153,6 +153,8 @@ defmodule Picsello.GalleryClientFavoritesTest do
       |> assert_has(css(".item", count: photos_count))
       |> force_simulate_click(css("#photo-#{List.first(photo_ids)}-to-like"))
       |> visit("/galleries/#{gallery.id}/albums")
+      |> assert_has(testid("photo-count", text: "1"))
+      |> assert_has(testid("photo-count", text: "5"))
       |> find(css("#albums", count: 1, text: "Client Favorites"))
     end
 

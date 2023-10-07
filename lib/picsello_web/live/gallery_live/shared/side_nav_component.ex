@@ -210,7 +210,10 @@ defmodule PicselloWeb.GalleryLive.Shared.SideNavComponent do
             album_id == &1.id
           end)
           |> List.first()
-          |> Map.get(:count, 0)
+          |> then(fn
+            map ->
+              if &1.id == "client_liked", do: length(&1.photos), else: Map.get(map, :count, 0)
+          end)
         )
       )
     else
