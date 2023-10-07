@@ -163,7 +163,13 @@ defmodule Picsello.Pack do
     album = album |> Repo.preload(:gallery)
 
     album.gallery
-    |> Orders.get_all_purchased_photos_in_album(album.id)
+    |> then(fn gallery ->
+      if album.is_finals do
+        album |> Repo.preload(:photos) |> Map.get(:photos, [])
+      else
+        Orders.get_all_purchased_photos_in_album(gallery, album.id)
+      end
+    end)
     |> case do
       [_ | _] = photos ->
         photos
