@@ -442,7 +442,7 @@
     <% end %>
 
     <%!-- Questionnaire --%>
-    <%= if @proposal.questionnaire_id do %>
+    <%= if @proposal.questionnaire_id && !is_nil(Map.get(@proposal, :answer)) do %>
       <section>
         <h1>
           Questionnaire
