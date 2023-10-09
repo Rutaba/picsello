@@ -180,8 +180,8 @@ defmodule Picsello.EmailAutomationsTest do
     |> click(css("div[testid='wedding']"))
     |> click(css("div[testid='wedding']"))
     |> click(button("Next"))
-    |> click(button("Save"))
     |> wait_for_enabled_submit_button()
+    |> click(button("Save"))
     |> visit("/jobs")
     |> click(css("p", text: "MyClient", count: 2, at: 0))
     |> find(css("div[data-testid='inbox']"), fn div ->
