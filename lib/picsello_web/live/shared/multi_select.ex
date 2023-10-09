@@ -172,22 +172,20 @@ defmodule PicselloWeb.Shared.MultiSelect do
   end
 
   @doc false
-  defmacro init_rest(assigns, from_mount) do
-    quote do
-      if @use_alpinejs do
-        (unquote(from_mount) && add_alpinejs_assigns(unquote(assigns))) || unquote(assigns)
-      else
-        (unquote(from_mount) && unquote(assigns)) || add_js_assigns(unquote(assigns))
-      end
-    end
-  end
-
-  @doc false
   def css_fetch(k, true), do: [@css[k], @css[:colors]] |> build_class()
   def css_fetch(k, false), do: [@css[k]] |> build_class()
 
   @doc false
   def apply_css(_key, value), do: value
+
+  @doc false
+  defp init_rest(assigns, from_mount) do
+    if @use_alpinejs do
+      (from_mount && add_alpinejs_assigns(assigns)) || assigns
+    else
+      (from_mount && assigns) || add_js_assigns(assigns)
+    end
+  end
 
   @doc false
   defp add_alpinejs_assigns(assigns) do
