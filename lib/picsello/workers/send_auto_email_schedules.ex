@@ -112,7 +112,7 @@ defmodule Picsello.Workers.ScheduleAutomationEmail do
             ] do
     order =
       Orders.get_order(schedule.order_id)
-      |> Repo.preload(gallery: :job)
+      |> Repo.preload([:digitals, gallery: :job])
 
     send_email(state, pipeline_id, schedule, job, gallery, order)
   end

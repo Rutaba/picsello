@@ -64,7 +64,7 @@ defmodule Picsello.Cart.Checkouts do
             OrganizationCard.insert_for_proofing_order(order)
           end)
           |> run(:insert_orders_emails, fn _repo, %{order: order} ->
-            Shared.insert_order_emails(nil, order)
+            Shared.insert_gallery_order_emails(nil, order)
           end)
 
         %{cart: %{products: []} = cart} ->
