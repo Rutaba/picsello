@@ -18,6 +18,6 @@ defmodule Picsello.Repo.Migrations.AddCountriesTable do
   end
 
   def down do
-    # drop(table(:countries))
+    drop(table(:countries))
   end
 end
