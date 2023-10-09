@@ -80,7 +80,7 @@ defmodule Mix.Tasks.ImportQuestionnaires do
           },
           %{
             prompt:
-              "Is there anything we need to know about your kids before we meet at the shoot? For example, do they have sensory issues (e.g., hate grass/sand / itchy clothes)? Do they have visual sensory issues (eg. hates the camera flash)? Do they have sensitive hearing (are they super sensitive to sound, or do they have a hearing impairment? All of these things help us plan for the best shoot possible for your family.",
+              "Is there anything we need to know about your kids before we meet at the shoot? For example, do they have sensory issues (e.g., hate grass/sand/itchy clothes)? Do they have visual sensory issues (eg. Hates the camera flash? Do they have sensitive hearing - are they super sensitive to sound, or do they have a hearing impairment)? All of these things help us plan for the best shoot possible for your family.",
             type: :textarea
           },
           %{prompt: "What is your vision for the shoot?", type: :textarea},
@@ -100,6 +100,209 @@ defmodule Mix.Tasks.ImportQuestionnaires do
         is_picsello_default: true,
         is_organizaton_default: false,
         job_type: "family"
+      },
+      %{
+        questions: [
+          %{
+            prompt:
+              "Who will we be photographing during our session?  (please include how old the children are). Also, please include everyone that will be in attendance, including any pets!",
+            type: :textarea
+          },
+          %{
+            prompt: "Tell us about your family! What do you like to do as a family? Hobbies?",
+            type: :textarea
+          },
+          %{
+            prompt:
+              "What makes your kids laugh? And we mean really laugh! It can be a silly song, someone dancing, pretending to sneeze. Are your kids physical laughers? Do they really laugh when they are in motion (e.g., being spun around/ lifted in the air or upside down?).",
+            type: :textarea
+          },
+          %{
+            prompt: "What are your kids’ favorite things to do? Favorite shows? Songs?",
+            type: :textarea
+          },
+          %{
+            prompt:
+              "Is there anything we need to know about your kids before we meet at the shoot? For example, do they have sensory issues (e.g., hate grass/sand/itchy clothes)? Do they have visual sensory issues (eg. Hates the camera flash? Do they have sensitive hearing - are they super sensitive to sound, or do they have a hearing impairment)? All of these things help us plan for the best shoot possible for your family.",
+            type: :textarea
+          },
+          %{
+            prompt: "Anything else you think we should know?",
+            type: :textarea
+          },
+          %{
+            prompt: "How do you want to see these images?",
+            type: :multiselect,
+            optional: true,
+            options: [
+              "Prints",
+              "Greeting cards",
+              "Albums",
+              "Wall Art"
+            ]
+          }
+        ],
+        name: "Picsello Mini-session Template",
+        is_picsello_default: true,
+        is_organizaton_default: false,
+        job_type: "mini"
+      },
+      %{
+        questions: [
+          %{
+            prompt: "Who will we be photographing during our session?",
+            type: :textarea
+          },
+          %{
+            prompt: "What is your vision/goals for the shoot?",
+            type: :textarea
+          },
+          %{
+            prompt: "Anything else you think we should know?",
+            type: :textarea
+          },
+          %{
+            prompt: "How do you want to see these images?",
+            type: :multiselect,
+            optional: true,
+            options: [
+              "Prints",
+              "Greeting cards",
+              "Albums",
+              "Wall Art"
+            ]
+          }
+        ],
+        name: "Picsello Headshot Template",
+        is_picsello_default: true,
+        is_organizaton_default: false,
+        job_type: "headshot"
+      },
+      %{
+        questions: [
+          %{
+            prompt: "Who will we be photographing during our session?",
+            type: :textarea
+          },
+          %{
+            prompt: "What is your vision/goals for the shoot?",
+            type: :textarea
+          },
+          %{
+            prompt: "Anything else you think we should know?",
+            type: :textarea
+          },
+          %{
+            prompt: "How do you want to see these images?",
+            type: :multiselect,
+            optional: true,
+            options: [
+              "Prints",
+              "Greeting cards",
+              "Albums",
+              "Wall Art"
+            ]
+          }
+        ],
+        name: "Picsello Portrait Template",
+        is_picsello_default: true,
+        is_organizaton_default: false,
+        job_type: "portrait"
+      },
+      %{
+        questions: [
+          %{
+            prompt: "Date of event contact name",
+            type: :text
+          },
+          %{
+            prompt: "Phone",
+            type: :phone
+          },
+          %{
+            prompt: "Email",
+            type: :email
+          },
+          %{
+            prompt: "Where is the event being held?",
+            type: :textarea
+          },
+          %{
+            prompt: "Size of your event",
+            type: :select,
+            options: [
+              "Big – 150+",
+              "Average – 100-149",
+              "Small – 50-99",
+              "Intimate – less than 50"
+            ]
+          },
+          %{
+            prompt: "Anything else you think we should know about you and your event?",
+            type: :textarea
+          },
+          %{
+            prompt: "How do you want to see these images?",
+            type: :multiselect,
+            optional: true,
+            options: [
+              "Prints",
+              "Greeting cards",
+              "Albums",
+              "Wall Art"
+            ]
+          }
+        ],
+        name: "Picsello Event Template",
+        is_picsello_default: true,
+        is_organizaton_default: false,
+        job_type: "event"
+      },
+      %{
+        questions: [
+          %{
+            prompt:
+              "Who will we be photographing during our session?  (if you have children in the shoot, please include their ages)",
+            type: :textarea
+          },
+          %{
+            prompt: "What is your vision/goals for the shoot?",
+            type: :textarea
+          },
+          %{
+            prompt:
+              "If you have older children coming to the shoot, please fill out the next few questions. What makes your kids laugh? And we mean really laugh! It can be a silly song, someone dancing, pretending to sneeze. Are your kids physical laughers? Do they really laugh when they are in motion (e.g., being spun around/ lifted in the air or upside down?).",
+            optional: true,
+            type: :textarea
+          },
+          %{
+            prompt: "What are your kids’ favorite things to do? Favorite shows? Songs?",
+            optional: true,
+            type: :textarea
+          },
+          %{
+            prompt:
+              "Is there anything we need to know about your kids before we meet at the shoot? Do they have sensory issues (e.g., hates grass/sand / itchy clothes)? Do they have visual sensory problems (eg. Hates the camera flash?) Do they have sensitive hearing? (are they super sensitive to sound, or do they have hearing impairments?) All of these things help us plan for the best shoot possible for your family.",
+            optional: true,
+            type: :textarea
+          },
+          %{prompt: "Anything else you think we should know?", type: :textarea},
+          %{
+            prompt: "How do you want to see these images?",
+            type: :multiselect,
+            optional: true,
+            options: [
+              "Prints",
+              "Greeting cards",
+              "Albums",
+              "Wall Art"
+            ]
+          }
+        ],
+        name: "Picsello Maternity Template",
+        is_picsello_default: true,
+        is_organizaton_default: false,
+        job_type: "maternity"
       },
       %{
         questions: [

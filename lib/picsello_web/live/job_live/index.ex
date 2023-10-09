@@ -17,7 +17,7 @@ defmodule PicselloWeb.JobLive.Index do
   alias Picsello.{Job, Jobs, Repo, Payments}
   alias PicselloWeb.{JobLive}
 
-  @default_pagination_limit 6
+  @default_pagination_limit 12
 
   @impl true
   def mount(_params, _session, socket) do
@@ -238,7 +238,7 @@ defmodule PicselloWeb.JobLive.Index do
 
     ~H"""
       <div class="flex flex-col w-full lg:w-auto mr-2 mb-3 lg:mb-0">
-        <h1 class="font-extrabold text-sm flex flex-col whitespace-nowrap"><%= @title %></h1>
+        <h1 class="font-extrabold text-sm flex flex-col whitespace-nowrap mb-1"><%= @title %></h1>
         <div class="flex">
           <div id={@id} class={classes("relative w-full lg:w-48 border-grey border p-2 cursor-pointer", %{"lg:w-64" => @id == "status" and @type == "lead", "rounded-l-lg" => @id == "sort_by", "rounded-lg" => @title == "Filter" or @id != "sort_by"})} data-offset-y="5" phx-hook="Select">
             <div {testid("dropdown_#{@id}")} class="flex flex-row items-center border-gray-700">

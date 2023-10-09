@@ -15,7 +15,7 @@ defmodule PicselloWeb.GalleryLive.Index do
     defstruct first_index: 1,
               last_index: 4,
               total_count: 0,
-              limit: 4,
+              limit: 12,
               after: nil,
               before: nil
   end
@@ -103,7 +103,7 @@ defmodule PicselloWeb.GalleryLive.Index do
       ) do
     socket
     |> PicselloWeb.ConfirmationComponent.open(%{
-      close_label: "No, go back",
+      close_label: "Cancel",
       confirm_event: "delete_gallery",
       confirm_label: "Yes, delete",
       icon: "warning-orange",

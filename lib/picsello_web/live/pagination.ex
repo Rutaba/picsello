@@ -15,7 +15,7 @@ defmodule PicselloWeb.PaginationLive do
   defstruct first_index: 1,
             last_index: 4,
             total_count: 0,
-            limit: 4,
+            limit: 12,
             offset: 0
 
   def changeset(struct \\ %__MODULE__{}, params \\ %{}) do

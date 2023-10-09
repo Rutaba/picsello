@@ -16,7 +16,8 @@ defmodule PicselloWeb.ClientBookingEventLive.Show do
       subtitle_display: 1,
       date_display: 1,
       address_display: 1,
-      formatted_date: 1
+      formatted_date: 1,
+      maybe_event_disable_or_archive: 1
     ]
 
   @impl true
@@ -97,21 +98,4 @@ defmodule PicselloWeb.ClientBookingEventLive.Show do
       })
 
   defp maybe_show_expired_message(socket, _), do: socket
-
-  defp maybe_event_disable_or_archive(%{assigns: %{booking_event: booking_event}} = socket) do
-    status = Map.get(booking_event, :status)
-
-    case status do
-      :active ->
-        socket
-
-      status ->
-        socket
-        |> PicselloWeb.ConfirmationComponent.open(%{
-          title: "Your reservation has #{status}. You'll have to start over.",
-          icon: "warning-orange"
-        })
-    end
-    |> assign(status: status)
-  end
 end

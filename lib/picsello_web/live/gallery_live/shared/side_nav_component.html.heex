@@ -51,12 +51,15 @@
         <div class="font-bold bg-base-250/10 rounded-lg cursor-pointer grid-item">
           <div class="flex items-center lg:h-11 pr-4 lg:pl-2 lg:py-4 pl-3 py-3 overflow-hidden text-sm transition duration-300 ease-in-out rounded-lg text-ellipsis hover:text-blue-planning-300">
             <%= live_redirect class: "flex w-full", to: get_select_photo_route(@socket, @albums, @gallery, if(@is_mobile, do: [is_mobile: false], else: [])) do %>
-              <div class="flex items-center justify-start">
+              <div class="flex items-center justify-start flex-grow">
                 <div class="flex items-center justify-center flex-shrink-0 w-8 h-8 rounded-full bg-blue-planning-300">
                   <.icon name="photos-2" class="w-4 h-4 text-white fill-current"/>
                 </div>
-                <div class="justify-start ml-3">
+                <div class="flex items-center justify-start ml-3 flex-grow">
                   <span class={@arrow_show in ["photos", "albums"] && "text-blue-planning-300"}>Photos</span>
+                  <%= if @total_count do %>
+                    <.photo_count photos_count={@total_count} />
+                  <% end %>
                 </div>
               </div>
               <div class="flex px-2 items-center ml-auto">
@@ -64,7 +67,7 @@
                   <.icon name="warning-orange" class="w-4 h-4 stroke-2" />
                 </div>
                 <%= if @total_progress > 0 && @total_progress < 100 do %>
-                  <div class="flex sk-circle">
+                  <div class="flex sk-circle mr-2">
                     <div class="sk-circle1 sk-child"></div>
                     <div class="sk-circle2 sk-child"></div>
                     <div class="sk-circle3 sk-child"></div>
@@ -104,13 +107,13 @@
                 <%= if length(@albums) > 0 do %>
                   <%= if standard?(@gallery) do %>
                     <ul>
-                      <.li title={if List.last(@albums).is_client_liked && length(@albums) == 1, do: "All photos", else: "Unsorted photos"} name="unsorted" class="block" button_class={if @arrow_show == "photos" && @selected_album == nil , do: " text-blue-planning-300", else: "text-gray-700"} route={Routes.gallery_photos_index_path(@socket, :index, @gallery, if(@is_mobile, do: [is_mobile: false], else: []))}/>
+                      <.li photos_count={if List.last(@albums).is_client_liked && length(@albums) == 1, do: nil, else: @unsorted_count} title={if List.last(@albums).is_client_liked && length(@albums) == 1, do: "All photos", else: "Unsorted photos"} name="unsorted" class="block" button_class={if @arrow_show == "photos" && @selected_album == nil , do: " text-blue-planning-300", else: "text-gray-700"} route={Routes.gallery_photos_index_path(@socket, :index, @gallery, if(@is_mobile, do: [is_mobile: false], else: []))}/>
                     </ul>
                   <% end %>
                 <% end %>
                 <%= for album <- @albums do %>
                   <ul>
-                    <.li title={album.name} is_finals={album.is_finals} is_proofing={album.is_proofing} class="block" name={icon_name(album)} button_class={if is_selected_album(album, @selected_album), do: " text-blue-planning-300", else: "text-gray-700"} route={Routes.gallery_photos_index_path(@socket, :index, @gallery.id, album.id, if(@is_mobile, do: [is_mobile: false], else: []))}/>
+                    <.li photos_count={Map.get(album, :photos_count, nil)} title={album.name} is_finals={album.is_finals} is_proofing={album.is_proofing} class="block" name={icon_name(album)} button_class={if is_selected_album(album, @selected_album), do: " text-blue-planning-300", else: "text-gray-700"} route={Routes.gallery_photos_index_path(@socket, :index, @gallery.id, album.id, if(@is_mobile, do: [is_mobile: false], else: []))}/>
                   </ul>
                 <% end %>
               <% end %>
