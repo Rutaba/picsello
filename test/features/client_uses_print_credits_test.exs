@@ -369,6 +369,7 @@ defmodule Picsello.ClientUsesPrintCreditsTest do
       assert [%{errors: []}] = run_jobs()
 
       session
+      |> sleep(1000)
       |> assert_url_contains("orders")
       |> assert_text("Order details")
       |> assert_has(definition("Total", text: "$10.95"))

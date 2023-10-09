@@ -413,6 +413,7 @@ defmodule Picsello.UserManagesBookingEventsTest do
     |> fill_in(css("#form-details_dates_0_date"), with: "10-10-2050")
     |> fill_in(css("#form-details_dates_0_time_blocks_0_start_time"), with: "13:00")
     |> fill_in(css("#form-details_dates_0_time_blocks_0_end_time"), with: "15:00")
+    |> sleep(1000)
     |> wait_for_enabled_submit_button(text: "Next")
     |> click(button("Next"))
     |> assert_text("Add booking event: Select package")
