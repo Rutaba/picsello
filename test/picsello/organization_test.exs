@@ -16,7 +16,9 @@ defmodule Picsello.OrganizaitonTest do
       insert(:organization, slug: "jane-s-photography")
 
       assert {:ok, %{slug: "jane-s-photography-2"}} =
-               Organization.registration_changeset(%Organization{}, %{name: "Jane's Photography 2"})
+               Organization.registration_changeset(%Organization{}, %{
+                 name: "Jane's Photography 2"
+               })
                |> Repo.insert()
     end
 
@@ -33,7 +35,9 @@ defmodule Picsello.OrganizaitonTest do
       insert(:organization, slug: "jane-photography-1")
 
       assert {:ok, %{slug: "jane-s-photography-3"}} =
-               Organization.registration_changeset(%Organization{}, %{name: "Jane's Photography 3"})
+               Organization.registration_changeset(%Organization{}, %{
+                 name: "Jane's Photography 3"
+               })
                |> Repo.insert()
     end
 
