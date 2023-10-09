@@ -300,7 +300,7 @@ defmodule PicselloWeb.Live.EmailAutomations.Show do
                   <p class="text-black text-xl">
                     <%= get_email_name(email, @type, index, @pipeline.state) %>
                     <%= if not is_nil(email.stopped_at) do %>
-                      <span class="ml-2 rounded-md bg-red-sales-100 text-red-sales-300 px-2 pb-1 text-sm font-bold whitespace-nowrap">Stopped</span>
+                      <span testid={"#{@pipeline.state}-stop_text-#{index}"} class="ml-2 rounded-md bg-red-sales-100 text-red-sales-300 px-2 pb-1 text-sm font-bold whitespace-nowrap">Stopped</span>
                     <% end %>
                   </p>
                   <div class="flex items-center bg-white">
@@ -316,7 +316,7 @@ defmodule PicselloWeb.Live.EmailAutomations.Show do
 
               <div class="flex justify-end mr-2">
                 <%= if not (is_state_manually_trigger(@pipeline.state) and index == 0) do %>
-                  <button testid="email_stop_button" disabled={is_email_disable} class={classes("flex flex-row items-center justify-center w-8 h-8 bg-base-200 mr-2 rounded-xl", %{"opacity-30 hover:cursor-not-allowed" => is_email_disable})} phx-click="confirm-stop-email" phx-value-email_id={email.id}>
+                  <button testid={"#{@pipeline.state}-stop_button-#{index}"} disabled={is_email_disable} class={classes("flex flex-row items-center justify-center w-8 h-8 bg-base-200 mr-2 rounded-xl", %{"opacity-30 hover:cursor-not-allowed" => is_email_disable})} phx-click="confirm-stop-email" phx-value-email_id={email.id}>
                     <.icon name="stop" class="flex flex-col items-center justify-center w-5 h-5 text-red-sales-300"/>
                   </button>
                 <% end %>

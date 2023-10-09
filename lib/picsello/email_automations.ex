@@ -11,7 +11,7 @@ defmodule Picsello.EmailAutomations do
     Jobs,
     Galleries,
     EmailAutomationSchedules,
-    Notifiers.ClientNotifier
+    Notifiers.EmailAutomationNotifier
   }
 
   alias Picsello.EmailAutomation.{
@@ -154,7 +154,7 @@ defmodule Picsello.EmailAutomations do
 
     schema_gallery = schemas(gallery)
 
-    ClientNotifier.deliver_automation_email_gallery(
+    EmailAutomationNotifier.Impl.deliver_automation_email_gallery(
       email,
       gallery,
       schema_gallery,
@@ -165,14 +165,20 @@ defmodule Picsello.EmailAutomations do
   end
 
   def send_now_email(type, email, job, state) when type in [:lead, :job] do
-    ClientNotifier.deliver_automation_email_job(email, job, {job}, state, PicselloWeb.Helpers)
+    EmailAutomationNotifier.Impl.deliver_automation_email_job(
+      email,
+      job,
+      {job},
+      state,
+      PicselloWeb.Helpers
+    )
     |> update_schedule(email.id)
   end
 
   def send_now_email(:order, email, order, state) do
     order = order |> Repo.preload(gallery: :job)
 
-    ClientNotifier.deliver_automation_email_order(
+    EmailAutomationNotifier.Impl.deliver_automation_email_order(
       email,
       order,
       {order, order.gallery},

@@ -240,32 +240,7 @@ defmodule Picsello.EmailAutomationsTest do
     session: session
   } do
     session
-    |> click(button("Leads"))
-    |> click(button("Create a lead"))
-    |> click(button("Add a new client"))
-    |> fill_in(css("input[id='job_client_email']"), with: "example@example.com")
-    |> fill_in(css("input[id='job_client_name']"), with: "MyClient")
-    |> scroll_into_view(css("div[testid='wedding']"))
-    |> click(css("div[testid='wedding']"))
-    |> click(css("div[testid='wedding']"))
-    |> click(css("div[testid='wedding']"))
-    |> click(button("Save"))
-    |> find(css("div[data-testid='inbox']"), fn div ->
-      click(div, button("View all"))
-    end)
-    |> click(css("span", text: "Inquiry and Follow Up Emails"))
-    |> assert_has(button("Start Sequence"))
-    |> assert_has(css("use[href='/images/icons.svg#flag']", count: 1))
-    |> assert_has(css("use[href='/images/icons.svg#tick']", count: 0))
-    |> assert_has(css("use[href='/images/icons.svg#envelope']", count: 3))
-    |> assert_has(css("button[disabled]", text: "Start Sequence", count: 0))
-    |> assert_has(button("Send now", count: 3))
-    |> assert_has(css("button[disabled]", text: "Send now", count: 3))
-    |> assert_has(css("button[testid='email_stop_button']", count: 3))
-    # all send now and stop buttons
-    |> assert_has(css("button[disabled]", count: 6))
-    |> click(button("Start Sequence"))
-    |> click(button("Yes, send email"))
+    |> open_inquiry_and_follow_up_emails()
     |> assert_has(css("button[disabled]", text: "Start Sequence", count: 1))
     # one start sequence, other edit email
     |> assert_has(css("button[disabled]", count: 2))
@@ -295,5 +270,49 @@ defmodule Picsello.EmailAutomationsTest do
     # But, we expect only four
     |> assert_has(css("use[href='/images/icons.svg#tick']", count: 5))
     |> assert_has(css("use[href='/images/icons.svg#envelope']", count: 0))
+  end
+
+  feature "stop-email stops any specific email only", %{
+    session: session
+  } do
+    session
+    |> open_inquiry_and_follow_up_emails()
+    |> click(css("button[testid='manual_thank_you_lead-stop_button-1']", count: 1))
+    |> click(button("Yes, stop email"))
+    |> assert_has(css("span[testid='manual_thank_you_lead-stop_text-1']", count: 1))
+    |> click(css("button[testid='manual_thank_you_lead-stop_button-3']", count: 1))
+    |> click(button("Yes, stop email"))
+    |> assert_has(css("span[testid='manual_thank_you_lead-stop_text-3']", count: 1))
+
+
+  end
+
+  defp open_inquiry_and_follow_up_emails(session) do
+    session
+    |> click(button("Leads"))
+    |> click(button("Create a lead"))
+    |> click(button("Add a new client"))
+    |> fill_in(css("input[id='job_client_email']"), with: "example@example.com")
+    |> fill_in(css("input[id='job_client_name']"), with: "MyClient")
+    |> scroll_into_view(css("div[testid='wedding']"))
+    |> click(css("div[testid='wedding']"))
+    |> click(css("div[testid='wedding']"))
+    |> click(css("div[testid='wedding']"))
+    |> click(button("Save"))
+    |> find(css("div[data-testid='inbox']"), fn div ->
+      click(div, button("View all"))
+    end)
+    |> click(css("span", text: "Inquiry and Follow Up Emails"))
+    |> assert_has(button("Start Sequence"))
+    |> assert_has(css("use[href='/images/icons.svg#flag']", count: 1))
+    |> assert_has(css("use[href='/images/icons.svg#tick']", count: 0))
+    |> assert_has(css("use[href='/images/icons.svg#envelope']", count: 3))
+    |> assert_has(css("button[disabled]", text: "Start Sequence", count: 0))
+    |> assert_has(button("Send now", count: 3))
+    |> assert_has(css("button[disabled]", text: "Send now", count: 3))
+    |> assert_has(css("button[testid='manual_thank_you_lead-stop_button-1']", count: 1))
+    |> assert_has(css("button[disabled]", count: 6))
+    |> click(button("Start Sequence"))
+    |> click(button("Yes, send email"))
   end
 end
