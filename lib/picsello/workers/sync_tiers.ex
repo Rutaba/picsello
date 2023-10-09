@@ -26,6 +26,7 @@ defmodule Picsello.Workers.SyncTiers do
     )
 
     {:ok, token} = Goth.fetch(Picsello.Goth)
+    IO.inspect(token, label: "Token")
 
     connection = Sheets.Connection.new(token.token)
     {_number, _values} = sync_base_prices(connection)
