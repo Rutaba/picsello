@@ -17,7 +17,7 @@
       <%= if PaymentSchedules.paid_any?(@job) do %>
         <span class="capitalize"><%= @job.client.name %></span>, your shoot has been booked!
       <% else %>
-        <span class="capitalize"><%= @job.client.name %></span>, <%= @client_proposal.title %>
+      <%= @client_proposal.title %>, <span class="capitalize"><%= @job.client.name %></span>
       <% end %>
     </h2>
 
@@ -31,7 +31,7 @@
 
             Thank you for choosing <%= @organization.name %>.
           <% else %>
-            <%= raw @client_proposal.message %>
+            <%= raw @client_proposal.message |> String.replace("</p>", "</p><br>") %>
             <br>
           <% end %>
         </p>
