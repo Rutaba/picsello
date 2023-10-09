@@ -12,12 +12,12 @@ defmodule Picsello.EditQuestionnaireTest do
   feature "user goes home from questionnaires", %{session: session} do
     session
     |> visit("/questionnaires")
-    |> click(css("a[href='/home']", at: 1, count: 2))
+    |> click(css("a[href='/home']"))
     |> assert_path("/home")
 
     session
     |> visit("/questionnaires")
-    |> click(css("a[href='/home']", at: 1, count: 2))
+    |> click(css("a[href='/home']"))
     |> assert_path("/home")
   end
 

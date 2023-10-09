@@ -8,10 +8,11 @@ defmodule PicselloWeb.GalleryLive.ClientAlbum do
 
   import PicselloWeb.GalleryLive.Shared
 
-  alias Picsello.{Repo, Galleries, GalleryProducts, Albums, Cart, Orders}
+  alias Picsello.{Repo, Galleries, GalleryProducts, Albums, Galleries.Album, Cart, Orders}
   alias PicselloWeb.GalleryLive.Photos.Photo.ClientPhoto
   alias Picsello.Galleries.PhotoProcessing.ProcessingManager
   alias Picsello.Galleries.Watermark
+  alias PicselloWeb.GalleryLive.Shared.DownloadLinkComponent
 
   @per_page 12
 
@@ -29,8 +30,14 @@ defmodule PicselloWeb.GalleryLive.ClientAlbum do
 
   @impl true
   def handle_params(%{"album_id" => album_id}, _, socket) do
+    album = Albums.get_album!(album_id)
+    if connected?(socket), do: Album.subscribe(album)
+
     socket
-    |> assign(:album, %{is_proofing: false, is_finals: false} = Albums.get_album!(album_id))
+    |> assign(
+      :album,
+      %{is_proofing: false, is_finals: false} = album
+    )
     |> assign(:is_proofing, false)
     |> assigns()
   end
@@ -206,6 +213,12 @@ defmodule PicselloWeb.GalleryLive.ClientAlbum do
     |> noreply()
   end
 
+  def handle_info({:pack, :ok, %{packable: %{id: packable_id}, status: status}}, socket) do
+    DownloadLinkComponent.update_status(packable_id, status)
+
+    noreply(socket)
+  end
+
   defp assigns(
          %{assigns: %{album: album, gallery: gallery, client_email: client_email} = assigns} =
            socket
@@ -240,6 +253,7 @@ defmodule PicselloWeb.GalleryLive.ClientAlbum do
       favorites_count: Galleries.gallery_favorites_count(gallery),
       favorites_filter: false,
       gallery: gallery,
+      album_order_photos: Orders.get_all_purchased_photos_in_album(gallery, album.id),
       album: album,
       photos_count: Galleries.get_album_photo_count(gallery.id, album.id),
       page: 0,
@@ -258,43 +272,29 @@ defmodule PicselloWeb.GalleryLive.ClientAlbum do
 
   defp top_section(%{is_proofing: false} = assigns) do
     ~H"""
-    <%= if @album.is_finals do %>
+    <div class="flex items-center">
       <div class="text-lg font-bold lg:text-3xl">Your Photos</div>
-      <div class="flex flex-col lg:flex-row justify-between lg:items-center my-4 w-full">
-        <div class="flex items-center mt-4">
-          <.button
-          element="a"
-          icon="download"
-          icon_class="h-4 w-4 fill-current"
-          class="py-1.5 px-8"
-          download
-          href={Routes.gallery_downloads_path(
-              @socket, :download_all,
-              @gallery.client_link_hash,
-              photo_ids: @album.photos |> Enum.map(& &1.id) |> Enum.join(","),
-              is_client: true
-          )}>
-          Download all photos
-          </.button>
+      <.photos_count photos_count={@photos_count} class="ml-4" />
+    </div>
+    <div class="flex flex-col lg:flex-row justify-between lg:items-center my-4 w-full">
+      <div class="flex items-center mt-4">
+        <%= if Enum.any?(@album_order_photos) || @album.is_finals do %>
+          <.download_link packable={@album} class="mr-4 px-8 font-medium text-base-300 bg-base-100 border border-base-300 min-w-[12rem] hover:text-base-100 hover:bg-base-300">
+            Download purchased album photos
+            <.icon name="download" class="w-4 h-4 ml-2 fill-current" />
+          </.download_link>
+        <% end %>
 
-          <.photos_count photos_count={@photos_count} class="ml-4" />
-        </div>
-        <.toggle_filter title="Show favorites only" event="toggle_favorites" applied?={@favorites_filter} album_favorites_count={@album_favorites_count}/>
       </div>
-    <% else %>
-      <div class="flex flex-col sm:flex-row sm:justify-between sm:items-end">
-        <div class="text-lg font-bold lg:text-3xl">Your Photos</div>
-        <.toggle_filter title="Show favorites only" event="toggle_favorites" applied?={@favorites_filter} album_favorites_count={@album_favorites_count}/>
-      </div>
-      <.photos_count {assigns} class="mb-8 lg:mb-16" />
-    <% end %>
+      <.toggle_filter title="Show favorites only" event="toggle_favorites" applied?={@favorites_filter} album_favorites_count={@album_favorites_count}/>
+    </div>
     """
   end
 
   defp top_section(%{is_proofing: true} = assigns) do
     ~H"""
       <h3 {testid("album-title")} class="text-lg lg:text-3xl"><%= @album.name %></h3>
-      <p class="mt-2 text-lg font-normal">Select your favourite photos below
+      <p class="mt-2 text-lg font-normal">Select your favorite photos below
         and then send those selections to your photographer for retouching.
       </p>
     <.photos_count {assigns} />
@@ -364,4 +364,6 @@ defmodule PicselloWeb.GalleryLive.ClientAlbum do
     <% end %>
     """
   end
+
+  defdelegate download_link(assigns), to: DownloadLinkComponent
 end

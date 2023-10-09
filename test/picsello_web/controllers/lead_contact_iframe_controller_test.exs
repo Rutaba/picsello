@@ -46,7 +46,7 @@ defmodule PicselloWeb.LeadContactIframeControllerTest do
                )
              )
              |> html_response(200)
-             |> String.contains?("Get in touch")
+             |> String.contains?("Let's work together!")
     end
   end
 

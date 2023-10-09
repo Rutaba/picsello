@@ -669,7 +669,7 @@ defmodule Picsello.Galleries do
   def album_params_for_new(type),
     do: [
       %{
-        name: type,
+        name: String.capitalize(type) <> " Selections",
         is_proofing: type == "proofing",
         is_finals: type == "finals",
         set_password: false,

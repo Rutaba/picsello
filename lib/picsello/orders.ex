@@ -132,6 +132,23 @@ defmodule Picsello.Orders do
     end
   end
 
+  def get_all_purchased_photos_in_album(gallery, album_id) do
+    if can_download_all?(gallery) do
+      from(photo in Photo, where: photo.gallery_id == ^gallery.id and photo.album_id == ^album_id)
+      |> Repo.all()
+    else
+      from(digital in Digital,
+        join: order in subquery(client_paid_query()),
+        on: order.id == digital.order_id,
+        join: photo in assoc(digital, :photo),
+        where: order.gallery_id == ^gallery.id,
+        where: photo.album_id == ^album_id,
+        select: photo
+      )
+      |> Repo.all()
+    end
+  end
+
   def get_all_photos!(%{client_link_hash: gallery_hash} = gallery) do
     if can_download_all?(gallery) do
       %{

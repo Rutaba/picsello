@@ -5,6 +5,8 @@ defmodule Picsello.GalleryBundleDownloadTest do
   import Money.Sigils
   use Oban.Testing, repo: Picsello.Repo
 
+  alias Picsello.Repo
+
   setup :verify_on_exit!
 
   def gcs_resp(status),
@@ -76,7 +78,7 @@ defmodule Picsello.GalleryBundleDownloadTest do
     |> visit("/gallery/#{gallery.client_link_hash}")
     |> assert_text(gallery.name)
     |> click(css("a", text: "View Gallery"))
-    |> assert_has(link("Download all"))
+    |> assert_has(link("Download purchased photos"))
 
     session
     |> visit(Routes.gallery_photos_index_path(PicselloWeb.Endpoint, :index, gallery.id))
@@ -102,7 +104,7 @@ defmodule Picsello.GalleryBundleDownloadTest do
 
     session
     |> visit("/gallery/#{gallery.client_link_hash}")
-    |> assert_has(link("Download all"))
+    |> assert_has(link("Download purchased photos"))
 
     session
     |> visit("/galleries/#{gallery.id}/photos")
@@ -119,5 +121,38 @@ defmodule Picsello.GalleryBundleDownloadTest do
              %{worker: "Picsello.Workers.PackGallery", state: "completed"},
              %{worker: "Picsello.Workers.PackDigitals", state: "completed"}
            ] = run_jobs(with_scheduled: true) |> Enum.drop(2)
+  end
+
+  test "album packs purchased photos", %{
+    session: session,
+    gallery: gallery
+  } do
+    album = insert(:album, %{gallery_id: gallery.id}) |> Repo.preload([:photos, :thumbnail_photo])
+
+    session
+    |> visit("/galleries/#{gallery.id}/albums")
+    |> assert_text(gallery.name)
+    |> click(css("#actions-#{album.id}"))
+    |> click(css("*[phx-click='go_to_album']", text: "Go to album"))
+    |> attach_file(file_field("Add photos", visible: false),
+      path: "assets/static/images/phoenix.png"
+    )
+    |> assert_has(css(".muuri-item"))
+
+    session
+    |> visit("/gallery/#{gallery.client_link_hash}/album/#{album.id}")
+    |> assert_has(link("Download purchased album photos"))
+
+    assert_enqueued([worker: Picsello.Workers.PackGallery], 1000)
+
+    assert [
+             %{worker: "Picsello.Workers.PackDigitals", state: "scheduled"},
+             %{worker: "Picsello.Workers.PackGallery", state: "completed"}
+           ] = run_jobs()
+
+    assert [
+             %{worker: "Picsello.Workers.PackGallery", state: "completed"},
+             %{worker: "Picsello.Workers.PackDigitals", state: "completed"}
+           ] = run_jobs(with_scheduled: true)
   end
 end
