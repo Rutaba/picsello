@@ -51,9 +51,7 @@ defmodule Picsello.GalleryBundleNoDownloadTest do
     })
 
     insert(:gallery_client, %{email: user.email, gallery_id: gallery.id})
-
-    gallery_client =
-      insert(:gallery_client, %{email: "testing@picsello.com", gallery_id: gallery.id})
+    insert(:gallery_client, %{email: "testing@picsello.com", gallery_id: gallery.id})
 
     [gallery: gallery]
   end
