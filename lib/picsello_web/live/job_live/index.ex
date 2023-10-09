@@ -14,10 +14,10 @@ defmodule PicselloWeb.JobLive.Index do
     ]
 
   alias Ecto.Changeset
-  alias Picsello.{Job, Jobs, Repo, Payments}
+  alias Picsello.{Job, Jobs, Repo, Payments, Package}
   alias PicselloWeb.{JobLive}
 
-  @default_pagination_limit 6
+  @default_pagination_limit 12
 
   @impl true
   def mount(_params, _session, socket) do

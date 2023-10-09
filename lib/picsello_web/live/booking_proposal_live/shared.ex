@@ -218,7 +218,7 @@ defmodule PicselloWeb.BookingProposalLive.Shared do
       <%= if @print_credit do %>
         <hr class="col-span-2">
         <div class="flex flex-col col-span-1 sm:col-span-1">
-          <h3 class="font-light">Print Credits</h3>
+          <h3 class="font-light sm:col-span-1 pl-4 md:pl-8">Print Credits</h3>
         </div>
 
         <div class="flex flex-col col-span-1 sm:col-span-1">
