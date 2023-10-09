@@ -52,7 +52,7 @@ defmodule PicselloWeb.Live.Brand.Shared do
 
     %{
       title: "Welcome",
-      booking_panel_title: "Here's how to officially book your photo session:",
+      booking_panel_title: "Here's how to book your photo session:",
       message:
         "Please note that your session will be considered officially booked once you accept the proposal, review and sign the contract, complete the questionnaire, and make payment.
         <br>

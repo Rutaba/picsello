@@ -184,7 +184,7 @@ defmodule Picsello.OrdersTest do
                }
              } = Repo.reload!(order)
 
-      assert_receive {:delivered_email, %{to: [nil: "photographer@example.com"]} = email}
+      assert_receive {:delivered_email, %{to: [email: "customer@example.com"]} = email}
 
       assert %{
                "button" => %{
@@ -193,7 +193,7 @@ defmodule Picsello.OrdersTest do
                }
              } = email |> email_substitutions()
 
-      assert_receive {:delivered_email, %{to: [email: "customer@example.com"]} = email}
+      assert_receive {:delivered_email, %{to: [nil: "photographer@example.com"]} = email}
 
       assert %{
                "button" => %{

@@ -163,7 +163,7 @@ defmodule PicselloWeb.GalleryLive.ClientOrder do
       </p>
       <p class="mt-4 text-lg">
         Simply select more of your favorite images, and send your list to <%= @photographer.name %> again.
-        They'll be notified that you've added new favourites to your list and get those ready for you.
+        They'll be notified that you've added new favorites to your list and get those ready for you.
       </p>
     </div>
     """

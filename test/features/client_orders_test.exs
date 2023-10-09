@@ -707,7 +707,7 @@ defmodule Picsello.ClientOrdersTest do
       |> assert_download_link("Download photos", gallery_name)
       |> click(link("Home"))
       |> find(
-        link("Download all photos"),
+        link("Download purchased photos"),
         &assert(
           Element.attr(&1, "href")
           |> URI.parse()
