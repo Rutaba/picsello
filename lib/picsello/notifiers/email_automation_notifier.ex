@@ -1,9 +1,9 @@
 defmodule Picsello.Notifiers.EmailAutomationNotifier do
   @moduledoc false
 
-  @callback deliver_automation_email_job(map(), map(), tuple(), atom(), any()) :: :ok
-  @callback deliver_automation_email_gallery(map(), map(), tuple(), atom(), any()) :: :ok
-  @callback deliver_automation_email_order(map(), map(), tuple(), atom(), any()) :: :ok
+  @callback deliver_automation_email_job(map(), map(), tuple(), atom(), any()) :: {:error, binary() | map()} | {:ok, map()}
+  @callback deliver_automation_email_gallery(map(), map(), tuple(), atom(), any()) :: {:error, binary() | map()} | {:ok, map()}
+  @callback deliver_automation_email_order(map(), map(), tuple(), atom(), any()) :: {:error, binary() | map()} | {:ok, map()}
 
   def deliver_automation_email_job(email_preset, job, schema, state, helpers),
     do: impl().deliver_automation_email_job(email_preset, job, schema, state, helpers)
