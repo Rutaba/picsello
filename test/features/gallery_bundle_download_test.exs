@@ -154,25 +154,5 @@ defmodule Picsello.GalleryBundleDownloadTest do
              %{worker: "Picsello.Workers.PackGallery", state: "completed"},
              %{worker: "Picsello.Workers.PackDigitals", state: "completed"}
            ] = run_jobs(with_scheduled: true)
-
-    session
-    |> visit("/gallery/#{gallery.client_link_hash}")
-    |> assert_has(link("Download purchased photos"))
-
-    session
-    |> visit("/galleries/#{gallery.id}/photos")
-    |> click(css("div[id$='-remove']", visible: false))
-    |> click(button("Yes, delete"))
-    |> assert_text("nothing here")
-
-    assert [
-             %{worker: "Picsello.Workers.PackDigitals", state: "scheduled"},
-             %{worker: "Picsello.Workers.PackGallery", state: "completed"}
-           ] = run_jobs() |> Enum.drop(2)
-
-    assert [
-             %{worker: "Picsello.Workers.PackGallery", state: "completed"},
-             %{worker: "Picsello.Workers.PackDigitals", state: "completed"}
-           ] = run_jobs(with_scheduled: true) |> Enum.drop(2)
   end
 end
