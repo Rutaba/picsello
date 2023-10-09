@@ -83,7 +83,7 @@
         <div class="sm:col-span-2 flex flex-col sm:flex gap-2 sm:gap-0 hidden md:block">
           <%= if job.package do %>
             <p class="capitalize font-bold"><%= job.package.name || "-" %><span class="font-normal capitalize"><%= "-#{job.type}" %></span></p>
-            <p class="text-gray-400"><%= job.package.base_price || "-" %></p>
+            <p class="text-gray-400"><%=  Package.price(job.package) |> Money.to_string(fractional_unit: false) %></p>
           <% else %>
             <p class="font-bold text-red-sales-300">No package selected</p>
             <p>-</p>
