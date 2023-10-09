@@ -7,7 +7,6 @@ defmodule Picsello.EmailPresets do
 
   alias Picsello.{Repo, Job, Shoot, EmailPresets.EmailPreset, Utils}
   alias Picsello.Galleries.Gallery
-  alias Picsello.EmailAutomation.{EmailAutomationPipeline}
 
   def email_automation_presets(type, job_type, pipeline_id) do
     from(p in presets(type),
@@ -43,14 +42,12 @@ defmodule Picsello.EmailPresets do
          job_status: %{is_lead: true, current_status: current_status},
          id: job_id
        }) do
-    state = if current_status == :not_sent, do: :lead, else: :maual_booking_proposal_sent
+    state = if current_status == :not_sent, do: :lead, else: :manual_booking_proposal_sent
 
     from(preset in query,
       join: job in Job,
       on: job.type == preset.job_type and job.id == ^job_id,
-      join: p in EmailAutomationPipeline,
-      on: preset.email_automation_pipeline_id == p.id,
-      where: p.state == ^state
+      where: preset.state == ^state
     )
   end
 
@@ -58,8 +55,6 @@ defmodule Picsello.EmailPresets do
     from(preset in query,
       join: job in Job,
       on: job.type == preset.job_type and job.id == ^job_id,
-      join: p in EmailAutomationPipeline,
-      on: preset.email_automation_pipeline_id == p.id,
       join:
         shoot in subquery(
           from(shoot in Shoot,
@@ -69,8 +64,8 @@ defmodule Picsello.EmailPresets do
         ),
       on: true,
       where:
-        (p.state == :job and shoot.past_count == 0) or
-          (p.state == :post_shoot and shoot.past_count > 0)
+        (preset.state == :job and shoot.past_count == 0) or
+          (preset.state == :post_shoot and shoot.past_count > 0)
     )
   end
 
@@ -98,7 +93,8 @@ defmodule Picsello.EmailPresets do
     %{
       preset
       | body_template: Utils.render(preset.body_template, data),
-        subject_template: Utils.render(preset.subject_template, data)
+        subject_template: Utils.render(preset.subject_template, data),
+        short_codes: data
     }
   end
 end

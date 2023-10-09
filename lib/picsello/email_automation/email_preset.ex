@@ -34,6 +34,7 @@ defmodule Picsello.EmailPresets.EmailPreset do
     field :count, :integer, virtual: true
     field :calendar, :string, virtual: true
     field :sign, :string, virtual: true
+    field :short_codes, :map, virtual: true
     field :template_id, :integer, virtual: true
 
     belongs_to(:email_automation_pipeline, EmailAutomationPipeline)
