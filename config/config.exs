@@ -174,6 +174,7 @@ config :picsello, :photo_storage_service, Picsello.Galleries.Workers.PhotoStorag
 
 config :picsello, :zapier,
   new_user_webhook_url: System.get_env("ZAPIER_NEW_USER_WEBHOOK_URL"),
+  gallery_order_webhook_url: System.get_env("ZAPIER_GALLERY_ORDER_WEBHOOK_URL"),
   trial_user_webhook_url: System.get_env("ZAPIER_TRIAL_USER_WEBHOOK_URL"),
   subscription_ending_user_webhook_url:
     System.get_env("ZAPIER_SUBSCRIPTION_ENDING_USER_WEBHOOK_URL")
