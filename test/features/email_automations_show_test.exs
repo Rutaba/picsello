@@ -283,8 +283,6 @@ defmodule Picsello.EmailAutomationsTest do
     |> click(css("button[testid='manual_thank_you_lead-stop_button-3']", count: 1))
     |> click(button("Yes, stop email"))
     |> assert_has(css("span[testid='manual_thank_you_lead-stop_text-3']", count: 1))
-
-
   end
 
   defp open_inquiry_and_follow_up_emails(session) do
