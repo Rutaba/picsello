@@ -11,6 +11,29 @@ defmodule Picsello.ClientOrdersTest do
   end
 
   setup do
+    test_pid = self()
+
+    Tesla.Mock.mock_global(fn
+      %{method: :put} = request ->
+        send(test_pid, {:sendgrid_request, request})
+
+        body = %{"job_id" => "1234"}
+
+        %Tesla.Env{status: 202, body: body}
+
+      %{method: :post} = request ->
+        send(test_pid, {:zapier_request, request})
+
+        body = %{
+          "attempt" => "1234",
+          "id" => "1234",
+          "request_id" => "1234",
+          "status" => "success"
+        }
+
+        %Tesla.Env{status: 200, body: body}
+    end)
+
     organization = insert(:organization, stripe_account_id: "photographer-stripe-account-id")
 
     user =
