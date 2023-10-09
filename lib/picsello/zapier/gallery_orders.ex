@@ -5,6 +5,9 @@ defmodule Picsello.Zapier.GalleryOrders do
   """
 
   defmodule JsonEncoder do
+    @moduledoc """
+     module to encode structs to json
+    """
     def encode(map) do
       map |> Map.from_struct() |> Jason.encode!()
     end
