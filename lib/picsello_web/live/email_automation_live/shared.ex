@@ -844,7 +844,7 @@ defmodule PicselloWeb.EmailAutomationLive.Shared do
     end
   end
 
-  def insert_order_emails(gallery, order) do
+  def insert_gallery_order_emails(gallery, order) do
     emails = gallery_order_emails(gallery, order)
 
     case Repo.insert_all(EmailSchedule, emails) do
