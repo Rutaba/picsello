@@ -156,8 +156,7 @@ defmodule Picsello.EditQuestionnaireTest do
           |> fill_in(text_field("questionnaire[questions][2][options][]"),
             with: "Option 2"
           )
-          |> click(css("li button"))
-          )
+          |> click(css("li button")))
       )
     end)
     |> wait_for_enabled_submit_button()

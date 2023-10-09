@@ -25,25 +25,27 @@ defmodule Picsello.EmailAutomationsTest do
       )
     end
 
-    email_2 =insert(:email_preset,
-      name: "Use this email preset 3",
-      job_type: "wedding",
-      organization_id: user.organization_id,
-      status: :active,
-      email_automation_pipeline_id: 2,
-      state: "manual_thank_you_lead",
-      type: "lead"
-    )
+    email_2 =
+      insert(:email_preset,
+        name: "Use this email preset 3",
+        job_type: "wedding",
+        organization_id: user.organization_id,
+        status: :active,
+        email_automation_pipeline_id: 2,
+        state: "manual_thank_you_lead",
+        type: "lead"
+      )
 
-    email_3 = insert(:email_preset,
-      name: "Use this email preset 4",
-      job_type: "wedding",
-      organization_id: user.organization_id,
-      status: :active,
-      email_automation_pipeline_id: 2,
-      state: "manual_thank_you_lead",
-      type: "lead"
-    )
+    email_3 =
+      insert(:email_preset,
+        name: "Use this email preset 4",
+        job_type: "wedding",
+        organization_id: user.organization_id,
+        status: :active,
+        email_automation_pipeline_id: 2,
+        state: "manual_thank_you_lead",
+        type: "lead"
+      )
 
     for {state, index} <-
           Enum.with_index([
@@ -407,13 +409,15 @@ defmodule Picsello.EmailAutomationsTest do
     end)
     |> find(css("div[testid='email']", count: 3, at: 1), fn div ->
       div
-      |> assert_has(css("div", text: "Wedding - Use this email preset 2", count: 0))       # But we expect only one. Why 4 here?
+      # But we expect only one. Why 4 here?
+      |> assert_has(css("div", text: "Wedding - Use this email preset 2", count: 0))
       |> assert_has(css("div", text: "Wedding - Use this email preset 3", count: 4))
       |> assert_has(css("div", text: "Wedding - Use this email preset 4", count: 0))
     end)
     |> find(css("div[testid='email']", count: 3, at: 2), fn div ->
       div
-      |> assert_has(css("div", text: "Wedding - Use this email preset 2", count: 0))       # But we expect only one. Why 4 here?
+      # But we expect only one. Why 4 here?
+      |> assert_has(css("div", text: "Wedding - Use this email preset 2", count: 0))
       |> assert_has(css("div", text: "Wedding - Use this email preset 3", count: 0))
       |> assert_has(css("div", text: "Wedding - Use this email preset 4", count: 4))
     end)
@@ -426,15 +430,20 @@ defmodule Picsello.EmailAutomationsTest do
       section
       |> find(css("div[testid='email']", count: 3, at: 1), fn div ->
         div
-        |> assert_has(css("div", text: "Wedding - Use this email preset 2", count: 0))       # But we expect only one. Why 4 here?
+        # But we expect only one. Why 4 here?
+        |> assert_has(css("div", text: "Wedding - Use this email preset 2", count: 0))
         |> assert_has(css("div", text: "Wedding - Use this email preset 3", count: 0))
         |> assert_has(css("div", text: "Wedding - Use this email preset 4", count: 4))
       end)
       |> find(css("div[testid='email']", count: 3, at: 2), fn div ->
         div
         |> assert_has(css("div", text: "Wedding - Use this email preset 2", count: 0))
-        |> assert_has(css("div", text: "Wedding - Use this email preset 3 - 2 Hours After", count: 0))       # But we expect four. Why 0 here?
-        |> assert_has(css("div", text: "Wedding - Use this email preset 4", count: 4))       # But we expect NO, why 4 here?
+        # But we expect four. Why 0 here?
+        |> assert_has(
+          css("div", text: "Wedding - Use this email preset 3 - 2 Hours After", count: 0)
+        )
+        # But we expect NO, why 4 here?
+        |> assert_has(css("div", text: "Wedding - Use this email preset 4", count: 4))
       end)
     end)
   end

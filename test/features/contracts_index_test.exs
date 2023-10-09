@@ -107,7 +107,6 @@ defmodule Picsello.ContractsIndexTest do
     |> scroll_to_bottom()
     |> assert_has(testid("contracts-row", count: 3))
     |> click(button("Actions", count: 3, at: 1))
-    |> sleep(10000)
     |> click(button("Archive"))
     |> click(button("Yes, archive"))
     |> assert_flash(:success, text: "Contract archived")
