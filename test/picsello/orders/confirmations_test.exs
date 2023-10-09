@@ -15,6 +15,21 @@ defmodule Picsello.Orders.ConfirmationsTest do
 
   setup do
     Mox.verify_on_exit!()
+    test_pid = self()
+
+    Tesla.Mock.mock_global(fn
+      %{method: :post} = request ->
+        send(test_pid, {:zapier_request, request})
+
+        body = %{
+          "attempt" => "1234",
+          "id" => "1234",
+          "request_id" => "1234",
+          "status" => "success"
+        }
+
+        %Tesla.Env{status: 200, body: body}
+    end)
 
     [
       gallery:
