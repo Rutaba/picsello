@@ -79,4 +79,9 @@ defmodule Picsello.Galleries.Album do
 
   defp validate_name(changeset),
     do: validate_length(changeset, :name, max: 35)
+
+  @type t :: %__MODULE__{
+          client_link_hash: String.t(),
+          gallery_id: integer()
+        }
 end
