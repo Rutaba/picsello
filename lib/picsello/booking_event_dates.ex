@@ -532,9 +532,9 @@ defmodule Picsello.BookingEventDates do
     %{date: date, session_length: session_length, session_gap: session_gap, slots: slot_times} =
       booking_date
 
-    %{package_template: %{organization: %{user: user}}} =
+    %{organization: %{user: user}} =
       booking_event
-      |> Repo.preload(package_template: [organization: :user])
+      |> Repo.preload(organization: :user)
 
     beginning_of_day = DateTime.new!(date, ~T[00:00:00], user.time_zone)
 
