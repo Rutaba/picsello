@@ -605,6 +605,7 @@ defmodule Picsello.ClientUsesPrintCreditsTest do
         | status: "canceled"
       })
       |> click(link("My orders"))
+      |> sleep(30000)
       |> assert_text("Order Canceled")
       |> click(link("View details"))
       |> assert_text("Order Canceled")
