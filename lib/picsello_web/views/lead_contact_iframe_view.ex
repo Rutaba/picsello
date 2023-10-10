@@ -2,7 +2,7 @@ defmodule PicselloWeb.LeadContactIframeView do
   use PicselloWeb, :view
 
   import Phoenix.Component
-  import PicselloWeb.LiveHelpers, only: [job_type_option: 1, icon: 1]
+  import PicselloWeb.LiveHelpers, only: [job_type_option: 1]
 
   def render("index.html", assigns) do
     ~H"""
