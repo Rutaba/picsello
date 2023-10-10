@@ -329,24 +329,6 @@ defmodule Picsello.BookingEventDates do
   @spec transform_slots(input_slots :: [SlotBlock.t()]) :: [SlotBlock.t()]
   def transform_slots(input_slots), do: Enum.map(input_slots, &transform_slot/1)
 
-  defp transform_slot(slot) do
-    cond do
-      slot.status in [:booked, :reserved] ->
-        %SlotBlock{
-          slot
-          | client_id: nil,
-            job_id: nil,
-            status: :open
-        }
-
-      slot.status == :hidden ->
-        %SlotBlock{slot | is_hide: true}
-
-      true ->
-        slot
-    end
-  end
-
   @doc """
   Retrieves available time slots for booking within a BookingEventDate.
 
@@ -421,6 +403,61 @@ defmodule Picsello.BookingEventDates do
     |> filter_overlapping_shoots_slots(booking_event, booking_date, false)
   end
 
+  @doc """
+  Checks if any time slot for a given booking event on the specified dates is booked.
+
+  This function checks if any time slot for a particular booking event, identified by `booking_event_id`,
+  is booked on the specified list of `repeat_dates`. It queries the database for booking event dates
+  associated with each date and checks if any of their time slots have a booking status of `:booked`.
+
+  ## Parameters
+
+  - `repeat_dates` ([Date.t()]): A list of dates for which to check if any time slots are booked.
+  - `booking_event_id` (integer()): The unique identifier of the booking event to check.
+
+  ## Returns
+
+  `true` if any time slot for the specified booking event is booked on any of the provided `repeat_dates`,
+  `false` otherwise.
+
+  ## Example
+
+  ```elixir
+  iex> repeat_dates = [~D[2023-09-07], ~D[2023-09-08]]
+  iex> booking_event_id = 123
+  iex> is_booked_any_date?(repeat_dates, booking_event_id)
+  true
+  """
+  @spec is_booked_any_date?(repeat_dates :: [Date.t()], booking_event_id :: integer()) ::
+          boolean()
+  def is_booked_any_date?(repeat_dates, booking_event_id) do
+    booked? = fn %{slots: slots} -> Enum.any?(slots, &(&1.status == :booked)) end
+
+    Enum.any?(repeat_dates, fn date ->
+      [booking_event_id]
+      |> get_booking_events_dates_with_same_date(date)
+      |> Enum.any?(&booked?.(&1))
+    end)
+  end
+
+  defp transform_slot(slot) do
+    cond do
+      slot.status in [:booked, :reserved] ->
+        %SlotBlock{
+          slot
+          | client_id: nil,
+            job_id: nil,
+            status: :open
+        }
+
+      slot.status == :hidden ->
+        %SlotBlock{slot | is_hide: true}
+
+      true ->
+        slot
+    end
+  end
+
   # Constructs a database query to retrieve booking event dates
   defp booking_events_dates_query(booking_event_ids) do
     from(event_date in BookingEventDate,
@@ -454,8 +491,8 @@ defmodule Picsello.BookingEventDates do
 
   # Returns all slots with status for the given booking date start_time & end_time
   defp get_available_slots_each_block(start_time, end_time, _duration, _duration_buffer)
-       when is_nil(start_time) or is_nil(end_time),
-       do: []
+        when is_nil(start_time) or is_nil(end_time),
+        do: []
 
   # Recursively calculates available time slots within a given time block.
   defp get_available_slots_each_block(start_time, end_time, duration, duration_buffer) do
@@ -474,18 +511,18 @@ defmodule Picsello.BookingEventDates do
 
   # Base case of the recursive function that returns an empty list.
   defp get_available_slots_each_block(_slot, available_slots, _, _, _, _)
-       when available_slots == 0,
-       do: []
+        when available_slots == 0,
+        do: []
 
   # Recursively calculates available time slots within a given time block.
   defp get_available_slots_each_block(
-         slot,
-         available_slots,
-         duration,
-         duration_buffer,
-         start_time,
-         end_time
-       ) do
+          slot,
+          available_slots,
+          duration,
+          duration_buffer,
+          start_time,
+          end_time
+        ) do
     Enum.reduce_while(slot, [], fn x, acc ->
       duration = if x != available_slots - 1, do: duration_buffer, else: duration
 
@@ -504,8 +541,8 @@ defmodule Picsello.BookingEventDates do
 
   # Returns slots with status open or book
   defp filter_overlapping_shoots_slots(_, _, %{date: date, session_length: session_length}, _)
-       when is_nil(date) or is_nil(session_length),
-       do: []
+        when is_nil(date) or is_nil(session_length),
+        do: []
 
   # Filters time slots based on overlapping shoots and assigns booking status.
   defp filter_overlapping_shoots_slots(slot_times, booking_event, booking_date, false) do
@@ -540,7 +577,7 @@ defmodule Picsello.BookingEventDates do
 
       slot_booked =
         Enum.reduce_while(shoots, %{is_booked: false, client_id: nil, job_id: nil}, fn shoot,
-                                                                                       acc ->
+                                                                                        acc ->
           is_booked =
             is_slot_booked?(session_gap, slot_start, slot_end, shoot.start_time, shoot.end_time)
 
@@ -579,153 +616,6 @@ defmodule Picsello.BookingEventDates do
     else
       (ss_st in [:gt, :eq] && ss_et == :lt) || (se_st in [:gt, :eq] && se_et == :lt)
     end
-  end
-
-  @doc """
-  Checks if any time slot for a given booking event on the specified dates is booked.
-
-  This function checks if any time slot for a particular booking event, identified by `booking_event_id`,
-  is booked on the specified list of `repeat_dates`. It queries the database for booking event dates
-  associated with each date and checks if any of their time slots have a booking status of `:booked`.
-
-  ## Parameters
-
-  - `repeat_dates` ([Date.t()]): A list of dates for which to check if any time slots are booked.
-  - `booking_event_id` (integer()): The unique identifier of the booking event to check.
-
-  ## Returns
-
-  `true` if any time slot for the specified booking event is booked on any of the provided `repeat_dates`,
-  `false` otherwise.
-
-  ## Example
-
-  ```elixir
-  iex> repeat_dates = [~D[2023-09-07], ~D[2023-09-08]]
-  iex> booking_event_id = 123
-  iex> is_booked_any_date?(repeat_dates, booking_event_id)
-  true
-  """
-  @spec is_booked_any_date?(repeat_dates :: [Date.t()], booking_event_id :: integer()) ::
-          boolean()
-  def is_booked_any_date?(repeat_dates, booking_event_id) do
-    booked? = fn %{slots: slots} -> Enum.any?(slots, &(&1.status == :booked)) end
-
-    Enum.any?(repeat_dates, fn date ->
-      [booking_event_id]
-      |> get_booking_events_dates_with_same_date(date)
-      |> Enum.any?(&booked?.(&1))
-    end)
-  end
-
-  @doc """
-  Checks if there is any overlap between booking date time blocks and provided blocks.
-
-  This function checks if there is any overlap between the time blocks of a booking date and the
-  provided list of blocks. It is typically used to ensure that there are no conflicting time slots
-  when creating or updating booking events for a specific organization on a specific date.
-
-  ## Parameters
-
-  - `organization_id` (integer()): The unique identifier of the organization for which the check is performed.
-  - `date` (Date.t()): The date for which the check is performed.
-  - `blocks` ([BookingEventDate.t()]): A list of time blocks to compare against the time blocks of the
-    booking date.
-  - `event_date_id` (integer()): The unique identifier of the event date for which the check is performed.
-
-  ## Returns
-
-  `true` if there is an overlap between the time blocks of the booking date and the provided blocks,
-  indicating potential conflicts. `false` otherwise.
-
-  ## Example
-
-  ```elixir
-  iex> organization_id = 123
-  iex> date = ~D[2023-09-07]
-  iex> blocks = [%BookingEventDate{...}, %BookingEventDate{...}]
-  iex> event_date_id = 111
-  iex> booking_date_time_block_overlap?(organization_id, date, blocks, event_date_id)
-  true
-  iex> booking_date_time_block_overlap?(organization_id, nil, blocks, event_date_id)
-  false
-  """
-  def booking_date_time_block_overlap?(_organization_id, nil, _blocks, _event_date_id), do: false
-
-  @spec booking_date_time_block_overlap?(
-          organization_id :: integer(),
-          date :: Date.t(),
-          blocks :: [BookingEventDate.t()],
-          event_date_id :: integer()
-        ) :: boolean()
-  def booking_date_time_block_overlap?(organization_id, date, blocks, event_date_id) do
-    organization_id
-    |> BookingEvents.get_all_booking_events()
-    |> Enum.map(& &1.id)
-    |> is_date_time_block_overlap?(date, blocks, event_date_id)
-  end
-
-  @doc """
-  Checks if there is any overlap between repeat dates and booking date time blocks.
-
-  This function checks if there is any overlap between a list of repeat dates and the time blocks of a booking date.
-  It is typically used to ensure that there are no conflicting time slots when creating or updating booking events
-  for a specific organization.
-
-  ## Parameters
-
-  - `organization_id` (integer()): The unique identifier of the organization for which the check is performed.
-  - `blocks` ([BookingEventDate.t()]): A list of time blocks to compare against the time blocks of booking dates.
-  - `repeat_dates` ([Date.t()]): A list of repeat dates for which the overlap is checked.
-  - `current_booking_event_id` (integer()): The unique identifier of the current booking event to exclude from
-    the check.
-
-  ## Returns
-
-  `true` if there is an overlap between the repeat dates and the time blocks of booking dates, indicating potential
-  conflicts. `false` otherwise.
-
-  ## Example
-
-  ```elixir
-  iex> organization_id = 123
-  iex> blocks = [%BookingEventDate{...}, %BookingEventDate{...}]
-  iex> repeat_dates = [~D[2023-09-07], ~D[2023-09-08]]
-  iex> current_booking_event_id = 456
-  iex> repeat_dates_overlap?(organization_id, blocks, repeat_dates, current_booking_event_id)
-  true
-  iex> repeat_dates_overlap?(organization_id, blocks, [], current_booking_event_id)
-  false
-  """
-  def repeat_dates_overlap?(_organization_id, _blocks, [], _current_booking_event), do: false
-
-  @spec repeat_dates_overlap?(
-          organization_id :: integer(),
-          blocks :: [BookingEventDate.t()],
-          repeat_dates :: [Date.t()],
-          current_booking_event_id :: integer()
-        ) :: boolean()
-  def repeat_dates_overlap?(organization_id, blocks, repeat_dates, current_booking_event_id) do
-    booking_ids =
-      BookingEvents.get_all_booking_events(organization_id)
-      |> Enum.map(& &1.id)
-      |> Enum.reject(&(&1 == current_booking_event_id))
-
-    repeat_dates
-    |> Enum.any?(fn date ->
-      is_date_time_block_overlap?(booking_ids, date, blocks)
-    end)
-  end
-
-  # Checks if there is any overlap between booking date time blocks and provided blocks.
-  defp is_date_time_block_overlap?(booking_ids, date, blocks, date_id \\ nil) do
-    booking_ids
-    |> get_booking_events_dates_with_same_date(date)
-    |> Enum.reject(&(&1.id == date_id))
-    |> Enum.flat_map(& &1.time_blocks)
-    |> Enum.concat(blocks)
-    |> Enum.sort_by(&{&1.start_time, &1.end_time})
-    |> BookingEvents.overlap_time?()
   end
 
   defp booking_event_date_query(date_id),

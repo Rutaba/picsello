@@ -1000,13 +1000,13 @@ defmodule Picsello.Factory do
 
   def booking_event_factory() do
     %Picsello.BookingEvent{
-      name: "My event",
-      # location: "on_location",
-      # address: "320 1st St N, Jax Beach, FL",
-      # duration_minutes: 45,
-      # buffer_minutes: 15,
-      # thumbnail_url: PicselloWeb.Endpoint.static_url() <> "/images/phoenix.png",
-      # description: "<p>My custom description</p>"
+      name: "My event"
+    }
+  end
+
+  def booking_event_date_factory() do
+    %Picsello.BookingEventDate{
+      session_length: 15
     }
   end
 

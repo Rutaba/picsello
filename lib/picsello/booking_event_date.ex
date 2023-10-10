@@ -128,7 +128,8 @@ defmodule Picsello.BookingEventDate do
       :stop_repeating,
       :occurences,
       :is_repeat,
-      :repetition
+      :repetition,
+      :organization_id
     ])
     |> cast_embed(:time_blocks, required: true)
     |> cast_embed(:slots, required: true)
@@ -274,6 +275,41 @@ defmodule Picsello.BookingEventDate do
     else
       changeset
     end
+  end
+
+  # Checks if there is any overlap between booking date time blocks and provided blocks.
+  defp booking_date_time_block_overlap?(_organization_id, nil, _blocks, _event_date_id), do: false
+
+  defp booking_date_time_block_overlap?(organization_id, date, blocks, event_date_id) do
+    organization_id
+    |> BookingEvents.get_all_booking_events()
+    |> Enum.map(& &1.id)
+    |> is_date_time_block_overlap?(date, blocks, event_date_id)
+  end
+
+  defp repeat_dates_overlap?(_organization_id, _blocks, [], _current_booking_event), do: false
+
+  defp repeat_dates_overlap?(organization_id, blocks, repeat_dates, current_booking_event_id) do
+    booking_ids =
+      BookingEvents.get_all_booking_events(organization_id)
+      |> Enum.map(& &1.id)
+      |> Enum.reject(&(&1 == current_booking_event_id))
+
+    repeat_dates
+    |> Enum.any?(fn date ->
+      is_date_time_block_overlap?(booking_ids, date, blocks)
+    end)
+  end
+
+  # Checks if there is any overlap between booking date time blocks and provided blocks.
+  defp is_date_time_block_overlap?(booking_ids, date, blocks, date_id \\ nil) do
+    booking_ids
+    |> get_booking_events_dates_with_same_date(date)
+    |> Enum.reject(&(&1.id == date_id))
+    |> Enum.flat_map(& &1.time_blocks)
+    |> Enum.concat(blocks)
+    |> Enum.sort_by(&{&1.start_time, &1.end_time})
+    |> BookingEvents.overlap_time?()
   end
 
   # Sets default values for the `repeat_on` field if it is empty.
