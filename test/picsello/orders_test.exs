@@ -3,6 +3,24 @@ defmodule Picsello.OrdersTest do
   alias Picsello.{Orders, Cart, Cart.Order}
   import Money.Sigils
 
+  setup do
+    test_pid = self()
+
+    Tesla.Mock.mock_global(fn
+      %{method: :post} = request ->
+        send(test_pid, {:zapier_request, request})
+
+        body = %{
+          "attempt" => "1234",
+          "id" => "1234",
+          "request_id" => "1234",
+          "status" => "success"
+        }
+
+        %Tesla.Env{status: 200, body: body}
+    end)
+  end
+
   describe "all" do
     def order_with_product(gallery, opts) do
       whcc_id = Keyword.get(opts, :whcc_id)
