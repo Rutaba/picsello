@@ -6,7 +6,8 @@ defmodule Picsello.Notifiers.EmailAutomationNotifier.Impl do
 
   @behaviour EmailAutomationNotifier
 
-  @spec deliver_automation_email_job(map(), map(), tuple(), atom(), any()) :: {:error, binary() | map()} | {:ok, map()}
+  @spec deliver_automation_email_job(map(), map(), tuple(), atom(), any()) ::
+          {:error, binary() | map()} | {:ok, map()}
   @impl EmailAutomationNotifier
   def deliver_automation_email_job(email_preset, job, schema, _state, helpers) do
     with client <- job |> Repo.preload(:client) |> Map.get(:client),
@@ -22,7 +23,8 @@ defmodule Picsello.Notifiers.EmailAutomationNotifier.Impl do
     end
   end
 
-  @spec deliver_automation_email_gallery(map(), map(), tuple(), atom(), any()) :: {:error, binary() | map()} | {:ok, map()}
+  @spec deliver_automation_email_gallery(map(), map(), tuple(), atom(), any()) ::
+          {:error, binary() | map()} | {:ok, map()}
   @impl EmailAutomationNotifier
   def deliver_automation_email_gallery(email_preset, gallery, schema, _state, helpers) do
     %{body_template: body, subject_template: subject} =
@@ -43,7 +45,8 @@ defmodule Picsello.Notifiers.EmailAutomationNotifier.Impl do
     )
   end
 
-  @spec deliver_automation_email_order(map(), map(), tuple(), atom(), any()) :: {:error, binary() | map()} | {:ok, map()}
+  @spec deliver_automation_email_order(map(), map(), tuple(), atom(), any()) ::
+          {:error, binary() | map()} | {:ok, map()}
   @impl EmailAutomationNotifier
   def deliver_automation_email_order(email_preset, order, _schema, _state, helpers) do
     with %{body_template: body, subject_template: subject} <-

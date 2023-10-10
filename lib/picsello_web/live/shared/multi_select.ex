@@ -180,11 +180,7 @@ defmodule PicselloWeb.Shared.MultiSelect do
 
   @doc false
   defp init_rest(assigns, from_mount) do
-    if @use_alpinejs do
-      (from_mount && add_alpinejs_assigns(assigns)) || assigns
-    else
-      (from_mount && assigns) || add_js_assigns(assigns)
-    end
+    (from_mount && assigns) || add_js_assigns(assigns)
   end
 
   @doc false
