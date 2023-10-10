@@ -96,12 +96,9 @@ defmodule PicselloWeb.LeadContactIframeView do
   def render("thank-you.html", assigns) do
     ~H"""
     <.container>
-      <div class="flex items-center mt-14 min-w-max justify-center h-96">
-        <.icon name="confetti" class="w-20 h-20 stroke-current mr-9" />
-        <div>
-          <h1 class="text-2xl font-light">Message sent</h1>
-          We'll contact you soon!
-        </div>
+      <div class="text-center">
+        <h2 class="text-2xl font-light uppercase tracking-wider">Thank you for contacting me!</h2>
+        <p class="text-lg">I'll be in touch soon.</p>
       </div>
     </.container>
     """
