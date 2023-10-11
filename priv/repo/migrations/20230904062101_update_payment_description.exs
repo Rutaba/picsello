@@ -2,6 +2,7 @@ defmodule Picsello.Repo.Migrations.UpdatePaymentDescription do
   use Ecto.Migration
 
   def up do
+    # TODO remove this call and write own method within this migration
     payment_types =
       Picsello.Packages.get_payment_defaults() |> Map.values() |> List.flatten() |> Enum.uniq()
 

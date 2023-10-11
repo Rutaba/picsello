@@ -3,7 +3,7 @@ defmodule PicselloWeb.Live.ClientLive.Index do
   use PicselloWeb, :live_view
 
   import PicselloWeb.GalleryLive.Index, only: [update_gallery_listing: 1]
-  import PicselloWeb.GalleryLive.Shared, only: [add_message_and_notify: 3, new_gallery_path: 2]
+  import PicselloWeb.GalleryLive.Shared, only: [add_message_and_notify: 3]
 
   import PicselloWeb.Shared.CustomPagination,
     only: [
@@ -187,12 +187,12 @@ defmodule PicselloWeb.Live.ClientLive.Index do
 
     socket
     |> ConfirmationComponent.open(%{
-      close_label: "No, go back",
+      close_label: "Cancel",
       confirm_event: "unarchive_" <> to_string(client.id),
-      confirm_label: "Yes, Unarchive",
+      confirm_label: "Yes, unarchive",
       icon: "warning-orange",
-      title: "Unarchive Client?",
-      subtitle: "Are you sure you wish to Unarchive #{client.name || "this client"}?"
+      title: "Are you sure you want to unarchive this client?",
+      subtitle: "You'll be unarchiving #{client.name || "this client"}"
     })
     |> noreply()
   end
@@ -412,9 +412,7 @@ defmodule PicselloWeb.Live.ClientLive.Index do
 
   @impl true
   def handle_info({:redirect_to_gallery, gallery}, socket) do
-    socket
-    |> push_redirect(to: new_gallery_path(socket, gallery))
-    |> noreply()
+    PicselloWeb.Live.Shared.handle_info({:redirect_to_gallery, gallery}, socket)
   end
 
   @impl true
@@ -604,12 +602,12 @@ defmodule PicselloWeb.Live.ClientLive.Index do
     do:
       socket
       |> ConfirmationComponent.open(%{
-        close_label: "No, go back",
+        close_label: "Cancel",
         confirm_event: "archive_" <> to_string(client.id),
         confirm_label: "Yes, archive",
         icon: "warning-orange",
-        title: "Archive Client?",
-        subtitle: "Are you sure you wish to archive #{client.name || "this client"}?"
+        title: "Are you sure you want to archive this client?",
+        subtitle: "You'll be archiving #{client.name || "this client"}?"
       })
       |> noreply()
 

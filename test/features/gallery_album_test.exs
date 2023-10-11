@@ -126,8 +126,10 @@ defmodule Picsello.GalleryAlbumTest do
     session
     |> visit("/galleries/#{gallery_id}/albums/#{album_id}")
     |> assert_has(css(".item", count: photos_count))
+    |> assert_has(testid("photo-count", text: Integer.to_string(photos_count)))
+    |> assert_has(testid("photo-count", text: "21"))
     |> force_simulate_click(css("#photo-#{List.first(photo_ids)}-view"))
-    |> assert_has(testid("lightbox-photo-name", text: "/images/print.png"))
+    |> assert_text("/images/print.png")
   end
 
   test "Album, delete single photo", %{
@@ -140,6 +142,7 @@ defmodule Picsello.GalleryAlbumTest do
     session
     |> visit("/galleries/#{gallery_id}/albums/#{album_id}")
     |> assert_has(css(".item", count: photos_count))
+    |> assert_has(testid("photo-count", text: Integer.to_string(photos_count)))
     |> click(css("#select"))
     |> click(button("None"))
     |> assert_has(css("#item-#{List.first(photo_ids)}"))
@@ -147,6 +150,7 @@ defmodule Picsello.GalleryAlbumTest do
     |> within_modal(&click(&1, button("Yes, delete")))
     |> refute_has(css("#photo-#{List.first(photo_ids)}-remove"))
     |> assert_has(css("p", text: "1 photo deleted successfully"))
+    |> assert_has(testid("photo-count", text: "20"))
   end
 
   test "Album, delete all photos", %{
@@ -158,6 +162,7 @@ defmodule Picsello.GalleryAlbumTest do
     session
     |> visit("/galleries/#{gallery_id}/albums/#{album_id}")
     |> assert_has(css(".item", count: photos_count))
+    |> assert_has(testid("photo-count", text: Integer.to_string(photos_count)))
     |> click(css("#select"))
     |> click(button("All"))
     |> click(css("#actions"))
@@ -165,6 +170,7 @@ defmodule Picsello.GalleryAlbumTest do
     |> within_modal(&click(&1, button("Yes, delete")))
     |> assert_has(css("p", text: "#{photos_count} photos deleted successfully"))
     |> assert_has(css("#dragDrop-upload-form-#{gallery_id}"))
+    |> assert_has(testid("photo-count", text: "1", count: 2))
   end
 
   test "Album, move photos album to unsorted photos", %{
@@ -186,6 +192,8 @@ defmodule Picsello.GalleryAlbumTest do
     |> assert_has(css("#drag-drop-#{gallery_id}"))
     |> visit("/galleries/#{gallery_id}/photos")
     |> assert_has(css(".item", count: photos_count))
+    |> assert_has(testid("photo-count", text: Integer.to_string(photos_count)))
+    |> assert_has(testid("photo-count", text: "21"))
   end
 
   test "Album, show favorites only", %{
@@ -203,6 +211,8 @@ defmodule Picsello.GalleryAlbumTest do
     |> assert_has(css(".item", count: 1))
     |> click(css("#toggle_favorites"))
     |> assert_has(css(".item", count: photos_count))
+    |> assert_has(testid("photo-count", text: Integer.to_string(photos_count)))
+    |> assert_has(testid("photo-count", text: "21"))
   end
 
   test "Albums, render proofing album", %{

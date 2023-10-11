@@ -4,7 +4,7 @@ defmodule Picsello.Workers.PackDigitals do
   use Oban.Worker,
     unique: [states: ~w[available scheduled executing retryable]a, fields: [:args, :worker]]
 
-  alias Picsello.{Galleries, Galleries.Gallery, Orders, Cart.Order, Pack, Repo}
+  alias Picsello.{Galleries, Galleries.Gallery, Galleries.Album, Orders, Cart.Order, Pack, Repo}
   import Ecto.Query, only: [from: 2]
 
   def perform(%Oban.Job{args: args}) do
@@ -55,6 +55,11 @@ defmodule Picsello.Workers.PackDigitals do
     )
   end
 
+  defp maybe_notify(%Album{} = album, url) do
+    album = album |> Repo.preload(:gallery)
+    maybe_notify(album.gallery, url)
+  end
+
   defp maybe_notify(%Order{} = order, url) do
     order = order |> Repo.preload(:gallery)
     maybe_notify(order.gallery, url)
@@ -75,6 +80,7 @@ defmodule Picsello.Workers.PackDigitals do
   defp to_packable(%{"packable" => module_name, "id" => id}),
     do: module_name |> String.to_existing_atom() |> Repo.get!(id)
 
+  defp context_module(%Album{}), do: Album
   defp context_module(%Order{}), do: Orders
   defp context_module(%Gallery{}), do: Galleries
 

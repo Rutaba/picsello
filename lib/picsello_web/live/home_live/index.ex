@@ -40,7 +40,7 @@ defmodule PicselloWeb.HomeLive.Index do
   import PicselloWeb.Gettext, only: [ngettext: 3]
 
   import PicselloWeb.GalleryLive.Shared,
-    only: [new_gallery_path: 2, clip_board: 2, cover_photo_url: 1, disabled?: 1]
+    only: [clip_board: 2, cover_photo_url: 1, disabled?: 1]
 
   import Ecto.Query
   import Ecto.Changeset, only: [get_change: 2]
@@ -458,7 +458,7 @@ defmodule PicselloWeb.HomeLive.Index do
       ) do
     socket
     |> PicselloWeb.ConfirmationComponent.open(%{
-      close_label: "No, go back",
+      close_label: "Cancel",
       confirm_event: "delete_gallery",
       confirm_label: "Yes, delete",
       icon: "warning-orange",
@@ -523,9 +523,7 @@ defmodule PicselloWeb.HomeLive.Index do
 
   @impl true
   def handle_info({:redirect_to_gallery, gallery}, socket) do
-    socket
-    |> push_redirect(to: new_gallery_path(socket, gallery))
-    |> noreply()
+    PicselloWeb.Live.Shared.handle_info({:redirect_to_gallery, gallery}, socket)
   end
 
   @impl true
@@ -1277,8 +1275,8 @@ defmodule PicselloWeb.HomeLive.Index do
                 </span>
               <% end %>
             </div>
-            <div class="text-base-250 font-normal ">
-              <%= if Map.has_key?(assigns.data, :client_link_hash), do: @data.inserted_at |> Calendar.strftime("%m/%d/%y") |> String.trim("0"), else: @data.dates |> hd() |> Map.get(:date) |> Calendar.strftime("%m/%d/%y") |> String.trim("0") %> - <%= @count %> <%= if @count == 1, do: "booking", else: "bookings" %> so far
+            <div class="text-base-250 font-normal mb-2">
+              <%= if Map.has_key?(assigns.data, :client_link_hash), do: @data.inserted_at |> Calendar.strftime("%m/%d/%y") |> String.trim("0"), else: @data.dates |> hd() |> Map.get(:date) |> Calendar.strftime("%m/%d/%y") |> String.trim("0") %><%= if !Map.has_key?(assigns.data, :client_link_hash) do %> - <%= @count %> <%= if @count == 1, do: "booking", else: "bookings" %> so far<% end %>
             </div>
             <div class="flex md:gap-2 gap-3">
               <button {testid("copy-link")} id={"copy-link-#{@data.id}"} class={classes("flex  w-full md:w-auto items-center justify-center text-center px-1 py-0.5 font-sans border rounded-lg btn-tertiary text-blue-planning-300", %{"pointer-events-none text-gray-300 border-gray-200" => @data.status in [:archive, :disabled]})} data-clipboard-text={if Map.has_key?(@data, :client_link_hash), do: clip_board(@socket, @data), else: @data.url} phx-hook="Clipboard">
@@ -1374,7 +1372,7 @@ defmodule PicselloWeb.HomeLive.Index do
       "missing-payment-method" =>
         {!Picsello.Subscriptions.subscription_payment_method?(current_user), org_card},
       "create-lead" => {leads_empty?, org_card},
-      "black-friday" => {Subscriptions.monthly?(current_user.subscription), org_card}
+      "black-friday" => {Subscriptions.interval(current_user.subscription) == "month", org_card}
     }
 
     case params |> Map.fetch(concise_name) do

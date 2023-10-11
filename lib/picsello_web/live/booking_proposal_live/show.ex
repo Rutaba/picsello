@@ -123,12 +123,14 @@ defmodule PicselloWeb.BookingProposalLive.Show do
   def handle_info(
         {:update, %{answer: answer, next_page: next_page}},
         %{assigns: %{proposal: proposal}} = socket
-      ),
-      do:
-        socket
-        |> assign(answer: answer, proposal: %{proposal | answer: answer})
-        |> open_page_modal(next_page)
-        |> noreply()
+      ) do
+    next_page = if is_nil(proposal.signed_at), do: "contract", else: next_page
+
+    socket
+    |> assign(answer: answer, proposal: %{proposal | answer: answer})
+    |> open_page_modal(next_page)
+    |> noreply()
+  end
 
   @impl true
   def handle_info({:update_payment_schedules}, %{assigns: %{job: job}} = socket),

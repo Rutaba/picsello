@@ -21,6 +21,8 @@ defmodule PicselloWeb.Live.FinanceSettings do
 
   alias PicselloWeb.SearchComponent
 
+  @products_currency Picsello.Product.currency()
+
   @impl true
   def mount(_params, _session, %{assigns: %{current_user: current_user}} = socket) do
     user_currency = UserCurrencies.get_user_currency(current_user.organization.id)
@@ -40,7 +42,7 @@ defmodule PicselloWeb.Live.FinanceSettings do
     <.settings_nav socket={@socket} live_action={@live_action} current_user={@current_user} intro_id="intro_settings_finances">
       <div class="flex flex-col justify-between flex-1 flex-grow-0 mt-5 sm:flex-row">
         <div>
-          <h1 class="text-2xl font-bold">Finances</h1>
+          <h1 class="text-2xl font-bold" {testid("settings-heading")}>Finances</h1>
         </div>
       </div>
       <hr class="my-4 sm:my-10" />
@@ -203,6 +205,7 @@ defmodule PicselloWeb.Live.FinanceSettings do
       ) do
     socket
     |> SearchComponent.open(%{
+      show_warning?: currency != @products_currency,
       selection: %{id: currency, name: currency},
       change_event: :change_currency,
       submit_event: :submit_currency,

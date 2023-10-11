@@ -174,6 +174,7 @@ defmodule PicselloWeb.OnboardingLive.Index do
                 <% else %>
                   <input class="hidden" type="checkbox" name={input_name} value={jt |> current() |> Map.get(:job_type)} checked={true} />
                 <% end %>
+                <%= hidden_input jt, :type, value: jt |> current() |> Map.get(:job_type) %>
               <% end %>
             </div>
             <div class="flex flex-row">
@@ -361,18 +362,28 @@ defmodule PicselloWeb.OnboardingLive.Index do
   end
 
   defp save_final(socket, params, data \\ :skip) do
+    params = update_job_params(params)
+
     Multi.new()
     |> Multi.put(:data, data)
     |> Multi.update(:user, build_changeset(socket, params))
     |> Multi.insert(:global_gallery_settings, fn %{user: %{organization: organization}} ->
       GSGallery.price_changeset(%GSGallery{}, %{organization_id: organization.id})
     end)
-    |> Multi.insert(:user_currencies, fn %{user: %{organization: organization}} ->
-      UserCurrency.currency_changeset(%UserCurrency{}, %{
-        organization_id: organization.id,
-        currency: "USD"
-      })
-    end)
+    |> Multi.insert(
+      :user_currencies,
+      fn %{user: %{organization: organization}} ->
+        UserCurrency.currency_changeset(
+          %UserCurrency{},
+          %{
+            organization_id: organization.id,
+            currency: "USD"
+          }
+        )
+      end,
+      conflict_target: [:organization_id],
+      on_conflict: :nothing
+    )
     |> Multi.run(:subscription, fn _repo, %{user: user} ->
       with :ok <-
              Subscriptions.subscription_base(user, "month",
@@ -399,6 +410,19 @@ defmodule PicselloWeb.OnboardingLive.Index do
         socket |> assign(changeset: reason)
     end)
     |> noreply()
+  end
+
+  defp update_job_params(params) do
+    {key, _value} =
+      Enum.find(params["organization"]["organization_job_types"], fn {_key, value} ->
+        Map.get(value, "type") == "mini"
+      end)
+
+    update_in(
+      params,
+      ["organization", "organization_job_types", key],
+      &Map.put(&1, "job_type", "mini")
+    )
   end
 
   defdelegate states(), to: Onboardings, as: :state_options

@@ -121,6 +121,7 @@ config :picsello, :whcc,
   whcc_sync_process_count: System.get_env("WHCC_SYNC_PROCESS_COUNT") || "2"
 
 config :picsello, :products,
+  currency: "USD",
   whcc_album_id: "2qNgr3zcSx9wvTAo9",
   whcc_wall_art_id: "tfhysKwZafFtmGqpQ",
   whcc_books_id: "B9FcAHDH5T63yvvgX",
@@ -158,7 +159,8 @@ config :picsello, Picsello.Mailer,
   proofing_selection_confirmation_template:
     System.get_env("SENDGRID_PROOFING_SELECTION_CONFIMATION_TEMPLATE"),
   photographer_proofing_selection_confirmation_template:
-    System.get_env("SENDGRID_PHOTOGRAPHER_PROOFING_SELECTION_CONFIMATION_TEMPLATE")
+    System.get_env("SENDGRID_PHOTOGRAPHER_PROOFING_SELECTION_CONFIMATION_TEMPLATE"),
+  no_reply_email: System.get_env("SENDGRID_NO_REPLY_EMAIL")
 
 config :picsello, :profile_images,
   bucket: System.get_env("PUBLIC_BUCKET"),
@@ -173,6 +175,7 @@ config :picsello, :photo_storage_service, Picsello.Galleries.Workers.PhotoStorag
 
 config :picsello, :zapier,
   new_user_webhook_url: System.get_env("ZAPIER_NEW_USER_WEBHOOK_URL"),
+  gallery_order_webhook_url: System.get_env("ZAPIER_GALLERY_ORDER_WEBHOOK_URL"),
   trial_user_webhook_url: System.get_env("ZAPIER_TRIAL_USER_WEBHOOK_URL"),
   subscription_ending_user_webhook_url:
     System.get_env("ZAPIER_SUBSCRIPTION_ENDING_USER_WEBHOOK_URL")

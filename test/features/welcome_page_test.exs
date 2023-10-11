@@ -160,36 +160,64 @@ defmodule Picsello.WelcomePageTest do
     end
 
     feature "leads card shows numbers", %{session: session, user: user} do
-      _archived = insert(:lead, user: user, archived_at: DateTime.utc_now())
-      _pending_1 = insert(:lead, user: user)
+      insert(:lead,
+        user: user,
+        client: %{name: "taimia"},
+        shoots: [
+          %{name: "testShoot"}
+        ],
+        archived_at: DateTime.utc_now()
+      )
 
-      _pending_cold =
-        for _ <- 1..3, do: insert(:lead, user: user, booking_proposals: [insert(:proposal)])
+      insert(:lead,
+        user: user,
+        client: %{name: "taimia"},
+        shoots: [
+          %{name: "testShoot"}
+        ]
+      )
 
-      _active_1 =
-        insert(:lead,
-          user: user,
-          booking_proposals: [insert(:proposal, accepted_at: DateTime.utc_now())]
-        )
-
-      _active_2 =
-        insert(:lead,
-          user: user,
-          booking_proposals: [
-            insert(:proposal,
-              accepted_at: DateTime.utc_now(),
-              signed_at: DateTime.utc_now(),
-              signed_legal_name: "XYZ"
+      for _ <- 1..3,
+          do:
+            insert(:lead,
+              user: user,
+              client: %{name: "taimia"},
+              shoots: [
+                %{name: "testShoot"}
+              ],
+              booking_proposals: [insert(:proposal)]
             )
-          ]
-        )
+
+      insert(:lead,
+        user: user,
+        client: %{name: "taimia"},
+        shoots: [
+          %{name: "testShoot"}
+        ],
+        booking_proposals: [insert(:proposal, accepted_at: DateTime.utc_now())]
+      )
+
+      insert(:lead,
+        user: user,
+        client: %{name: "taimia"},
+        shoots: [
+          %{name: "testShoot"}
+        ],
+        booking_proposals: [
+          insert(:proposal,
+            accepted_at: DateTime.utc_now(),
+            signed_at: DateTime.utc_now(),
+            signed_legal_name: "XYZ"
+          )
+        ]
+      )
 
       session
       |> sign_in(user)
       |> click(button("Leads"))
       |> assert_has(testid("card-Recent Leads"))
       |> click(button("View all"))
-      |> assert_has(testid("job-row", count: 6))
+      |> assert_has(testid("job-row", count: 7))
     end
 
     feature "leads card has empty state", %{session: session, user: user} do

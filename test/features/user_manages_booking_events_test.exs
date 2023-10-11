@@ -308,6 +308,7 @@ defmodule Picsello.UserManagesBookingEventsTest do
     |> fill_in(text_field("Title"), with: "My modified event")
     |> click(button("Next"))
     |> assert_text("Edit booking event: Select package")
+    |> assert_has(checkbox("Include questionnaire in booking event?", selected: true))
     |> click(button("Next"))
     |> assert_text("Edit booking event: Customize")
     |> click(button("Save"))
@@ -325,6 +326,58 @@ defmodule Picsello.UserManagesBookingEventsTest do
                address: "320 1st St N, Jax Beach, FL",
                duration_minutes: 45,
                buffer_minutes: 15,
+               include_questionnaire?: true,
+               dates: [
+                 %{
+                   date: ~D[2050-12-10],
+                   time_blocks: [
+                     %{start_time: ~T[09:00:00], end_time: ~T[13:00:00]},
+                     %{start_time: ~T[15:00:00], end_time: ~T[17:00:00]}
+                   ]
+                 }
+               ],
+               package_template_id: ^template_id,
+               thumbnail_url: ^thumbnail_url,
+               description: "<p>My custom description</p>"
+             }
+           ] = Picsello.Repo.all(Picsello.BookingEvent)
+  end
+
+  feature "edit the event, disable questionnaire", %{session: session, user: user} do
+    %{id: template_id} = template = insert(:package_template, user: user)
+    insert(:booking_event, package_template_id: template.id, name: "Event 1")
+
+    session
+    |> visit("/calendar")
+    |> click(link("Manage booking events"))
+    |> scroll_to_bottom()
+    |> scroll_into_view(testid("actions"))
+    |> click(button("Manage"))
+    |> click(button("Edit"))
+    |> assert_text("Edit booking event: Details")
+    |> fill_in(text_field("Title"), with: "My modified event")
+    |> click(button("Next"))
+    |> assert_text("Edit booking event: Select package")
+    |> click(css("input[name='booking_event[include_questionnaire?]']"))
+    |> assert_has(checkbox("Include questionnaire in booking event?", selected: false))
+    |> click(button("Next"))
+    |> assert_text("Edit booking event: Customize")
+    |> click(button("Save"))
+    |> assert_has(css("#modal-wrapper.hidden", visible: false))
+    |> assert_flash(:success, text: "Booking event saved successfully")
+    |> assert_path("/booking-events")
+    |> assert_text("My modified event")
+
+    thumbnail_url = PicselloWeb.Endpoint.static_url() <> "/images/phoenix.png"
+
+    assert [
+             %{
+               name: "My modified event",
+               location: "on_location",
+               address: "320 1st St N, Jax Beach, FL",
+               duration_minutes: 45,
+               buffer_minutes: 15,
+               include_questionnaire?: false,
                dates: [
                  %{
                    date: ~D[2050-12-10],

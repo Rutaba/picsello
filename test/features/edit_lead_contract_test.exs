@@ -11,7 +11,11 @@ defmodule Picsello.EditLeadContractTest do
     lead =
       insert(:lead, %{
         type: "wedding",
-        user: user
+        user: user,
+        client: %{name: "Peter"},
+        shoots: [
+          %{name: "test_name"}
+        ]
       })
 
     [lead: lead]
@@ -23,7 +27,7 @@ defmodule Picsello.EditLeadContractTest do
     |> click(css("#manage"))
     |> click(css("li", text: "Archive lead"))
     |> wait_for_enabled_submit_button()
-    |> click(button("Yes, archive the lead"))
+    |> click(button("Yes, archive"))
     |> assert_flash(:success, text: "Lead has been archived")
     |> assert_has(css("*[role='status']", text: "Archived"))
     |> click(button("Manage"))

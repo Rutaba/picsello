@@ -71,6 +71,7 @@ defmodule Picsello.Pack do
     Orders,
     Galleries.Gallery,
     Galleries,
+    Galleries.Album,
     Repo,
     Cart.Order,
     Galleries.Workers.PhotoStorage
@@ -106,6 +107,16 @@ defmodule Picsello.Pack do
     ])
   end
 
+  def path(%Album{name: album_name, gallery_id: gallery_id, id: album_id}) do
+    Path.join([
+      "galleries",
+      to_string(gallery_id),
+      "albums",
+      to_string(album_id),
+      "#{string_tokenizer(album_name)}.zip"
+    ])
+  end
+
   def path(%Gallery{name: gallery_name, id: id}) do
     Path.join([
       "galleries",
@@ -114,8 +125,9 @@ defmodule Picsello.Pack do
     ])
   end
 
-  @spec upload(Gallery.t() | Order.t()) :: {:ok, String.t()} | {:error, any()}
-  @spec upload(Gallery.t() | Order.t(), Keyword.t()) :: {:ok, String.t()} | {:error, any()}
+  @spec upload(Gallery.t() | Order.t() | Album.t()) :: {:ok, String.t()} | {:error, any()}
+  @spec upload(Gallery.t() | Order.t() | Album.t(), Keyword.t()) ::
+          {:ok, String.t()} | {:error, any()}
   def upload(packable, opts \\ [])
 
   def upload(%Gallery{} = gallery, opts) do
@@ -144,6 +156,31 @@ defmodule Picsello.Pack do
     else
       nil -> {:error, "no client paid order with id #{order_id}"}
       [] -> {:error, :empty}
+    end
+  end
+
+  def upload(%Album{id: album_id} = album, opts) when is_integer(album_id) do
+    album = album |> Repo.preload(:gallery)
+
+    album.gallery
+    |> then(fn gallery ->
+      if album.is_finals do
+        album |> Repo.preload(:photos) |> Map.get(:photos, [])
+      else
+        Orders.get_all_purchased_photos_in_album(gallery, album.id)
+      end
+    end)
+    |> case do
+      [_ | _] = photos ->
+        photos
+        |> stream()
+        |> do_upload(path(album), opts)
+
+      {:error, %Ecto.NoResultsError{}} ->
+        {:error, :empty}
+
+      error ->
+        error
     end
   end
 

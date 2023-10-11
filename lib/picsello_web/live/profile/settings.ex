@@ -22,7 +22,7 @@ defmodule PicselloWeb.Live.Profile.Settings do
     <.settings_nav socket={@socket} live_action={@live_action} current_user={@current_user} intro_id="intro_settings_public_profile">
       <div class="flex flex-col justify-between flex-1 mt-5 flex-grow-0 sm:flex-row">
         <div>
-          <h1 class="text-2xl font-bold">Public Profile</h1>
+          <h1 class="text-2xl font-bold" {testid("settings-heading")}>Public Profile</h1>
 
           <p class="max-w-2xl my-2 text-base-250">
             Allow potential clients to contact you directly through a website that we host for you. Customize the type of photography you offer, color, cover photo, etc.
@@ -32,7 +32,7 @@ defmodule PicselloWeb.Live.Profile.Settings do
           <div class="flex flex-shrink-0 flex pt-3 pb-9 mt-auto">
             <a href={Routes.package_templates_path(@socket, :index)} class="text-right text-blue-planning-300 underline font-normal text-lg pt-0">Manage photography types</a>
           </div>
-          <div class="fixed bottom-0 left-0 right-0 z-20 flex flex-shrink-0 w-full p-6 mt-auto bg-white sm:mt-0 sm:bottom-auto sm:static sm:items-start sm:w-auto">
+          <div class="fixed top-12 left-0 right-0 z-20 flex flex-shrink-0 w-full p-6 mt-1 bg-white sm:mt-0 sm:bottom-auto sm:static sm:items-start sm:w-auto">
             <button type="button" phx-click="edit-profile" class="w-full px-8 text-center btn-primary">Customize Profile</button>
           </div>
         </div>

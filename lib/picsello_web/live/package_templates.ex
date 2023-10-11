@@ -95,14 +95,14 @@ defmodule PicselloWeb.Live.PackageTemplates do
     <.settings_nav socket={@socket} live_action={@live_action} current_user={@current_user} container_class="sm:pb-0 pb-28">
       <div class={classes("flex flex-col justify-between flex-1 mt-5 sm:flex-row", %{"flex-grow-0" => Enum.any?(@templates) })}>
         <div>
-          <h1 class="text-2xl font-bold">Package Templates</h1>
+          <h1 class="text-2xl font-bold" {testid("settings-heading")}>Packages</h1>
 
           <p class="max-w-2xl my-2 text-base-250">
             Create reusable pricing and shoot templates to make it easier to manage leads. Looking to learn more about your pricing? <%= live_redirect to: Routes.calculator_path(@socket, :index), title: "Check out our helpful calculator!", class: "underline text-blue-planning-300 intro-calculator" do %>Check out our helpful calculator!<% end %>
           </p>
         </div>
 
-        <div class="fixed bottom-0 left-0 right-0 z-20 flex flex-shrink-0 w-full p-6 mt-auto bg-white sm:mt-0 sm:bottom-auto sm:static sm:items-start sm:w-auto">
+        <div class="fixed top-12 left-0 right-0 z-20 flex flex-shrink-0 w-full p-6 mt-1 bg-white sm:mt-0 sm:bottom-auto sm:static sm:items-start sm:w-auto">
           <button type="button" phx-click="add-package" class="w-full px-8 text-center btn-primary">Add package</button>
         </div>
       </div>
@@ -115,7 +115,7 @@ defmodule PicselloWeb.Live.PackageTemplates do
 
       <hr class="my-4" />
       <div class={classes("lg:mt-10", %{"hidden" => is_nil(@is_mobile)})}>
-        <div class="flex flex-col lg:flex-row lg:mt-8">
+        <div class="flex flex-col lg:flex-row">
           <div class={classes("lg:block", %{"hidden" => !@is_mobile})}>
             <div class="h-auto">
               <div id={"replace-#{@package_name}"} phx-update="replace" class="w-full p-5 mt-auto sm:mt-0 sm:bottom-auto sm:static sm:items-start sm:w-auto grid grid-cols-1 bg-base-200 rounded-xl lg:w-80 gap-y-1">
@@ -234,10 +234,10 @@ defmodule PicselloWeb.Live.PackageTemplates do
                   <.package_template_row update_mode="replace" package={template} class="h-full"/>
                 <% end %>
               </div>
-              <%= if @pagination.total_count > 4 do %>
+              <%= if @pagination.total_count > 12 do %>
                 <div class="flex items-center px-6 pb-6 center-container">
                   <.form :let={f} for={@pagination_changeset} phx-change="page" class="flex items-center text-gray-500 rounded p-1 border cursor-pointer border-blue-planning-300">
-                    <%= select f, :limit, [4, 8, 12, 16], class: "cursor-pointer"%>
+                    <%= select f, :limit, [12, 24, 36, 48], class: "cursor-pointer"%>
                   </.form>
 
                   <div class="flex ml-2 text-xs font-bold text-gray-500">
@@ -375,7 +375,7 @@ defmodule PicselloWeb.Live.PackageTemplates do
       socket
       |> assign(:archive_package_id, package_id)
       |> PicselloWeb.ConfirmationComponent.open(%{
-        close_label: "No! Get me out of here",
+        close_label: "Cancel",
         confirm_event: "archive_unarchive",
         confirm_label: if(type == "archive", do: "Yes, archive", else: "Yes, unarchive"),
         icon: "warning-orange",

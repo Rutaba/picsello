@@ -17,6 +17,8 @@ defmodule Picsello.Galleries.Gallery do
 
   alias Picsello.{Job, Cart.Order, Repo, GlobalSettings}
 
+  @password_length 14
+
   @status_options [
     values: ~w[active inactive disabled expired]a,
     default: :active
@@ -71,11 +73,6 @@ defmodule Picsello.Galleries.Gallery do
       field :products, :boolean
     end
   end
-
-  @type t :: %__MODULE__{
-          organization: Picsello.Organization.t(),
-          name: String.t()
-        }
 
   @create_attrs [
     :name,
@@ -160,7 +157,11 @@ defmodule Picsello.Galleries.Gallery do
     |> cast_assoc(:gallery_digital_pricing, with: &GalleryDigitalPricing.changeset/2)
   end
 
-  def generate_password, do: Enum.random(100_000..999_999) |> to_string
+  def generate_password,
+    do:
+      :crypto.strong_rand_bytes(@password_length)
+      |> Base.encode64()
+      |> binary_part(2, @password_length)
 
   defp cast_password(changeset),
     do: put_change(changeset, :password, generate_password())
@@ -196,4 +197,9 @@ defmodule Picsello.Galleries.Gallery do
         nil
     end
   end
+
+  @type t :: %__MODULE__{
+          organization: Picsello.Organization.t(),
+          name: String.t()
+        }
 end
