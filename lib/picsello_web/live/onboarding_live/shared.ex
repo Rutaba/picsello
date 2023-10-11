@@ -5,10 +5,19 @@ defmodule PicselloWeb.OnboardingLive.Shared do
   use Phoenix.HTML
 
   alias PicselloWeb.Router.Helpers, as: Routes
+  alias Picsello.{Repo, Onboardings, Subscriptions, UserCurrency}
+  alias Picsello.GlobalSettings.Gallery, as: GSGallery
+  alias Ecto.Multi
+
+  import Picsello.Zapier.User, only: [user_trial_created_webhook: 1]
+  import PicselloWeb.FormHelpers, only: [error_tag: 3]
+
+  import Phoenix.LiveView, only: [push_redirect: 2]
 
   import PicselloWeb.LiveHelpers,
     only: [
-      icon: 1
+      icon: 1,
+      noreply: 1
     ]
 
   def signup_deal(assigns) do
@@ -77,5 +86,138 @@ defmodule PicselloWeb.OnboardingLive.Shared do
         <% end %>
       </div>
     """
+  end
+
+  def update_user_client_trial(socket, current_user) do
+    %{
+      list_ids: SendgridClient.get_all_client_list_env(),
+      clients: [
+        %{
+          email: current_user.email,
+          state_province_region: current_user.onboarding.state,
+          custom_fields: %{
+            w3_T: current_user.organization.name,
+            w1_T: "trial"
+          }
+        }
+      ]
+    }
+    |> SendgridClient.add_clients()
+
+    user_trial_created_webhook(%{email: current_user.email})
+
+    socket
+  end
+
+  def form_field(assigns) do
+    assigns = Enum.into(assigns, %{error: nil, prefix: nil, class: "py-2", mt: 4})
+
+    ~H"""
+    <label class={"flex flex-col mt-#{@mt}"}>
+      <p class={"#{@class} font-extrabold"}><%= @label %></p>
+      <%= render_slot(@inner_block) %>
+
+      <%= if @error do %>
+        <%= error_tag @f, @error, prefix: @prefix, class: "text-red-sales-300 text-sm" %>
+      <% end %>
+    </label>
+    """
+  end
+
+  def save_final(socket, params, onboarding_type \\ nil, data \\ :skip) do
+    params = update_job_params(params)
+
+    Multi.new()
+    |> Multi.put(:data, data)
+    |> Multi.update(:user, build_changeset(socket, params, onboarding_type))
+    |> Multi.insert(:global_gallery_settings, fn %{user: %{organization: organization}} ->
+      GSGallery.price_changeset(%GSGallery{}, %{organization_id: organization.id})
+    end)
+    |> Multi.insert(
+      :user_currencies,
+      fn %{user: %{organization: organization}} ->
+        UserCurrency.currency_changeset(
+          %UserCurrency{},
+          %{
+            organization_id: organization.id,
+            currency: "USD"
+          }
+        )
+      end,
+      conflict_target: [:organization_id],
+      on_conflict: :nothing
+    )
+    |> maybe_insert_subscription(socket, onboarding_type)
+    |> Multi.run(:user_final, fn _repo, %{user: user} ->
+      with _ <- Onboardings.complete!(user) do
+        {:ok, nil}
+      end
+    end)
+    |> Repo.transaction()
+    |> then(fn
+      {:ok, %{user: user}} ->
+        socket
+        |> assign(current_user: user)
+        |> update_user_client_trial(user)
+        |> push_redirect(to: Routes.home_path(socket, :index), replace: true)
+
+      {:error, reason} ->
+        socket |> assign(changeset: reason)
+    end)
+    |> noreply()
+  end
+
+  def save_multi(socket, params, data) do
+    Multi.new()
+    |> Multi.put(:data, data)
+    |> Multi.update(:user, build_changeset(socket, params))
+    |> Repo.transaction()
+  end
+
+  defp maybe_insert_subscription(multi, socket, onboarding_type) do
+    if is_nil(onboarding_type) do
+      multi
+      |> Multi.run(:subscription, fn _repo, %{user: user} ->
+        with :ok <-
+               Subscriptions.subscription_base(user, "month",
+                 trial_days: socket.assigns.subscription_plan_metadata.trial_length
+               )
+               |> Picsello.Subscriptions.handle_stripe_subscription() do
+          {:ok, nil}
+        end
+      end)
+    else
+      # subscription is being added via stripe elements
+      multi
+    end
+  end
+
+  defp update_job_params(params) do
+    {key, _value} =
+      Enum.find(params["organization"]["organization_job_types"], fn {_key, value} ->
+        Map.get(value, "type") == "mini"
+      end)
+
+    update_in(
+      params,
+      ["organization", "organization_job_types", key],
+      &Map.put(&1, "job_type", "mini")
+    )
+  end
+
+  def build_changeset(
+        %{assigns: %{current_user: user, step: step}},
+        params,
+        onboarding_type \\ nil,
+        action \\ nil
+      ) do
+    user
+    |> Onboardings.changeset(params, step: step, onboarding_type: onboarding_type)
+    |> Map.put(:action, action)
+  end
+
+  def assign_changeset(socket, params \\ %{}, onboarding_type \\ nil) do
+    socket
+    |> assign(changeset: build_changeset(socket, params, onboarding_type, :validate))
   end
 end

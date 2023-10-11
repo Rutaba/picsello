@@ -68,7 +68,7 @@ export default {
 
       this.handleEvent(
         'stripe-elements-success',
-        async ({ type, client_secret, state }) => {
+        async ({ type, client_secret, state, promotion_code }) => {
           const confirmIntent =
             type === 'setup' ? stripe.confirmSetup : stripe.confirmPayment;
 
@@ -77,7 +77,7 @@ export default {
             elements,
             clientSecret: client_secret,
             confirmParams: {
-              return_url: `${returnUrl}?state=${state}`,
+              return_url: `${returnUrl}?state=${state}&promotion_code=${promotion_code}`,
             },
           });
 
@@ -88,7 +88,6 @@ export default {
             // Your customer is redirected to your `return_url`. For some payment
             // methods like iDEAL, your customer is redirected to an intermediate
             // site first to authorize the payment, then redirected to the `return_url`.
-            console.log(payload);
           }
         }
       );

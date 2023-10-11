@@ -2,25 +2,26 @@ defmodule PicselloWeb.OnboardingLive.Mastermind.Index do
   @moduledoc false
   use PicselloWeb, live_view: [layout: :onboarding]
 
-  alias Ecto.Multi
-
   alias Picsello.{
-    Repo,
-    Onboardings,
     Onboardings.Onboarding,
     Subscriptions,
-    UserCurrency,
     Subscriptions,
     Payments
   }
 
-  alias Picsello.GlobalSettings.Gallery, as: GSGallery
-
-  import Picsello.Zapier.User, only: [user_trial_created_webhook: 1]
   import PicselloWeb.PackageLive.Shared, only: [current: 1]
-  import PicselloWeb.OnboardingLive.Shared, only: [signup_container: 1, signup_deal: 1]
 
-  # TODO: What happens if user abandons and comes back but has payment already? or params are removed?
+  import PicselloWeb.OnboardingLive.Shared,
+    only: [
+      signup_container: 1,
+      signup_deal: 1,
+      form_field: 1,
+      save_final: 3,
+      save_multi: 3,
+      assign_changeset: 3
+    ]
+
+  @promo_code "BLACKFRIDAY2024"
 
   @impl true
   def mount(_params, _session, socket) do
@@ -29,10 +30,10 @@ defmodule PicselloWeb.OnboardingLive.Mastermind.Index do
     |> assign(:step_total, 4)
     |> assign_step()
     |> assign(:state, nil)
+    |> assign(:promotion_code, @promo_code)
     |> assign(:stripe_elements_loading, false)
     |> assign(:stripe_publishable_key, Application.get_env(:stripity_stripe, :publishable_key))
-    |> assign(:loading_stripe, false)
-    |> assign_changeset()
+    |> assign_changeset(%{}, :mastermind)
     |> ok()
   end
 
@@ -43,7 +44,6 @@ defmodule PicselloWeb.OnboardingLive.Mastermind.Index do
         socket
       ) do
     socket
-    |> assign(:loading_stripe, false)
     |> assign(:stripe_elements_loading, false)
     |> assign(:state, state)
     |> assign_step(3)
@@ -61,22 +61,22 @@ defmodule PicselloWeb.OnboardingLive.Mastermind.Index do
 
   @impl true
   def handle_event("previous", %{}, %{assigns: %{step: step}} = socket) do
-    socket |> assign_step(step - 1) |> assign_changeset() |> noreply()
+    socket |> assign_step(step - 1) |> assign_changeset(%{}, :mastermind) |> noreply()
   end
 
   @impl true
   def handle_event("validate", %{"user" => params}, socket) do
-    socket |> assign_changeset(params) |> noreply()
+    socket |> assign_changeset(params, :mastermind) |> noreply()
   end
 
   @impl true
   def handle_event("validate", _params, socket) do
-    socket |> assign_changeset() |> noreply()
+    socket |> assign_changeset(%{}, :mastermind) |> noreply()
   end
 
   @impl true
   def handle_event("save", %{"user" => params}, %{assigns: %{step: 4}} = socket) do
-    save_final(socket, params)
+    save_final(socket, params, :mastermind)
   end
 
   @impl true
@@ -91,19 +91,17 @@ defmodule PicselloWeb.OnboardingLive.Mastermind.Index do
   def handle_event(
         "stripe-elements-create",
         %{"address" => %{"value" => %{"address" => address}}} = _params,
-        %{assigns: %{current_user: current_user}} = socket
+        %{assigns: %{current_user: current_user, promotion_code: promotion_code}} = socket
       ) do
-    subscription_plan = Subscriptions.get_subscription_plan("year")
-
     stripe_params = %{
       customer: Subscriptions.user_customer_id(current_user, %{address: address}),
       items: [
         %{
           quantity: 1,
-          price: subscription_plan.stripe_price_id
+          price: Subscriptions.get_subscription_plan("year").stripe_price_id
         }
       ],
-      coupon: "0MhcOdQF",
+      coupon: Subscriptions.maybe_return_promotion_code_id?(promotion_code),
       payment_behavior: "default_incomplete",
       payment_settings: %{
         save_default_payment_method: "on_subscription"
@@ -111,53 +109,49 @@ defmodule PicselloWeb.OnboardingLive.Mastermind.Index do
       expand: ["latest_invoice.payment_intent", "pending_setup_intent"]
     }
 
-    subscription =
-      case Payments.create_subscription(stripe_params) do
-        {:ok, subscription} -> subscription
-        err -> err
-      end
+    case Payments.create_subscription(stripe_params) do
+      {:ok, subscription} ->
+        Subscriptions.handle_stripe_subscription(subscription)
 
-    subscription
-    |> Subscriptions.handle_stripe_subscription()
+        return =
+          unless is_nil(subscription.pending_setup_intent) do
+            build_return(
+              subscription.pending_setup_intent.client_secret,
+              address,
+              promotion_code,
+              "setup"
+            )
+          else
+            build_return(
+              subscription.latest_invoice.payment_intent.client_secret,
+              address,
+              promotion_code,
+              "payment"
+            )
+          end
 
-    return =
-      if !is_nil(subscription.pending_setup_intent) do
-        %{
-          type: "setup",
-          client_secret: subscription.pending_setup_intent.client_secret,
-          state:
-            if Map.get(address, "country") == "US" do
-              Map.get(address, "state")
-            else
-              "Non-US"
-            end
-        }
-      else
-        %{
-          type: "payment",
-          client_secret: subscription.latest_invoice.payment_intent.client_secret,
-          state:
-            if Map.get(address, "country") == "US" do
-              Map.get(address, "state")
-            else
-              "Non-US"
-            end
-        }
-      end
+        socket
+        |> push_event("stripe-elements-success", return)
+        |> noreply()
 
-    socket
-    |> push_event("stripe-elements-success", return)
-    |> noreply()
+      _ ->
+        socket
+        |> put_flash(:error, "Couldn't fetch your payment session. Please try again")
+        |> noreply()
+    end
   end
 
   @impl true
   def handle_event("stripe-elements-loading", _params, socket) do
-    socket |> noreply()
+    socket |> assign(:stripe_elements_loading, true) |> noreply()
   end
 
   @impl true
   def handle_event("stripe-elements-error", _params, socket) do
-    socket |> noreply()
+    socket
+    |> assign(:stripe_elements_loading, false)
+    |> put_flash(:error, "Couldn't fetch your payment session. Please try again")
+    |> noreply()
   end
 
   @impl true
@@ -189,6 +183,7 @@ defmodule PicselloWeb.OnboardingLive.Mastermind.Index do
         <:right_panel>
           <.signup_deal original_price={Money.new(35000, :USD)} price={Money.new(24500, :USD)} expires_at="22 days, 1 hour, 15 seconds" />
           <div
+            phx-update="ignore"
             class="my-6"
             phx-hook="StripeElements"
             id="stripe-elements"
@@ -234,6 +229,7 @@ defmodule PicselloWeb.OnboardingLive.Mastermind.Index do
           <% end %>
           <%= for onboarding <- inputs_for(@f, :onboarding) do %>
             <%= hidden_input onboarding, :state, value: @state %>
+            <%= hidden_input onboarding, :promotion_code, value: @promotion_code %>
             <.form_field label="Are you a full-time or part-time photographer?" error={:schedule} f={onboarding} >
               <%= select onboarding, :schedule, %{"Full-time" => :full_time, "Part-time" => :part_time}, class: "select #{@input_class}" %>
             </.form_field>
@@ -282,6 +278,7 @@ defmodule PicselloWeb.OnboardingLive.Mastermind.Index do
                     <% else %>
                       <input class="hidden" type="checkbox" name={input_name} value={jt |> current() |> Map.get(:job_type)} checked={true} />
                     <% end %>
+                    <%= hidden_input jt, :type, value: jt |> current() |> Map.get(:job_type) %>
                   <% end %>
                 </div>
                 <div class="flex flex-row">
@@ -305,21 +302,6 @@ defmodule PicselloWeb.OnboardingLive.Mastermind.Index do
     """
   end
 
-  defp form_field(assigns) do
-    assigns = Enum.into(assigns, %{error: nil, prefix: nil, class: "py-2", mt: 4})
-
-    ~H"""
-    <label class={"flex flex-col mt-#{@mt}"}>
-      <p class={"#{@class} font-extrabold"}><%= @label %></p>
-      <%= render_slot(@inner_block) %>
-
-      <%= if @error do %>
-        <%= error_tag @f, @error, prefix: @prefix, class: "text-red-sales-300 text-sm" %>
-      <% end %>
-    </label>
-    """
-  end
-
   defp step_footer(assigns) do
     ~H"""
     <div class="flex items-center justify-between mt-5 sm:justify-end sm:mt-auto gap-4">
@@ -328,8 +310,12 @@ defmodule PicselloWeb.OnboardingLive.Mastermind.Index do
           Back
         </button>
       <% end %>
-      <button type="submit" phx-disable-with="Saving…" disabled={if @step === 2 do @stripe_elements_loading else !@changeset.valid? || @loading_stripe end} id={if @step === 2 do "payment-element-submit" end} class="flex-grow px-6 btn-primary sm:px-8">
-        <%= if @step == 4, do: "Finish", else: "Next" %>
+      <button type="submit" phx-disable-with="Saving…" disabled={if @step === 2 do @stripe_elements_loading else !@changeset.valid? || @stripe_elements_loading end} id={if @step === 2 do "payment-element-submit" end} class="flex-grow px-6 btn-primary sm:px-8">
+        <%= if @stripe_elements_loading do %>
+          Saving…
+        <% else %>
+          <%= if @step == 4, do: "Finish", else: "Next" %>
+        <% end %>
       </button>
     </div>
     """
@@ -350,9 +336,7 @@ defmodule PicselloWeb.OnboardingLive.Mastermind.Index do
     socket
     |> assign(
       step: 2,
-      color_class: "bg-orange-inbox-200",
       step_title: "Get the deal",
-      subtitle: "",
       page_title: "Onboarding Step 2"
     )
   end
@@ -361,9 +345,7 @@ defmodule PicselloWeb.OnboardingLive.Mastermind.Index do
     socket
     |> assign(
       step: 3,
-      color_class: "bg-blue-gallery-200",
       step_title: "Create your Picsello profile",
-      subtitle: "",
       page_title: "Onboarding Step 3"
     )
   end
@@ -372,56 +354,19 @@ defmodule PicselloWeb.OnboardingLive.Mastermind.Index do
     socket
     |> assign(
       step: 4,
-      color_class: "bg-blue-gallery-200",
       step_title: "Customize your business",
-      subtitle: "",
       page_title: "Onboarding Step 4"
     )
   end
 
-  defp save_final(socket, params, data \\ :skip) do
-    Multi.new()
-    |> Multi.put(:data, data)
-    |> Multi.update(:user, build_changeset(socket, params))
-    |> Multi.insert(:global_gallery_settings, fn %{user: %{organization: organization}} ->
-      GSGallery.price_changeset(%GSGallery{}, %{organization_id: organization.id})
-    end)
-    |> Multi.insert(:user_currencies, fn %{user: %{organization: organization}} ->
-      UserCurrency.currency_changeset(%UserCurrency{}, %{
-        organization_id: organization.id,
-        currency: "USD"
-      })
-    end)
-    |> Multi.run(:user_final, fn _repo, %{user: user} ->
-      with _ <- Onboardings.complete!(user) do
-        {:ok, nil}
-      end
-    end)
-    |> Repo.transaction()
-    |> then(fn
-      {:ok, %{user: user}} ->
-        socket
-        |> assign(current_user: user)
-        |> update_user_client_trial(user)
-        |> push_redirect(to: Routes.home_path(socket, :index), replace: true)
-
-      {:error, reason} ->
-        socket |> assign(changeset: reason)
-    end)
-    |> noreply()
-  end
-
   defp save(%{assigns: %{step: step}} = socket, params, data \\ :skip) do
-    Multi.new()
-    |> Multi.put(:data, data)
-    |> Multi.update(:user, build_changeset(socket, params))
-    |> Repo.transaction()
+    save_multi(socket, params, data)
     |> then(fn
       {:ok, %{user: user}} ->
         socket
         |> assign(current_user: user)
         |> assign_step(step + 1)
-        |> assign_changeset()
+        |> assign_changeset(%{}, :mastermind)
 
       {:error, reason} ->
         socket |> assign(changeset: reason)
@@ -429,35 +374,17 @@ defmodule PicselloWeb.OnboardingLive.Mastermind.Index do
     |> noreply()
   end
 
-  defp build_changeset(%{assigns: %{current_user: user, step: step}}, params, action \\ nil) do
-    user
-    |> Onboardings.changeset(params, step: step, onboarding_type: :mastermind)
-    |> Map.put(:action, action)
-  end
-
-  defp assign_changeset(socket, params \\ %{}) do
-    socket
-    |> assign(changeset: build_changeset(socket, params, :validate))
-  end
-
-  defp update_user_client_trial(socket, current_user) do
+  defp build_return(client_secret, address, promotion_code, type) do
     %{
-      list_ids: SendgridClient.get_all_client_list_env(),
-      clients: [
-        %{
-          email: current_user.email,
-          state_province_region: current_user.onboarding.state,
-          custom_fields: %{
-            w3_T: current_user.organization.name,
-            w1_T: "trial"
-          }
-        }
-      ]
+      type: type,
+      client_secret: client_secret,
+      promotion_code: promotion_code,
+      state:
+        if Map.get(address, "country") == "US" do
+          Map.get(address, "state")
+        else
+          "Non-US"
+        end
     }
-    |> SendgridClient.add_clients()
-
-    user_trial_created_webhook(%{email: current_user.email})
-
-    socket
   end
 end
