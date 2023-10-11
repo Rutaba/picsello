@@ -3,7 +3,6 @@ defmodule PicselloWeb.OnboardingLive.Index do
   use PicselloWeb, live_view: [layout: :onboarding]
 
   import PicselloWeb.GalleryLive.Shared, only: [steps: 1]
-  import PicselloWeb.PackageLive.Shared, only: [current: 1]
 
   import PicselloWeb.OnboardingLive.Shared,
     only: [
@@ -11,7 +10,8 @@ defmodule PicselloWeb.OnboardingLive.Index do
       save_final: 2,
       save_multi: 3,
       assign_changeset: 1,
-      assign_changeset: 2
+      assign_changeset: 2,
+      org_job_inputs: 1
     ]
 
   require Logger
@@ -160,45 +160,7 @@ defmodule PicselloWeb.OnboardingLive.Index do
 
   defp step(%{step: 3} = assigns) do
     ~H"""
-      <%= for o <- inputs_for(@f, :organization) do %>
-        <%= hidden_inputs_for o %>
-
-          <div class="flex flex-col pb-1">
-            <p class="py-2 font-extrabold">
-              What’s your photography speciality?
-              <i class="italic font-light">(Select one or more)</i>
-            </p>
-
-            <div data-rewardful-email={@current_user.email} id="rewardful-email"></div>
-
-            <div class="mt-2 grid grid-cols-2 gap-3 sm:gap-5">
-              <%= for jt <- inputs_for(o, :organization_job_types) |> Enum.sort_by(&(&1.data.job_type)) do %>
-                <% input_name = input_name(jt, :job_type) %>
-                <%= hidden_inputs_for(jt) %>
-                <%= if jt.data.job_type != "other" do %>
-                  <% checked = jt |> current() |> Map.get(:show_on_business?) %>
-                  <.job_type_option type="checkbox" name={input_name} form={jt} job_type={jt |> current() |> Map.get(:job_type)} checked={checked} />
-                <% else %>
-                  <input class="hidden" type="checkbox" name={input_name} value={jt |> current() |> Map.get(:job_type)} checked={true} />
-                <% end %>
-                <%= hidden_input jt, :type, value: jt |> current() |> Map.get(:job_type) %>
-              <% end %>
-            </div>
-            <div class="flex flex-row">
-              <div class="flex items-center justify-center w-7 h-7 ml-1 mr-3 mt-2 rounded-full flex-shrink-0 bg-blue-planning-300 text-white">
-                <.icon name="other" class="fill-current" width="14" height="14" />
-              </div>
-              <div class="flex flex-col">
-                <p class="pt-2 font-bold">
-                  Not seeing yours here?
-                </p>
-                <p class="text-gray-400 font-normal">
-                  All Picsello accounts include an <strong>Other</strong> photography speciality in case yours isn’t listed here.
-                </p>
-              </div>
-            </div>
-          </div>
-      <% end %>
+      <.org_job_inputs {assigns} />
     """
   end
 
