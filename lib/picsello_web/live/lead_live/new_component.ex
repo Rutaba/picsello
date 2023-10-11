@@ -2,9 +2,8 @@ defmodule PicselloWeb.JobLive.NewComponent do
   @moduledoc false
   use PicselloWeb, :live_component
 
-  alias Picsello.{Job, Jobs, Clients, Profiles, Repo}
+  alias Picsello.{Job, Jobs, Clients, Profiles, Repo, EmailAutomationSchedules}
   alias Picsello.EmailAutomation.EmailSchedule
-  alias alias PicselloWeb.EmailAutomationLive.Shared
 
   import PicselloWeb.PackageLive.Shared, only: [current: 1]
   import PicselloWeb.JobLive.Shared, only: [job_form_fields: 1, search_clients: 1]
@@ -111,10 +110,16 @@ defmodule PicselloWeb.JobLive.NewComponent do
            &Job.create_job_changeset(%{type: job.type, notes: job.notes, client_id: &1.client.id})
          )
          |> Ecto.Multi.insert_all(:email_automation, EmailSchedule, fn %{lead: %Job{id: job_id}} ->
-           Shared.job_emails(job.type, current_user.organization_id, job_id, [:lead, :job], [
-             :client_contact,
-             :abandoned_emails
-           ])
+           EmailAutomationSchedules.job_emails(
+             job.type,
+             current_user.organization_id,
+             job_id,
+             [:lead, :job],
+             [
+               :client_contact,
+               :abandoned_emails
+             ]
+           )
          end)
          |> Repo.transaction() do
       {:ok, %{lead: %Job{id: job_id}}} ->

@@ -25,7 +25,6 @@ defmodule PicselloWeb.Live.Shared do
 
   alias Ecto.{Changeset, Multi, Query}
   alias PicselloWeb.Shared.ConfirmationComponent
-  alias PicselloWeb.EmailAutomationLive.Shared
 
   alias Picsello.{
     Job,
@@ -37,7 +36,8 @@ defmodule PicselloWeb.Live.Shared do
     Workers.CleanStore,
     Packages.Download,
     Packages.PackagePricing,
-    EmailAutomation.EmailSchedule
+    EmailAutomation.EmailSchedule,
+    EmailAutomationSchedules
   }
 
   alias PicselloWeb.Live.Shared.CustomPayments
@@ -727,7 +727,7 @@ defmodule PicselloWeb.Live.Shared do
                                                                       type: type
                                                                     }
                                                                   } ->
-      Shared.job_emails(type, current_user.organization_id, job_id, [:job])
+      EmailAutomationSchedules.job_emails(type, current_user.organization_id, job_id, [:job])
     end)
     |> Repo.transaction()
     |> then(fn

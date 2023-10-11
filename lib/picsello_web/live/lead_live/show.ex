@@ -160,7 +160,8 @@ defmodule PicselloWeb.LeadLive.Show do
         nil,
         job.id,
         pipeline.id,
-        :manual_booking_proposal_sent
+        :manual_booking_proposal_sent,
+        PicselloWeb.EmailAutomationLive.Shared
       )
 
     manual_toggle =

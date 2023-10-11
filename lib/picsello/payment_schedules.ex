@@ -15,10 +15,9 @@ defmodule Picsello.PaymentSchedules do
     Shoot,
     Currency,
     UserCurrencies,
-    Workers.CalendarEvent
+    Workers.CalendarEvent,
+    EmailAutomationSchedules
   }
-
-  alias PicselloWeb.EmailAutomationLive.Shared
 
   def get_description(%Job{package: nil} = job),
     do: build_payment_schedules_for_lead(job) |> Map.get(:details)
@@ -346,7 +345,7 @@ defmodule Picsello.PaymentSchedules do
         |> Oban.insert_all()
       end
 
-      Shared.insert_job_emails(
+      EmailAutomationSchedules.insert_job_emails(
         proposal.job.type,
         organization.id,
         proposal.job.id,

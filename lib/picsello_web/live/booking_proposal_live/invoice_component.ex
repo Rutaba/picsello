@@ -2,7 +2,7 @@ defmodule PicselloWeb.BookingProposalLive.InvoiceComponent do
   @moduledoc false
   use PicselloWeb, :live_component
   alias Picsello.{PaymentSchedules, BookingProposal}
-  import PicselloWeb.EmailAutomationLive.Shared, only: [insert_job_emails: 5]
+  import Picsello.EmailAutomationSchedules, only: [insert_job_emails: 5]
   import PicselloWeb.LiveModal, only: [close_x: 1, footer: 1]
 
   import PicselloWeb.BookingProposalLive.Shared,

@@ -51,7 +51,8 @@ defmodule PicselloWeb.GalleryLive.Shared do
             gallery.id,
             nil,
             pipeline.id,
-            state
+            state,
+            __MODULE__
           )
 
         manual_toggle =

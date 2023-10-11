@@ -16,7 +16,8 @@ defmodule PicselloWeb.Live.EmailAutomations.Show do
       get_email_name: 4,
       explode_hours: 1,
       get_preceding_email: 2,
-      fetch_date_for_state_maybe_manual: 6
+      fetch_date_for_state_maybe_manual: 6,
+      get_sample_values: 4
     ]
 
   import Ecto.Query
@@ -33,8 +34,6 @@ defmodule PicselloWeb.Live.EmailAutomations.Show do
     Utils,
     UserCurrencies
   }
-
-  import PicselloWeb.EmailAutomationLive.Shared
 
   @impl true
   def mount(%{"live_action" => live_action, "id" => id} = _params, _session, socket) do
@@ -399,7 +398,8 @@ defmodule PicselloWeb.Live.EmailAutomations.Show do
             gallery_id,
             job_id,
             pipeline_id,
-            state
+            state,
+            __MODULE__
           )
 
         %{

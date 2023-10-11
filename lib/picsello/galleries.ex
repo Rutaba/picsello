@@ -5,7 +5,6 @@ defmodule Picsello.Galleries do
 
   import Ecto.Query, warn: false
   import PicselloWeb.GalleryLive.Shared, only: [prepare_gallery: 1]
-  alias PicselloWeb.EmailAutomationLive.Shared
 
   alias Ecto.Multi
 
@@ -24,7 +23,8 @@ defmodule Picsello.Galleries do
     Utils,
     WHCC,
     Galleries.Gallery.UseGlobal,
-    EmailAutomation.EmailSchedule
+    EmailAutomation.EmailSchedule,
+    EmailAutomationSchedules
   }
 
   alias Picsello.Workers.{UploadExistingFile, CleanStore}
@@ -576,10 +576,10 @@ defmodule Picsello.Galleries do
       |> check_watermark(user)
     end)
     |> Multi.insert_all(:email_automation_job, EmailSchedule, fn %{gallery: gallery} ->
-      Shared.insert_job_emails_from_gallery(gallery, [:job])
+      EmailAutomationSchedules.insert_job_emails_from_gallery(gallery, [:job])
     end)
     |> Multi.insert_all(:email_automation, EmailSchedule, fn %{gallery: gallery} ->
-      Shared.gallery_order_emails(gallery, nil)
+      EmailAutomationSchedules.gallery_order_emails(gallery, nil)
     end)
   end
 

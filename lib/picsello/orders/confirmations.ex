@@ -17,11 +17,11 @@ defmodule Picsello.Orders.Confirmations do
     Payments,
     Repo,
     WHCC,
-    OrganizationCard
+    OrganizationCard,
+    EmailAutomationSchedules
   }
 
   alias Picsello.WHCC.Order.Created, as: WHCCOrder
-  alias PicselloWeb.EmailAutomationLive.Shared
   import Picsello.Zapier.GalleryOrders, only: [gallery_order_whcc_update: 1]
 
   import Ecto.Query, only: [from: 2]
@@ -202,7 +202,7 @@ defmodule Picsello.Orders.Confirmations do
       OrganizationCard.insert_for_proofing_order(order)
     end)
     |> run(:insert_orders_emails, fn _repo, %{order: order} ->
-      Shared.insert_gallery_order_emails(nil, order)
+      EmailAutomationSchedules.insert_gallery_order_emails(nil, order)
     end)
     |> Repo.transaction()
     |> case do

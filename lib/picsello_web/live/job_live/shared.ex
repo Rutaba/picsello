@@ -1903,7 +1903,8 @@ defmodule PicselloWeb.JobLive.Shared do
         nil,
         job.id,
         pipeline.id,
-        :manual_thank_you_lead
+        :manual_thank_you_lead,
+        __MODULE__
       )
 
     manual_toggle =

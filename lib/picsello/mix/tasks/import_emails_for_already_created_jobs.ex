@@ -4,13 +4,13 @@ defmodule Mix.Tasks.ImportEmailForAlreadyCreatedJobs do
   use Mix.Task
   require Logger
   import Ecto.Query
-  alias PicselloWeb.EmailAutomationLive.Shared
 
   alias Picsello.{
     Repo,
     Job,
     Galleries,
-    Accounts.User
+    Accounts.User,
+    EmailAutomationSchedules
   }
 
   @shortdoc "import email schedules for ongoing jobs"
@@ -86,14 +86,14 @@ defmodule Mix.Tasks.ImportEmailForAlreadyCreatedJobs do
     galleries
     |> Enum.filter(&(&1.status == :active and !Galleries.expired?(&1)))
     |> Enum.map(fn gallery ->
-      Shared.insert_gallery_order_emails(gallery, nil)
+      EmailAutomationSchedules.insert_gallery_order_emails(gallery, nil)
       order_emails(gallery.orders)
     end)
   end
 
   defp order_emails(orders) do
     Enum.map(orders, fn order ->
-      Shared.insert_gallery_order_emails(nil, order)
+      EmailAutomationSchedules.insert_gallery_order_emails(nil, order)
     end)
   end
 
@@ -104,7 +104,13 @@ defmodule Mix.Tasks.ImportEmailForAlreadyCreatedJobs do
          categories,
          skip_pipelines
        ) do
-    Shared.insert_job_emails(job_type, organization_id, job_id, categories, skip_pipelines)
+    EmailAutomationSchedules.insert_job_emails(
+      job_type,
+      organization_id,
+      job_id,
+      categories,
+      skip_pipelines
+    )
   end
 
   defp filter_jobs(query) do

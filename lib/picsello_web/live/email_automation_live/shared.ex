@@ -16,7 +16,6 @@ defmodule PicselloWeb.EmailAutomationLive.Shared do
     EmailAutomations,
     EmailAutomationSchedules,
     EmailAutomation.EmailSchedule,
-    EmailAutomation.EmailScheduleHistory,
     Repo,
     Utils,
     UserCurrencies
@@ -396,7 +395,8 @@ defmodule PicselloWeb.EmailAutomationLive.Shared do
         gallery_id,
         job_id,
         pipeline_id,
-        state
+        state,
+        __MODULE__
       )
 
     if is_state_manually_trigger(state) do
@@ -719,148 +719,6 @@ defmodule PicselloWeb.EmailAutomationLive.Shared do
   defp get_timex_calendar("Month"), do: :months
   defp get_timex_calendar("Day"), do: :days
   defp get_timex_calendar("Hour"), do: :hours
-
-  @doc """
-    Insert all emails templates for jobs & leads in email schedules
-  """
-  def job_emails(type, organization_id, job_id, types, skip_states \\ [""]) do
-    now = DateTime.utc_now() |> DateTime.truncate(:second)
-
-    emails =
-      EmailAutomations.get_emails_for_schedule(organization_id, type, types)
-      |> Enum.map(fn email_data ->
-        state = Map.get(email_data, :email_automation_pipeline) |> Map.get(:state)
-
-        if state not in skip_states do
-          [
-            job_id: job_id,
-            total_hours: email_data.total_hours,
-            condition: email_data.condition,
-            body_template: email_data.body_template,
-            name: email_data.name,
-            subject_template: email_data.subject_template,
-            private_name: email_data.private_name,
-            email_automation_pipeline_id: email_data.email_automation_pipeline_id,
-            organization_id: organization_id,
-            inserted_at: now,
-            updated_at: now
-          ]
-        end
-      end)
-      |> Enum.filter(&(&1 != nil))
-
-    previous_emails_schedules = EmailAutomationSchedules.get_emails_by_job(EmailSchedule, job_id)
-
-    previous_emails_history =
-      EmailAutomationSchedules.get_emails_by_job(EmailScheduleHistory, job_id)
-
-    if Enum.empty?(previous_emails_schedules) and Enum.empty?(previous_emails_history) do
-      emails
-    else
-      []
-    end
-  end
-
-  def insert_job_emails_from_gallery(gallery, types) do
-    gallery =
-      gallery
-      |> Repo.preload([:job, organization: [organization_job_types: :jobtype]], force: true)
-
-    job_type = gallery.job.type
-    organization_id = gallery.organization.id
-    job_emails(job_type, organization_id, gallery.job.id, types)
-  end
-
-  @doc """
-    Insert all emails templates for galleries, When gallery created it fetch
-    all email templates for gallery category and insert in email schedules
-  """
-  def gallery_order_emails(gallery, order \\ nil) do
-    gallery =
-      if order, do: order |> Repo.preload(gallery: :job) |> Map.get(:gallery), else: gallery
-
-    gallery =
-      gallery
-      |> Repo.preload([:job, organization: [organization_job_types: :jobtype]], force: true)
-
-    type = gallery.job.type
-
-    now = DateTime.utc_now() |> DateTime.truncate(:second)
-
-    skip_sub_categories =
-      if order,
-        do: ["gallery_notification_emails", "order_status_emails"],
-        else: ["order_confirmation_emails", "order_status_emails"]
-
-    order_id = if order, do: order.id, else: nil
-
-    emails =
-      EmailAutomations.get_emails_for_schedule(
-        gallery.organization.id,
-        type,
-        [:gallery],
-        skip_sub_categories
-      )
-      |> Enum.map(fn email_data ->
-        state = Map.get(email_data, :email_automation_pipeline) |> Map.get(:state)
-
-        if state not in [
-             :gallery_password_changed,
-             :order_confirmation_physical,
-             :order_confirmation_digital
-           ] do
-          [
-            gallery_id: gallery.id,
-            order_id: order_id,
-            total_hours: email_data.total_hours,
-            condition: email_data.condition,
-            body_template: email_data.body_template,
-            name: email_data.name,
-            subject_template: email_data.subject_template,
-            private_name: email_data.private_name,
-            email_automation_pipeline_id: email_data.email_automation_pipeline_id,
-            organization_id: gallery.organization.id,
-            inserted_at: now,
-            updated_at: now
-          ]
-        end
-      end)
-      |> Enum.filter(&(&1 != nil))
-
-    previous_emails =
-      if order,
-        do: EmailAutomationSchedules.get_emails_by_order(EmailSchedule, order.id),
-        else: EmailAutomationSchedules.get_emails_by_gallery(EmailSchedule, gallery.id)
-
-    previous_emails_history =
-      if order,
-        do: EmailAutomationSchedules.get_emails_by_order(EmailScheduleHistory, order.id),
-        else: EmailAutomationSchedules.get_emails_by_gallery(EmailScheduleHistory, gallery.id)
-
-    if Enum.empty?(previous_emails) and Enum.empty?(previous_emails_history) do
-      emails
-    else
-      []
-    end
-  end
-
-  def insert_gallery_order_emails(gallery, order) do
-    emails = gallery_order_emails(gallery, order)
-
-    case Repo.insert_all(EmailSchedule, emails) do
-      {count, nil} -> {:ok, count}
-      _ -> {:error, "error insertion"}
-    end
-  end
-
-  def insert_job_emails(type, organization_id, job_id, types, skip_states \\ [""]) do
-    emails = job_emails(type, organization_id, job_id, types, skip_states)
-
-    case Repo.insert_all(EmailSchedule, emails) do
-      {count, nil} -> {:ok, count}
-      _ -> {:error, "error insertion"}
-    end
-  end
 
   def assign_collapsed_sections(socket) do
     sub_categories = EmailAutomations.get_sub_categories() |> Enum.map(fn x -> x.name end)
