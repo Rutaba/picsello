@@ -142,8 +142,7 @@ defmodule Picsello.ClientVisitsPhotographerProfileTest do
     |> fill_in(text_field("Your message"), with: "May you take some pictures of our family?")
     |> wait_for_enabled_submit_button()
     |> click(button("Submit"))
-    |> assert_text("Message sent")
-    |> assert_text("We'll contact you soon!")
+    |> assert_text("I'll be in touch soon.")
 
     assert %{
              type: "wedding",
@@ -175,7 +174,7 @@ defmodule Picsello.ClientVisitsPhotographerProfileTest do
     |> fill_in(text_field("Your message"), with: "May you take some pictures of our party?")
     |> wait_for_enabled_submit_button()
     |> click(button("Submit"))
-    |> assert_text("Message sent")
+    |> assert_text("I'll be in touch soon.")
 
     assert %{
              type: "event",

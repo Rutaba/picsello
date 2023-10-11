@@ -110,7 +110,7 @@ defmodule PicselloWeb.LeadContactIframeControllerTest do
                }
              )
              |> html_response(200)
-             |> String.contains?("Message sent")
+             |> String.contains?("Thank you for contacting me!")
     end
 
     test "user submits form without or an incorrect organization_slug", %{conn: conn} do

@@ -18,9 +18,9 @@ defmodule PicselloWeb.Live.Profile.ClientFormComponent do
 
     ~H"""
     <div class="mt-20 border p-9 border-base-200">
-      <h2 class="text-3xl max-w-md">Let's work together!<%= @header_suffix %></h2>
 
       <%= if @changeset do %>
+        <h2 class="text-3xl max-w-md">Let's work together!<%= @header_suffix %></h2>
         <.form for={@changeset} :let={f} phx-change="validate-client" phx-submit="save-client" id="contact-form" phx-target={@myself}>
           <div class="flex flex-col mt-3">
             <%= label_for f, :name, autocapitalize: "words", autocorrect: "false", spellcheck: "false", autocomplete: "name", label: "Name", class: "py-2 font-bold" %>
@@ -76,12 +76,9 @@ defmodule PicselloWeb.Live.Profile.ClientFormComponent do
           <div class="mt-8 text-right"><button type="submit" disabled={!@changeset.valid?} class="w-full lg:w-auto btn-primary">Submit</button></div>
         </.form>
       <% else %>
-        <div class="flex items-center mt-14 min-w-max">
-          <.icon name="confetti" class="w-20 h-20 stroke-current mr-9" style={"color: #{@color}"} />
-          <div>
-            <h2 class="text-2xl font-light">Message sent</h2>
-            We'll contact you soon!
-          </div>
+        <div class="text-center">
+          <h2 class="text-2xl font-light uppercase tracking-widest">Thank you for contacting me!</h2>
+          <p class="text-lg">I'll be in touch soon.</p>
         </div>
       <% end %>
     </div>
