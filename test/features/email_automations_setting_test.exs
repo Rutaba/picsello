@@ -167,7 +167,7 @@ defmodule Picsello.EmailAutomationsTest do
     session
     |> visit("/email-automations")
     |> find(css("div[testid='main-section-of-page']"), fn div ->
-      assert_has(div, css("section", count: 21))
+      assert_has(div, css("section", count: 22))
     end)
   end
 
@@ -182,10 +182,10 @@ defmodule Picsello.EmailAutomationsTest do
     |> assert_has(button("Edit time", count: 0))
     |> click(css("span", text: "Client contacts you"))
     # Why 11 are visible? We inserted only 1?
-    |> assert_has(css("div", text: "Wedding - Use this email preset 1", count: 11))
+    |> assert_has(css("div", text: "Wedding - Use This Email Preset 1", count: 11))
     |> assert_has(button("Edit time", count: 1))
     |> click(css("span", text: "Client contacts you"))
-    |> assert_has(css("div", text: "Wedding - Use this email preset 1", count: 0))
+    |> assert_has(css("div", text: "Wedding - Use This Email Preset 1", count: 0))
     |> assert_has(button("Edit time", count: 0))
   end
 
@@ -262,7 +262,7 @@ defmodule Picsello.EmailAutomationsTest do
     |> click(button("Edit time"))
     |> assert_has(css(".modal", count: 1))
     |> assert_text("Edit Email Automation Settings")
-    |> assert_text("Send email: Wedding - Use this email preset 1")
+    |> assert_text("Send email: Wedding - Use This Email Preset 1")
     |> assert_text("Choose whether or not this email should send")
     |> assert_text("Choose when you’d like your email to send")
     |> assert_text("Email timing")
@@ -372,12 +372,11 @@ defmodule Picsello.EmailAutomationsTest do
     |> click(css("button[id='view-variables']"))
     |> assert_has(css("div[testid='variables']", count: 1))
     |> click(css("use[href='/images/icons.svg#close-x']", count: 2, at: 1))
-    |> assert_has(css("div[testid='variables']", count: 0))
+    |> assert_has(testid("variables", count: 0))
     |> assert_has(css("span", text: "Step 1", count: 1))
     |> assert_has(css("span", text: "Step 2", count: 0))
     |> fill_in(css("input[placeholder='Inquiry Email']"), with: "Demo Name")
     |> click(button("Review"))
-
     # Onward: Step 2 of Modal not tested, due to mock issue.                              # Mock issue
     # |> assert_text("Preview Wedding Email")
     # |> assert_text("Lead:")
@@ -403,23 +402,23 @@ defmodule Picsello.EmailAutomationsTest do
     |> find(css("div[testid='email']", count: 3, at: 0), fn div ->
       div
       # But we expect only one. Why 4 here?
-      |> assert_has(css("div", text: "Wedding - Use this email preset 2", count: 4))
-      |> assert_has(css("div", text: "Wedding - Use this email preset 3", count: 0))
-      |> assert_has(css("div", text: "Wedding - Use this email preset 4", count: 0))
+      |> assert_has(css("div", text: "Wedding - Use This Email Preset 2", count: 4))
+      |> assert_has(css("div", text: "Wedding - Use This Email Preset 3", count: 0))
+      |> assert_has(css("div", text: "Wedding - Use This Email Preset 4", count: 0))
     end)
     |> find(css("div[testid='email']", count: 3, at: 1), fn div ->
       div
       # But we expect only one. Why 4 here?
-      |> assert_has(css("div", text: "Wedding - Use this email preset 2", count: 0))
-      |> assert_has(css("div", text: "Wedding - Use this email preset 3", count: 4))
-      |> assert_has(css("div", text: "Wedding - Use this email preset 4", count: 0))
+      |> assert_has(css("div", text: "Wedding - Use This Email Preset 2", count: 0))
+      |> assert_has(css("div", text: "Wedding - Use This Email Preset 3", count: 4))
+      |> assert_has(css("div", text: "Wedding - Use This Email Preset 4", count: 0))
     end)
     |> find(css("div[testid='email']", count: 3, at: 2), fn div ->
       div
       # But we expect only one. Why 4 here?
-      |> assert_has(css("div", text: "Wedding - Use this email preset 2", count: 0))
-      |> assert_has(css("div", text: "Wedding - Use this email preset 3", count: 0))
-      |> assert_has(css("div", text: "Wedding - Use this email preset 4", count: 4))
+      |> assert_has(css("div", text: "Wedding - Use This Email Preset 2", count: 0))
+      |> assert_has(css("div", text: "Wedding - Use This Email Preset 3", count: 0))
+      |> assert_has(css("div", text: "Wedding - Use This Email Preset 4", count: 4))
     end)
     |> assert_has(button("Edit time", count: 2))
     |> click(button("Edit time", count: 2, at: 0))
@@ -431,19 +430,19 @@ defmodule Picsello.EmailAutomationsTest do
       |> find(css("div[testid='email']", count: 3, at: 1), fn div ->
         div
         # But we expect only one. Why 4 here?
-        |> assert_has(css("div", text: "Wedding - Use this email preset 2", count: 0))
-        |> assert_has(css("div", text: "Wedding - Use this email preset 3", count: 0))
-        |> assert_has(css("div", text: "Wedding - Use this email preset 4", count: 4))
+        |> assert_has(css("div", text: "Wedding - Use This Email Preset 2", count: 0))
+        |> assert_has(css("div", text: "Wedding - Use This Email Preset 3", count: 0))
+        |> assert_has(css("div", text: "Wedding - Use This Email Preset 4", count: 4))
       end)
       |> find(css("div[testid='email']", count: 3, at: 2), fn div ->
         div
-        |> assert_has(css("div", text: "Wedding - Use this email preset 2", count: 0))
+        |> assert_has(css("div", text: "Wedding - Use This Email Preset 2", count: 0))
         # But we expect four. Why 0 here?
         |> assert_has(
-          css("div", text: "Wedding - Use this email preset 3 - 2 Hours After", count: 0)
+          css("div", text: "Wedding - Use This Email Preset 3 - 2 Hours After", count: 4)
         )
         # But we expect NO, why 4 here?
-        |> assert_has(css("div", text: "Wedding - Use this email preset 4", count: 4))
+        |> assert_has(css("div", text: "Wedding - Use This Email Preset 4", count: 4))
       end)
     end)
   end
