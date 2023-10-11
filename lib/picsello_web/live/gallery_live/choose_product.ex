@@ -109,8 +109,8 @@ defmodule PicselloWeb.GalleryLive.ChooseProduct do
     |> get_unconfirmed_order(preload: [:products, :digitals])
     |> then(fn {:ok, order} ->
       digital = Enum.find(order.digitals, &(&1.photo_id == photo.id))
-      {_, order} = Cart.delete_product(order, gallery, digital_id: digital.id)
-      send(self(), {:update_cart_count, %{order: order}})
+      Cart.delete_product(order, gallery, digital_id: digital.id)
+      send(self(), :update_cart_count)
     end)
 
     socket
@@ -150,20 +150,19 @@ defmodule PicselloWeb.GalleryLive.ChooseProduct do
 
     date_time = DateTime.truncate(DateTime.utc_now(), :second)
 
-    order =
-      Cart.place_product(
-        %Digital{
-          photo: photo,
-          price: price,
-          inserted_at: date_time,
-          updated_at: date_time
-        },
-        gallery,
-        gallery_client,
-        photo.album_id
-      )
+    Cart.place_product(
+      %Digital{
+        photo: photo,
+        price: price,
+        inserted_at: date_time,
+        updated_at: date_time
+      },
+      gallery,
+      gallery_client,
+      photo.album_id
+    )
 
-    send(self(), {:update_cart_count, %{order: order}})
+    send(self(), :update_cart_count)
 
     assign_details(socket, photo.id)
   end
@@ -190,7 +189,7 @@ defmodule PicselloWeb.GalleryLive.ChooseProduct do
         finals_album_id
       )
 
-    send(root_pid, {:update_cart_count, %{order: order}})
+    send(root_pid, :update_cart_count)
 
     socket
     |> add_to_cart_assigns(order)
