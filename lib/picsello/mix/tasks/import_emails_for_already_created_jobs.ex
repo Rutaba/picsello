@@ -17,25 +17,8 @@ defmodule Mix.Tasks.ImportEmailForAlreadyCreatedJobs do
   def run(_) do
     load_app()
 
-    organizations =
-      from(u in User,
-        select: %{id: u.organization_id},
-        where:
-          u.email in [
-            "apple@gmail.com",
-            "rhinop+picsello@gmail.com",
-            "ops+demo@picsello.com",
-            "aatanasio.dempsey@gmail.com",
-            "kyle+22@picsello.com",
-            "xanadupod@workwithloop.com",
-            "kyle+marketing@picsello.com",
-            "kyle+jane@picsello.com",
-            "gallerytest@gallerytest.com"
-          ]
-      )
-      |> Repo.all()
-
-    organizations
+    from(o in Picsello.Organization, select: %{id: o.id})
+    |> Repo.all()
     |> Enum.map(fn org ->
       user = %User{organization_id: org.id}
 

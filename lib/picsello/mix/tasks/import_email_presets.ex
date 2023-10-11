@@ -22,25 +22,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
     now = NaiveDateTime.utc_now() |> NaiveDateTime.truncate(:second)
     pipelines = from(p in EmailAutomationPipeline) |> Repo.all()
 
-    organizations =
-      from(u in Picsello.Accounts.User,
-        select: %{id: u.organization_id},
-        where:
-          u.email in [
-            "apple@gmail.com",
-            "rhinop+picsello@gmail.com",
-            "ops+demo@picsello.com",
-            "aatanasio.dempsey@gmail.com",
-            "kyle+22@picsello.com",
-            "xanadupod@workwithloop.com",
-            "kyle+marketing@picsello.com",
-            "kyle+jane@picsello.com",
-            "gallerytest@gallerytest.com"
-          ]
-      )
-      |> Repo.all()
-
-    # organizations = from(o in Picsello.Organization, select: %{id: o.id}) |> Repo.all()
+    organizations = from(o in Picsello.Organization, select: %{id: o.id}) |> Repo.all()
     Logger.warning("[orgs count] #{Enum.count(organizations)}")
 
     [
