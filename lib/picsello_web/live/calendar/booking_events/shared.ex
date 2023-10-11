@@ -326,7 +326,8 @@ defmodule PicselloWeb.Calendar.BookingEvents.Shared do
   end
 
   def handle_event("open-client", params, socket) do
-    Map.get(params, "slot_client_id", nil)
+    params
+    |> Map.get("slot_client_id", nil)
     |> case do
       nil ->
         socket
@@ -344,7 +345,8 @@ defmodule PicselloWeb.Calendar.BookingEvents.Shared do
         params,
         socket
       ) do
-    Map.get(params, "slot_job_id", nil)
+    params
+    |> Map.get("slot_job_id", nil)
     |> case do
       nil ->
         socket
@@ -423,7 +425,7 @@ defmodule PicselloWeb.Calendar.BookingEvents.Shared do
          %{booking_event_id: event_id, organization_id: org_id}},
         socket
       ) do
-    to_duplicate_booking_event =
+    duplicate_booking_event =
       BookingEvents.get_booking_event!(
         org_id,
         event_id
@@ -432,8 +434,9 @@ defmodule PicselloWeb.Calendar.BookingEvents.Shared do
       |> Map.put(:status, :active)
       |> Map.from_struct()
 
-    to_duplicate_event_dates =
-      to_duplicate_booking_event.dates
+    duplicate_event_dates =
+      duplicate_booking_event
+      |> Map.get(:dates, nil)
       |> Enum.map(fn t ->
         t
         |> Map.replace(:date, nil)
@@ -444,10 +447,10 @@ defmodule PicselloWeb.Calendar.BookingEvents.Shared do
       Multi.new()
       |> Multi.insert(
         :duplicate_booking_event,
-        BookingEvent.duplicate_changeset(to_duplicate_booking_event)
+        BookingEvent.duplicate_changeset(duplicate_booking_event)
       )
 
-    to_duplicate_event_dates
+    duplicate_event_dates
     |> Enum.with_index()
     |> Enum.reduce(multi, fn {event_date, i}, multi ->
       multi
@@ -787,7 +790,7 @@ defmodule PicselloWeb.Calendar.BookingEvents.Shared do
 
   ## Parameters
 
-  - `slots` ([%SlotBlock{}]): A list of booking event date slots to edit.
+  - `slots` ([SlotBlock.t()]): A list of booking event date slots to edit.
 
   ## Returns
 
@@ -797,9 +800,9 @@ defmodule PicselloWeb.Calendar.BookingEvents.Shared do
 
   ```elixir
   # Edit the status of booking event date slots
-  iex> slots = [%SlotBlock{status: :hidden}, %SlotBlock{status: :open}]
+  iex> slots = [SlotBlock.t(), SlotBlock.t()]
   iex> edit_slots_status(%{slots: slots})
-  [%SlotBlock{status: :hidden}, %SlotBlock{status: :open}]
+  [SlotBlock.t(), SlotBlock.t()]
 
   ## Notes
 
@@ -807,16 +810,14 @@ defmodule PicselloWeb.Calendar.BookingEvents.Shared do
   """
   @spec edit_slots_status(map()) :: [SlotBlock.t()]
   def edit_slots_status(%{slots: slots}) do
-    slots
-    |> Enum.map(fn s ->
+    Enum.map(slots, fn s ->
       if s.status == :hidden, do: %{s | status: :hidden}, else: %{s | status: :open}
     end)
   end
 
-  @spec update_slots_for_edit(map()) :: [%SlotBlock{}]
+  @spec update_slots_for_edit(map()) :: [SlotBlock.t()]
   def update_slots_for_edit(%{slots: slots}) do
-    slots
-    |> Enum.map(fn s ->
+    Enum.map(slots, fn s ->
       if s.status == :hidden, do: %{s | is_hide: true}, else: s
     end)
   end

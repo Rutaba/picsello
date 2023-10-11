@@ -4,7 +4,6 @@ defmodule Picsello.BookingEvents do
   alias Ecto.{Multi, Changeset}
   alias Picsello.Workers.ExpireBooking
   import Ecto.Query
-  import PicselloWeb.LiveHelpers, only: [day_of_week: 1]
 
   defmodule Booking do
     @moduledoc false
@@ -213,6 +212,7 @@ defmodule Picsello.BookingEvents do
     |> Repo.get!(event_id)
   end
 
+  # TODO: delete this function, old implementation
   def available_times(%BookingEvent{} = booking_event, date, opts \\ []) do
     duration = (booking_event.duration_minutes || Picsello.Shoot.durations() |> hd) * 60
 
@@ -238,6 +238,7 @@ defmodule Picsello.BookingEvents do
     end
   end
 
+  # TODO: delete this function, old implementation
   defp get_available_slots_each_block(start_time, end_time, duration, duration_buffer) do
     if !is_nil(start_time) and !is_nil(end_time) do
       available_slots = (Time.diff(end_time, start_time) / duration) |> trunc()
@@ -254,6 +255,7 @@ defmodule Picsello.BookingEvents do
     end
   end
 
+  # TODO: delete this function, old implementation
   defp get_available_slots_each_block(
          slot,
          available_slots,
@@ -293,6 +295,7 @@ defmodule Picsello.BookingEvents do
     end
   end
 
+  # TODO: delete this function, old implementation
   def assign_booked_block_dates(dates, %BookingEvent{} = booking_event) do
     dates
     |> Enum.map(fn %{date: date, time_blocks: time_blocks} = block ->
@@ -304,6 +307,7 @@ defmodule Picsello.BookingEvents do
     end)
   end
 
+  # TODO: delete this function, old implementation
   defp fetch_blocks(all_slots, time_blocks) do
     Enum.map(time_blocks, fn block ->
       is_booked_block = is_blocked_booked(block, all_slots)
@@ -318,6 +322,7 @@ defmodule Picsello.BookingEvents do
     end)
   end
 
+  # TODO: delete this function, old implementation
   def is_blocked_booked(
         %{start_time: start_time, end_time: end_time},
         _slots
@@ -325,6 +330,7 @@ defmodule Picsello.BookingEvents do
       when is_nil(start_time) or is_nil(end_time),
       do: false
 
+  # TODO: delete this function, old implementation
   def is_blocked_booked(
         %{start_time: %Time{} = start_time, end_time: %Time{} = end_time},
         slots
@@ -335,6 +341,7 @@ defmodule Picsello.BookingEvents do
     end) > 0
   end
 
+  # TODO: delete this function, old implementation
   defp filter_is_break_slots(slot_times, booking_event, date) do
     slot_times
     |> Enum.map(fn {slot_time, is_available, _is_break, _is_hide} ->
@@ -346,6 +353,7 @@ defmodule Picsello.BookingEvents do
     end)
   end
 
+  # TODO: delete this function, old implementation
   defp filter_is_break_time_slots(booking_event, slot_time, date) do
     case booking_event.dates |> Enum.find(&(&1.date == date)) do
       %{time_blocks: time_blocks} ->
@@ -367,6 +375,7 @@ defmodule Picsello.BookingEvents do
     end
   end
 
+  # TODO: delete this function, old implementation
   defp filter_is_hidden_time_slots(booking_event, slot_time, date) do
     case booking_event.dates |> Enum.find(&(&1.date == date)) do
       %{time_blocks: time_blocks} ->
@@ -388,10 +397,12 @@ defmodule Picsello.BookingEvents do
     end
   end
 
+  # TODO: delete this function, old implementation
   defp filter_overlapping_shoots(slot_times, _booking_event, _date, true) do
     slot_times |> Enum.map(fn slot_time -> {slot_time, true, true, true} end)
   end
 
+  # TODO: delete this function, old implementation
   defp filter_overlapping_shoots(
          slot_times,
          %BookingEvent{} = booking_event,
@@ -439,6 +450,7 @@ defmodule Picsello.BookingEvents do
     end)
   end
 
+  # TODO: delete this function, old implementation
   defp is_slot_booked(nil, slot_start, slot_end, start_time, end_time) do
     (DateTime.compare(slot_start, start_time) in [:gt, :eq] &&
        DateTime.compare(slot_start, end_time) == :lt) ||
@@ -446,6 +458,7 @@ defmodule Picsello.BookingEvents do
          DateTime.compare(slot_end, end_time) == :lt)
   end
 
+  # TODO: delete this function, old implementation
   defp is_slot_booked(_buffer, slot_start, slot_end, start_time, end_time) do
     (DateTime.compare(slot_start, start_time) in [:gt, :eq] &&
        DateTime.compare(slot_start, end_time) in [:lt, :eq]) ||
@@ -453,6 +466,9 @@ defmodule Picsello.BookingEvents do
          DateTime.compare(slot_end, end_time) in [:lt, :eq])
   end
 
+  @doc """
+    saves a booking for a slot by creating its job, shoots, proposal, contract and updating the slot.
+  """
   def save_booking(
         booking_event,
         booking_date,
@@ -482,18 +498,18 @@ defmodule Picsello.BookingEvents do
       %Picsello.Client{email: email, name: name, phone: phone},
       photographer
     )
-    |> Multi.insert(:job, fn changes ->
+    |> Multi.insert(:job, fn %{client: client} ->
       Picsello.Job.create_changeset(%{
         type: package_template.job_type,
-        client_id: changes.client.id,
+        client_id: client.id,
         is_reserved?: slot_status == :reserved
       })
       |> Changeset.put_change(:booking_event_id, booking_event.id)
     end)
-    |> Multi.update(:booking_date_slot, fn changes ->
+    |> Multi.update(:booking_date_slot, fn %{client: client, job: job} ->
       BookingEventDate.update_slot_changeset(booking_date, slot_index, %{
-        job_id: changes.job.id,
-        client_id: changes.client.id,
+        job_id: job.id,
+        client_id: client.id,
         status: slot_status
       })
     end)
@@ -537,58 +553,61 @@ defmodule Picsello.BookingEvents do
     |> Multi.merge(fn %{package: package} ->
       Picsello.Contracts.maybe_add_default_contract_to_package_multi(package)
     end)
-    |> Multi.insert(:shoot, fn changes ->
+    |> Multi.insert(:shoot, fn %{job: job} ->
       Picsello.Shoot.create_changeset(
         booking_event
         |> Map.take([:name, :location, :address])
         |> Map.put(:starts_at, starts_at)
-        |> Map.put(:job_id, changes.job.id)
+        |> Map.put(:job_id, job.id)
         |> Map.put(:duration_minutes, booking_date.session_length)
       )
     end)
-    |> Ecto.Multi.insert(:proposal, fn changes ->
+    |> Ecto.Multi.insert(:proposal, fn %{job: job, package: package} ->
       questionnaire_id =
         if booking_event.include_questionnaire?,
-          do: changes.package_update.questionnaire_template_id,
+          do: package.questionnaire_template_id,
           else: nil
 
       Picsello.BookingProposal.create_changeset(%{
-        job_id: changes.job.id,
+        job_id: job.id,
         questionnaire_id: questionnaire_id
       })
     end)
-    |> then(fn multi ->
-      if slot_status == :booked do
-        Oban.insert(multi, :oban_job, fn changes ->
+    |> then(fn
+      multi when slot_status == :booked ->
+        Oban.insert(multi, :oban_job, fn %{job: job} ->
           # multiply booking reservation by 2 to account for time spent on Stripe checkout
           expiration = Application.get_env(:picsello, :booking_reservation_seconds) * 2
 
           ExpireBooking.new(
-            %{id: changes.job.id, booking_date_id: booking_date.id, slot_index: slot_index},
+            %{id: job.id, booking_date_id: booking_date.id, slot_index: slot_index},
             schedule_in: expiration
           )
         end)
-      else
+
+      multi ->
         multi
-      end
     end)
     |> Repo.transaction()
   end
 
+  @doc "expires a booking on a specific slot by expiring its job and updating the slot status to :open"
   def expire_booking(%{
         "id" => job_id,
         "booking_date_id" => booking_date_id,
         "slot_index" => slot_index
       }) do
-    Job
-    |> Repo.get(job_id)
-    |> expire_booking_job()
+    {:ok, _} =
+      Job
+      |> Repo.get(job_id)
+      |> expire_booking_job()
 
-    BookingEventDates.update_slot_status(booking_date_id, slot_index, %{
-      job_id: nil,
-      client_id: nil,
-      status: :open
-    })
+    {:ok, _} =
+      BookingEventDates.update_slot_status(booking_date_id, slot_index, %{
+        job_id: nil,
+        client_id: nil,
+        status: :open
+      })
   end
 
   defp get_schedule_date(schedule, shoot_date) do
@@ -664,6 +683,7 @@ defmodule Picsello.BookingEvents do
     |> Repo.update()
   end
 
+  @doc "expires a job created for a booking"
   def expire_booking_job(%Job{} = job) do
     with %Job{
            job_status: job_status,
@@ -675,9 +695,10 @@ defmodule Picsello.BookingEvents do
          {:ok, _} <- Picsello.Jobs.archive_job(job) do
       for %{stripe_session_id: "" <> session_id} <- payment_schedules,
           do:
-            Picsello.Payments.expire_session(session_id,
-              connect_account: organization.stripe_account_id
-            )
+            {:ok, _} =
+              Picsello.Payments.expire_session(session_id,
+                connect_account: organization.stripe_account_id
+              )
 
       {:ok, job}
     else
@@ -867,6 +888,9 @@ defmodule Picsello.BookingEvents do
       end
     end)
   end
+
+  # Calculates the day of the week for a given date.
+  def day_of_week(date), do: Timex.weekday(date, :sunday)
 
   # Generates an indexed array of selected days.
   defp selected_days_indexed_array(selected_days) do

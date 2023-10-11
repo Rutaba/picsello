@@ -3,9 +3,7 @@ defmodule Picsello.Clients do
   import Ecto.Query
   alias Picsello.{Repo, Client, ClientTag}
 
-  def search(nil, _clients), do: []
-
-  def search("", _clients), do: []
+  def search(search_phrase, _clients) when search_phrase in ["", nil], do: []
 
   def search(search_phrase, clients) do
     clients

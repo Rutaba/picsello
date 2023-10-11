@@ -211,7 +211,8 @@ defmodule Picsello.BookingEventDates do
   end
 
   def update_slot_status(booking_event_date_id, slot_index, slot_update_args) do
-    get_booking_date(booking_event_date_id)
+    booking_event_date_id
+    |> get_booking_date()
     |> BookingEventDate.update_slot_changeset(slot_index, slot_update_args)
     |> upsert_booking_event_date()
   end
@@ -334,9 +335,9 @@ defmodule Picsello.BookingEventDates do
 
   ```elixir
   # Transform a list of slot blocks with default values
-  iex> input_slots = [%SlotBlock{job_id: 1, client_id: 1, status: :hidden}, %SlotBlock{job_id: 1, client_id: 2, status: :booked}]
+  iex> input_slots = [SlotBlock.t(), SlotBlock.t()]
   iex> transform_slots(input_slots)
-  [%SlotBlock{job_id: nil, client_id: nil, status: :open}, %SlotBlock{job_id: nil, client_id: nil, status: :open}]
+  [SlotBlock.t(), SlotBlock.t()]
 
   ## Notes
   This function is useful for applying a consistent default transformation to a list of slot blocks.

@@ -50,6 +50,12 @@ defmodule Picsello.BookingEventDate do
       field(:is_hide, :boolean, default: false, virtual: true)
     end
 
+    @type t :: %__MODULE__{
+            job_id: integer(),
+            client_id: integer(),
+            status: atom()
+          }
+
     def changeset(slot_block \\ %__MODULE__{}, attrs) do
       slot_block
       |> cast(attrs, [:slot_start, :slot_end, :client_id, :job_id, :status, :is_hide])

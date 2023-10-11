@@ -7,6 +7,7 @@ defmodule PicselloWeb.LiveHelpers do
   import Phoenix.LiveView
   import Phoenix.Component
   import PicselloWeb.Router.Helpers, only: [static_path: 2]
+  import Picsello.BookingEvents, only: [day_of_week: 1]
   import PicselloWeb.Gettext, only: [dyn_gettext: 1]
   import Picsello.Profiles, only: [logo_url: 1]
   require Logger
@@ -498,9 +499,6 @@ defmodule PicselloWeb.LiveHelpers do
 
   def date_formatter(date, :day),
     do: "#{day_of_week(date)}, #{Timex.month_name(date.month)} #{date.day}"
-
-  # Calculates the day of the week for a given date.
-  def day_of_week(date), do: Timex.weekday(date, :sunday)
 
   def format_date_via_type(_, _ \\ "MM DD, YY")
 
