@@ -86,7 +86,10 @@ defmodule PicselloWeb.HomeLive.Index do
   def handle_event("open-welcome-modal", %{}, %{assigns: %{current_user: current_user}} = socket) do
     socket
     |> assign(:current_user, Onboardings.increase_welcome_count!(current_user))
-    |> PicselloWeb.WelcomeComponent.open(%{close_event: "toggle_welcome_event"})
+    |> PicselloWeb.WelcomeComponent.open(%{
+      close_event: "toggle_welcome_event",
+      current_user: current_user
+    })
     |> noreply()
   end
 

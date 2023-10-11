@@ -179,6 +179,12 @@ defmodule PicselloWeb.OnboardingLive.Mastermind.Index do
         <div class="flex justify-center mt-12">
           <img src={Routes.static_path(@socket, "/images/mastermind-logo.png")} loading="lazy" alt="Picsello Mastermind logo" class="h-16" />
         </div>
+        <%= if @stripe_elements_loading do %>
+          <div class="fixed bg-base-300/75 backdrop-blur-md pointer-events-none w-full h-full z-50 top-0 left-0 flex items-center justify-center">
+            <.icon class="animate-spin w-8 h-8 mr-2 text-white" name="loader"/>
+            <p class="font-bold">Processing payment…</p>
+          </div>
+        <% end %>
         <:right_panel>
           <.signup_deal original_price={Money.new(35000, :USD)} price={Money.new(24500, :USD)} expires_at="22 days, 1 hour, 15 seconds" />
           <div
