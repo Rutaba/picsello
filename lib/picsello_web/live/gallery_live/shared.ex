@@ -76,6 +76,13 @@ defmodule PicselloWeb.GalleryLive.Shared do
     |> noreply
   end
 
+  def handle_info(:update_cart_count, %{assigns: %{gallery: gallery}} = socket) do
+    socket
+    |> assign(:order, nil)
+    |> assign_cart_count(gallery)
+    |> noreply()
+  end
+
   defp schemas(%{type: :standard} = gallery), do: {gallery}
   defp schemas(%{albums: [album]} = gallery), do: {gallery, album}
 
@@ -467,7 +474,7 @@ defmodule PicselloWeb.GalleryLive.Shared do
         |> assign(digitals: digitals)
 
       _ ->
-        socket |> assign(cart_count: 0, order: nil)
+        socket |> assign(cart_count: 0, order: nil, digitals: %{})
     end
   end
 
