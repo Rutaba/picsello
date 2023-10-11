@@ -20,16 +20,27 @@ defmodule PicselloWeb.OnboardingLive.Mastermind.Index do
       org_job_inputs: 1
     ]
 
-  @promo_code "BLACKFRIDAY2024"
-
   @impl true
   def mount(_params, _session, socket) do
+    %{value: black_friday_code} =
+      Picsello.AdminGlobalSettings.get_settings_by_slug("black_friday_code")
+
+    %{value: black_friday_timer_end} =
+      Picsello.AdminGlobalSettings.get_settings_by_slug("black_friday_timer_end")
+
     socket
     |> assign(:main_class, "bg-gray-100")
     |> assign(:step_total, 4)
     |> assign_step()
     |> assign(:state, nil)
-    |> assign(:promotion_code, @promo_code)
+    |> assign(
+      :promotion_code,
+      if(Subscriptions.maybe_return_promotion_code_id?(black_friday_code),
+        do: black_friday_code,
+        else: nil
+      )
+    )
+    |> assign(:black_friday_timer_end, black_friday_timer_end)
     |> assign(:stripe_elements_loading, false)
     |> assign(:stripe_publishable_key, Application.get_env(:stripity_stripe, :publishable_key))
     |> assign_changeset(%{}, :mastermind)
@@ -186,7 +197,7 @@ defmodule PicselloWeb.OnboardingLive.Mastermind.Index do
           </div>
         <% end %>
         <:right_panel>
-          <.signup_deal original_price={Money.new(35000, :USD)} price={Money.new(24500, :USD)} expires_at="22 days, 1 hour, 15 seconds" />
+          <.signup_deal original_price={Money.new(35000, :USD)} price={Money.new(24500, :USD)} expires_at={@black_friday_timer_end} />
           <div
             phx-update="ignore"
             class="my-6"

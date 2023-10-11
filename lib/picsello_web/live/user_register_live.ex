@@ -14,6 +14,9 @@ defmodule PicselloWeb.UserRegisterLive do
 
   @impl true
   def mount(_params, session, socket) do
+    %{value: black_friday_timer_end} =
+      Picsello.AdminGlobalSettings.get_settings_by_slug("black_friday_timer_end")
+
     socket
     |> assign(:main_class, "bg-gray-100")
     |> assign_defaults(session)
@@ -23,6 +26,7 @@ defmodule PicselloWeb.UserRegisterLive do
       :subscription_plan_metadata,
       get_subscription_plan_metadata()
     )
+    |> assign(:black_friday_timer_end, black_friday_timer_end)
     |> assign(%{
       page_title: "Sign Up",
       meta_attrs: %{
@@ -106,7 +110,7 @@ defmodule PicselloWeb.UserRegisterLive do
         </h2>
         <p class="text-xl text-center">Build a strong foundation for every part of your business so it supports growth and sustainable profit.</p>
         <div class="max-w-md mx-auto my-8">
-          <.signup_deal original_price={Money.new(35000, :USD)} price={Money.new(24500, :USD)} expires_at="22 days, 1 hour, 15 seconds" />
+          <.signup_deal original_price={Money.new(35000, :USD)} price={Money.new(24500, :USD)} expires_at={@black_friday_timer_end} />
         </div>
         <ul class="mb-8 space-y-2">
           <li class="flex gap-2"><.icon name="checkcircle" class="h-4 w-4 flex-shrink-0 mt-1.5" /> 1 x a month expert session with Q&As</li>
@@ -125,9 +129,11 @@ defmodule PicselloWeb.UserRegisterLive do
   end
 
   defp signup_form(assigns) do
-    assigns = Enum.into(assigns, %{
-      form_classes: ""
-    })
+    assigns =
+      Enum.into(assigns, %{
+        form_classes: ""
+      })
+
     ~H"""
       <a href={Routes.auth_path(@socket, :request, :google)} class="flex items-center justify-center w-full mt-8 text-center btn-primary">
         <.icon name="google" width="25" height="24" class="mr-4" />

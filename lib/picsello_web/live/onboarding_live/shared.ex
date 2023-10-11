@@ -32,7 +32,7 @@ defmodule PicselloWeb.OnboardingLive.Shared do
       })
 
     ~H"""
-      <div class="bg-white">
+      <div class="bg-white" phx-update="ignore" id="timer">
         <div class="bg-base-200 flex justify-center p-8">
           <h3 class="text-4xl text-purple-marketing-300">
             <%= if @original_price do %>
@@ -42,9 +42,7 @@ defmodule PicselloWeb.OnboardingLive.Shared do
           </h3>
         </div>
         <%= if @expires_at do %>
-          <div class="border flex justify-center p-2 text-purple-marketing-300 font-light tracking-wider text-lg">
-            <h4>DEAL EXPIRES IN <%= @expires_at %></h4>
-          </div>
+          <div class="border flex justify-center p-2 text-purple-marketing-300 font-light tracking-wider text-lg" id="bf-timer" phx-hook="Timer" data-end={@expires_at}></div>
         <% end %>
       </div>
     """

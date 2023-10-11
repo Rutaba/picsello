@@ -80,6 +80,7 @@ import FolderUpload from './hooks/folder-upload';
 import SearchResultSelect from './hooks/search-result-select';
 import Tooltip from './hooks/tooltip';
 import StripeElements from './hooks/stripe-elements';
+import Timer from './hooks/timer';
 
 const Modal = {
   mounted() {
@@ -265,6 +266,7 @@ const Hooks = {
   FolderUpload,
   StripeElements,
   SearchResultSelect,
+  Timer,
 };
 
 window.addEventListener(`phx:download`, (event) => {

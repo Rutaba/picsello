@@ -313,7 +313,7 @@ defmodule Picsello.Subscriptions do
     end
   end
 
-  def user_customer_id(%User{stripe_customer_id: customer_id}, attrs), do: customer_id
+  def user_customer_id(%User{stripe_customer_id: customer_id}, _attrs), do: customer_id
 
   def user_customer_id(%User{stripe_customer_id: nil} = user) do
     params = %{name: user.name, email: user.email}
@@ -329,8 +329,6 @@ defmodule Picsello.Subscriptions do
       e -> {:error, e}
     end
   end
-
-
 
   def user_customer_id(%User{stripe_customer_id: customer_id}), do: customer_id
 
