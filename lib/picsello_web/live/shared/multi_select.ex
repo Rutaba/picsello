@@ -183,17 +183,17 @@ defmodule PicselloWeb.Shared.MultiSelect do
     (from_mount && assigns) || add_js_assigns(assigns)
   end
 
-  @doc false
-  defp add_alpinejs_assigns(assigns) do
-    assigns
-    |> assign_new(:top_rest, fn -> [{"x-data", "{open: false}"}] end)
-    |> assign_new(:main_rest, fn ->
-      [{"x-bind:class", "{'rounded-b-lg': !open}"}, {"@click", "open=!open"}]
-    end)
-    |> assign_new(:tags_rest, fn -> [] end)
-    |> assign_new(:ddown_events, fn -> [{"@click.outside", "open=!open"}, {"x-show", "open"}] end)
-    |> assign_new(:updown_rest, fn -> [{"x-bind:class", "{'rotate-180': open}"}] end)
-  end
+  # @doc false
+  # defp add_alpinejs_assigns(assigns) do
+  #   assigns
+  #   |> assign_new(:top_rest, fn -> [{"x-data", "{open: false}"}] end)
+  #   |> assign_new(:main_rest, fn ->
+  #     [{"x-bind:class", "{'rounded-b-lg': !open}"}, {"@click", "open=!open"}]
+  #   end)
+  #   |> assign_new(:tags_rest, fn -> [] end)
+  #   |> assign_new(:ddown_events, fn -> [{"@click.outside", "open=!open"}, {"x-show", "open"}] end)
+  #   |> assign_new(:updown_rest, fn -> [{"x-bind:class", "{'rotate-180': open}"}] end)
+  # end
 
   @doc false
   defp add_js_assigns(assigns) do
