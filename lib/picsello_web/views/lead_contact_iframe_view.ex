@@ -7,27 +7,39 @@ defmodule PicselloWeb.LeadContactIframeView do
   def render("index.html", assigns) do
     ~H"""
     <.container>
-      <h1 class="text-3xl font-light max-w-md">Get in touch</h1>
+      <h1 class="text-3xl max-w-md">Let's work together!</h1>
 
       <.form for={@changeset} :let={f} id="client-form">
         <div class="flex flex-col mt-3">
-          <%= label_for f, :name, autocapitalize: "words", autocorrect: "false", spellcheck: "false", autocomplete: "name", label: "Your name", class: "py-2 font-light" %>
+          <%= label_for f, :name, autocapitalize: "words", autocorrect: "false", spellcheck: "false", autocomplete: "name", label: "Name", class: "py-2 font-bold" %>
 
           <%= input f, :name, placeholder: "Type your first and last name...", required: true %>
         </div>
 
         <div class="flex flex-col lg:flex-row">
           <div class="flex flex-col flex-1 mt-3 mr-0 lg:mr-4">
-            <%= label_for f, :email, label: "Your email", class: "py-2 font-light" %>
+            <%= label_for f, :email, label: "Email", class: "py-2 font-bold" %>
 
             <%= input f, :email, type: :email_input, placeholder: "Type email...", required: true %>
           </div>
 
           <div class="flex flex-col flex-1 mt-3">
-            <%= label_for f, :phone, label: "Your phone number", class: "py-2 font-light" %>
+            <%= label_for f, :phone, label: "Phone Number", class: "py-2 font-bold" %>
 
             <%= input f, :phone, type: :telephone_input, placeholder: "Type phone number...", required: true, id: "phone" %>
           </div>
+        </div>
+
+        <div class="flex flex-col mt-3">
+            <%= labeled_select f, :referred_by, referred_by_options(), label: "How did you hear about #{@organization.name}?", prompt: "select one...", phx_debounce: 300, phx_update: "ignore" %>
+            <em class="text-base-250 font-normal pt-1 text-xs">optional</em>
+        </div>
+
+        <div id="referralNameDiv" class="flex flex-col mt-3 hidden">
+            <%= label_for f, :referral_name, label: "Would you mind sharing their name?", class: "py-2" %>
+
+            <%= input f, :referral_name, placeholder: "Type name...", phx_debounce: 300 %>
+            <em class="text-base-250 font-normal pt-1 text-xs">optional</em>
         </div>
 
         <div class="flex flex-col mt-3">
@@ -56,7 +68,7 @@ defmodule PicselloWeb.LeadContactIframeView do
         <div class="flex flex-col mt-7">
           <%= label_for f, :message, label: "Your message", class: "py-2 font-light" %>
 
-          <%= input f, :message, type: :textarea, placeholder: "Type your message...", rows: 5, required: true %>
+          <%= input f, :message, type: :textarea, placeholder: "Tell me more about what you are looking for. I love details!", rows: 5, required: true %>
         </div>
 
         <div class="mt-8 text-right"><button type="submit" class="w-full lg:w-auto btn-primary">Submit</button></div>

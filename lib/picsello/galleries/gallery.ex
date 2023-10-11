@@ -74,11 +74,6 @@ defmodule Picsello.Galleries.Gallery do
     end
   end
 
-  @type t :: %__MODULE__{
-          organization: Picsello.Organization.t(),
-          name: String.t()
-        }
-
   @create_attrs [
     :name,
     :job_id,
@@ -202,4 +197,9 @@ defmodule Picsello.Galleries.Gallery do
         nil
     end
   end
+
+  @type t :: %__MODULE__{
+          organization: Picsello.Organization.t(),
+          name: String.t()
+        }
 end
