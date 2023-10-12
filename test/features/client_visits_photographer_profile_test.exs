@@ -128,22 +128,21 @@ defmodule Picsello.ClientVisitsPhotographerProfileTest do
     session
     |> visit(profile_url)
     |> assert_disabled_submit()
-    |> fill_in(text_field("Your name"), with: " ")
-    |> fill_in(text_field("Your email"), with: " ")
-    |> fill_in(text_field("Your phone number"), with: " ")
+    |> fill_in(text_field("Name"), with: " ")
+    |> fill_in(text_field("Email"), with: " ")
+    |> fill_in(text_field("Phone Number"), with: " ")
     |> fill_in(text_field("Your message"), with: " ")
-    |> assert_text("Your name can't be blank")
-    |> assert_text("Your email can't be blank")
+    |> assert_text("Name can't be blank")
+    |> assert_text("Email can't be blank")
     |> assert_text("Your message can't be blank")
-    |> fill_in(text_field("Your name"), with: "Chad Smith")
-    |> fill_in(text_field("Your email"), with: "chad@example.com")
-    |> fill_in(text_field("Your phone number"), with: "987 123 4567")
+    |> fill_in(text_field("Name"), with: "Chad Smith")
+    |> fill_in(text_field("Email"), with: "chad@example.com")
+    |> fill_in(text_field("Phone Number"), with: "987 123 4567")
     |> click(css("label", text: "Wedding"))
     |> fill_in(text_field("Your message"), with: "May you take some pictures of our family?")
     |> wait_for_enabled_submit_button()
     |> click(button("Submit"))
-    |> assert_text("Message sent")
-    |> assert_text("We'll contact you soon!")
+    |> assert_text("I'll be in touch soon.")
 
     assert %{
              type: "wedding",
@@ -168,14 +167,14 @@ defmodule Picsello.ClientVisitsPhotographerProfileTest do
 
     session
     |> visit(profile_url)
-    |> fill_in(text_field("Your email"), with: "chad@example.com")
-    |> fill_in(text_field("Your name"), with: "Not Chad")
-    |> fill_in(text_field("Your phone number"), with: "918 123 4567")
+    |> fill_in(text_field("Email"), with: "chad@example.com")
+    |> fill_in(text_field("Name"), with: "Not Chad")
+    |> fill_in(text_field("Phone Number"), with: "918 123 4567")
     |> click(css("label", text: "Event"))
     |> fill_in(text_field("Your message"), with: "May you take some pictures of our party?")
     |> wait_for_enabled_submit_button()
     |> click(button("Submit"))
-    |> assert_text("Message sent")
+    |> assert_text("I'll be in touch soon.")
 
     assert %{
              type: "event",
@@ -288,7 +287,7 @@ defmodule Picsello.ClientVisitsPhotographerProfileTest do
       fn booking_card ->
         booking_card
         |> assert_text("Event 1")
-        |> assert_text("3 images | 45 min session | In Studio")
+        |> assert_text("3 images included | 45 min session | In Studio")
         |> assert_text("Dec 10, 2050")
         |> assert_text("320 1st St N")
         |> assert_text("This is the description")

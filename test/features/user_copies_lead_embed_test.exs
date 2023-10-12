@@ -35,7 +35,7 @@ defmodule Picsello.UserCopiesLeadEmbedTest do
     |> assert_text("Tips & Tricks")
     |> assert_text("<iframe src=")
     |> focus_frame(css(".modal-container iframe"))
-    |> assert_text("Get in touch")
+    |> assert_text("Let's work together!")
     |> focus_parent_frame()
     |> click(button("Copy & Close"))
     |> assert_text("Public Profile")

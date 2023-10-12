@@ -27,6 +27,13 @@ defmodule Picsello.ClientAcceptsBookingProposalTest do
     |> Organization.assign_stripe_account_changeset("stripe_id")
     |> Repo.update!()
 
+    questionnaire =
+      insert(:questionnaire, %{
+        name: "Questionnaire name",
+        is_picsello_default: false,
+        job_type: "other"
+      })
+
     lead =
       insert(:lead, %{
         user: user,
@@ -35,8 +42,9 @@ defmodule Picsello.ClientAcceptsBookingProposalTest do
           name: "My Package",
           description: "My custom description",
           shoot_count: 1,
-          questionnaire_template_id: nil,
+          questionnaire_template_id: questionnaire.id,
           base_multiplier: 0.8,
+          discount_base_price: true,
           base_price: %{amount: 100, currency: :USD}
         },
         client: %{name: "John"},
@@ -148,7 +156,7 @@ defmodule Picsello.ClientAcceptsBookingProposalTest do
 
       client_session
       |> visit(url)
-      |> assert_has(css("h2", text: "#{String.capitalize(lead.client.name)}, Welcome"))
+      |> assert_has(css("h2", text: "Welcome, #{String.capitalize(lead.client.name)}"))
       |> click(css("a", text: "Message Photography LLC"))
       |> within_modal(fn modal ->
         modal
@@ -310,7 +318,7 @@ defmodule Picsello.ClientAcceptsBookingProposalTest do
 
       client_session
       |> visit(url)
-      |> assert_has(css("h2", text: "#{String.capitalize(lead.client.name)}, Welcome"))
+      |> assert_has(css("h2", text: "Welcome, #{String.capitalize(lead.client.name)}"))
       |> click(button("To-Do Review and accept your proposal"))
       |> click(button("Accept Quote"))
       |> fill_in(text_field("Type your full legal name"), with: "Rick Sanchez")
@@ -363,7 +371,7 @@ defmodule Picsello.ClientAcceptsBookingProposalTest do
 
       client_session
       |> visit(url)
-      |> assert_has(css("h2", text: "#{String.capitalize(lead.client.name)}, Welcome"))
+      |> assert_has(css("h2", text: "Welcome, #{String.capitalize(lead.client.name)}"))
       |> click(button("To-Do Review and accept your proposal"))
       |> click(button("Accept Quote"))
       |> fill_in(text_field("Type your full legal name"), with: "Rick Sanchez")
@@ -383,12 +391,6 @@ defmodule Picsello.ClientAcceptsBookingProposalTest do
     sessions: [photographer_session, client_session],
     lead: lead
   } do
-    insert(:questionnaire, %{
-      name: "Questionnaire name",
-      is_picsello_default: true,
-      job_type: "other"
-    })
-
     photographer_session
     |> visit("/leads/#{lead.id}")
     |> click(@send_proposal_button)
@@ -502,7 +504,7 @@ defmodule Picsello.ClientAcceptsBookingProposalTest do
 
     client_session
     |> visit(url)
-    |> assert_has(css("h2", text: "#{String.capitalize(lead.client.name)}, Welcome"))
+    |> assert_has(css("h2", text: "Welcome, #{String.capitalize(lead.client.name)}"))
     |> click(button("To-Do Review and accept your proposal"))
     |> click(button("Accept Quote"))
     |> assert_text("COPYRIGHT AND REPRODUCTIONS")

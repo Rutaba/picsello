@@ -25,6 +25,15 @@ defmodule PicselloWeb.JobDownloadController do
     amount = get_amount(print_credit)
     organization_logo_url = logo_url(organization)
 
+    contract_content =
+      if contract do
+        Contracts.contract_content(
+          contract,
+          package,
+          PicselloWeb.Helpers
+        )
+      end
+
     PicselloWeb.PDFView.render("job_invoice.html", %{
       read_only: true,
       job: job,
@@ -36,12 +45,7 @@ defmodule PicselloWeb.JobDownloadController do
       package: package,
       contract: contract,
       organization_logo_url: organization_logo_url,
-      contract_content:
-        Contracts.contract_content(
-          contract,
-          package,
-          PicselloWeb.Helpers
-        ),
+      contract_content: contract_content,
       print_credit: print_credit,
       amount: amount
     })

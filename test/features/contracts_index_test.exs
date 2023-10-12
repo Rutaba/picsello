@@ -9,7 +9,7 @@ defmodule Picsello.ContractsIndexTest do
   feature "navigate", %{session: session} do
     session
     |> click(css("#hamburger-menu"))
-    |> click(link("Contracts"))
+    |> click(css("[title='Contracts']"))
     |> assert_text("Meet Contracts")
     |> scroll_to_bottom()
     |> assert_has(testid("contracts-row", count: 1))
@@ -19,7 +19,7 @@ defmodule Picsello.ContractsIndexTest do
   feature "adds, edits, duplicates, deletes contract", %{session: session} do
     session
     |> click(css("#hamburger-menu"))
-    |> click(link("Contracts"))
+    |> click(css("[title='Contracts']"))
     |> assert_text("Meet Contracts")
     |> click(button("Create contract", count: 2, at: 0))
     |> within_modal(
@@ -69,7 +69,7 @@ defmodule Picsello.ContractsIndexTest do
 
     session
     |> click(css("#hamburger-menu"))
-    |> click(link("Contracts"))
+    |> click(css("[title='Contracts']"))
     |> assert_text("Meet Contracts")
     |> scroll_to_bottom()
     |> assert_has(testid("contracts-row", count: 2))
@@ -102,7 +102,7 @@ defmodule Picsello.ContractsIndexTest do
 
     session
     |> click(css("#hamburger-menu"))
-    |> click(link("Contracts"))
+    |> click(css("[title='Contracts']"))
     |> assert_text("Meet Contracts")
     |> scroll_to_bottom()
     |> assert_has(testid("contracts-row", count: 3))
@@ -112,7 +112,11 @@ defmodule Picsello.ContractsIndexTest do
     |> assert_flash(:success, text: "Contract archived")
     |> scroll_to_bottom()
     |> assert_has(button("Duplicate"))
-    |> refute_has(testid("archived-badge", count: 1))
+    |> resize_window(1280, 1000)
+    |> scroll_into_view(testid("filter_and_sort_bar"))
+    |> click(css("#status"))
+    |> click(button("All"))
+    |> assert_has(testid("archived-badge", count: 1))
     |> assert_has(button("Contract 1"))
     |> assert_has(button("Picsello Default Contract"))
 
@@ -120,11 +124,13 @@ defmodule Picsello.ContractsIndexTest do
 
     session
     |> click(css("#hamburger-menu"))
-    |> click(link("Contracts"))
+    |> click(css("[title='Contracts']"))
     |> assert_text("Meet Contracts")
     |> scroll_to_bottom()
-    |> assert_has(testid("contracts-row", count: 2))
-    |> click(button("Manage", count: 2, at: 1))
+    |> click(css("#status"))
+    |> click(button("All"))
+    |> assert_has(testid("contracts-row", count: 3))
+    |> click(button("Manage", count: 3, at: 2))
     |> refute_has(button("Archive"))
     |> assert_has(button("Edit", count: 1))
     |> assert_has(button("View"))
