@@ -377,6 +377,7 @@ defmodule Picsello.EmailAutomationsTest do
     |> assert_has(css("span", text: "Step 2", count: 0))
     |> fill_in(css("input[placeholder='Inquiry Email']"), with: "Demo Name")
     |> click(button("Review"))
+
     # Onward: Step 2 of Modal not tested, due to mock issue.                              # Mock issue
     # |> assert_text("Preview Wedding Email")
     # |> assert_text("Lead:")

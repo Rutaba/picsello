@@ -24,25 +24,25 @@ defmodule Picsello.EmailAutomationsTest do
       )
     end
 
-      insert(:email_preset,
-        name: "Use this email preset 3",
-        job_type: "wedding",
-        organization_id: user.organization_id,
-        status: :active,
-        email_automation_pipeline_id: 2,
-        state: "manual_thank_you_lead",
-        type: "lead"
-      )
+    insert(:email_preset,
+      name: "Use this email preset 3",
+      job_type: "wedding",
+      organization_id: user.organization_id,
+      status: :active,
+      email_automation_pipeline_id: 2,
+      state: "manual_thank_you_lead",
+      type: "lead"
+    )
 
-      insert(:email_preset,
-        name: "Use this email preset 4",
-        job_type: "wedding",
-        organization_id: user.organization_id,
-        status: :active,
-        email_automation_pipeline_id: 2,
-        state: "manual_thank_you_lead",
-        type: "lead"
-      )
+    insert(:email_preset,
+      name: "Use this email preset 4",
+      job_type: "wedding",
+      organization_id: user.organization_id,
+      status: :active,
+      email_automation_pipeline_id: 2,
+      state: "manual_thank_you_lead",
+      type: "lead"
+    )
 
     insert(:email_preset,
       name: "Use this email preset #{2}",
