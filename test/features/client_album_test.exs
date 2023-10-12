@@ -56,7 +56,9 @@ defmodule Picsello.ClientAlbumTest do
     |> within_modal(fn modal ->
       modal
       |> click(button("Add to cart"))
+      |> click(button("Go to cart"))
     end)
+    |> assert_text("Cart & Shipping Review")
   end
 
   feature "Client gallery could not add to cart when gallery disabled", %{

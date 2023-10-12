@@ -41,4 +41,41 @@ defmodule Picsello.Utils do
     {:ok, datetime, _} = DateTime.from_iso8601(datetime <> "-" <> offset)
     DateTime.to_unix(datetime)
   end
+
+  @doc """
+  Normalizes an HTML body template by replacing predefined escape sequences with their respective characters.
+
+  This function takes an HTML body template as input and replaces predefined escape sequences with their corresponding characters. The replacement rules are specified in the `@replacements` module attribute, which is a list of tuples where the first element is the escape sequence to be replaced, and the second element is the character it should be replaced with.
+
+  ## Examples
+
+      ```elixir
+      body = "<p>This is an &lt;example&gt;.</p>"
+      normalize_body_template(body)
+      # Output: "<p>This is an <example>.</p>"
+      ```
+
+  ## Parameters
+
+      - `body` (string): The HTML body template to be normalized.
+
+  ## Returns
+
+  A string representing the HTML body template with escape sequences replaced by their corresponding characters.
+  """
+
+  @replacements [
+    {"&lt;", "<"},
+    {"&gt;", ">"},
+    {"/a&gt;", "/a>"},
+    {"&quot;", "\""}
+  ]
+
+  @spec normalize_body_template(body :: String.t()) :: String.t()
+  def normalize_body_template(body) do
+    @replacements
+    |> Enum.reduce(body, fn {from, to}, acc ->
+      String.replace(acc, from, to)
+    end)
+  end
 end
