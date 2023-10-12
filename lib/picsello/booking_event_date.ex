@@ -192,6 +192,8 @@ defmodule Picsello.BookingEventDate do
         changeset
       end
     end)
+  end
+
   def update_slot_changeset(booking_event_date, slot_index, slot_update_args) do
     slot =
       booking_event_date.slots

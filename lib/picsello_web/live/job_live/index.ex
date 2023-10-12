@@ -14,7 +14,7 @@ defmodule PicselloWeb.JobLive.Index do
     ]
 
   alias Ecto.Changeset
-  alias Picsello.{Job, Jobs, Repo, Utils, Payments}
+  alias Picsello.{Job, Jobs, Repo, Utils, Payments, Package}
   alias PicselloWeb.{JobLive}
 
   @default_pagination_limit 12
