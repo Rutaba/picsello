@@ -140,24 +140,6 @@ defmodule PicselloWeb.GalleryLive.ClientAlbum do
   end
 
   def handle_info(
-        {:add_digital_to_cart, digital, finals_album_id},
-        %{assigns: %{gallery: gallery, gallery_client: gallery_client, modal_pid: modal_pid}} =
-          socket
-      ) do
-    order = Cart.place_product(digital, gallery, gallery_client, finals_album_id)
-
-    send_update(modal_pid, PicselloWeb.GalleryLive.ChooseProduct,
-      id: PicselloWeb.GalleryLive.ChooseProduct,
-      photo_id: digital.photo.id
-    )
-
-    socket
-    |> add_to_cart_assigns(order)
-    |> put_flash(:success, "Added!")
-    |> noreply()
-  end
-
-  def handle_info(
         {:add_bundle_to_cart, bundle_price},
         %{assigns: %{gallery: gallery, gallery_client: gallery_client, modal_pid: modal_pid}} =
           socket
@@ -179,13 +161,6 @@ defmodule PicselloWeb.GalleryLive.ClientAlbum do
 
   def handle_info({:open_choose_product, photo_id}, socket) do
     socket |> client_photo_click(photo_id)
-  end
-
-  def handle_info({:update_cart_count, %{order: order}}, %{assigns: %{gallery: gallery}} = socket) do
-    socket
-    |> assign(:order, order)
-    |> assign_cart_count(gallery)
-    |> noreply()
   end
 
   def handle_info({:update_assigns_state, _modal}, socket) do
@@ -218,6 +193,8 @@ defmodule PicselloWeb.GalleryLive.ClientAlbum do
 
     noreply(socket)
   end
+
+  defdelegate handle_info(message, socket), to: PicselloWeb.GalleryLive.Shared
 
   defp assigns(
          %{assigns: %{album: album, gallery: gallery, client_email: client_email} = assigns} =
