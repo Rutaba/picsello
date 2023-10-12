@@ -8,7 +8,7 @@ defmodule Picsello.EmailAutomationsTest do
   setup do
     user = Picsello.Repo.one(from(u in Picsello.Accounts.User))
 
-    for {state, index} <-
+    for {_state, index} <-
           Enum.with_index([
             "client_contact",
             "manual_thank_you_lead",

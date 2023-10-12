@@ -22,8 +22,7 @@ defmodule Picsello.ChooseEmailPresetsTest do
 
   feature "Photographer chooses from wedding lead presets", %{
     session: session,
-    lead: lead,
-    user: user
+    lead: lead
   } do
     session
     |> visit("/leads/#{lead.id}")
