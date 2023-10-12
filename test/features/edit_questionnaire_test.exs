@@ -153,10 +153,10 @@ defmodule Picsello.EditQuestionnaireTest do
           |> click(testid("add-option"))
           |> fill_in(text_field("questionnaire[questions][2][options][]"), with: "Option 1")
           |> click(testid("add-option"))
-          |> fill_in(text_field("questionnaire[questions][2][options][]"),
+          |> fill_in(text_field("questionnaire[questions][2][options][]", at: 1),
             with: "Option 2"
           )
-          |> click(css("li button")))
+          |> click(css("li button", at: 1)))
       )
     end)
     |> wait_for_enabled_submit_button()
@@ -229,10 +229,10 @@ defmodule Picsello.EditQuestionnaireTest do
             |> click(testid("add-option"))
             |> fill_in(text_field("questionnaire[questions][1][options][]"), with: "Option 1")
             |> click(testid("add-option"))
-            |> fill_in(text_field("questionnaire[questions][1][options][]"),
+            |> fill_in(text_field("questionnaire[questions][1][options][]", at: 1),
               with: "Option 2"
             )
-            |> assert_has(css("li")))
+            |> assert_has(css("li", count: 2)))
         )
         |> find(
           select("questionnaire_questions_1_type"),

@@ -399,7 +399,7 @@ defmodule PicselloWeb.Live.EmailAutomations.Show do
             job_id,
             pipeline_id,
             state,
-            __MODULE__
+            PicselloWeb.EmailAutomationLive.Shared
           )
 
         %{

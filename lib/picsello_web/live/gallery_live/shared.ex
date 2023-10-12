@@ -52,7 +52,7 @@ defmodule PicselloWeb.GalleryLive.Shared do
             nil,
             pipeline.id,
             state,
-            __MODULE__
+            PicselloWeb.EmailAutomationLive.Shared
           )
 
         manual_toggle =
