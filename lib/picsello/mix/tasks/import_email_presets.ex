@@ -459,7 +459,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         body_template: """
         <p><span style="color: rgb(0, 0, 0);">Hello {{client_first_name}},</span></p>
         <p><span style="color: rgb(0, 0, 0);">Great news – your gallery is now available!</span></p>
-        <p><span style="color: rgb(0, 0, 0);">Please remember that your photos are password-protected, and you'll need this password to access them: <strong>{{password}}</strong>. </span></p>
+        <p><span style="color: rgb(0, 0, 0);">Please remember that your photos are password-protected, and you'll need this password to access them: <strong>{{password}}</strong> </span></p>
         <p><span style="color: rgb(0, 0, 0);">You can access your private gallery to view all your images at:</span></p>
         <p>{{gallery_link}}</p>
         <p><span style="color: rgb(0, 0, 0);">If you have any digital image and/or print credits to use, please be sure to log in with the email address to which this email was sent. When you share the gallery with friends and family, kindly ask them to log in with their unique email addresses to ensure only you have access to those credits.</span></p>
@@ -588,7 +588,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         body_template: """
         <p><span style="color: rgb(0, 0, 0);">Hello {{client_first_name}},</span></p>
         <p><span style="color: rgb(0, 0, 0);">I hope this message finds you well. I wanted to remind you that your gallery is nearing its expiration date. To ensure you don't miss out, please take a moment to log into your gallery and make your selections before it expires on {{gallery_expiration_date}}.</span></p>
-        <p><span style="color: rgb(0, 0, 0);">As a quick reminder, your photos are protected with a password, so you'll need to enter it to view them: <strong>{{password}}</strong>. </span></p>
+        <p><span style="color: rgb(0, 0, 0);">As a quick reminder, your photos are protected with a password, so you'll need to enter it to view them: <strong>{{password}}</strong> </span></p>
         <p><span style="color: rgb(0, 0, 0);">You can access your private gallery containing all of your images by following this link:</span></p>
         <p>{{gallery_link}}</p>
         <p><span style="color: rgb(0, 0, 0);">If you have any questions or need assistance with anything related to your gallery, please don't hesitate to reach out. I'm here to help! </span></p>
@@ -612,7 +612,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         <p><span style="color: rgb(0, 0, 0);">I'm following up with another reminder that the expiration date for your gallery is approaching. To ensure you have ample time to make your selections, please log in to your gallery and make your choices before it expires on {{gallery_expiration_date}}.</span></p>
         <p><span style="color: rgb(0, 0, 0);">You can easily access your private gallery, where all your images are waiting for you, by clicking on this link:</span></p>
         <p>{{gallery_link}}</p>
-        <p><span style="color: rgb(0, 0, 0);">Just a quick reminder, your photos are protected with a password for your privacy and security. To access your images, simply use the provided password: <strong>{{password}}</strong>.</span></p>
+        <p><span style="color: rgb(0, 0, 0);">Just a quick reminder, your photos are protected with a password for your privacy and security. To access your images, simply use the provided password: <strong>{{password}}</strong></span></p>
         <p><span style="color: rgb(0, 0, 0);">If you need help or have any questions, please let me know!</span></p>
         <p><span style="color: rgb(0, 0, 0);">Best regards,</span></p>
         <p><span style="color: rgb(0, 0, 0);">{{email_signature}}</span></p>
@@ -1306,7 +1306,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         body_template: """
         <p><span style="color: rgb(0, 0, 0);">Hello {{client_first_name}},</span></p>
         <p><span style="color: rgb(0, 0, 0);">Great news – your gallery is now available!</span></p>
-        <p><span style="color: rgb(0, 0, 0);">Please remember that your photos are password-protected, and you'll need this password to access them: <strong>{{password}}</strong>. </span></p>
+        <p><span style="color: rgb(0, 0, 0);">Please remember that your photos are password-protected, and you'll need this password to access them: <strong>{{password}}</strong> </span></p>
         <p><span style="color: rgb(0, 0, 0);">You can access your private gallery to view all your images at:</span></p>
         <p>{{gallery_link}}</p>
         <p><span style="color: rgb(0, 0, 0);">If you have any digital image and/or print credits to use, please be sure to log in with the email address to which this email was sent. When you share the gallery with friends and family, kindly ask them to log in with their unique email addresses to ensure only you have access to those credits.</span></p>
@@ -1435,7 +1435,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         body_template: """
         <p><span style="color: rgb(0, 0, 0);">Hello {{client_first_name}},</span></p>
         <p><span style="color: rgb(0, 0, 0);">I hope this message finds you well. I wanted to remind you that your gallery is nearing its expiration date. To ensure you don't miss out, please take a moment to log into your gallery and make your selections before it expires on {{gallery_expiration_date}}.</span></p>
-        <p><span style="color: rgb(0, 0, 0);">As a quick reminder, your photos are protected with a password, so you'll need to enter it to view them: <strong>{{password}}</strong>. </span></p>
+        <p><span style="color: rgb(0, 0, 0);">As a quick reminder, your photos are protected with a password, so you'll need to enter it to view them: <strong>{{password}}</strong> </span></p>
         <p><span style="color: rgb(0, 0, 0);">You can access your private gallery containing all of your images by following this link:</span></p>
         <p>{{gallery_link}}</p>
         <p><span style="color: rgb(0, 0, 0);">If you have any questions or need assistance with anything related to your gallery, please don't hesitate to reach out. I'm here to help! </span></p>
@@ -1458,7 +1458,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         <p><span style="color: rgb(0, 0, 0);">I'm following up with another reminder that the expiration date for your gallery is approaching. To ensure you have ample time to make your selections, please log in to your gallery and make your choices before it expires on {{gallery_expiration_date}}.</span></p>
         <p><span style="color: rgb(0, 0, 0);">You can easily access your private gallery, where all your images are waiting for you, by clicking on this link:</span></p>
         <p>{{gallery_link}}</p>
-        <p><span style="color: rgb(0, 0, 0);">Just a quick reminder, your photos are protected with a password for your privacy and security. To access your images, simply use the provided password: <strong>{{password}}</strong>.</span></p>
+        <p><span style="color: rgb(0, 0, 0);">Just a quick reminder, your photos are protected with a password for your privacy and security. To access your images, simply use the provided password: <strong>{{password}}</strong></span></p>
         <p><span style="color: rgb(0, 0, 0);">If you need help or have any questions, please let me know!</span></p>
         <p><span style="color: rgb(0, 0, 0);">Best regards,</span></p>
         <p><span style="color: rgb(0, 0, 0);">{{email_signature}}</span></p>
@@ -2143,7 +2143,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         body_template: """
         <p><span style="color: rgb(0, 0, 0);">Hello {{client_first_name}},</span></p>
         <p><span style="color: rgb(0, 0, 0);">Great news – your gallery is now available!</span></p>
-        <p><span style="color: rgb(0, 0, 0);">Please remember that your photos are password-protected, and you'll need this password to access them: <strong>{{password}}</strong>. </span></p>
+        <p><span style="color: rgb(0, 0, 0);">Please remember that your photos are password-protected, and you'll need this password to access them: <strong>{{password}}</strong> </span></p>
         <p><span style="color: rgb(0, 0, 0);">You can access your private gallery to view all your images at:</span></p>
         <p>{{gallery_link}}</p>
         <p><span style="color: rgb(0, 0, 0);">If you have any digital image and/or print credits to use, please be sure to log in with the email address to which this email was sent. When you share the gallery with friends and family, kindly ask them to log in with their unique email addresses to ensure only you have access to those credits.</span></p>
@@ -2272,7 +2272,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         body_template: """
         <p><span style="color: rgb(0, 0, 0);">Hello {{client_first_name}},</span></p>
         <p><span style="color: rgb(0, 0, 0);">I hope this message finds you well. I wanted to remind you that your gallery is nearing its expiration date. To ensure you don't miss out, please take a moment to log into your gallery and make your selections before it expires on {{gallery_expiration_date}}.</span></p>
-        <p><span style="color: rgb(0, 0, 0);">As a quick reminder, your photos are protected with a password, so you'll need to enter it to view them: <strong>{{password}}</strong>. </span></p>
+        <p><span style="color: rgb(0, 0, 0);">As a quick reminder, your photos are protected with a password, so you'll need to enter it to view them: <strong>{{password}}</strong> </span></p>
         <p><span style="color: rgb(0, 0, 0);">You can access your private gallery containing all of your images by following this link:</span></p>
         <p>{{gallery_link}}</p>
         <p><span style="color: rgb(0, 0, 0);">If you have any questions or need assistance with anything related to your gallery, please don't hesitate to reach out. I'm here to help! </span></p>
@@ -2296,7 +2296,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         <p><span style="color: rgb(0, 0, 0);">I'm following up with another reminder that the expiration date for your gallery is approaching. To ensure you have ample time to make your selections, please log in to your gallery and make your choices before it expires on {{gallery_expiration_date}}.</span></p>
         <p><span style="color: rgb(0, 0, 0);">You can easily access your private gallery, where all your images are waiting for you, by clicking on this link:</span></p>
         <p>{{gallery_link}}</p>
-        <p><span style="color: rgb(0, 0, 0);">Just a quick reminder, your photos are protected with a password for your privacy and security. To access your images, simply use the provided password: <strong>{{password}}</strong>.</span></p>
+        <p><span style="color: rgb(0, 0, 0);">Just a quick reminder, your photos are protected with a password for your privacy and security. To access your images, simply use the provided password: <strong>{{password}}</strong></span></p>
         <p><span style="color: rgb(0, 0, 0);">If you need help or have any questions, please let me know!</span></p>
         <p><span style="color: rgb(0, 0, 0);">Best regards,</span></p>
         <p><span style="color: rgb(0, 0, 0);">{{email_signature}}</span></p>
@@ -2980,7 +2980,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         body_template: """
         <p><span style="color: rgb(0, 0, 0);">Hello {{client_first_name}},</span></p>
         <p><span style="color: rgb(0, 0, 0);">Great news – your gallery is now available!</span></p>
-        <p><span style="color: rgb(0, 0, 0);">Please remember that your photos are password-protected, and you'll need this password to access them: <strong>{{password}}</strong>. </span></p>
+        <p><span style="color: rgb(0, 0, 0);">Please remember that your photos are password-protected, and you'll need this password to access them: <strong>{{password}}</strong> </span></p>
         <p><span style="color: rgb(0, 0, 0);">You can access your private gallery to view all your images at:</span></p>
         <p>{{gallery_link}}</p>
         <p><span style="color: rgb(0, 0, 0);">If you have any digital image and/or print credits to use, please be sure to log in with the email address to which this email was sent. When you share the gallery with friends and family, kindly ask them to log in with their unique email addresses to ensure only you have access to those credits.</span></p>
@@ -3109,7 +3109,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         body_template: """
         <p><span style="color: rgb(0, 0, 0);">Hello {{client_first_name}},</span></p>
         <p><span style="color: rgb(0, 0, 0);">I hope this message finds you well. I wanted to remind you that your gallery is nearing its expiration date. To ensure you don't miss out, please take a moment to log into your gallery and make your selections before it expires on {{gallery_expiration_date}}.</span></p>
-        <p><span style="color: rgb(0, 0, 0);">As a quick reminder, your photos are protected with a password, so you'll need to enter it to view them: <strong>{{password}}</strong>. </span></p>
+        <p><span style="color: rgb(0, 0, 0);">As a quick reminder, your photos are protected with a password, so you'll need to enter it to view them: <strong>{{password}}</strong> </span></p>
         <p><span style="color: rgb(0, 0, 0);">You can access your private gallery containing all of your images by following this link:</span></p>
         <p>{{gallery_link}}</p>
         <p><span style="color: rgb(0, 0, 0);">If you have any questions or need assistance with anything related to your gallery, please don't hesitate to reach out. I'm here to help! </span></p>
@@ -3133,7 +3133,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         <p><span style="color: rgb(0, 0, 0);">I'm following up with another reminder that the expiration date for your gallery is approaching. To ensure you have ample time to make your selections, please log in to your gallery and make your choices before it expires on {{gallery_expiration_date}}.</span></p>
         <p><span style="color: rgb(0, 0, 0);">You can easily access your private gallery, where all your images are waiting for you, by clicking on this link:</span></p>
         <p>{{gallery_link}}</p>
-        <p><span style="color: rgb(0, 0, 0);">Just a quick reminder, your photos are protected with a password for your privacy and security. To access your images, simply use the provided password: <strong>{{password}}</strong>.</span></p>
+        <p><span style="color: rgb(0, 0, 0);">Just a quick reminder, your photos are protected with a password for your privacy and security. To access your images, simply use the provided password: <strong>{{password}}</strong></span></p>
         <p><span style="color: rgb(0, 0, 0);">If you need help or have any questions, please let me know!</span></p>
         <p><span style="color: rgb(0, 0, 0);">Best regards,</span></p>
         <p><span style="color: rgb(0, 0, 0);">{{email_signature}}</span></p>
@@ -3805,7 +3805,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         body_template: """
         <p><span style="color: rgb(0, 0, 0);">Hello {{client_first_name}},</span></p>
         <p><span style="color: rgb(0, 0, 0);">Great news – your gallery is now available!</span></p>
-        <p><span style="color: rgb(0, 0, 0);">Please remember that your photos are password-protected, and you'll need this password to access them: <strong>{{password}}</strong>. </span></p>
+        <p><span style="color: rgb(0, 0, 0);">Please remember that your photos are password-protected, and you'll need this password to access them: <strong>{{password}}</strong> </span></p>
         <p><span style="color: rgb(0, 0, 0);">You can access your private gallery to view all your images at:</span></p>
         <p>{{gallery_link}}</p>
         <p><span style="color: rgb(0, 0, 0);">If you have any digital image and/or print credits to use, please be sure to log in with the email address to which this email was sent. When you share the gallery with friends and family, kindly ask them to log in with their unique email addresses to ensure only you have access to those credits.</span></p>
@@ -3934,7 +3934,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         body_template: """
         <p><span style="color: rgb(0, 0, 0);">Hello {{client_first_name}},</span></p>
         <p><span style="color: rgb(0, 0, 0);">I hope this message finds you well. I wanted to remind you that your gallery is nearing its expiration date. To ensure you don't miss out, please take a moment to log into your gallery and make your selections before it expires on {{gallery_expiration_date}}.</span></p>
-        <p><span style="color: rgb(0, 0, 0);">As a quick reminder, your photos are protected with a password, so you'll need to enter it to view them: <strong>{{password}}</strong>. </span></p>
+        <p><span style="color: rgb(0, 0, 0);">As a quick reminder, your photos are protected with a password, so you'll need to enter it to view them: <strong>{{password}}</strong> </span></p>
         <p><span style="color: rgb(0, 0, 0);">You can access your private gallery containing all of your images by following this link:</span></p>
         <p>{{gallery_link}}</p>
         <p><span style="color: rgb(0, 0, 0);">If you have any questions or need assistance with anything related to your gallery, please don't hesitate to reach out. I'm here to help! </span></p>
@@ -3958,7 +3958,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         <p><span style="color: rgb(0, 0, 0);">I'm following up with another reminder that the expiration date for your gallery is approaching. To ensure you have ample time to make your selections, please log in to your gallery and make your choices before it expires on {{gallery_expiration_date}}.</span></p>
         <p><span style="color: rgb(0, 0, 0);">You can easily access your private gallery, where all your images are waiting for you, by clicking on this link:</span></p>
         <p>{{gallery_link}}</p>
-        <p><span style="color: rgb(0, 0, 0);">Just a quick reminder, your photos are protected with a password for your privacy and security. To access your images, simply use the provided password: <strong>{{password}}</strong>.</span></p>
+        <p><span style="color: rgb(0, 0, 0);">Just a quick reminder, your photos are protected with a password for your privacy and security. To access your images, simply use the provided password: <strong>{{password}}</strong></span></p>
         <p><span style="color: rgb(0, 0, 0);">If you need help or have any questions, please let me know!</span></p>
         <p><span style="color: rgb(0, 0, 0);">Best regards,</span></p>
         <p><span style="color: rgb(0, 0, 0);">{{email_signature}}</span></p>
@@ -4630,7 +4630,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         body_template: """
         <p><span style="color: rgb(0, 0, 0);">Hello {{client_first_name}},</span></p>
         <p><span style="color: rgb(0, 0, 0);">Great news – your gallery is now available!</span></p>
-        <p><span style="color: rgb(0, 0, 0);">Please remember that your photos are password-protected, and you'll need this password to access them: <strong>{{password}}</strong>. </span></p>
+        <p><span style="color: rgb(0, 0, 0);">Please remember that your photos are password-protected, and you'll need this password to access them: <strong>{{password}}</strong> </span></p>
         <p><span style="color: rgb(0, 0, 0);">You can access your private gallery to view all your images at:</span></p>
         <p>{{gallery_link}}</p>
         <p><span style="color: rgb(0, 0, 0);">If you have any digital image and/or print credits to use, please be sure to log in with the email address to which this email was sent. When you share the gallery with friends and family, kindly ask them to log in with their unique email addresses to ensure only you have access to those credits.</span></p>
@@ -4759,7 +4759,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         body_template: """
         <p><span style="color: rgb(0, 0, 0);">Hello {{client_first_name}},</span></p>
         <p><span style="color: rgb(0, 0, 0);">I hope this message finds you well. I wanted to remind you that your gallery is nearing its expiration date. To ensure you don't miss out, please take a moment to log into your gallery and make your selections before it expires on {{gallery_expiration_date}}.</span></p>
-        <p><span style="color: rgb(0, 0, 0);">As a quick reminder, your photos are protected with a password, so you'll need to enter it to view them: <strong>{{password}}</strong>. </span></p>
+        <p><span style="color: rgb(0, 0, 0);">As a quick reminder, your photos are protected with a password, so you'll need to enter it to view them: <strong>{{password}}</strong> </span></p>
         <p><span style="color: rgb(0, 0, 0);">You can access your private gallery containing all of your images by following this link:</span></p>
         <p>{{gallery_link}}</p>
         <p><span style="color: rgb(0, 0, 0);">If you have any questions or need assistance with anything related to your gallery, please don't hesitate to reach out. I'm here to help! </span></p>
@@ -4783,7 +4783,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         <p><span style="color: rgb(0, 0, 0);">I'm following up with another reminder that the expiration date for your gallery is approaching. To ensure you have ample time to make your selections, please log in to your gallery and make your choices before it expires on {{gallery_expiration_date}}.</span></p>
         <p><span style="color: rgb(0, 0, 0);">You can easily access your private gallery, where all your images are waiting for you, by clicking on this link:</span></p>
         <p>{{gallery_link}}</p>
-        <p><span style="color: rgb(0, 0, 0);">Just a quick reminder, your photos are protected with a password for your privacy and security. To access your images, simply use the provided password: <strong>{{password}}</strong>.</span></p>
+        <p><span style="color: rgb(0, 0, 0);">Just a quick reminder, your photos are protected with a password for your privacy and security. To access your images, simply use the provided password: <strong>{{password}}</strong></span></p>
         <p><span style="color: rgb(0, 0, 0);">If you need help or have any questions, please let me know!</span></p>
         <p><span style="color: rgb(0, 0, 0);">Best regards,</span></p>
         <p><span style="color: rgb(0, 0, 0);">{{email_signature}}</span></p>
@@ -5454,7 +5454,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         body_template: """
         <p><span style="color: rgb(0, 0, 0);">Hello {{client_first_name}},</span></p>
         <p><span style="color: rgb(0, 0, 0);">Great news – your gallery is now available!</span></p>
-        <p><span style="color: rgb(0, 0, 0);">Please remember that your photos are password-protected, and you'll need this password to access them: <strong>{{password}}</strong>. </span></p>
+        <p><span style="color: rgb(0, 0, 0);">Please remember that your photos are password-protected, and you'll need this password to access them: <strong>{{password}}</strong> </span></p>
         <p><span style="color: rgb(0, 0, 0);">You can access your private gallery to view all your images at:</span></p>
         <p>{{gallery_link}}</p>
         <p><span style="color: rgb(0, 0, 0);">If you have any digital image and/or print credits to use, please be sure to log in with the email address to which this email was sent. When you share the gallery with friends and family, kindly ask them to log in with their unique email addresses to ensure only you have access to those credits.</span></p>
@@ -5583,7 +5583,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         body_template: """
         <p><span style="color: rgb(0, 0, 0);">Hello {{client_first_name}},</span></p>
         <p><span style="color: rgb(0, 0, 0);">I hope this message finds you well. I wanted to remind you that your gallery is nearing its expiration date. To ensure you don't miss out, please take a moment to log into your gallery and make your selections before it expires on {{gallery_expiration_date}}.</span></p>
-        <p><span style="color: rgb(0, 0, 0);">As a quick reminder, your photos are protected with a password, so you'll need to enter it to view them: <strong>{{password}}</strong>. </span></p>
+        <p><span style="color: rgb(0, 0, 0);">As a quick reminder, your photos are protected with a password, so you'll need to enter it to view them: <strong>{{password}}</strong> </span></p>
         <p><span style="color: rgb(0, 0, 0);">You can access your private gallery containing all of your images by following this link:</span></p>
         <p>{{gallery_link}}</p>
         <p><span style="color: rgb(0, 0, 0);">If you have any questions or need assistance with anything related to your gallery, please don't hesitate to reach out. I'm here to help! </span></p>
@@ -5607,7 +5607,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         <p><span style="color: rgb(0, 0, 0);">I'm following up with another reminder that the expiration date for your gallery is approaching. To ensure you have ample time to make your selections, please log in to your gallery and make your choices before it expires on {{gallery_expiration_date}}.</span></p>
         <p><span style="color: rgb(0, 0, 0);">You can easily access your private gallery, where all your images are waiting for you, by clicking on this link:</span></p>
         <p>{{gallery_link}}</p>
-        <p><span style="color: rgb(0, 0, 0);">Just a quick reminder, your photos are protected with a password for your privacy and security. To access your images, simply use the provided password: <strong>{{password}}</strong>.</span></p>
+        <p><span style="color: rgb(0, 0, 0);">Just a quick reminder, your photos are protected with a password for your privacy and security. To access your images, simply use the provided password: <strong>{{password}}</strong></span></p>
         <p><span style="color: rgb(0, 0, 0);">If you need help or have any questions, please let me know!</span></p>
         <p><span style="color: rgb(0, 0, 0);">Best regards,</span></p>
         <p><span style="color: rgb(0, 0, 0);">{{email_signature}}</span></p>
@@ -6277,7 +6277,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         body_template: """
         <p><span style="color: rgb(0, 0, 0);">Hello {{client_first_name}},</span></p>
         <p><span style="color: rgb(0, 0, 0);">Great news – your gallery is now available!</span></p>
-        <p><span style="color: rgb(0, 0, 0);">Please remember that your photos are password-protected, and you'll need this password to access them: <strong>{{password}}</strong>. </span></p>
+        <p><span style="color: rgb(0, 0, 0);">Please remember that your photos are password-protected, and you'll need this password to access them: <strong>{{password}}</strong> </span></p>
         <p><span style="color: rgb(0, 0, 0);">You can access your private gallery to view all your images at:</span></p>
         <p>{{gallery_link}}</p>
         <p><span style="color: rgb(0, 0, 0);">If you have any digital image and/or print credits to use, please be sure to log in with the email address to which this email was sent. When you share the gallery with friends and family, kindly ask them to log in with their unique email addresses to ensure only you have access to those credits.</span></p>
@@ -6406,7 +6406,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         body_template: """
         <p><span style="color: rgb(0, 0, 0);">Hello {{client_first_name}},</span></p>
         <p><span style="color: rgb(0, 0, 0);">I hope this message finds you well. I wanted to remind you that your gallery is nearing its expiration date. To ensure you don't miss out, please take a moment to log into your gallery and make your selections before it expires on {{gallery_expiration_date}}.</span></p>
-        <p><span style="color: rgb(0, 0, 0);">As a quick reminder, your photos are protected with a password, so you'll need to enter it to view them: <strong>{{password}}</strong>. </span></p>
+        <p><span style="color: rgb(0, 0, 0);">As a quick reminder, your photos are protected with a password, so you'll need to enter it to view them: <strong>{{password}}</strong> </span></p>
         <p><span style="color: rgb(0, 0, 0);">You can access your private gallery containing all of your images by following this link:</span></p>
         <p>{{gallery_link}}</p>
         <p><span style="color: rgb(0, 0, 0);">If you have any questions or need assistance with anything related to your gallery, please don't hesitate to reach out. I'm here to help! </span></p>
@@ -6430,7 +6430,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         <p><span style="color: rgb(0, 0, 0);">I'm following up with another reminder that the expiration date for your gallery is approaching. To ensure you have ample time to make your selections, please log in to your gallery and make your choices before it expires on {{gallery_expiration_date}}.</span></p>
         <p><span style="color: rgb(0, 0, 0);">You can easily access your private gallery, where all your images are waiting for you, by clicking on this link:</span></p>
         <p>{{gallery_link}}</p>
-        <p><span style="color: rgb(0, 0, 0);">Just a quick reminder, your photos are protected with a password for your privacy and security. To access your images, simply use the provided password: <strong>{{password}}</strong>.</span></p>
+        <p><span style="color: rgb(0, 0, 0);">Just a quick reminder, your photos are protected with a password for your privacy and security. To access your images, simply use the provided password: <strong>{{password}}</strong></span></p>
         <p><span style="color: rgb(0, 0, 0);">If you need help or have any questions, please let me know!</span></p>
         <p><span style="color: rgb(0, 0, 0);">Best regards,</span></p>
         <p><span style="color: rgb(0, 0, 0);">{{email_signature}}</span></p>
@@ -7101,7 +7101,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         body_template: """
         <p><span style="color: rgb(0, 0, 0);">Hello {{client_first_name}},</span></p>
         <p><span style="color: rgb(0, 0, 0);">Great news – your gallery is now available!</span></p>
-        <p><span style="color: rgb(0, 0, 0);">Please remember that your photos are password-protected, and you'll need this password to access them: <strong>{{password}}</strong>. </span></p>
+        <p><span style="color: rgb(0, 0, 0);">Please remember that your photos are password-protected, and you'll need this password to access them: <strong>{{password}}</strong> </span></p>
         <p><span style="color: rgb(0, 0, 0);">You can access your private gallery to view all your images at:</span></p>
         <p>{{gallery_link}}</p>
         <p><span style="color: rgb(0, 0, 0);">If you have any digital image and/or print credits to use, please be sure to log in with the email address to which this email was sent. When you share the gallery with friends and family, kindly ask them to log in with their unique email addresses to ensure only you have access to those credits.</span></p>
@@ -7230,7 +7230,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         body_template: """
         <p><span style="color: rgb(0, 0, 0);">Hello {{client_first_name}},</span></p>
         <p><span style="color: rgb(0, 0, 0);">I hope this message finds you well. I wanted to remind you that your gallery is nearing its expiration date. To ensure you don't miss out, please take a moment to log into your gallery and make your selections before it expires on {{gallery_expiration_date}}.</span></p>
-        <p><span style="color: rgb(0, 0, 0);">As a quick reminder, your photos are protected with a password, so you'll need to enter it to view them: <strong>{{password}}</strong>. </span></p>
+        <p><span style="color: rgb(0, 0, 0);">As a quick reminder, your photos are protected with a password, so you'll need to enter it to view them: <strong>{{password}}</strong> </span></p>
         <p><span style="color: rgb(0, 0, 0);">You can access your private gallery containing all of your images by following this link:</span></p>
         <p>{{gallery_link}}</p>
         <p><span style="color: rgb(0, 0, 0);">If you have any questions or need assistance with anything related to your gallery, please don't hesitate to reach out. I'm here to help! </span></p>
@@ -7254,7 +7254,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         <p><span style="color: rgb(0, 0, 0);">I'm following up with another reminder that the expiration date for your gallery is approaching. To ensure you have ample time to make your selections, please log in to your gallery and make your choices before it expires on {{gallery_expiration_date}}.</span></p>
         <p><span style="color: rgb(0, 0, 0);">You can easily access your private gallery, where all your images are waiting for you, by clicking on this link:</span></p>
         <p>{{gallery_link}}</p>
-        <p><span style="color: rgb(0, 0, 0);">Just a quick reminder, your photos are protected with a password for your privacy and security. To access your images, simply use the provided password: <strong>{{password}}</strong>.</span></p>
+        <p><span style="color: rgb(0, 0, 0);">Just a quick reminder, your photos are protected with a password for your privacy and security. To access your images, simply use the provided password: <strong>{{password}}</strong></span></p>
         <p><span style="color: rgb(0, 0, 0);">If you need help or have any questions, please let me know!</span></p>
         <p><span style="color: rgb(0, 0, 0);">Best regards,</span></p>
         <p><span style="color: rgb(0, 0, 0);">{{email_signature}}</span></p>
@@ -7920,7 +7920,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         body_template: """
         <p><span style="color: rgb(0, 0, 0);">Hello {{client_first_name}},</span></p>
         <p><span style="color: rgb(0, 0, 0);">Great news – your gallery is now available!</span></p>
-        <p><span style="color: rgb(0, 0, 0);">Please remember that your photos are password-protected, and you'll need this password to access them: <strong>{{password}}</strong>. </span></p>
+        <p><span style="color: rgb(0, 0, 0);">Please remember that your photos are password-protected, and you'll need this password to access them: <strong>{{password}}</strong> </span></p>
         <p><span style="color: rgb(0, 0, 0);">You can access your private gallery to view all your images at:</span></p>
         <p>{{gallery_link}}</p>
         <p><span style="color: rgb(0, 0, 0);">If you have any digital image and/or print credits to use, please be sure to log in with the email address to which this email was sent. When you share the gallery with friends and family, kindly ask them to log in with their unique email addresses to ensure only you have access to those credits.</span></p>
@@ -8049,7 +8049,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         body_template: """
         <p><span style="color: rgb(0, 0, 0);">Hello {{client_first_name}},</span></p>
         <p><span style="color: rgb(0, 0, 0);">I hope this message finds you well. I wanted to remind you that your gallery is nearing its expiration date. To ensure you don't miss out, please take a moment to log into your gallery and make your selections before it expires on {{gallery_expiration_date}}.</span></p>
-        <p><span style="color: rgb(0, 0, 0);">As a quick reminder, your photos are protected with a password, so you'll need to enter it to view them: <strong>{{password}}</strong>. </span></p>
+        <p><span style="color: rgb(0, 0, 0);">As a quick reminder, your photos are protected with a password, so you'll need to enter it to view them: <strong>{{password}}</strong> </span></p>
         <p><span style="color: rgb(0, 0, 0);">You can access your private gallery containing all of your images by following this link:</span></p>
         <p>{{gallery_link}}</p>
         <p><span style="color: rgb(0, 0, 0);">If you have any questions or need assistance with anything related to your gallery, please don't hesitate to reach out. I'm here to help! </span></p>
@@ -8073,7 +8073,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         <p><span style="color: rgb(0, 0, 0);">I'm following up with another reminder that the expiration date for your gallery is approaching. To ensure you have ample time to make your selections, please log in to your gallery and make your choices before it expires on {{gallery_expiration_date}}.</span></p>
         <p><span style="color: rgb(0, 0, 0);">You can easily access your private gallery, where all your images are waiting for you, by clicking on this link:</span></p>
         <p>{{gallery_link}}</p>
-        <p><span style="color: rgb(0, 0, 0);">Just a quick reminder, your photos are protected with a password for your privacy and security. To access your images, simply use the provided password: <strong>{{password}}</strong>.</span></p>
+        <p><span style="color: rgb(0, 0, 0);">Just a quick reminder, your photos are protected with a password for your privacy and security. To access your images, simply use the provided password: <strong>{{password}}</strong></span></p>
         <p><span style="color: rgb(0, 0, 0);">If you need help or have any questions, please let me know!</span></p>
         <p><span style="color: rgb(0, 0, 0);">Best regards,</span></p>
         <p><span style="color: rgb(0, 0, 0);">{{email_signature}}</span></p>
