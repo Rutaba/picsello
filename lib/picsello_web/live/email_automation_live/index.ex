@@ -81,7 +81,7 @@ defmodule PicselloWeb.Live.EmailAutomations.Index do
   @impl true
   def handle_event(
         "add-email-popup",
-        %{"pipeline_id" => pipeline_id},
+        %{"pipeline-id" => pipeline_id},
         %{
           assigns: %{
             current_user: current_user,
@@ -206,8 +206,8 @@ defmodule PicselloWeb.Live.EmailAutomations.Index do
            }
          } = socket,
          %{
-           "email_id" => email_id,
-           "pipeline_id" => pipeline_id,
+           "email-id" => email_id,
+           "pipeline-id" => pipeline_id,
            "index" => index
          },
          module
@@ -293,14 +293,8 @@ defmodule PicselloWeb.Live.EmailAutomations.Index do
                       </span>
                     <% end %>
                   </div>
-                  <button phx-click="edit-time-popup" phx-value-index={index} phx-value-email_id={email.id}  phx-value-pipeline_id={@pipeline.id} class={classes("flex items-center px-2 py-1 btn-tertiary text-blue-planning-300  hover:border-blue-planning-300 mr-2 whitespace-nowrap", %{"hidden" => is_state_manually_trigger(@pipeline.state) and index == 0})}>
-                    <.icon name="settings" class="inline-block w-4 h-4 mr-3 fill-current text-blue-planning-300" />
-                    Edit time
-                  </button>
-                  <button phx-click="edit-email-popup" phx-value-index={index} phx-value-email_id={email.id} phx-value-pipeline_id={@pipeline.id} class="flex items-center px-2 py-1 btn-tertiary bg-blue-planning-300 text-white hover:bg-blue-planning-300/75 whitespace-nowrap" >
-                    <.icon name="pencil" class="inline-block w-4 h-4 mr-3 fill-current text-white" />
-                    Edit email
-                  </button>
+                  <.icon_button_simple class={classes("flex items-center px-2 py-1 btn-tertiary text-blue-planning-300 hover:border-blue-planning-300 mr-2 whitespace-nowrap", %{"hidden" => is_state_manually_trigger(@pipeline.state) and index == 0})} phx-click="edit-time-popup" phx-value-index={index} phx-value-email_id={email.id} phx-value-pipeline_id={@pipeline.id} icon_class="inline-block w-4 h-4 mr-3" color="blue-planning-300" icon="settings">Edit time</.icon_button_simple>
+                  <.icon_button_simple class="flex items-center px-2 py-1 btn-tertiary bg-blue-planning-300 text-white hover:bg-blue-planning-300/75 whitespace-nowrap" phx-click="edit-email-popup" phx-value-index={index} phx-value-email_id={email.id} phx-value-pipeline_id={@pipeline.id} icon_class="inline-block w-4 h-4 mr-3" color="white" icon="pencil">Edit email</.icon_button_simple>
                 </div>
               </div>
               <hr class="md:ml-8 ml-6" />
@@ -308,10 +302,7 @@ defmodule PicselloWeb.Live.EmailAutomations.Index do
           <% end %>
           <div class="flex flex-row justify-between pr-6 pl-8 sm:pl-16 py-6">
             <div class="flex items-center">
-              <button phx-click="add-email-popup" phx-value-pipeline_id={@pipeline.id} data-popover-target="popover-default" type="button" class="flex items-center px-2 py-1 btn-tertiary hover:border-blue-planning-300" >
-                <.icon name="plus" class="inline-block w-4 h-4 mr-3 fill-current text-blue-planning-300" />
-                    Add email
-              </button>
+              <.icon_button_simple class="flex items-center px-2 py-1 btn-tertiary hover:border-blue-planning-300" phx-click="add-email-popup" phx-value-pipeline_id={@pipeline.id} data-popover-target="popover-default" icon_class="inline-block w-4 h-4 mr-3" color="blue-planning-300" icon="plus">Add email</.icon_button_simple>
             </div>
             <%= if !is_state_manually_trigger(@pipeline.state) and @subcategory_slug != "payment_reminder_emails" do %>
               <div class="flex flex-row">

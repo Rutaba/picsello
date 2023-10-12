@@ -152,6 +152,9 @@ defmodule PicselloWeb.LiveHelpers do
     ~H"""
     <button type="button" class={classes("flex items-center px-2 py-1 font-sans hover:opacity-75 #{@class}", %{"opacity-50 hover:opacity-30 hover:cursor-not-allowed" => @disabled})}} disabled={@disabled} {@rest}>
       <.icon name={@icon} class={"fill-current text-#{@color} #{@icon_class}"} />
+      <%= if @inner_block do %>
+        <%= render_slot(@inner_block) %>
+      <% end %>
     </button>
     """
   end

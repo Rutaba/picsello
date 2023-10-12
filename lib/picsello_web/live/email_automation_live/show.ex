@@ -77,7 +77,7 @@ defmodule PicselloWeb.Live.EmailAutomations.Show do
   end
 
   @impl true
-  def handle_event("confirm-stop-email", %{"email_id" => email_id}, socket) do
+  def handle_event("confirm-stop-email", %{"email-id" => email_id}, socket) do
     socket
     |> PicselloWeb.ConfirmationComponent.open(%{
       modal_name: :automation_email_modal,
@@ -115,7 +115,7 @@ defmodule PicselloWeb.Live.EmailAutomations.Show do
   @impl true
   def handle_event(
         "edit-email",
-        %{"email_id" => id, "pipeline_id" => pipeline_id, "index" => index},
+        %{"email-id" => id, "pipeline-id" => pipeline_id, "index" => index},
         %{assigns: %{current_user: current_user, type: type, job_types: job_types, job: job}} =
           socket
       ) do
@@ -315,9 +315,7 @@ defmodule PicselloWeb.Live.EmailAutomations.Show do
 
               <div class="flex justify-end mr-2">
                 <%= if not (is_state_manually_trigger(@pipeline.state) and index == 0) do %>
-                  <button testid={"#{@pipeline.state}-stop_button-#{index}"} disabled={is_email_disable} class={classes("flex flex-row items-center justify-center w-8 h-8 bg-base-200 mr-2 rounded-xl", %{"opacity-30 hover:cursor-not-allowed" => is_email_disable})} phx-click="confirm-stop-email" phx-value-email_id={email.id}>
-                    <.icon name="stop" class="flex flex-col items-center justify-center w-5 h-5 text-red-sales-300"/>
-                  </button>
+                  <.icon_button_simple testid={"#{@pipeline.state}-stop_button-#{index}"} class={classes("flex flex-row items-center justify-center w-8 h-8 bg-base-200 mr-2 rounded-xl", %{"opacity-30 hover:cursor-not-allowed" => is_email_disable})} disabled={is_email_disable} phx-click="confirm-stop-email" phx-value-email_id={email.id} icon_class="flex flex-col items-center justify-center w-5 h-5" color="red-sales-300" icon="stop"></.icon_button_simple>
                 <% end %>
                 <button testid="email_send_OR_start_sequence" disabled={is_email_disable} class={classes("h-8 flex items-center px-2 py-1 btn-tertiary text-black font-bold  hover:border-blue-planning-300 mr-2 whitespace-nowrap", %{"opacity-30 hover:cursor-not-allowed" => !is_nil(email.stopped_at) || !is_nil(email.reminded_at) || disable_pipeline?(sorted_emails, @pipeline.state, index), "hidden" => @subcategory_slug == "payment_reminder_emails"})} phx-click="confirm-send-email" phx-value-email_id={email.id} phx-value-pipeline_id={@pipeline.id}>
                   <%= if is_state_manually_trigger(@pipeline.state) and index == 0 do %>
@@ -326,10 +324,7 @@ defmodule PicselloWeb.Live.EmailAutomations.Show do
                       Send now
                   <% end %>
                 </button>
-                <button disabled={!is_nil(email.reminded_at)} class={classes("h-8 flex items-center px-2 py-1 btn-tertiary bg-blue-planning-300 text-white hover:bg-blue-planning-300/75 whitespace-nowrap", %{"opacity-30 hover:cursor-not-allowed" => !is_nil(email.reminded_at)})} phx-click="edit-email" phx-value-index={index} phx-value-email_id={email.id} phx-value-pipeline_id={@pipeline.id}>
-                  <.icon name="pencil" class="inline-block w-4 h-4 mr-3 fill-current text-white" />
-                  Edit email
-                </button>
+                <.icon_button_simple disabled={!is_nil(email.reminded_at)} class={classes("h-8 flex items-center px-2 py-1 btn-tertiary bg-blue-planning-300 text-white hover:bg-blue-planning-300/75 whitespace-nowrap", %{"opacity-30 hover:cursor-not-allowed" => !is_nil(email.reminded_at)})} phx-click="edit-email" phx-value-index={index} phx-value-email_id={email.id} phx-value-pipeline_id={@pipeline.id} icon_class="inline-block w-4 h-4 mr-3" color="white" icon="pencil">Edit email</.icon_button_simple>
               </div>
             </div>
           <% end) %>
