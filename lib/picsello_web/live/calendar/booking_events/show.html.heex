@@ -62,7 +62,7 @@
                         <.booking_slot_tabs_nav booking_event={@booking_event} booking_slot_tab_active={@booking_slot_tab_active} booking_slot_tabs={@booking_slot_tabs} socket={@socket} />
                         <.booking_slot_tabs_content booking_event_dates={@booking_event.dates} {assigns} />
 
-                    <% end %>
+                    <%!-- <% end %> --%>
                     
                     <div class={classes("mt-10 p-3 border-2 flex items-center rounded-lg border-base-200", %{"border-red-sales-300" => !@package})}>
                         <div class="flex flex-col w-full">

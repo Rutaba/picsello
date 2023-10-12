@@ -1,7 +1,7 @@
 defmodule PicselloWeb.CalendarFeedController do
   use PicselloWeb, :controller
 
-  alias Picsello.{Shoots, Job, NylasCalendar, Utils}
+  alias Picsello.{Shoots, Job, NylasCalendar, Utils, BookingEvents}
   require Logger
   @spec index(Plug.Conn.t(), map) :: Plug.Conn.t()
   def index(%{assigns: %{current_user: %{nylas_detail: nylas_detail} = user}} = conn, params) do
@@ -23,7 +23,6 @@ defmodule PicselloWeb.CalendarFeedController do
   end
 
   def show(%{assigns: %{current_user: user}} = conn, %{"id" => event_id}) do
-
     booking_event =
       BookingEvents.get_preloaded_booking_event!(user.organization_id, event_id)
       |> Map.get(:dates)

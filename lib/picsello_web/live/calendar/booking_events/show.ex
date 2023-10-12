@@ -21,6 +21,7 @@ defmodule PicselloWeb.Live.Calendar.BookingEvents.Show do
     |> ok()
   end
 
+  # TODO: remove client key assigned on line # 31
   @impl true
   def handle_params(%{"id" => event_id}, _session, socket) do
     socket
@@ -41,17 +42,9 @@ defmodule PicselloWeb.Live.Calendar.BookingEvents.Show do
 
   @impl true
   def handle_event("calendar-date-changed", %{"date" => calendar_date}, %{assigns: %{booking_event: booking_event}} = socket) do
-    {:ok, calendar_date} =
-      calendar_date
-      |> Date.from_iso8601()
+    {:ok, calendar_date} = Date.from_iso8601(calendar_date)
 
-    calendar_event =
-      booking_event.dates
-      |> Enum.filter(fn date -> date.date == calendar_date end)
-      |> case do
-        [] ->  []
-        dates -> hd(dates)
-      end
+    calendar_event = Enum.find(booking_event.dates, & &1.date == calendar_date)
 
     socket
     |> assign(:calendar_date_event, calendar_event)
@@ -179,7 +172,7 @@ defmodule PicselloWeb.Live.Calendar.BookingEvents.Show do
   def handle_event("change-booking-slot-tab", %{"tab" => tab}, socket) do
     socket
     |> assign(:booking_slot_tab_active, tab)
-    |> assign_tab_data(tab)
+    # |> assign_tab_data(tab)
     |> noreply()
   end
 
@@ -251,7 +244,7 @@ defmodule PicselloWeb.Live.Calendar.BookingEvents.Show do
   def handle_event("change-booking-event-tab", %{"tab" => tab}, socket) do
     socket
     |> assign(:booking_event_tab_active, tab)
-    |> assign_tab_data(tab)
+    # |> assign_tab_data(tab)
     |> noreply()
   end
 
@@ -440,7 +433,7 @@ defmodule PicselloWeb.Live.Calendar.BookingEvents.Show do
 
     ~H"""
       <div class="flex mt-2">
-        <div class="">
+        <div>
           <div class={classes("uppercase text-lg font-bold", %{"text-base-250" => @status})}>BEESKNEES</div>
           <%= if !@status do %>
             <div class={classes("", %{"text-blue-planning-300 underline" => @uses > 0})}><%= @uses %> uses</div>
@@ -512,10 +505,10 @@ defmodule PicselloWeb.Live.Calendar.BookingEvents.Show do
       <% "calendar" -> %>
         <div class="mt-10 flex flex-col xl:flex-row gap-8">
           <div class="flex xl:w-1/2 flex-col">
-            <div phx-hook="BookingEventCalendar" phx-update="replace" class="" id="booking_event_calendar" data-time-zone={@current_user.time_zone} data-feed-path={Routes.calendar_feed_path(@socket, :show, @booking_event.id)}/>
+            <div phx-hook="BookingEventCalendar" phx-update="replace" id="booking_event_calendar" data-time-zone={@current_user.time_zone} data-feed-path={Routes.calendar_feed_path(@socket, :show, @booking_event.id)}/>
           </div>
           <div class="xl:h-[600px] flex flex-col flex-grow">
-            <%= if @calendar_date_event && @calendar_date_event != [] do %>
+            <%= if @calendar_date_event do %>
               <div class="flex">
                 <div class="flex text-2xl font-bold"><%= BEShared.date_formatter(@calendar_date_event.date) %></div>
                 <div class="flex justify-end ml-auto">
@@ -568,38 +561,34 @@ defmodule PicselloWeb.Live.Calendar.BookingEvents.Show do
   defp slots_description(assigns) do
     ~H"""
       <%= case @booking_slot_tab_active do %>
-      <% "list" -> %>
-        <div class="grid grid-cols-3 md:grid-cols-7 items-start md:items-center my-2">
-          <div class="col-span-6 grid grid-cols-2 md:grid-cols-6">
-            <div class={classes("col-span-2", %{"text-base-250" => @slot.status == :hidden})}>
-              <%= if @slot.status == :booked do %>
+        <% "list" -> %>
+          <div class="grid grid-cols-3 md:grid-cols-7 items-start md:items-center my-2">
+            <div class="col-span-6 grid grid-cols-2 md:grid-cols-6">
+              <div class={classes("col-span-2", %{"text-base-250" => @slot.status == :hidden})}>
+                <%= if @slot.status == :booked do %>
+                  <div class="flex gap-2 items-center">
+                    <.icon name="clock-2" class="block md:hidden w-3 h-3 stroke-current text-blue-planning-300 mt-1" />
+                    <button class="text-blue-planning-300 underline"><%= slot_time_formatter(@slot) %></button>
+                  </div>
+                <% else %>
+                  <div class="flex gap-2 items-center">
+                    <.icon name={@slot.status != :open && "booked-slot" || "open-slot"} class="block md:hidden w-3 h-3 fill-blue-planning-300 mt-1.5" />
+                    <div><%= String.capitalize(to_string(@slot.status)) %></div>
+                  </div>
+                <% end %>
+              </div>
+            </div>
+            <div class="col-span-2">
+              <%= if @client && @slot.status == :book do %>
                 <div class="flex gap-2 items-center">
-                  <.icon name="clock-2" class="block md:hidden w-3 h-3 stroke-current text-blue-planning-300 mt-1" />
-                  <button class="text-blue-planning-300 underline"><%= slot_time_formatter(@slot) %></button>
+                  <.icon name="client-icon" class="block md:hidden w-3 h-3 text-blue-planning-300 mt-1.5" />
+                  <div class="text-blue-planning-300 underline"><%= String.capitalize(@client.name) %></div>
                 </div>
               <% else %>
                 <div class="flex gap-2 items-center">
-                  <%= if @slot.status != :open do %>
-                    <.icon name="booked-slot" class="block md:hidden w-3 h-3 fill-blue-planning-300 mt-1.5" />
-                  <% else %>
-                    <.icon name="open-slot" class="block md:hidden w-3 h-3 fill-blue-planning-300 mt-1.5" />
-                  <% end %>
-                  <div class=""><%= String.capitalize(to_string(@slot.status)) %></div>
+                  <.icon name="client-icon" class="block md:hidden w-3 h-3 text-blue-planning-300" />
                 </div>
-              </div>
-              <div class="col-span-2">
-                  <%= if @client && @slot.status == :book do %>
-                    <div class="flex gap-2 items-center">
-                      <.icon name="client-icon" class="block md:hidden w-3 h-3 text-blue-planning-300 mt-1.5" />
-                      <div class="text-blue-planning-300 underline"><%= String.capitalize(@client.name) %></div>
-                    </div>
-                  <% else %>
-                    <div class="flex gap-2 items-center">
-                      <.icon name="client-icon" class="block md:hidden w-3 h-3 text-blue-planning-300" />
-                      <div class="">-</div>
-                    </div>
-                  <% end %>
-              </div>
+              <% end %>
             </div>
             <div class="justify-start">
               <.actions id={@booking_event.id} booking_event={@booking_event} button_actions={@button_actions} />
@@ -621,12 +610,11 @@ defmodule PicselloWeb.Live.Calendar.BookingEvents.Show do
               <%= if @client && @slot.status == :booked do %>
                 <div class="flex gap-2 items-center">
                   <.icon name="client-icon" class="block md:hidden w-3 h-3 text-blue-planning-300 mt-1.5" />
-                  <div class="text-blue-planning-300 underline"><%= String.capitalize(@client.name) %></div>
+                  <div class="text-blue-planning-300 underline"> Booked with <%= String.capitalize(@client.name) %></div>
                 </div>
               <% else %>
                 <div class="flex gap-2 items-center">
                   <.icon name="client-icon" class="block md:hidden w-3 h-3 text-blue-planning-300" />
-                  <div class="">-</div>
                 </div>
               <% end %>
             </div>
@@ -635,29 +623,6 @@ defmodule PicselloWeb.Live.Calendar.BookingEvents.Show do
             <.actions id={@booking_event.id} booking_event={@booking_event} button_actions={@button_actions} />
           </div>
           <hr class="my-2 md:my-3 col-span-7">
-        </div>
-      <% "calendar" -> %>
-        <div class="border-2 border-base-200 rounded-lg flex p-3 my-1.5">
-          <div class="flex flex-col">
-            <p class="mb-1 font-bold text-black text-lg">
-              <%= if @slot.status == :booked do %>
-                <button class="text-blue-planning-300 underline"><%= slot_time_formatter(@slot) %></button>
-              <% else %>
-              <%= slot_time_formatter(@slot) %>
-              <% end %>
-            </p>
-            <p class="text-blue-planning-300 underline">
-              <%= if @client && @slot.status == :booked do %>
-                <button class="text-blue-planning-300 underline"><%= "Booked with " <> String.capitalize(@client.name) %></button>
-              <% else %>
-                <p class={classes(%{"text-base-250" => @slot.status == :hidden})}><%= @slot.status %></p>
-              <% end %>
-            </p>
-          </div>
-          <div class="flex ml-auto">
-            <.actions id={@booking_event.id} booking_event={@booking_event} button_actions={@button_actions} />
-          </div>
-        </div>
       <% end %>
     """
   end
@@ -832,7 +797,7 @@ defmodule PicselloWeb.Live.Calendar.BookingEvents.Show do
     calendar_date_event =
       Map.get(booking_event, :dates, [])
       |> case do
-        [] -> []
+        [] -> nil
         event -> hd(event)
       end
 
@@ -841,17 +806,16 @@ defmodule PicselloWeb.Live.Calendar.BookingEvents.Show do
     |> assign(:payments_description, payments_description(booking_event))
     |> assign(:package, booking_event.package_template)
     |> assign(:calendar_date_event, calendar_date_event)
-    # |> then(fn %{assigns: %{calendar_date_event: event} }= socket -> assign(socket, :calendar_event_source, [%{start: event.date |> Date.to_iso8601()}] |> Jason.encode!() |> IO.inspect) end)
 
   end
 
-  defp assign_tab_data(%{assigns: %{current_user: _current_user, booking_event: %{dates: dates}}} = socket, tab) do
-    case tab do
-      "list" -> socket
-      "overview" -> socket
-      _ -> socket
-    end
-  end
+  # defp assign_tab_data(%{assigns: %{current_user: _current_user, booking_event: %{dates: dates}}} = socket, tab) do
+  #   case tab do
+  #     "list" -> socket
+  #     "overview" -> socket
+  #     _ -> socket
+  #   end
+  # end
 
   # TODO: refine logic
   defp payments_description(%{package_template: nil}), do: nil
