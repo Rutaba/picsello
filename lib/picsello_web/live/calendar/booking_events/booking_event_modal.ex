@@ -5,10 +5,10 @@ defmodule PicselloWeb.Live.Calendar.BookingEventModal do
   import PicselloWeb.ShootLive.Shared, only: [duration_options: 0]
   import PicselloWeb.LiveModal, only: [close_x: 1, footer: 1]
   import PicselloWeb.PackageLive.Shared, only: [current: 1]
-  alias Picsello.{BookingEventDate, BookingEventDates, Repo}
-  alias PicselloWeb.Calendar.BookingEvents.Shared
-  alias Ecto.Multi
   import Ecto.Changeset
+
+  alias Picsello.{BookingEvents, BookingEventDate, BookingEventDates, Repo}
+  alias Ecto.Multi
 
   @occurences [0, 5, 10, 15, 20, 30, 45, 60]
 
@@ -142,7 +142,7 @@ defmodule PicselloWeb.Live.Calendar.BookingEventModal do
             <%= parse_time(input_value(s, :slot_start)) <> "-" <> parse_time(input_value(s, :slot_end))%>
             </div>
             <div>
-              <%= if to_string(s |> current |> Map.get(:status)) == "hide", do: "Booked (Hidden)", else: s |> current |> Map.get(:status) |> to_string() |> String.capitalize() %>
+              <%= if to_string(s |> current |> Map.get(:status)) == "hidden", do: "Booked (Hidden)", else: s |> current |> Map.get(:status) |> to_string() |> String.capitalize() %>
             </div>
             <div class="col-span-2 flex justify-end pr-2">
               <%= input s, :is_hide, type: :checkbox, disabled: (s |> current |> Map.get(:status) == :booked), checked: hidden_time?(s |> current |> Map.get(:status)), class: "checkbox w-6 h-6"%>
@@ -251,7 +251,7 @@ defmodule PicselloWeb.Live.Calendar.BookingEventModal do
   defp get_repeat_dates(changeset) do
     selected_days = get_field(changeset, :repeat_on) |> Enum.map(&Map.from_struct(&1))
     booking_event_date = current(changeset)
-    Shared.calculate_dates(booking_event_date, selected_days)
+    BookingEvents.calculate_dates(booking_event_date, selected_days)
   end
 
   defp successfull_save(socket, booking_event_date) do

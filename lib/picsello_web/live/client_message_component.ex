@@ -120,14 +120,6 @@ defmodule PicselloWeb.ClientMessageComponent do
   end
 
   @impl true
-  def handle_event("clear-search", _, socket) do
-    socket
-    |> assign(:search_results, [])
-    |> assign(:search_phrase, nil)
-    |> noreply()
-  end
-
-  @impl true
   def handle_event("validate_bcc_email", %{"value" => email}, socket) do
     socket |> validate_emails(email, "bcc") |> noreply()
   end

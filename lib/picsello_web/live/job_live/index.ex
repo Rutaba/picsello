@@ -14,7 +14,7 @@ defmodule PicselloWeb.JobLive.Index do
     ]
 
   alias Ecto.Changeset
-  alias Picsello.{Job, Jobs, Repo, Payments, Package}
+  alias Picsello.{Job, Jobs, Repo, Utils, Payments}
   alias PicselloWeb.{JobLive}
 
   @default_pagination_limit 12
@@ -242,7 +242,7 @@ defmodule PicselloWeb.JobLive.Index do
         <div class="flex">
           <div id={@id} class={classes("relative w-full lg:w-48 border-grey border p-2 cursor-pointer", %{"lg:w-64" => @id == "status" and @type == "lead", "rounded-l-lg" => @id == "sort_by", "rounded-lg" => @title == "Filter" or @id != "sort_by"})} data-offset-y="5" phx-hook="Select">
             <div {testid("dropdown_#{@id}")} class="flex flex-row items-center border-gray-700">
-                <%= capitalize_per_word(String.replace(@selected_option, "_", " ")) %>
+                <%= Utils.capitalize_all_words(String.replace(@selected_option, "_", " ")) %>
                 <.icon name="down" class="w-3 h-3 ml-auto lg:mr-2 mr-1 stroke-current stroke-2 open-icon" />
                 <.icon name="up" class="hidden w-3 h-3 ml-auto lg:mr-2 mr-1 stroke-current stroke-2 close-icon" />
             </div>
@@ -542,9 +542,4 @@ defmodule PicselloWeb.JobLive.Index do
   end
 
   defp format_date(date, time_zone), do: strftime(time_zone, date, "%B %d, %Y")
-
-  defp capitalize_per_word(string) do
-    String.split(string)
-    |> Enum.map_join(" ", &String.capitalize/1)
-  end
 end

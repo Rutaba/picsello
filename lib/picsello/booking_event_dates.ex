@@ -63,10 +63,19 @@ defmodule Picsello.BookingEventDates do
   end
 
   def get_booking_date(id) do
-    from(event_date in BookingEventDate, where: event_date.id == ^id)
-    |> Repo.one()
-    |> Repo.preload(:booking_event)
+    from(
+      event_date in BookingEventDate,
+      where: event_date.id == ^id,
+      preload: :booking_event
+    )
+    |> Repo.one!()
   end
+
+  def delete_booking_date(id),
+    do:
+      id
+      |> get_booking_date()
+      |> Repo.delete()
 
   @doc """
   Retrieves a list of booking event dates associated with the given booking event ID.
@@ -200,6 +209,13 @@ defmodule Picsello.BookingEventDates do
     )
   end
 
+  def update_slot_status(booking_event_date_id, slot_index, slot_update_args) do
+    booking_event_date_id
+    |> get_booking_date()
+    |> BookingEventDate.update_slot_changeset(slot_index, slot_update_args)
+    |> upsert_booking_event_date()
+  end
+
   @doc """
   Upserts (Insert or Update) a booking event date into the database.
 
@@ -318,9 +334,9 @@ defmodule Picsello.BookingEventDates do
 
   ```elixir
   # Transform a list of slot blocks with default values
-  iex> input_slots = [%SlotBlock{job_id: 1, client_id: 1, status: :hidden}, %SlotBlock{job_id: 1, client_id: 2, status: :booked}]
+  iex> input_slots = [SlotBlock.t(), SlotBlock.t()]
   iex> transform_slots(input_slots)
-  [%SlotBlock{job_id: nil, client_id: nil, status: :open}, %SlotBlock{job_id: nil, client_id: nil, status: :open}]
+  [SlotBlock.t(), SlotBlock.t()]
 
   ## Notes
   This function is useful for applying a consistent default transformation to a list of slot blocks.
@@ -553,9 +569,9 @@ defmodule Picsello.BookingEventDates do
     %{date: date, session_length: session_length, session_gap: session_gap, slots: slot_times} =
       booking_date
 
-    %{package_template: %{organization: %{user: user}}} =
+    %{organization: %{user: user}} =
       booking_event
-      |> Repo.preload(package_template: [organization: :user])
+      |> Repo.preload(organization: :user)
 
     beginning_of_day = DateTime.new!(date, ~T[00:00:00], user.time_zone)
 

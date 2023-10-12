@@ -7,6 +7,7 @@ defmodule PicselloWeb.LiveHelpers do
   import Phoenix.LiveView
   import Phoenix.Component
   import PicselloWeb.Router.Helpers, only: [static_path: 2]
+  import Picsello.BookingEvents, only: [day_of_week: 1]
   import PicselloWeb.Gettext, only: [dyn_gettext: 1]
   import Picsello.Profiles, only: [logo_url: 1]
   require Logger
@@ -322,6 +323,8 @@ defmodule PicselloWeb.LiveHelpers do
   def filesize(byte_size) when is_integer(byte_size),
     do: Size.humanize!(byte_size, spacer: "")
 
+  def to_integer(lst) when is_list(lst), do: lst |> Enum.map(&to_integer(&1))
+
   def to_integer(int) when is_integer(int), do: int
 
   def to_integer(bin) when is_binary(bin),
@@ -491,6 +494,11 @@ defmodule PicselloWeb.LiveHelpers do
         socket |> put_flash(:error, "Couldn't finish booking")
     end
   end
+
+  def date_formatter(date), do: "#{Timex.month_name(date.month)} #{date.day}, #{date.year}"
+
+  def date_formatter(date, :day),
+    do: "#{day_of_week(date)}, #{Timex.month_name(date.month)} #{date.day}"
 
   def format_date_via_type(_, _ \\ "MM DD, YY")
 

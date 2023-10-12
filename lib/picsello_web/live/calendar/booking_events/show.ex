@@ -8,11 +8,19 @@ defmodule PicselloWeb.Live.Calendar.BookingEvents.Show do
   import PicselloWeb.ClientBookingEventLive.Shared, only: [blurred_thumbnail: 1]
   import PicselloWeb.BookingProposalLive.Shared, only: [package_description_length_long?: 1]
 
-  alias Picsello.{Repo, BookingEvent, BookingEvents, Package, BookingEventDate, BookingEventDates}
+  alias Picsello.{
+    Repo,
+    Package,
+    BookingEvent,
+    BookingEvents,
+    BookingProposal,
+    BookingEventDate,
+    BookingEventDates
+  }
+
   alias PicselloWeb.Live.Calendar.{BookingEventModal, EditMarketingEvent}
   alias PicselloWeb.BookingProposalLive.{QuestionnaireComponent, ContractComponent}
   alias PicselloWeb.Calendar.BookingEvents.Shared, as: BEShared
-  alias PicselloWeb.ClientMessageComponent
 
   @impl true
   def mount(_params, _session, socket) do
@@ -22,11 +30,16 @@ defmodule PicselloWeb.Live.Calendar.BookingEvents.Show do
   end
 
   @impl true
-  def handle_params(%{"id" => event_id}, _session, socket) do
+  def handle_params(
+        %{"id" => event_id},
+        _session,
+        %{assigns: %{current_user: %{organization_id: organization_id}}} = socket
+      ) do
     socket
     |> assign(:id, to_integer(event_id))
     |> assign(:edit_name, false)
-    |> assign_booking_event()
+    |> assign(:booking_event, BookingEvents.get_booking_event!(organization_id, event_id))
+    |> BEShared.assign_events()
     |> assign_changeset(%{})
     |> assign(:booking_slot_tab_active, "list")
     |> assign(:booking_slot_tabs, booking_slot_tabs())
@@ -70,7 +83,7 @@ defmodule PicselloWeb.Live.Calendar.BookingEvents.Show do
           }
         } = socket
       ) do
-    booking_date = get_booking_date(booking_event, to_integer(date_id))
+    booking_date = BEShared.get_booking_date(booking_event, to_integer(date_id))
 
     edit_booking_date =
       booking_date
@@ -101,7 +114,7 @@ defmodule PicselloWeb.Live.Calendar.BookingEvents.Show do
 
     duplicate_date =
       booking_event
-      |> get_booking_date(to_integer(date_id))
+      |> BEShared.get_booking_date(to_integer(date_id))
       |> Map.from_struct()
 
     to_duplicate_date =
@@ -130,27 +143,6 @@ defmodule PicselloWeb.Live.Calendar.BookingEvents.Show do
       icon: "warning-orange",
       title: "Are you sure?",
       subtitle: "Are you sure you want to delete this date from the event?"
-    })
-    |> noreply()
-  end
-
-  @impl true
-  def handle_event(
-        "send-email",
-        %{"id" => date_id},
-        %{assigns: %{current_user: current_user, booking_event: booking_event}} = socket
-      ) do
-    clients = get_booking_event_clients(booking_event, to_integer(date_id))
-
-    socket
-    |> ClientMessageComponent.open(%{
-      current_user: current_user,
-      modal_title: "Send booking event email",
-      show_client_email: true,
-      show_subject: true,
-      presets: [],
-      send_button: "Send",
-      recipients: %{"to" => clients |> hd(), "bcc" => tl(clients)}
     })
     |> noreply()
   end
@@ -210,6 +202,17 @@ defmodule PicselloWeb.Live.Calendar.BookingEvents.Show do
   end
 
   @impl true
+  def handle_event(
+        "link-copied",
+        _,
+        socket
+      ) do
+    socket
+    |> put_flash(:success, "Booking link copied!")
+    |> noreply()
+  end
+
+  @impl true
   def handle_event("add-contract", %{}, socket) do
     socket
     |> PicselloWeb.ContractFormComponent.open(
@@ -245,6 +248,8 @@ defmodule PicselloWeb.Live.Calendar.BookingEvents.Show do
         %{"section_id" => section_id},
         %{assigns: %{collapsed_sections: collapsed_sections}} = socket
       ) do
+    section_id = to_integer(section_id)
+
     collapsed_sections =
       if Enum.member?(collapsed_sections, section_id) do
         Enum.filter(collapsed_sections, &(&1 != section_id))
@@ -290,19 +295,25 @@ defmodule PicselloWeb.Live.Calendar.BookingEvents.Show do
   end
 
   @impl true
-  def handle_info({:update, %{booking_event_date: _booking_date}}, socket) do
+  def handle_info(
+        {:update, %{booking_event_date: _booking_date}},
+        socket
+      ) do
     socket
     |> put_flash(:success, "Booking event date saved successfully")
-    |> assign_booking_event()
+    |> BEShared.assign_events()
     |> noreply()
   end
 
   @impl true
-  def handle_info({:confirm_event, "delete-date-" <> id}, socket) do
+  def handle_info(
+        {:confirm_event, "delete-date-" <> id},
+        socket
+      ) do
     case BookingEventDates.delete_booking_event_date(to_integer(id)) do
       {:ok, _} ->
         socket
-        |> assign_booking_event()
+        |> BEShared.assign_events()
         |> put_flash(:success, "Event date deleted successfully")
 
       {:error, _} ->
@@ -315,31 +326,11 @@ defmodule PicselloWeb.Live.Calendar.BookingEvents.Show do
 
   @impl true
   def handle_info(
-        {:update, %{package: package}},
-        %{assigns: %{booking_event: booking_event}} = socket
+        {:update, %{package: _package}},
+        socket
       ) do
-    package_template =
-      package
-      |> Repo.preload([:package_payment_schedules, :contract, :questionnaire_template],
-        force: true
-      )
-
-    booking_event = %{
-      booking_event
-      | package_template: package_template,
-        package_template_id: package_template.id,
-        # please remove them when real implementaiton is complete
-        slots: [
-          %{id: 1, title: "Open", status: "open", time: "4:45am - 5:00am"},
-          %{id: 2, title: "Booked", status: "booked", time: "4:45am - 5:20am"},
-          %{id: 3, title: "Booked (hidden)", status: "booked_hidden", time: "4:45am - 5:15am"}
-        ]
-    }
-
     socket
-    |> assign(booking_event: booking_event)
-    |> assign(package: package_template)
-    |> assign(:payments_description, payments_description(booking_event))
+    |> BEShared.assign_events()
     |> put_flash(:success, "Package details saved sucessfully.")
     |> noreply()
   end
@@ -465,10 +456,10 @@ defmodule PicselloWeb.Live.Calendar.BookingEvents.Show do
           <%= for booking_event_date <- @booking_event_dates do %>
             <div class={classes("mt-10 p-3 border-2 rounded-lg border-base-200", %{"border-red-sales-300" => is_nil(booking_event_date.date)})}>
               <div class="flex mb-1">
-                <p class="text-2xl font-bold"> <%= BEShared.date_formatter(booking_event_date.date) %> </p>
-                <button class="flex text-blue-planning-300 ml-auto items-center justify-center whitespace-nowrap" phx-click="toggle-section" phx-value-section_id="first">
+                <p class="text-2xl font-bold"> <%= date_formatter(booking_event_date.date) %> </p>
+                <button class="flex text-blue-planning-300 ml-auto items-center justify-center whitespace-nowrap" phx-click="toggle-section" phx-value-section_id={booking_event_date.id}>
                   View details
-                  <.icon name={if Enum.member?(@collapsed_sections, "first"), do: "up", else: "down"} class="mt-1.5 md:mt-1 w-4 h-4 ml-2 stroke-current stroke-3 text-blue-planning-300"/>
+                  <.icon name={if Enum.member?(@collapsed_sections, booking_event_date.id), do: "up", else: "down"} class="mt-1.5 md:mt-1 w-4 h-4 ml-2 stroke-current stroke-3 text-blue-planning-300"/>
                 </button>
               </div>
               <div class="flex">
@@ -477,18 +468,20 @@ defmodule PicselloWeb.Live.Calendar.BookingEvents.Show do
                 <p class="text-blue-planning-300"><b><%= BEShared.count_hidden_slots(booking_event_date.slots) %></b> hidden</p>
               </div>
               <hr class="block md:hidden my-2">
-              <%= if Enum.member?(@collapsed_sections, "first") do %>
+              <%= if Enum.member?(@collapsed_sections, booking_event_date.id) do %>
                 <div class="hidden md:grid grid-cols-7 border-b-4 border-blue-planning-300 font-bold text-lg my-4">
                 <%= for title <- ["Time", "Status", "Client"] do %>
                   <div class="col-span-2"><%= title %></div>
                 <% end %>
                 </div>
-                <.render_slots booking_event_date={booking_event_date} {assigns} />
+                <%= Enum.with_index(booking_event_date.slots, fn slot, slot_index -> %>
+                  <.slots_description current_user={@current_user} client={slot.client} booking_event_date={booking_event_date} booking_event={@booking_event} booking_slot_tab_active={@booking_slot_tab_active} slot_index={slot_index} slot={slot} button_actions={slot_actions(slot.status)} />
+                <% end) %>
                 <div class="flex justify-end gap-2">
                   <.icon_button icon="envelope" phx-click="send-email" phx-value-id={booking_event_date.id} color="blue-planning-300"/>
                   <.icon_button icon="pencil" phx-click="edit-date" phx-value-id={booking_event_date.id} color="blue-planning-300"/>
                   <.icon_button icon="duplicate-2" phx-click="duplicate-date" phx-value-id={booking_event_date.id} color="blue-planning-300"/>
-                  <.icon_button icon="trash" disabled={Enum.any?(get_booking_event_clients(@booking_event, booking_event_date.id))} phx-click="confirm-delete-date" phx-value-id={booking_event_date.id} color="red-sales-300"/>
+                  <.icon_button icon="trash" disabled={Enum.any?(BEShared.get_booking_event_clients(@booking_event, booking_event_date.id))} phx-click="confirm-delete-date" phx-value-id={booking_event_date.id} color="red-sales-300"/>
                 </div>
               <% end %>
             </div>
@@ -518,26 +511,10 @@ defmodule PicselloWeb.Live.Calendar.BookingEvents.Show do
               <p class="text-blue-planning-300 mr-4"><b>12</b> available</p>
               <p class="text-blue-planning-300"><b>1</b> hidden</p>
             </div>
-            <.render_slots {assigns} />
           </div>
         </div>
       <% end %>
     </div>
-    """
-  end
-
-  defp render_slots(assigns) do
-    ~H"""
-    <%= for slot <- @booking_event_date.slots do %>
-      <%= case slot.status do %>
-        <% "open" -> %>
-          <.slots_description client={slot.client} booking_event={@booking_event} booking_slot_tab_active={@booking_slot_tab_active} slot={slot} button_actions={hidden_slot_actions()} />
-        <% "hide" -> %>
-          <.slots_description client={slot.client} booking_event={@booking_event} booking_slot_tab_active={@booking_slot_tab_active} slot={slot} button_actions={open_slot_actions()} />
-        <% _ -> %>
-          <.slots_description client={slot.client} booking_event={@booking_event} booking_slot_tab_active={@booking_slot_tab_active} slot={slot} button_actions={booked_slot_actions()} />
-      <% end %>
-    <% end %>
     """
   end
 
@@ -548,10 +525,10 @@ defmodule PicselloWeb.Live.Calendar.BookingEvents.Show do
         <div class="grid grid-cols-3 md:grid-cols-7 items-start md:items-center my-2">
           <div class="col-span-6 grid grid-cols-2 md:grid-cols-6">
             <div class={classes("col-span-2", %{"text-base-250" => @slot.status == :hidden})}>
-              <%= if @slot.status == :booked do %>
+              <%= if @slot.status in [:booked, :reserved] do %>
                 <div class="flex gap-2 items-center">
                   <.icon name="clock-2" class="block md:hidden w-3 h-3 stroke-current text-blue-planning-300 mt-1" />
-                  <button class="text-blue-planning-300 underline"><%= slot_time_formatter(@slot) %></button>
+                  <button phx-click="open-job" phx-value-slot_job_id={@slot.job_id} class="text-blue-planning-300 underline"><%= slot_time_formatter(@slot) %></button>
                 </div>
               <% else %>
                 <div class="flex gap-2 items-center">
@@ -571,21 +548,21 @@ defmodule PicselloWeb.Live.Calendar.BookingEvents.Show do
               </div>
             </div>
             <div class="col-span-2">
-              <%= if @client && @slot.status == :booked do %>
-                <div class="flex gap-2 items-center">
-                  <.icon name="client-icon" class="block md:hidden w-3 h-3 text-blue-planning-300 mt-1.5" />
-                  <div class="text-blue-planning-300 underline"><%= String.capitalize(@client.name) %></div>
-                </div>
-              <% else %>
-                <div class="flex gap-2 items-center">
-                  <.icon name="client-icon" class="block md:hidden w-3 h-3 text-blue-planning-300" />
-                  <div class="">-</div>
-                </div>
-              <% end %>
+                <%= if @slot.client_id && @slot.status in [:booked, :reserved] do %>
+                  <div class="flex gap-2 items-center">
+                    <.icon name="client-icon" class="block md:hidden w-3 h-3 text-blue-planning-300 mt-1.5" />
+                    <button phx-click="open-client" phx-value-slot_client_id={@slot.client_id} class="text-blue-planning-300 underline"><%= BEShared.slot_client_name(@current_user, @slot.client_id) %></button>
+                  </div>
+                <% else %>
+                  <div class="flex gap-2 items-center">
+                    <.icon name="client-icon" class="block md:hidden w-3 h-3 text-blue-planning-300" />
+                    <div class="">-</div>
+                  </div>
+                <% end %>
             </div>
           </div>
           <div class="justify-start">
-            <.actions id={@booking_event.id} booking_event={@booking_event} button_actions={@button_actions} />
+          <.actions id={@booking_event_date.id} booking_event={@booking_event} button_actions={@button_actions} slot_index={@slot_index} slot_client_id={@slot.client_id} slot_job_id={@slot.job_id}/>
           </div>
           <hr class="my-2 md:my-3 col-span-7">
         </div>
@@ -593,14 +570,14 @@ defmodule PicselloWeb.Live.Calendar.BookingEvents.Show do
         <div class="border-2 border-base-200 rounded-lg flex p-3 my-1.5">
           <div class="flex flex-col">
             <p class="mb-1 font-bold text-black text-lg">
-              <%= if @slot.status == :booked do %>
+              <%= if @slot.status in [:booked, :reserved] do %>
                 <button class="text-blue-planning-300 underline"><%= slot_time_formatter(@slot) %></button>
               <% else %>
               <%= slot_time_formatter(@slot) %>
               <% end %>
             </p>
             <p class="text-blue-planning-300 underline">
-              <%= if @client && @slot.status == :booked do %>
+              <%= if @slot.client_id && @slot.status in [:booked, :reserved] do %>
                 <button class="text-blue-planning-300 underline"><%= "Booked with " <> String.capitalize(@client.name) %></button>
               <% else %>
                 <p class={classes(%{"text-base-250" => @slot.status == :hidden})}><%= @slot.status %></p>
@@ -608,7 +585,7 @@ defmodule PicselloWeb.Live.Calendar.BookingEvents.Show do
             </p>
           </div>
           <div class="flex ml-auto">
-            <.actions id={@booking_event.id} booking_event={@booking_event} button_actions={@button_actions} />
+          <.actions id={@booking_event_date.id} button_actions={@button_actions} slot_index={@slot_index} slot_client_id={@slot.client_id} slot_job_id={@slot.job_id}/>
           </div>
         </div>
       <% end %>
@@ -616,25 +593,43 @@ defmodule PicselloWeb.Live.Calendar.BookingEvents.Show do
   end
 
   defp actions(assigns) do
-    assigns = assigns |> Enum.into(%{archive_option: true, main_button_class: ""})
+    assigns =
+      assigns
+      |> Enum.into(%{
+        archive_option: true,
+        main_button_class: "text-black",
+        slot_index: -1,
+        slot_client_id: -1,
+        slot_job_id: -1
+      })
+
+    assigns =
+      if assigns.slot_job_id,
+        do: assigns |> Map.put(:proposal, BookingProposal.last_for_job(assigns.slot_job_id)),
+        else: assigns
 
     ~H"""
-    <div class="flex items-center md:ml-auto w-full md:w-auto left-3 sm:left-8" data-placement="bottom-end" phx-hook="Select" id={"manage-client-#{@id}"}>
-      <button {testid("actions-#{@id}")} title="Manage" class={"btn-tertiary px-2 py-1 flex items-center gap-3 text-blue-planning-300 xl:w-auto w-full #{@main_button_class}"}>
-        Actions
-        <.icon name="down" class="w-4 h-4 ml-auto mr-1 stroke-current stroke-3 text-blue-planning-300 open-icon" />
-        <.icon name="up" class="hidden w-4 h-4 ml-auto mr-1 stroke-current stroke-3 text-blue-planning-300 close-icon" />
-      </button>
+      <div class="flex items-center md:ml-auto w-full md:w-auto left-3 sm:left-8" data-placement="bottom-end" phx-hook="Select" id={"manage-client-#{@id}"}>
+        <button title="Manage" class={"btn-tertiary px-2 py-1 flex items-center gap-3 xl:w-auto w-full #{@main_button_class}"}>
+          Actions
+          <.icon name="down" class="w-4 h-4 ml-auto mr-1 stroke-current stroke-3 text-blue-planning-300 open-icon" />
+          <.icon name="up" class="hidden w-4 h-4 ml-auto mr-1 stroke-current stroke-3 text-blue-planning-300 close-icon" />
+        </button>
 
-      <div class="z-10 flex flex-col hidden w-auto bg-white border rounded-lg shadow-lg popover-content">
-        <%= for %{title: title, action: action, icon: icon} <- @button_actions do %>
-          <button title={title} type="button" phx-click={action} phx-value-id={@id} class="flex items-center px-3 py-2 rounded-lg hover:bg-blue-planning-100 hover:font-bold">
-            <.icon name={icon} class={classes("inline-block w-4 h-4 mr-3 fill-current", %{"text-red-sales-300" => icon == "trash", "text-blue-planning-300" => icon != "trash"})} />
-            <%= title %>
-          </button>
-        <% end %>
+        <div class="z-10 flex flex-col hidden w-auto bg-white border rounded-lg shadow-lg popover-content">
+          <%= for %{title: title, action: action, icon: icon} <- @button_actions do %>
+            <%= if icon == "anchor" && BookingProposal.url(@proposal.id) do %>
+              <.icon_button icon={icon} color="blue-planning-300" class="flex text-base-300 items-center px-3 py-2 hover:font-bold rounded-lg" id="copy-calendar-link" phx-click={action} data-clipboard-text={BookingProposal.url(@proposal.id)} phx-hook="Clipboard">
+                <span>title</span>
+              </.icon_button>
+            <% else %>
+              <.icon_button icon={icon} color="blue-planning-300" phx-click={action} phx-value-booking_event_date_id={@id} phx-value-slot_client_id={@slot_client_id} phx-value-slot_job_id={@slot_job_id} phx-value-slot_index={@slot_index} class="flex text-base-300 items-center px-3 py-2 rounded-lg hover:font-bold">
+                <span><%= title %></span>
+              </.icon_button>
+            <% end %>
+          <% end %>
+        </div>
       </div>
-    </div>
     """
   end
 
@@ -773,62 +768,11 @@ defmodule PicselloWeb.Live.Calendar.BookingEvents.Show do
     })
   end
 
-  def assign_booking_event(
-        %{assigns: %{current_user: %{organization: organization}, id: id}} = socket
-      ) do
-    booking_event =
-      organization.id
-      |> BookingEvents.get_booking_event!(id)
-      |> BookingEvents.preload_booking_event()
-      |> BEShared.put_url_booking_event(organization, socket)
-
-    socket
-    |> assign(:booking_event, booking_event)
-    |> assign(:payments_description, payments_description(booking_event))
-    |> assign(:package, booking_event.package_template)
-  end
-
   defp assign_tab_data(%{assigns: %{current_user: _current_user}} = socket, tab) do
     case tab do
       "list" -> socket
       "overview" -> socket
       _ -> socket
-    end
-  end
-
-  # TODO: refine logic
-  defp payments_description(%{package_template: nil}), do: nil
-
-  defp payments_description(%{
-         package_template: %{package_payment_schedules: package_payment_schedules} = package
-       }) do
-    currency_symbol = Money.Currency.symbol!(package.currency)
-    total_price = Package.price(package)
-    {first_payment, remaining_payments} = package_payment_schedules |> List.pop_at(0)
-
-    payment_count = Enum.count(remaining_payments)
-
-    count_text =
-      if payment_count > 0,
-        do: ngettext(", 1 other payment", ", %{count} other payments", payment_count),
-        else: nil
-
-    if first_payment do
-      interval_text =
-        if first_payment.interval do
-          "#{first_payment.due_interval}"
-        else
-          "#{first_payment.count_interval} #{first_payment.time_interval} #{first_payment.shoot_interval}"
-        end
-
-      if first_payment.percentage do
-        amount = (total_price.amount / 10_000 * first_payment.percentage) |> Kernel.trunc()
-        "#{currency_symbol}#{amount}.00 #{interval_text}"
-      else
-        "#{first_payment.price} #{interval_text}"
-      end <> "#{count_text}"
-    else
-      nil
     end
   end
 
@@ -853,7 +797,7 @@ defmodule PicselloWeb.Live.Calendar.BookingEvents.Show do
 
   def header_actions(%{status: status}) do
     common_actions = [
-      %{title: "Create marketing email", action: "open-compose", icon: "envelope"},
+      %{title: "Create marketing email", action: "send-email", icon: "envelope"},
       %{title: "Duplicate", action: "duplicate-event", icon: "duplicate-2"}
     ]
 
@@ -878,27 +822,26 @@ defmodule PicselloWeb.Live.Calendar.BookingEvents.Show do
     end
   end
 
-  defp booked_slot_actions do
-    [
+  defp slot_actions(status) when status in [:open, :hidden] do
+    actions =
+      if status == :hidden,
+        do: [%{title: "Mark open", action: "confirm-mark-open", icon: "eye"}],
+        else: [%{title: "Mark hidden", action: "confirm-mark-hide", icon: "closed-eye"}]
+
+    actions ++ [%{title: "Reserve", action: "confirm-reserve", icon: "client-icon"}]
+  end
+
+  defp slot_actions(status) when status in [:booked, :reserved] do
+    actions = [
       %{title: "Go to job", action: "open-job", icon: "gallery-camera"},
       %{title: "View client", action: "open-client", icon: "client-icon"},
-      %{title: "Reschedule", action: "reschedule", icon: "calendar"},
-      %{title: "Cancel", action: "cancel", icon: "cross"}
+      %{title: "Reschedule", action: "reschedule", icon: "calendar"}
     ]
-  end
 
-  defp open_slot_actions do
-    [
-      %{title: "Reserve", action: "reserve", icon: "client-icon"},
-      %{title: "Mark hidden", action: "mark-hidden", icon: "closed-eye"}
-    ]
-  end
-
-  defp hidden_slot_actions do
-    [
-      %{title: "Reserve", action: "reserve", icon: "client-icon"},
-      %{title: "Mark open", action: "mark-open", icon: "eye"}
-    ]
+    if(status == :reserved,
+      do: actions ++ [%{title: "Copy booking link", action: "link-copied", icon: "anchor"}],
+      else: actions
+    ) ++ [%{title: "Cancel", action: "cancel", icon: "cross"}]
   end
 
   defp package_actions do
@@ -917,19 +860,4 @@ defmodule PicselloWeb.Live.Calendar.BookingEvents.Show do
       description
     end
   end
-
-  defp get_booking_date(booking_event, date_id),
-    do:
-      booking_event.dates
-      |> Enum.filter(fn date -> date.id == date_id end)
-      |> hd()
-
-  defp get_booking_event_clients(booking_event, date_id),
-    do:
-      booking_event.dates
-      |> Enum.filter(fn date -> date.id == date_id end)
-      |> hd()
-      |> Map.get(:slots)
-      |> Enum.filter(fn slot -> Map.get(slot, :client) end)
-      |> Enum.reduce([], fn slot, acc -> [slot.client.email | acc] end)
 end

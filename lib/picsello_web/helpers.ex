@@ -5,7 +5,7 @@ defmodule PicselloWeb.Helpers do
   alias Picsello.Cart.Order
   alias Picsello.Galleries
 
-  def booking_events_url(), do: Routes.calendar_booking_events_url(Endpoint, :index)
+  def booking_events_url(), do: Routes.calendar_booking_events_index_url(Endpoint, :index)
 
   def jobs_url(), do: Routes.job_url(Endpoint, :jobs)
 

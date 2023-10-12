@@ -230,8 +230,10 @@ defmodule PicselloWeb.Router do
     live "/photographer/:organization_slug/event/:id", ClientBookingEventLive.Show, :show,
       as: :client_booking_event
 
-    live "/photographer/:organization_slug/event/:id/book", ClientBookingEventLive.Book, :book,
-      as: :client_booking_event
+    live "/photographer/:organization_slug/event/:id/booked",
+         ClientBookingEventLive.Book,
+         :booked,
+         as: :client_booking_event
 
     live "/gallery-expired/:hash", GalleryLive.ClientShow.GalleryExpire, :show
 

@@ -50,6 +50,12 @@ defmodule Picsello.BookingEventDate do
       field(:is_hide, :boolean, default: false, virtual: true)
     end
 
+    @type t :: %__MODULE__{
+            job_id: integer(),
+            client_id: integer(),
+            status: atom()
+          }
+
     def changeset(slot_block \\ %__MODULE__{}, attrs) do
       slot_block
       |> cast(attrs, [:slot_start, :slot_end, :client_id, :job_id, :status, :is_hide])
@@ -186,6 +192,14 @@ defmodule Picsello.BookingEventDate do
         changeset
       end
     end)
+  def update_slot_changeset(booking_event_date, slot_index, slot_update_args) do
+    slot =
+      booking_event_date.slots
+      |> Enum.at(slot_index)
+      |> Map.merge(slot_update_args)
+
+    booking_event_date
+    |> change(slots: List.replace_at(booking_event_date.slots, slot_index, slot))
   end
 
   # This is to validate whether a booking-event-date already exists within a booking-event
