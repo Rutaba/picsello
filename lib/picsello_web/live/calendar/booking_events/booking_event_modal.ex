@@ -24,7 +24,8 @@ defmodule PicselloWeb.Live.Calendar.BookingEventModal do
       socket ->
         socket |> assign_changeset(%{})
     end
-    |> then(fn %{assigns: %{booking_date: %{date: date, booking_event_id: booking_event_id}}} = socket ->
+    |> then(fn %{assigns: %{booking_date: %{date: date, booking_event_id: booking_event_id}}} =
+                 socket ->
       socket
       |> assign(
         :has_booking?,

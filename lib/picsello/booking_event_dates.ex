@@ -6,8 +6,7 @@ defmodule Picsello.BookingEventDates do
     Shoots,
     BookingEventDate,
     BookingEventDate.SlotBlock,
-    BookingEvent,
-    BookingEvents
+    BookingEvent
   }
 
   alias Ecto.Changeset
@@ -491,8 +490,8 @@ defmodule Picsello.BookingEventDates do
 
   # Returns all slots with status for the given booking date start_time & end_time
   defp get_available_slots_each_block(start_time, end_time, _duration, _duration_buffer)
-        when is_nil(start_time) or is_nil(end_time),
-        do: []
+       when is_nil(start_time) or is_nil(end_time),
+       do: []
 
   # Recursively calculates available time slots within a given time block.
   defp get_available_slots_each_block(start_time, end_time, duration, duration_buffer) do
@@ -511,18 +510,18 @@ defmodule Picsello.BookingEventDates do
 
   # Base case of the recursive function that returns an empty list.
   defp get_available_slots_each_block(_slot, available_slots, _, _, _, _)
-        when available_slots == 0,
-        do: []
+       when available_slots == 0,
+       do: []
 
   # Recursively calculates available time slots within a given time block.
   defp get_available_slots_each_block(
-          slot,
-          available_slots,
-          duration,
-          duration_buffer,
-          start_time,
-          end_time
-        ) do
+         slot,
+         available_slots,
+         duration,
+         duration_buffer,
+         start_time,
+         end_time
+       ) do
     Enum.reduce_while(slot, [], fn x, acc ->
       duration = if x != available_slots - 1, do: duration_buffer, else: duration
 
@@ -541,8 +540,8 @@ defmodule Picsello.BookingEventDates do
 
   # Returns slots with status open or book
   defp filter_overlapping_shoots_slots(_, _, %{date: date, session_length: session_length}, _)
-        when is_nil(date) or is_nil(session_length),
-        do: []
+       when is_nil(date) or is_nil(session_length),
+       do: []
 
   # Filters time slots based on overlapping shoots and assigns booking status.
   defp filter_overlapping_shoots_slots(slot_times, booking_event, booking_date, false) do
@@ -577,7 +576,7 @@ defmodule Picsello.BookingEventDates do
 
       slot_booked =
         Enum.reduce_while(shoots, %{is_booked: false, client_id: nil, job_id: nil}, fn shoot,
-                                                                                        acc ->
+                                                                                       acc ->
           is_booked =
             is_slot_booked?(session_gap, slot_start, slot_end, shoot.start_time, shoot.end_time)
 

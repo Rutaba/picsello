@@ -42,10 +42,8 @@ defmodule PicselloWeb.Live.Calendar.BookingEvents.Index do
           <.back_button to={Routes.calendar_index_path(@socket, :index)} class="hidden lg:flex mt-2"/>
           Booking events
         </div>
-        <div class="fixed bottom-0 left-0 right-0 z-10 flex flex-shrink-0 w-full sm:p-0 p-6 mt-auto sm:mt-0 sm:bottom-auto sm:ml-auto sm:static sm:items-start sm:w-auto">
-          <a title="add booking event" class="w-full md:w-auto btn-primary text-center" phx-click="new-event">
         <div class="fixed top-12 left-0 right-0 z-10 flex flex-shrink-0 w-full sm:p-0 p-6 mt-1 sm:mt-0 sm:bottom-auto sm:ml-auto sm:static sm:items-start sm:w-auto">
-          <.live_link to={Routes.calendar_booking_events_path(@socket, :new)} class="w-full md:w-auto btn-primary text-center">
+          <a title="add booking event" class="w-full md:w-auto btn-primary text-center" phx-click="new-event">
             Add booking event
           </a>
         </div>

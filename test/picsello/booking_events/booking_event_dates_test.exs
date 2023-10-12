@@ -15,111 +15,121 @@ defmodule Picsello.BookingEventDatesTest do
 
       booking_event =
         insert(:booking_event,
-        name: "new event",
-        organization_id: user.organization_id)
+          name: "new event",
+          organization_id: user.organization_id
+        )
 
       {:ok, user: user, package_template: template, booking_event: booking_event}
     end
 
     test "create booking_event_date with valid data", %{user: user, booking_event: booking_event} do
       assert {:ok, _booking_event_date} =
-        %{
-          date: "2023-10-10",
-          session_length: 30,
-          session_gap: 30,
-          time_blocks: [
-            %{start_time: ~T[10:00:00], end_time: ~T[11:00:00]}
-          ],
-          slots: [
-            %{slot_start: ~T[09:00:00], slot_end: ~T[09:30:00]},
-            %{slot_start: ~T[09:30:00], slot_end: ~T[10:00:00]}
-          ],
-          booking_event_id: booking_event.id,
-          organization_id: user.organization_id
-        }
-        |> BookingEventDates.create_booking_event_dates()
+               %{
+                 date: "2023-10-10",
+                 session_length: 30,
+                 session_gap: 30,
+                 time_blocks: [
+                   %{start_time: ~T[10:00:00], end_time: ~T[11:00:00]}
+                 ],
+                 slots: [
+                   %{slot_start: ~T[09:00:00], slot_end: ~T[09:30:00]},
+                   %{slot_start: ~T[09:30:00], slot_end: ~T[10:00:00]}
+                 ],
+                 booking_event_id: booking_event.id,
+                 organization_id: user.organization_id
+               }
+               |> BookingEventDates.create_booking_event_dates()
     end
 
-    test "error creating booking_event_date without date", %{user: user, booking_event: booking_event} do
+    test "error creating booking_event_date without date", %{
+      user: user,
+      booking_event: booking_event
+    } do
       assert {:error, _booking_event_date} =
-        %{
-          session_length: 30,
-          session_gap: 30,
-          time_blocks: [
-            %{start_time: ~T[10:00:00], end_time: ~T[11:00:00]}
-          ],
-          slots: [
-            %{slot_start: ~T[09:00:00], slot_end: ~T[09:30:00]},
-            %{slot_start: ~T[09:30:00], slot_end: ~T[10:00:00]}
-          ],
-          booking_event_id: booking_event.id,
-          organization_id: user.organization_id
-        }
-        |> BookingEventDates.create_booking_event_dates()
+               %{
+                 session_length: 30,
+                 session_gap: 30,
+                 time_blocks: [
+                   %{start_time: ~T[10:00:00], end_time: ~T[11:00:00]}
+                 ],
+                 slots: [
+                   %{slot_start: ~T[09:00:00], slot_end: ~T[09:30:00]},
+                   %{slot_start: ~T[09:30:00], slot_end: ~T[10:00:00]}
+                 ],
+                 booking_event_id: booking_event.id,
+                 organization_id: user.organization_id
+               }
+               |> BookingEventDates.create_booking_event_dates()
     end
 
-    test "error creating booking_event_date without session_length", %{user: user, booking_event: booking_event} do
+    test "error creating booking_event_date without session_length", %{
+      user: user,
+      booking_event: booking_event
+    } do
       assert {:error, _booking_event_date} =
-        %{
-          date: "2023-10-10",
-          session_gap: 30,
-          time_blocks: [
-            %{start_time: ~T[10:00:00], end_time: ~T[11:00:00]}
-          ],
-          slots: [
-            %{slot_start: ~T[09:00:00], slot_end: ~T[09:30:00]},
-            %{slot_start: ~T[09:30:00], slot_end: ~T[10:00:00]}
-          ],
-          booking_event_id: booking_event.id,
-          organization_id: user.organization_id
-        }
-        |> BookingEventDates.create_booking_event_dates()
+               %{
+                 date: "2023-10-10",
+                 session_gap: 30,
+                 time_blocks: [
+                   %{start_time: ~T[10:00:00], end_time: ~T[11:00:00]}
+                 ],
+                 slots: [
+                   %{slot_start: ~T[09:00:00], slot_end: ~T[09:30:00]},
+                   %{slot_start: ~T[09:30:00], slot_end: ~T[10:00:00]}
+                 ],
+                 booking_event_id: booking_event.id,
+                 organization_id: user.organization_id
+               }
+               |> BookingEventDates.create_booking_event_dates()
     end
 
     test "error creating booking_event_date without booking_event_id", %{user: user} do
       assert {:error, _booking_event_date} =
-        %{
-          date: "2023-10-10",
-          session_length: 30,
-          session_gap: 30,
-          time_blocks: [
-            %{start_time: ~T[10:00:00], end_time: ~T[11:00:00]}
-          ],
-          slots: [
-            %{slot_start: ~T[09:00:00], slot_end: ~T[09:30:00]},
-            %{slot_start: ~T[09:30:00], slot_end: ~T[10:00:00]}
-          ],
-          organization_id: user.organization_id
-        }
-        |> BookingEventDates.create_booking_event_dates()
+               %{
+                 date: "2023-10-10",
+                 session_length: 30,
+                 session_gap: 30,
+                 time_blocks: [
+                   %{start_time: ~T[10:00:00], end_time: ~T[11:00:00]}
+                 ],
+                 slots: [
+                   %{slot_start: ~T[09:00:00], slot_end: ~T[09:30:00]},
+                   %{slot_start: ~T[09:30:00], slot_end: ~T[10:00:00]}
+                 ],
+                 organization_id: user.organization_id
+               }
+               |> BookingEventDates.create_booking_event_dates()
     end
 
-    test "error creating booking_event_date without time_blocks/slot_blocks", %{user: user, booking_event: booking_event} do
+    test "error creating booking_event_date without time_blocks/slot_blocks", %{
+      user: user,
+      booking_event: booking_event
+    } do
       assert {:error, _booking_event_date} =
-      %{
-        date: "2023-10-10",
-        session_length: 30,
-        session_gap: 30,
-        slots: [
-          %{slot_start: ~T[09:00:00], slot_end: ~T[09:30:00]},
-          %{slot_start: ~T[09:30:00], slot_end: ~T[10:00:00]}
-        ],
-        booking_event_id: booking_event.id,
-        organization_id: user.organization_id
-      }
-      |> BookingEventDates.create_booking_event_dates()
+               %{
+                 date: "2023-10-10",
+                 session_length: 30,
+                 session_gap: 30,
+                 slots: [
+                   %{slot_start: ~T[09:00:00], slot_end: ~T[09:30:00]},
+                   %{slot_start: ~T[09:30:00], slot_end: ~T[10:00:00]}
+                 ],
+                 booking_event_id: booking_event.id,
+                 organization_id: user.organization_id
+               }
+               |> BookingEventDates.create_booking_event_dates()
 
       assert {:error, _booking_event_date} =
-        %{
-          date: "2023-10-10",
-          session_length: 30,
-          session_gap: 30,
-          time_blocks: [
-            %{start_time: ~T[10:00:00], end_time: ~T[11:00:00]}
-          ],
-          organization_id: user.organization_id
-        }
-        |> BookingEventDates.create_booking_event_dates()
+               %{
+                 date: "2023-10-10",
+                 session_length: 30,
+                 session_gap: 30,
+                 time_blocks: [
+                   %{start_time: ~T[10:00:00], end_time: ~T[11:00:00]}
+                 ],
+                 organization_id: user.organization_id
+               }
+               |> BookingEventDates.create_booking_event_dates()
     end
   end
 
@@ -152,8 +162,9 @@ defmodule Picsello.BookingEventDatesTest do
 
       booking_event =
         insert(:booking_event,
-        name: "test event",
-        organization_id: user.organization_id)
+          name: "test event",
+          organization_id: user.organization_id
+        )
 
       booking_event_date =
         insert(:booking_event_date, %{
@@ -163,8 +174,18 @@ defmodule Picsello.BookingEventDatesTest do
             %{start_time: ~T[10:00:00], end_time: ~T[11:00:00]}
           ],
           slots: [
-            %{slot_start: ~T[09:00:00], slot_end: ~T[09:30:00], status: :reserved, client_id: client_one.id},
-            %{slot_start: ~T[09:30:00], slot_end: ~T[10:00:00], status: :booked, client_id: client_two.id},
+            %{
+              slot_start: ~T[09:00:00],
+              slot_end: ~T[09:30:00],
+              status: :reserved,
+              client_id: client_one.id
+            },
+            %{
+              slot_start: ~T[09:30:00],
+              slot_end: ~T[10:00:00],
+              status: :booked,
+              client_id: client_two.id
+            },
             %{slot_start: ~T[10:00:00], slot_end: ~T[10:30:00]},
             %{slot_start: ~T[10:30:00], slot_end: ~T[11:00:00]}
           ],
@@ -175,7 +196,9 @@ defmodule Picsello.BookingEventDatesTest do
       {:ok, user: user, package_template: template, booking_event_date: booking_event_date}
     end
 
-    test "transform slots updates the booked/reserved slots to open", %{booking_event_date: booking_event_date} do
+    test "transform slots updates the booked/reserved slots to open", %{
+      booking_event_date: booking_event_date
+    } do
       slots =
         booking_event_date.slots
         |> BookingEventDates.transform_slots()
@@ -216,7 +239,7 @@ defmodule Picsello.BookingEventDatesTest do
               session_length: 30,
               date: ~D[2050-12-10],
               time_blocks: [
-                %{start_time: ~T[09:00:00], end_time: ~T[10:00:00]},
+                %{start_time: ~T[09:00:00], end_time: ~T[10:00:00]}
               ],
               slots: [
                 %{slot_start: ~T[09:00:00], slot_end: ~T[09:30:00]},
@@ -241,8 +264,18 @@ defmodule Picsello.BookingEventDatesTest do
                 %{start_time: ~T[11:00:00], end_time: ~T[12:00:00]}
               ],
               slots: [
-                %{slot_start: ~T[11:00:00], slot_end: ~T[11:30:00], status: :booked, client_id: client.id},
-                %{slot_start: ~T[11:30:00], slot_end: ~T[12:00:00], status: :reserved, client_id: client.id}
+                %{
+                  slot_start: ~T[11:00:00],
+                  slot_end: ~T[11:30:00],
+                  status: :booked,
+                  client_id: client.id
+                },
+                %{
+                  slot_start: ~T[11:30:00],
+                  slot_end: ~T[12:00:00],
+                  status: :reserved,
+                  client_id: client.id
+                }
               ]
             }
           ]
@@ -253,27 +286,78 @@ defmodule Picsello.BookingEventDatesTest do
 
     test "returns available slots for booking event", %{booking_event: booking_event} do
       assert [
-        [
-          %SlotBlock{slot_start: ~T[09:00:00], slot_end: ~T[09:30:00], client_id: nil, job_id: nil, status: :open, is_hide: false},
-          %SlotBlock{slot_start: ~T[09:30:00], slot_end: ~T[10:00:00], client_id: nil, job_id: nil, status: :open, is_hide: false}
-        ],
-        [
-          %SlotBlock{slot_start: ~T[10:00:00], slot_end: ~T[10:30:00], client_id: nil, job_id: nil, status: :open, is_hide: false},
-          %SlotBlock{slot_start: ~T[10:30:00], slot_end: ~T[11:00:00], client_id: nil, job_id: nil, status: :open, is_hide: false}
-        ],
-        [
-          %SlotBlock{slot_start: ~T[11:00:00], slot_end: ~T[11:30:00], client_id: nil, job_id: nil, status: :open, is_hide: false},
-          %SlotBlock{slot_start: ~T[11:30:00], slot_end: ~T[12:00:00], client_id: nil, job_id: nil, status: :open, is_hide: false}
-        ]
-      ] ==
-        Enum.map(booking_event.dates, fn d ->
-          BookingEventDates.available_slots(d, booking_event)
-        end)
+               [
+                 %SlotBlock{
+                   slot_start: ~T[09:00:00],
+                   slot_end: ~T[09:30:00],
+                   client_id: nil,
+                   job_id: nil,
+                   status: :open,
+                   is_hide: false
+                 },
+                 %SlotBlock{
+                   slot_start: ~T[09:30:00],
+                   slot_end: ~T[10:00:00],
+                   client_id: nil,
+                   job_id: nil,
+                   status: :open,
+                   is_hide: false
+                 }
+               ],
+               [
+                 %SlotBlock{
+                   slot_start: ~T[10:00:00],
+                   slot_end: ~T[10:30:00],
+                   client_id: nil,
+                   job_id: nil,
+                   status: :open,
+                   is_hide: false
+                 },
+                 %SlotBlock{
+                   slot_start: ~T[10:30:00],
+                   slot_end: ~T[11:00:00],
+                   client_id: nil,
+                   job_id: nil,
+                   status: :open,
+                   is_hide: false
+                 }
+               ],
+               [
+                 %SlotBlock{
+                   slot_start: ~T[11:00:00],
+                   slot_end: ~T[11:30:00],
+                   client_id: nil,
+                   job_id: nil,
+                   status: :open,
+                   is_hide: false
+                 },
+                 %SlotBlock{
+                   slot_start: ~T[11:30:00],
+                   slot_end: ~T[12:00:00],
+                   client_id: nil,
+                   job_id: nil,
+                   status: :open,
+                   is_hide: false
+                 }
+               ]
+             ] ==
+               Enum.map(booking_event.dates, fn d ->
+                 BookingEventDates.available_slots(d, booking_event)
+               end)
     end
 
     test "is_booked_any_date?/2", %{booking_event: booking_event} do
-      assert true == BookingEventDates.is_booked_any_date?([~D[2050-12-11], ~D[2050-12-12]], booking_event.id)
-      assert false == BookingEventDates.is_booked_any_date?([~D[2050-12-10], ~D[2050-12-11]], booking_event.id)
+      assert true ==
+               BookingEventDates.is_booked_any_date?(
+                 [~D[2050-12-11], ~D[2050-12-12]],
+                 booking_event.id
+               )
+
+      assert false ==
+               BookingEventDates.is_booked_any_date?(
+                 [~D[2050-12-10], ~D[2050-12-11]],
+                 booking_event.id
+               )
     end
   end
 end

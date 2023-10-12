@@ -236,7 +236,7 @@ defmodule Picsello.BookingEventDate do
       changeset
     else
       overlap_times? =
-        BookingEventDates.booking_date_time_block_overlap?(
+        booking_date_time_block_overlap?(
           organization_id,
           date,
           current_time_block,
@@ -259,7 +259,7 @@ defmodule Picsello.BookingEventDate do
       get_fields(changeset, [:booking_event_id, :organization_id, :time_blocks])
 
     repeat_date_overlap_any_booking_event? =
-      BookingEventDates.repeat_dates_overlap?(
+      repeat_dates_overlap?(
         organization_id,
         blocks,
         repeat_dates,
@@ -304,7 +304,7 @@ defmodule Picsello.BookingEventDate do
   # Checks if there is any overlap between booking date time blocks and provided blocks.
   defp is_date_time_block_overlap?(booking_ids, date, blocks, date_id \\ nil) do
     booking_ids
-    |> get_booking_events_dates_with_same_date(date)
+    |> BookingEventDates.get_booking_events_dates_with_same_date(date)
     |> Enum.reject(&(&1.id == date_id))
     |> Enum.flat_map(& &1.time_blocks)
     |> Enum.concat(blocks)

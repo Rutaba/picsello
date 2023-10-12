@@ -76,36 +76,19 @@ defmodule PicselloWeb.GalleryLive.Shared do
     |> noreply
   end
 
-  def handle_info({:validate, %{"gallery" => %{"name" => name}}}, socket) do
-    socket
-    |> assign_gallery_changeset(%{name: name})
-    |> assign(:edit_name, true)
-    |> noreply
-  def handle_info(:update_cart_count, %{assigns: %{gallery: gallery}} = socket) do
-    socket
-    |> assign(:order, nil)
-    |> assign_cart_count(gallery)
-    |> noreply()
-  end
+  def handle_info({:validate, %{"gallery" => %{"name" => name}}}, socket),
+    do:
+      socket
+      |> assign_gallery_changeset(%{name: name})
+      |> assign(:edit_name, true)
+      |> noreply
 
-  defp schemas(%{type: :standard} = gallery), do: {gallery}
-  defp schemas(%{albums: [album]} = gallery), do: {gallery, album}
-
-  defp preset_state(:standard), do: :gallery_send_link
-  defp preset_state(:proofing), do: :proofs_send_link
-  defp preset_state(:finals), do: :album_send_link
-
-  defp modal_title(:standard), do: "Share gallery"
-  defp modal_title(:proofing), do: "Share Proofing Album"
-  defp modal_title(:finals), do: "Share Finals Album"
-
-  defp composed_event(:standard), do: :message_composed
-  defp composed_event(_type), do: :message_composed_for_album
-
-  defp maybe_insert_gallery_client(gallery, email) do
-    {:ok, gallery_client} = Galleries.insert_gallery_client(gallery, email)
-    gallery_client
-  end
+  def handle_info(:update_cart_count, %{assigns: %{gallery: gallery}} = socket),
+    do:
+      socket
+      |> assign(:order, nil)
+      |> assign_cart_count(gallery)
+      |> noreply()
 
   def handle_info(
         {:save, %{"gallery" => %{"name" => name}}},

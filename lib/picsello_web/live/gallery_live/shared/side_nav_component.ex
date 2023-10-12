@@ -7,6 +7,7 @@ defmodule PicselloWeb.GalleryLive.Shared.SideNavComponent do
   import Picsello.Albums, only: [get_all_albums_photo_count: 1]
 
   alias Phoenix.PubSub
+  alias Picsello.Galleries
 
   @impl true
   def update(
