@@ -34,7 +34,7 @@ defmodule PicselloWeb.HomeLive.Index do
     JobLive.ImportWizard,
     QuestionnaireFormComponent
   }
-
+  alias PicselloWeb.Live.Calendar.BookingEvents
   alias PicselloWeb.Calendar.BookingEvents.Shared, as: BEShared
 
   import PicselloWeb.JobLive.Shared, only: [status_badge: 1, open_email_compose: 1]
@@ -609,6 +609,14 @@ defmodule PicselloWeb.HomeLive.Index do
     |> put_flash(:success, "Gallery deleted successfully")
     |> noreply()
   end
+
+  @impl true
+  def handle_info(
+        {:confirm_event, "create-single-event"} = message,
+        socket
+      ),
+  do:
+    BookingEvents.Index.handle_info(message, socket)
 
   defdelegate handle_info(message, socket), to: PicselloWeb.JobLive.Shared
 

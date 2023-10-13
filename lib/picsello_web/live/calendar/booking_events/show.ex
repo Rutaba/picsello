@@ -854,10 +854,7 @@ defmodule PicselloWeb.Live.Calendar.BookingEvents.Show do
   defp session_info(%{dates: dates}) do
     session_list =
       dates
-      |> Enum.sort_by(& &1.date, Date)
-      |> Enum.map(fn date ->
-        date.session_length
-      end)
+      |> Enum.map(& &1.session_length)
       |> Enum.sort()
 
     "#{List.first(session_list)} - #{List.last(session_list)}"
