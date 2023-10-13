@@ -89,7 +89,6 @@ defmodule Picsello.BookingEvent do
     field :address, :string
     field :thumbnail_url, :string
     field :show_on_profile?, :boolean, default: false
-    field :is_repeating, :boolean, default: false
     field :include_questionnaire?, :boolean, default: true
     field(:status, Ecto.Enum, values: [:active, :disabled, :archive])
     belongs_to :package_template, Picsello.Package
@@ -119,7 +118,7 @@ defmodule Picsello.BookingEvent do
   # create booking event with minimal info
   def create_changeset(booking_event \\ %__MODULE__{}, attrs) do
     booking_event
-    |> cast(attrs, [:name, :organization_id, :is_repeating])
+    |> cast(attrs, [:name, :organization_id])
     |> validate_required([:name, :organization_id])
   end
 
