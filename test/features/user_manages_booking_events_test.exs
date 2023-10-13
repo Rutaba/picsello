@@ -220,6 +220,7 @@ defmodule Picsello.UserManagesBookingEventsTest do
     |> assert_has(testid("event-date", count: 2))
     |> click(css("#form-details_dates_1_date"))
     |> fill_in(css("#form-details_dates_1_date"), with: "10-10-2050")
+    |> scroll_into_view(css("h2", text: "Event date(s)"))
     |> assert_text("Dates can't be the same")
   end
 
@@ -414,7 +415,6 @@ defmodule Picsello.UserManagesBookingEventsTest do
     |> fill_in(css("#form-details_dates_0_date"), with: "10-10-2050")
     |> fill_in(css("#form-details_dates_0_time_blocks_0_start_time"), with: "13:00")
     |> fill_in(css("#form-details_dates_0_time_blocks_0_end_time"), with: "15:00")
-    |> sleep(1000)
     |> wait_for_enabled_submit_button(text: "Next")
     |> click(button("Next"))
     |> assert_text("Add booking event: Select package")
