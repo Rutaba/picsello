@@ -44,7 +44,10 @@ defmodule PicselloWeb.Live.Calendar.BookingEvents.Show do
     |> assign(:booking_event, BookingEvents.get_booking_event!(organization_id, event_id))
     |> BEShared.assign_events()
     |> assign_changeset(%{})
-    |> assign(:booking_slot_tab_active, "list")
+    |> then(fn %{assigns: %{booking_event: booking_event}} = socket ->
+      socket
+      |> assign(:booking_slot_tab_active, (if booking_event.is_repeating, do: "calendar", else: "list"))
+    end)
     |> assign(:booking_slot_tabs, booking_slot_tabs())
     |> noreply()
   end
@@ -71,7 +74,7 @@ defmodule PicselloWeb.Live.Calendar.BookingEvents.Show do
     }
 
     socket
-    |> open_wizard(%{booking_date: booking_date, title: "Add Date"})
+    |> open_wizard(%{booking_date: booking_date, title: "Add Date", is_repeating: booking_event.is_repeating})
     |> noreply()
   end
 
@@ -508,12 +511,21 @@ defmodule PicselloWeb.Live.Calendar.BookingEvents.Show do
                   <.icon name="trash" class="w-4 h-4 text-red-sales-300" />
                 </div>
               </div>
-            </div>
-            <div class="flex mt-2">
-              <p class="text-blue-planning-300 mr-4"><b>0</b> bookings</p>
-              <p class="text-blue-planning-300 mr-4"><b>12</b> available</p>
-              <p class="text-blue-planning-300"><b>1</b> hidden</p>
-            </div>
+              <div class="flex mb-2">
+                <p class="text-blue-planning-300 mr-4"><b><%= BEShared.count_booked_slots(@calendar_date_event.slots) %></b> bookings</p>
+                <p class="text-blue-planning-300 mr-4"><b><%= BEShared.count_available_slots(@calendar_date_event.slots) %></b> available</p>
+                <p class="text-blue-planning-300"><b><%= BEShared.count_hidden_slots(@calendar_date_event.slots) %></b> hidden</p>
+              </div>
+              <div class="xl:overflow-y-scroll flex flex-col gap-1.5">
+              <%= Enum.with_index(@calendar_date_event.slots, fn slot, slot_index -> %>
+                <.slots_description client={slot.client} slot_index={slot_index} booking_event_date={@calendar_date_event} booking_event={@booking_event} booking_slot_tab_active={@booking_slot_tab_active} slot={slot} button_actions={slot_actions(slot.status)} />
+              <% end) %>
+              </div>
+            <% else %>
+              <div class="p-3 border-2 border-base-200 rounded-lg">
+                <div class="font-bold text-base-250 text-xl flex items-center justify-center p-3 opacity-50"> <div> Add booking event dates </div> </div>
+              </div>
+            <% end %>
           </div>
         </div>
       <% end %>
