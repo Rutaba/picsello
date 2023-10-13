@@ -123,12 +123,14 @@ defmodule PicselloWeb.BookingProposalLive.Show do
   def handle_info(
         {:update, %{answer: answer, next_page: next_page}},
         %{assigns: %{proposal: proposal}} = socket
-      ),
-      do:
-        socket
-        |> assign(answer: answer, proposal: %{proposal | answer: answer})
-        |> open_page_modal(next_page)
-        |> noreply()
+      ) do
+    next_page = if is_nil(proposal.signed_at), do: "contract", else: next_page
+
+    socket
+    |> assign(answer: answer, proposal: %{proposal | answer: answer})
+    |> open_page_modal(next_page)
+    |> noreply()
+  end
 
   @impl true
   def handle_info({:update_payment_schedules}, %{assigns: %{job: job}} = socket),
@@ -426,7 +428,7 @@ I look forward to capturing these memories for you!"}
   end
 
   def show_booking_countdown?(job) do
-    job.booking_event && !PaymentSchedules.paid_any?(job) &&
+    job.booking_event && !job.is_reserved? && !PaymentSchedules.paid_any?(job) &&
       !PaymentSchedules.is_with_cash?(job)
   end
 
@@ -435,7 +437,7 @@ I look forward to capturing these memories for you!"}
            socket
        ) do
     if booking_countdown <= 0 && !PaymentSchedules.paid_any?(job) do
-      case Picsello.BookingEvents.expire_booking(job) do
+      case Picsello.BookingEvents.expire_booking_job(job) do
         {:ok, _} ->
           socket
           |> redirect_to_expired_booking_event(organization, job.booking_event)

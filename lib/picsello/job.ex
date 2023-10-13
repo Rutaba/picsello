@@ -22,6 +22,7 @@ defmodule Picsello.Job do
     field(:notes, :string)
     field(:archived_at, :utc_datetime)
     field(:is_gallery_only, :boolean, default: false)
+    field(:is_reserved?, :boolean, default: false)
     field(:completed_at, :utc_datetime)
     field(:job_name, :string)
     belongs_to(:client, Client)
@@ -52,7 +53,7 @@ defmodule Picsello.Job do
 
   def create_changeset(attrs \\ %{}) do
     %__MODULE__{}
-    |> cast(attrs, [:type, :client_id, :notes, :is_gallery_only])
+    |> cast(attrs, [:type, :client_id, :notes, :is_gallery_only, :is_reserved?])
     |> cast_assoc(:client, with: &Client.create_changeset/2)
     |> validate_required([:type])
     |> foreign_key_constraint(:type)

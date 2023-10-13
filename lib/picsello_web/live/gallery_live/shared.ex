@@ -76,12 +76,19 @@ defmodule PicselloWeb.GalleryLive.Shared do
     |> noreply
   end
 
-  def handle_info({:validate, %{"gallery" => %{"name" => name}}}, socket) do
-    socket
-    |> assign_gallery_changeset(%{name: name})
-    |> assign(:edit_name, true)
-    |> noreply
-  end
+  def handle_info({:validate, %{"gallery" => %{"name" => name}}}, socket),
+    do:
+      socket
+      |> assign_gallery_changeset(%{name: name})
+      |> assign(:edit_name, true)
+      |> noreply
+
+  def handle_info(:update_cart_count, %{assigns: %{gallery: gallery}} = socket),
+    do:
+      socket
+      |> assign(:order, nil)
+      |> assign_cart_count(gallery)
+      |> noreply()
 
   def handle_info(
         {:save, %{"gallery" => %{"name" => name}}},
@@ -467,7 +474,7 @@ defmodule PicselloWeb.GalleryLive.Shared do
         |> assign(digitals: digitals)
 
       _ ->
-        socket |> assign(cart_count: 0, order: nil)
+        socket |> assign(cart_count: 0, order: nil, digitals: %{})
     end
   end
 
@@ -761,7 +768,7 @@ defmodule PicselloWeb.GalleryLive.Shared do
     ~H"""
     <div class={@class}>
       <div class="mt-0 mb-4 ml-0 md:ml-5 md:mt-2">
-      <h4 class="text-lg font-bold md:text-2xl"><%= if @is_proofing, do: "Your Selected Favourites", else: "Order details" %></h4>
+      <h4 class="text-lg font-bold md:text-2xl"><%= if @is_proofing, do: "Your Selected Favorites", else: "Order details" %></h4>
         <%= unless @is_proofing do %>
           <p class="pt-3 md:text-lg md:pt-5">Order number: <span class="font-medium"><%= @order.number %></span></p>
         <% end %>

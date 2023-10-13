@@ -18,25 +18,25 @@ defmodule PicselloWeb.Live.Profile.ClientFormComponent do
 
     ~H"""
     <div class="mt-20 border p-9 border-base-200">
-      <h2 class="text-3xl font-light max-w-md">Get in touch<%= @header_suffix %></h2>
 
       <%= if @changeset do %>
+        <h2 class="text-3xl max-w-md">Let's work together!<%= @header_suffix %></h2>
         <.form for={@changeset} :let={f} phx-change="validate-client" phx-submit="save-client" id="contact-form" phx-target={@myself}>
           <div class="flex flex-col mt-3">
-            <%= label_for f, :name, autocapitalize: "words", autocorrect: "false", spellcheck: "false", autocomplete: "name", label: "Your name", class: "py-2 font-light" %>
+            <%= label_for f, :name, autocapitalize: "words", autocorrect: "false", spellcheck: "false", autocomplete: "name", label: "Name", class: "py-2 font-bold" %>
 
             <%= input f, :name, placeholder: "Type your first and last name...", phx_debounce: 300 %>
           </div>
 
           <div class="flex flex-col lg:flex-row">
             <div class="flex flex-col flex-1 mt-3 mr-0 lg:mr-4">
-              <%= label_for f, :email, label: "Your email", class: "py-2 font-light" %>
+              <%= label_for f, :email, label: "Email", class: "py-2 font-bold" %>
 
               <%= input f, :email, type: :email_input, placeholder: "Type email...", phx_debounce: 300 %>
             </div>
 
             <div class="flex flex-col flex-1 mt-3">
-              <%= label_for f, :phone, label: "Your phone number", class: "py-2 font-light" %>
+              <%= label_for f, :phone, label: "Phone Number", class: "py-2 font-bold" %>
 
               <%= input f, :phone, type: :telephone_input, placeholder: "Type phone number...", phx_debounce: 300 %>
             </div>
@@ -70,18 +70,15 @@ defmodule PicselloWeb.Live.Profile.ClientFormComponent do
           <div class="flex flex-col mt-3">
             <%= label_for f, :message, label: "Your message", class: "py-2 font-light" %>
 
-            <%= input f, :message, type: :textarea, placeholder: "Type your message...", rows: 5, phx_debounce: 300 %>
+            <%= input f, :message, type: :textarea, placeholder: "Tell me more about what you are looking for. I love details!", rows: 5, phx_debounce: 300 %>
           </div>
 
           <div class="mt-8 text-right"><button type="submit" disabled={!@changeset.valid?} class="w-full lg:w-auto btn-primary">Submit</button></div>
         </.form>
       <% else %>
-        <div class="flex items-center mt-14 min-w-max">
-          <.icon name="confetti" class="w-20 h-20 stroke-current mr-9" style={"color: #{@color}"} />
-          <div>
-            <h2 class="text-2xl font-light">Message sent</h2>
-            We'll contact you soon!
-          </div>
+        <div class="text-center">
+          <h2 class="text-2xl font-light uppercase tracking-widest">Thank you for contacting me!</h2>
+          <p class="text-lg">I'll be in touch soon.</p>
         </div>
       <% end %>
     </div>

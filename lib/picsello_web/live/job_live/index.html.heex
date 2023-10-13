@@ -1,12 +1,12 @@
 <header>
   <div class="center-container p-6 pt-10">
-    <div class="flex content-center justify-between md:flex-row">
+    <div class="flex content-center justify-between md:flex-row mt-6 sm:mt-0">
       <div class="flex-col">
         <h1 class="text-4xl font-bold center-container">
           Your <%= String.capitalize(@type.plural) %>
         </h1>
       </div>
-      <div class="fixed bottom-0 left-0 right-0 z-4 flex flex-shrink-0 w-full sm:p-0 p-6 mt-auto sm:mt-0 sm:bottom-auto sm:static sm:items-start sm:w-auto">
+      <div class="fixed top-12 left-0 right-0 z-10 flex flex-shrink-0 w-full sm:p-0 p-6 mt-1 sm:mt-0 sm:bottom-auto sm:static sm:items-start sm:w-auto">
         <%= case @type.singular do %>
           <% "lead" -> %>
             <a {testid("create-a-lead")} title="create lead" class="w-full md:w-auto btn-primary text-center" phx-click="create-lead">
@@ -83,7 +83,7 @@
         <div class="sm:col-span-2 flex flex-col sm:flex gap-2 sm:gap-0 hidden md:block">
           <%= if job.package do %>
             <p class="capitalize font-bold"><%= job.package.name || "-" %><span class="font-normal capitalize"><%= "-#{job.type}" %></span></p>
-            <p class="text-gray-400"><%= job.package.base_price || "-" %></p>
+            <p class="text-gray-400"><%=  Package.price(job.package) |> Money.to_string(fractional_unit: false) %></p>
           <% else %>
             <p class="font-bold text-red-sales-300">No package selected</p>
             <p>-</p>
@@ -96,6 +96,6 @@
     <% end %>
   </div>
 
-  <.pagination_component pagination_changeset={@pagination_changeset} limit_options={[6, 12, 18, 24]} />
+  <.pagination_component pagination_changeset={@pagination_changeset} limit_options={[12, 24, 36, 48]} />
 
 <% end %>

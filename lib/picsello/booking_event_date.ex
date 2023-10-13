@@ -50,6 +50,12 @@ defmodule Picsello.BookingEventDate do
       field(:is_hide, :boolean, default: false, virtual: true)
     end
 
+    @type t :: %__MODULE__{
+            job_id: integer(),
+            client_id: integer(),
+            status: atom()
+          }
+
     def changeset(slot_block \\ %__MODULE__{}, attrs) do
       slot_block
       |> cast(attrs, [:slot_start, :slot_end, :client_id, :job_id, :status, :is_hide])
@@ -128,7 +134,8 @@ defmodule Picsello.BookingEventDate do
       :stop_repeating,
       :occurences,
       :is_repeat,
-      :repetition
+      :repetition,
+      :organization_id
     ])
     |> cast_embed(:time_blocks, required: true)
     |> cast_embed(:slots, required: true)
@@ -149,6 +156,52 @@ defmodule Picsello.BookingEventDate do
         changeset
       end
     end)
+  end
+
+  def duplicate_changeset(booking_event \\ %__MODULE__{}, attrs) do
+    booking_event
+    |> cast(attrs, [
+      :location,
+      :address,
+      :booking_event_id,
+      :session_length,
+      :session_gap,
+      :count_calendar,
+      :calendar,
+      :stop_repeating,
+      :occurences,
+      :is_repeat,
+      :repetition
+    ])
+    |> cast_embed(:time_blocks)
+    |> cast_embed(:slots)
+    |> cast_embed(:repeat_on)
+    |> validate_required([:booking_event_id, :session_length])
+    |> validate_length(:time_blocks, min: 1)
+    |> validate_length(:slots, min: 1)
+    |> validate_time_blocks()
+    |> set_default_repeat_on()
+    |> validate_booking_event_date()
+    |> then(fn changeset ->
+      if get_field(changeset, :is_repeat) do
+        changeset
+        |> validate_required([:count_calendar, :calendar])
+        |> validate_stop_repeating()
+        |> validate_repeat_date_overlapping()
+      else
+        changeset
+      end
+    end)
+  end
+
+  def update_slot_changeset(booking_event_date, slot_index, slot_update_args) do
+    slot =
+      booking_event_date.slots
+      |> Enum.at(slot_index)
+      |> Map.merge(slot_update_args)
+
+    booking_event_date
+    |> change(slots: List.replace_at(booking_event_date.slots, slot_index, slot))
   end
 
   # This is to validate whether a booking-event-date already exists within a booking-event
@@ -199,7 +252,7 @@ defmodule Picsello.BookingEventDate do
       changeset
     else
       overlap_times? =
-        BookingEventDates.booking_date_time_block_overlap?(
+        booking_date_time_block_overlap?(
           organization_id,
           date,
           current_time_block,
@@ -222,7 +275,7 @@ defmodule Picsello.BookingEventDate do
       get_fields(changeset, [:booking_event_id, :organization_id, :time_blocks])
 
     repeat_date_overlap_any_booking_event? =
-      BookingEventDates.repeat_dates_overlap?(
+      repeat_dates_overlap?(
         organization_id,
         blocks,
         repeat_dates,
@@ -238,6 +291,41 @@ defmodule Picsello.BookingEventDate do
     else
       changeset
     end
+  end
+
+  # Checks if there is any overlap between booking date time blocks and provided blocks.
+  defp booking_date_time_block_overlap?(_organization_id, nil, _blocks, _event_date_id), do: false
+
+  defp booking_date_time_block_overlap?(organization_id, date, blocks, event_date_id) do
+    organization_id
+    |> BookingEvents.get_all_booking_events()
+    |> Enum.map(& &1.id)
+    |> is_date_time_block_overlap?(date, blocks, event_date_id)
+  end
+
+  defp repeat_dates_overlap?(_organization_id, _blocks, [], _current_booking_event), do: false
+
+  defp repeat_dates_overlap?(organization_id, blocks, repeat_dates, current_booking_event_id) do
+    booking_ids =
+      BookingEvents.get_all_booking_events(organization_id)
+      |> Enum.map(& &1.id)
+      |> Enum.reject(&(&1 == current_booking_event_id))
+
+    repeat_dates
+    |> Enum.any?(fn date ->
+      is_date_time_block_overlap?(booking_ids, date, blocks)
+    end)
+  end
+
+  # Checks if there is any overlap between booking date time blocks and provided blocks.
+  defp is_date_time_block_overlap?(booking_ids, date, blocks, date_id \\ nil) do
+    booking_ids
+    |> BookingEventDates.get_booking_events_dates_with_same_date(date)
+    |> Enum.reject(&(&1.id == date_id))
+    |> Enum.flat_map(& &1.time_blocks)
+    |> Enum.concat(blocks)
+    |> Enum.sort_by(&{&1.start_time, &1.end_time})
+    |> BookingEvents.overlap_time?()
   end
 
   # Sets default values for the `repeat_on` field if it is empty.

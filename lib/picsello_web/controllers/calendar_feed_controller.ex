@@ -3,9 +3,12 @@ defmodule PicselloWeb.CalendarFeedController do
 
   alias Picsello.{Shoots, Job, NylasCalendar, Utils, BookingEvents}
   require Logger
+
   @spec index(Plug.Conn.t(), map) :: Plug.Conn.t()
   def index(%{assigns: %{current_user: %{nylas_detail: nylas_detail} = user}} = conn, params) do
     %{"end" => end_date, "start" => start_date} = params
+    params = update_params(params)
+
     feeds = user |> Shoots.get_shoots(params) |> map(conn, user)
 
     events =
@@ -31,6 +34,22 @@ defmodule PicselloWeb.CalendarFeedController do
     conn
     |> put_resp_content_type("application/json")
     |> send_resp(200, Jason.encode!(booking_event))
+  end
+
+  # updating params
+  # start_date by decrement of 2 days
+  # end_date by increament of 2 days
+  # so that it don't miss any shoot because of timezone
+  defp update_params(%{"end" => end_date, "start" => start_date} = params) do
+    change = fn date_time, increment ->
+      (date_time <> "Z")
+      |> DateTime.from_iso8601()
+      |> elem(1)
+      |> DateTime.add(increment, :day)
+      |> DateTime.to_iso8601()
+    end
+
+    Map.merge(params, %{"start" => change.(start_date, -2), "end" => change.(end_date, 2)})
   end
 
   defp map(feeds, conn, user) do

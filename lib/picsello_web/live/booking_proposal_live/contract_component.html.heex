@@ -66,8 +66,8 @@
 
     <hr class="my-6" />
 
-    <fieldset class={classes(%{"opacity-50" => @read_only})} disabled={@read_only}>
-      <%= labeled_input f, :signed_legal_name, label: "Type your full legal name", phx_debounce: "500", wrapper_class: "text-base-250 font-light" %>
+    <fieldset disabled={@read_only}>
+      <%= labeled_input f, :signed_legal_name, label: "Type your full legal name", phx_debounce: "500", wrapper_class: "text-base-250" %>
     </fieldset>
 
     <p class="mt-4 text-xs text-base-250 max-w-xs">

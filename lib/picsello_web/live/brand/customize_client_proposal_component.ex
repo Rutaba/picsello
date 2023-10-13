@@ -28,18 +28,18 @@ defmodule PicselloWeb.Live.Brand.CustomizeClientProposalComponent do
           <%= for e <- inputs_for(f, :client_proposal) do %>
             <div class="grid mt-4 grid-cols-1 sm:grid-cols-2 gap-5 sm:gap-12 mb-6">
               <div>
-                <%= labeled_input e, :title, spellcheck: "true", default: "Welcome", label: "Title"%>
-                <p class="text-base-250">Write a short and sweet title to welcome your client</p>
+                <%= labeled_input e, :title, spellcheck: "true", default: "Welcome", label: "Greeting"%>
+                <p class="text-base-250">Write a short greeting that will appear before your client’s name</p>
               </div>
               <div>
-                <%= labeled_input e, :booking_panel_title, spellcheck: "true", default: "Here's how you get your show booked:", label: "Booking Panel Title"%>
+                <%= labeled_input e, :booking_panel_title, spellcheck: "true", default: "Here's how you get your show booked:", label: "Booking Panel Steps"%>
                 <p class="text-base-250">Write a statement to prompt your client to book</p>
               </div>
             </div>
             <div>
               <div class="input-label">Message</div>
               <.quill_input f={e} html_field={:message}, placeholder="Start typing…" />
-              <p class="text-base-250 sm:mr-32">Write an intro about you, your work and business</p>
+              <p class="text-base-250 sm:mr-32">Using the content above as a guide, customize the language to set client expectations in your brand tone</p>
               <div class="mt-6">
                 <%= labeled_input e, :contact_button, spellcheck: "true", default: "Message ABC", label: "Contact Button"%>
                 <p class="text-base-250 sm:mr-32">Customize what you'd like your contact button to say</p>

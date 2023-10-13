@@ -17,7 +17,7 @@ defmodule PicselloWeb.Live.Contracts.Index do
   alias Ecto.Changeset
   alias Picsello.{Contract, Contracts, Utils, Repo}
 
-  @default_pagination_limit 4
+  @default_pagination_limit 12
 
   @impl true
   def mount(_params, _session, socket) do

@@ -151,12 +151,15 @@ defmodule PicselloWeb.ClientBookingEventLive.Book do
       |> assign_changeset(params, :validate)
       |> assign_available_times()
 
-    with booking <- current(changeset),
-         {:available, true} <- {:available, time_available?(booking, booking_date.slots)},
+    booking = current(changeset)
+    slot_index = Enum.find_index(booking_date.slots, &(&1.slot_start == booking.time))
+
+    with {:available, true} <- {:available, time_available?(booking, booking_date.slots)},
          {:ok, %{proposal: proposal, shoot: shoot}} <-
-           BookingEvents.save_booking(booking_event, booking_date, booking),
-         {:ok, _slots_update} <-
-           BookingEventDates.update_booking_event_date_slots(booking_event, booking_date) do
+           BookingEvents.save_booking(booking_event, booking_date, booking, %{
+             slot_index: slot_index,
+             slot_status: :booked
+           }) do
       Picsello.Shoots.broadcast_shoot_change(shoot)
 
       socket

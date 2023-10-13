@@ -235,8 +235,15 @@ defmodule Picsello.Package do
   def print_credits(%__MODULE__{print_credits: %{amount: amount}, currency: currency}),
     do: Money.new(amount, currency)
 
-  def adjusted_base_price(%__MODULE__{base_multiplier: multiplier} = package),
-    do: package |> base_price() |> Money.multiply(multiplier)
+  # apply base multiplier to base price
+  def adjusted_base_price(
+        %__MODULE__{base_multiplier: multiplier, discount_base_price: true} = package
+      ),
+      do: package |> base_price() |> Money.multiply(multiplier)
+
+  # by default base price is not discounted
+  def adjusted_base_price(%__MODULE__{base_multiplier: _, discount_base_price: false} = package),
+    do: package |> base_price()
 
   def base_adjustment(%__MODULE__{} = package),
     do: package |> adjusted_base_price() |> Money.subtract(base_price(package))

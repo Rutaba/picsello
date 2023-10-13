@@ -232,7 +232,7 @@ defmodule Picsello.Notifiers.ClientNotifier do
     |> may_be_proofing_album_selection()
     |> sendgrid_template(opts)
     |> to({client_name, to_email})
-    |> from({organization.name, "noreply@picsello.com"})
+    |> from({organization.name, noreply_address()})
     |> deliver_later()
   end
 
@@ -277,7 +277,7 @@ defmodule Picsello.Notifiers.ClientNotifier do
 
     sendgrid_template(:download_being_prepared_client, params)
     |> to({client_name, to_email})
-    |> from({organization.name, "noreply@picsello.com"})
+    |> from({organization.name, noreply_address()})
     |> deliver_later()
   end
 
@@ -320,7 +320,7 @@ defmodule Picsello.Notifiers.ClientNotifier do
 
     sendgrid_template(:client_order_canceled_template, params)
     |> to(email)
-    |> from("noreply@picsello.com")
+    |> from(noreply_address())
     |> subject("Order canceled")
     |> deliver_later()
   end
@@ -366,7 +366,7 @@ defmodule Picsello.Notifiers.ClientNotifier do
 
     sendgrid_template(:client_download_ready_template, params)
     |> to(email)
-    |> from("noreply@picsello.com")
+    |> from(noreply_address())
     |> subject("Download Ready")
     |> deliver_later()
   end
@@ -428,7 +428,7 @@ defmodule Picsello.Notifiers.ClientNotifier do
     :client_transactional_template
     |> sendgrid_template(params)
     |> put_header("reply-to", "#{from_display} <#{reply_to}>")
-    |> from({from_display, "noreply@picsello.com"})
+    |> from({from_display, noreply_address()})
     |> to(map_recipients(Map.get(recipients, "to")))
     |> cc(map_recipients(Map.get(recipients, "cc")))
     |> bcc(map_recipients(Map.get(recipients, "bcc")))
@@ -440,7 +440,7 @@ defmodule Picsello.Notifiers.ClientNotifier do
     |> to(map_recipients(Map.get(recipients, "to")))
     |> cc(map_recipients(Map.get(recipients, "cc")))
     |> bcc(map_recipients(Map.get(recipients, "bcc")))
-    |> from("noreply@picsello.com")
+    |> from(noreply_address())
     |> deliver_later()
   end
 

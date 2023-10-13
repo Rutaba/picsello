@@ -332,6 +332,8 @@ defmodule PicselloWeb.LeadLive.Show do
 
   defdelegate next_reminder_on(proposal), to: Picsello.ProposalReminder
 
+  defp upsert_booking_proposal(socket, sent_to_client \\ false)
+
   defp upsert_booking_proposal(
          %{
            assigns: %{
@@ -341,7 +343,7 @@ defmodule PicselloWeb.LeadLive.Show do
              include_questionnaire: include_questionnaire
            }
          },
-         sent_to_client \\ false
+         sent_to_client
        ) do
     questionnaire_id =
       if include_questionnaire, do: job |> Questionnaire.for_job() |> Repo.one() |> Map.get(:id)
@@ -364,6 +366,8 @@ defmodule PicselloWeb.LeadLive.Show do
       Contracts.maybe_add_default_contract_to_package_multi(package)
     end)
   end
+
+  defp upsert_booking_proposal(_assigns, true), do: Ecto.Multi.new()
 
   defp assign_stripe_status(%{assigns: %{current_user: current_user}} = socket) do
     socket |> assign(stripe_status: Payments.status(current_user))

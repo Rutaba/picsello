@@ -210,6 +210,8 @@ defmodule PicselloWeb.Live.FinanceSettings do
       change_event: :change_currency,
       submit_event: :submit_currency,
       title: "Edit Currency",
+      search_label: "Currency",
+      placeholder: "Search currencies...",
       subtitle:
         "Enter the three letter currency code below to search, select and save your native currency.",
       component_used_for: :currency,
