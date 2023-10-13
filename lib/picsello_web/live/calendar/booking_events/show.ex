@@ -647,7 +647,7 @@ defmodule PicselloWeb.Live.Calendar.BookingEvents.Show do
         else: assigns
 
     ~H"""
-      <div class="flex items-center md:ml-auto w-full md:w-auto left-3 sm:left-8" data-placement="bottom-end" phx-hook="Select" id={"manage-client-#{@id}"}>
+      <div class="flex items-center md:ml-auto w-full md:w-auto left-3 sm:left-8" data-placement="bottom-end" phx-hook="Select" id={"manage-slot-#{@slot_index}"}>
         <button title="Manage" class={"btn-tertiary px-2 py-1 flex items-center gap-3 xl:w-auto w-full #{@main_button_class}"}>
           Actions
           <.icon name="down" class="w-4 h-4 ml-auto mr-1 stroke-current stroke-3 text-blue-planning-300 open-icon" />
