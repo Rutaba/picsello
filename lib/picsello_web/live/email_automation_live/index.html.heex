@@ -14,13 +14,17 @@
         <.back_button to={Routes.home_path(@socket, :index)} class="hidden lg:flex mt-2"/>
       </div>
       <div>
-        <h1 class="text-4xl font-bold">Your Email Automations</h1>
-      <div class="max-w-4xl mt-2 text-base-250">
-        <p>Email automation sequences scheduled to send globally for all your Leads, Jobs and Galleries. “Set and forget” these sequences globally here to increase your productivity and make sure communications to your client are sent when you want and need them to be.</p>
-      </div>
+        <div class="flex items-center flex-wrap">
+          <h1 class="text-4xl font-bold">Your Email Automations</h1>
+          <div class="bg-blue-planning-300 pt-0.5 pb-1 px-2 text-blue-planning-100 mt-1 sm:mt-0 sm:ml-2 uppercase font-bold text-xs rounded-md tracking-wider">Beta</div>
+        </div>
+        <div class="max-w-4xl mt-2 text-base-250">
+          <p>Email automation sequences scheduled to send globally for all your Leads, Jobs and Galleries. “Set and forget” these sequences globally here to increase your productivity and make sure communications to your client are sent when you want and need them to be.</p>
+        </div>
     </div>
   </div>
 </div>
+
 <hr class="mt-4 sm:mt-10" />
 
 <div class={classes("lg:mt-10", %{"hidden" => is_nil(@is_mobile)})}>
