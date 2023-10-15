@@ -2,7 +2,9 @@ defmodule PicselloWeb.JobLive.Shared do
   @moduledoc """
   handlers used by both leads and jobs
   """
+
   require Ecto.Query
+  require Logger
 
   use Phoenix.Component
   use Phoenix.HTML
@@ -13,6 +15,7 @@ defmodule PicselloWeb.JobLive.Shared do
   import Phoenix.HTML.Form
   import PicselloWeb.Gettext, only: [ngettext: 3]
   import PicselloWeb.GalleryLive.Shared, only: [truncate_name: 2]
+  import PicselloWeb.EmailAutomationLive.Shared, only: [sort_emails: 2]
 
   alias Picsello.{
     Galleries,
@@ -28,7 +31,10 @@ defmodule PicselloWeb.JobLive.Shared do
     Package,
     PaymentSchedules,
     Galleries.Workers.PhotoStorage,
-    Utils
+    Utils,
+    EmailAutomations,
+    EmailAutomationSchedules,
+    EmailAutomation.EmailSchedule
   }
 
   alias PicselloWeb.{ConfirmationComponent, ClientMessageComponent}
@@ -106,10 +112,23 @@ defmodule PicselloWeb.JobLive.Shared do
 
   def handle_event(
         "open-compose",
+        %{"client_id" => client_id, "is_thanks" => _thanks},
+        socket
+      ),
+      do:
+        socket
+        |> assign(:is_thanks, true)
+        |> open_email_compose(client_id)
+
+  def handle_event(
+        "open-compose",
         %{"client_id" => client_id},
         socket
       ),
-      do: open_email_compose(socket, client_id)
+      do:
+        socket
+        |> assign(:is_thanks, false)
+        |> open_email_compose(client_id)
 
   def handle_event(
         "open-compose",
@@ -464,8 +483,17 @@ defmodule PicselloWeb.JobLive.Shared do
     |> noreply()
   end
 
-  def handle_info({:confirm_event, "send_another"}, socket),
-    do: open_email_compose(socket)
+  def handle_event(
+        "email-automation",
+        _,
+        %{assigns: %{job: job, live_action: live_action}} = socket
+      ) do
+    socket
+    |> push_redirect(to: Routes.email_automations_show_path(socket, :show, live_action, job.id))
+    |> noreply()
+  end
+
+  def handle_info({:confirm_event, "send_another"}, socket), do: open_email_compose(socket)
 
   def handle_info({:action_event, "open_email_compose"}, socket),
     do: open_email_compose(socket, socket.assigns.client.id)
@@ -855,7 +883,7 @@ defmodule PicselloWeb.JobLive.Shared do
     assigns = assigns |> Enum.into(%{badge: 0})
 
     ~H"""
-    <section {if @id == "gallery" && @anchor == "anchor-to-gallery", do: %{id: "gallery-anchor", phx_hook: "ScrollIntoView"}, else: %{}} class="sm:border sm:border-base-200 sm:rounded-lg mt-8 overflow-hidden">
+    <section testid={"#{@id} section"} {if @id == "gallery" && @anchor == "anchor-to-gallery", do: %{id: "gallery-anchor", phx_hook: "ScrollIntoView"}, else: %{}} class="sm:border sm:border-base-200 sm:rounded-lg mt-8 overflow-hidden">
       <div class="flex bg-base-200 px-4 py-3 items-center cursor-pointer" phx-click="toggle-section" phx-value-section_id={@id}>
         <div class="w-8 h-8 rounded-full bg-white flex items-center justify-center">
           <.icon name={@icon} class="w-5 h-5" />
@@ -926,39 +954,104 @@ defmodule PicselloWeb.JobLive.Shared do
   def communications_card(assigns) do
     ~H"""
     <.card color="orange-inbox-300" title="Communications" class="md:col-span-2">
-      <div {testid("inbox")} class="flex flex-col lg:flex-row">
-        <div class="flex-1 text-base-250">
-          Inbox
-          <div class="flex border border-base-200 rounded-lg p-8 mt-4 justify-center">
+      <div {testid("inbox")} class="flex flex-col lg:flex-row gap-4">
+
+        <div class="flex-1 flex flex-col border border-base-200 rounded-lg p-3">
+
+          <div class="flex flex-row items-center mb-4">
+            <span class="flex w-8 h-8 justify-center items-center">
+            <.icon name="envelope" class="text-orange-inbox-300 mr-2 w-6 h-6" />
+            </span>
+            <span class="text-black font-black">Inbox</span>
+          </div>
+
+          <div class="flex">
             <span class={classes("w-7 h-7 flex items-center justify-center text-lg font-bold text-white rounded-full mr-2 pb-1", %{"bg-orange-inbox-300" => @inbox_count > 0,"bg-base-250" => @inbox_count <= 0})}>
               <%= @inbox_count %>
             </span>
-            <span class={if @inbox_count > 0, do: "text-orange-inbox-300", else: "text-base-250"}>
+            <%!-- <span class={if @inbox_count > 0, do: "text-orange-inbox-300", else: "text-base-250"}>
+              <%= ngettext "new message", "new messages", @inbox_count %>
+            </span> --%>
+            <span class="text-base-250">
               <%= ngettext "new message", "new messages", @inbox_count %>
             </span>
           </div>
-          <div class="flex flex-col-reverse sm:flex-row justify-end mt-4">
-            <button type="button" class="link mx-8 my-4" phx-click="open-inbox">
-              Go to inbox
+
+          <div class="flex flex-row lg:flex-col xl:flex-row gap-2 justify-end mt-auto items-center">
+            <button type="button" class="link mx-5 whitespace-nowrap" phx-click="open-inbox">
+              View inbox
             </button>
-            <button type="button" class="btn-primary intro-message" phx-click="open-compose" phx-value-client_id={@job.client_id}>
+            <button class="h-8 flex content-center items-center px-2 py-1 btn-tertiary text-blue-planning-300  hover:border-blue-planning-300 mr-2 whitespace-nowrap" phx-click="open-compose" phx-value-client_id={@job.client_id}>
+              <span class="flex w-8 h-8 justify-center items-center">
+              <.icon name="envelope" class="text-blue-planning-300 mr-2 w-6 h-6" />
+              </span>
               Send message
             </button>
           </div>
         </div>
-        <div class="my-8 border-t lg:my-0 lg:mx-8 lg:border-t-0 lg:border-l border-base-200"></div>
-        <div class="flex flex-col flex-[0.5]">
-          <span class="mb-1 font-bold"><%= @job.client.name %></span>
-          <%= if @job.client.phone do %>
-            <a href={"tel:#{@job.client.phone}"} class="flex items-center text-xs">
-              <.icon name="phone" class="text-blue-planning-300 mr-2 w-4 h-4" />
-              <span class="text-base-250"><%= @job.client.phone %></span>
+
+        <div class="flex-1 flex flex-col border border-base-200 rounded-lg p-3">
+
+          <div class="flex flex-row items-center mb-4">
+            <span class="flex w-8 h-8 justify-center items-center">
+            <.icon name="automation-card" class="text-orange-inbox-300 mr-2 w-6 h-6" />
+            </span>
+            <div class="flex items-center flex-wrap">
+              <span class="text-black font-black text-base-250">Automations</span>
+              <div class="bg-blue-planning-300 pt-0.5 pb-1 px-2 text-blue-planning-100 mt-1 sm:mt-0 sm:ml-2 uppercase font-bold text-xs rounded-md tracking-wider">Beta</div>
+            </div>
+          </div>
+          <% emails_count = EmailAutomationSchedules.get_active_email_schedule_count(@job.id) %>
+          <div class="flex">
+            <span class={classes("w-7 h-7 flex items-center justify-center text-lg font-bold text-white rounded-full mr-2 pb-1", %{"bg-orange-inbox-300" => emails_count > 0,"bg-base-250" => emails_count <= 0})}>
+              <%= emails_count %>
+            </span>
+            <span class="text-base-250">
+              <%= ngettext "automations", "automations", emails_count %>
+            </span>
+          </div>
+
+          <button class="h-8 mt-auto ml-auto flex content-center items-center px-2 py-1 btn-tertiary text-blue-planning-300  hover:border-blue-planning-300 mr-2 whitespace-nowrap" phx-click="email-automation">
+            <span class="flex w-8 h-8 justify-center items-center">
+            <.icon name="eye" class="text-blue-planning-300 mr-2 w-6 h-6" />
+            </span>
+            View all
+          </button>
+        </div>
+
+        <div class="flex-1 flex flex-col border border-base-200 rounded-lg p-3">
+
+          <div class="flex flex-row items-center mb-1">
+            <span class="flex w-8 h-8 justify-center items-center">
+            <.icon name="client-icon" class="text-orange-inbox-300 mr-2 w-6 h-6" />
+            </span>
+            <span class="text-black font-black text-base-250">Client</span>
+          </div>
+
+          <div class="flex flex-col">
+            <span class="font-bold text-base-250"><%= @job.client.name %></span>
+            <%= if @job.client.phone do %>
+              <a href={"tel:#{@job.client.phone}"} class="flex items-center">
+                <span class="text-base-250"><%= @job.client.phone %></span>
+              </a>
+            <% end %>
+            <a phx-click="open-compose" phx-value-client_id={@job.client_id} class="flex items-center hover:cursor-pointer">
+              <span class="text-base-250 mb-2"><%= @job.client.email %></span>
             </a>
-          <% end %>
-          <a phx-click="open-compose" phx-value-client_id={@job.client_id} class="flex items-center text-xs mt-2 hover:cursor-pointer">
-            <.icon name="envelope" class="text-blue-planning-300 mr-2 w-4 h-4" />
-            <span class="text-base-250"><%= @job.client.email %></span>
-          </a>
+            <%= if !@job.client.phone do %>
+              <a href="" class="flex items-center">
+                <span class="text-white">ABC</span>
+              </a>
+            <% end %>
+          </div>
+
+          <button class="ml-auto mt-auto h-8 flex content-center items-center px-2 py-1 btn-tertiary text-blue-planning-300  hover:border-blue-planning-300 mr-2 whitespace-nowrap" phx-click="open-compose" phx-value-client_id={@job.client_id}>
+            <span class="flex w-8 h-8 justify-center items-center">
+            <.icon name="eye" class="text-blue-planning-300 mr-2 w-6 h-6" />
+            </span>
+            View client
+          </button>
+
         </div>
       </div>
     </.card>
@@ -1500,6 +1593,15 @@ defmodule PicselloWeb.JobLive.Shared do
     socket |> do_assign_job(job)
   end
 
+  def assign_job(%{assigns: %{current_user: current_user}} = socket, job_id) do
+    job =
+      current_user
+      |> Job.for_user()
+      |> Repo.get!(job_id)
+
+    socket |> do_assign_job(job)
+  end
+
   def validate_payment_schedule(%{assigns: %{payment_schedules: payment_schedules}} = socket) do
     due_at_list = payment_schedules |> Enum.sort_by(& &1.id, :asc) |> Enum.map(& &1.due_at)
 
@@ -1790,6 +1892,62 @@ defmodule PicselloWeb.JobLive.Shared do
     |> assign_inbox_count()
   end
 
+  def open_email_compose(
+        %{assigns: %{current_user: current_user, job: job, is_thanks: true}} = socket,
+        client_id
+      ) do
+    client = Repo.get(Client, client_id)
+    pipeline = EmailAutomations.get_pipeline_by_state(:manual_thank_you_lead)
+    email_by_state = get_job_email_by_pipeline(job.id, pipeline)
+
+    last_completed_email =
+      EmailAutomationSchedules.get_last_completed_email(
+        :lead,
+        nil,
+        job.id,
+        pipeline.id,
+        :manual_thank_you_lead,
+        PicselloWeb.EmailAutomationLive.Shared
+      )
+
+    manual_toggle =
+      if is_manual_toggle?(email_by_state) and is_nil(last_completed_email), do: true, else: false
+
+    %{body_template: body_html, subject_template: subject} =
+      get_email_body_subject(email_by_state, job, :manual_thank_you_lead)
+
+    %{body_template: body_html, subject_template: subject} =
+      if manual_toggle,
+        do: %{body_template: body_html, subject_template: subject},
+        else: %{body_template: "", subject_template: ""}
+
+    socket
+    |> ClientMessageComponent.open(%{
+      body_html: body_html,
+      subject: subject,
+      current_user: current_user,
+      enable_size: true,
+      enable_image: true,
+      client: client,
+      manual_toggle: manual_toggle,
+      email_schedule: email_by_state
+    })
+    |> noreply()
+  end
+
+  def open_email_compose(%{assigns: %{current_user: current_user}} = socket, client_id) do
+    client = Repo.get(Client, client_id)
+
+    socket
+    |> ClientMessageComponent.open(%{
+      current_user: current_user,
+      enable_size: true,
+      enable_image: true,
+      client: client
+    })
+    |> noreply()
+  end
+
   def open_email_compose(%{assigns: %{current_user: current_user, job: job}} = socket),
     do:
       socket
@@ -1803,22 +1961,6 @@ defmodule PicselloWeb.JobLive.Shared do
         client: Job.client(job)
       })
       |> noreply()
-
-  def open_email_compose(
-        %{assigns: %{current_user: current_user}} = socket,
-        client_id
-      ) do
-    client = Repo.get(Client, client_id)
-
-    socket
-    |> ClientMessageComponent.open(%{
-      current_user: current_user,
-      enable_size: true,
-      enable_image: true,
-      client: client
-    })
-    |> noreply()
-  end
 
   defp assign_payment_schedules(socket) do
     socket
@@ -1852,4 +1994,41 @@ defmodule PicselloWeb.JobLive.Shared do
 
   defp retryable?(err) when err in ~w(too_large not_accepted)a, do: false
   defp retryable?(_err), do: true
+
+  def get_job_email_by_pipeline(_job_id, nil), do: nil
+
+  def get_job_email_by_pipeline(job_id, pipeline) do
+    EmailAutomationSchedules.query_get_email_schedule(:lead, nil, job_id, pipeline.id)
+    |> Repo.all()
+    |> Repo.preload(email_automation_pipeline: [:email_automation_category])
+    |> sort_emails(pipeline.state)
+    |> List.first()
+  end
+
+  def get_email_body_subject(nil, job, state) do
+    case Picsello.EmailPresets.for(job, state) do
+      [preset | _] ->
+        Picsello.EmailPresets.resolve_variables(
+          preset,
+          {job},
+          PicselloWeb.Helpers
+        )
+
+      _ ->
+        Logger.warning("No booking proposal email preset for #{job.type}")
+        %{body_template: "", subject_template: ""}
+    end
+  end
+
+  def get_email_body_subject(email_by_state, job, _state) do
+    EmailAutomations.resolve_variables(
+      email_by_state,
+      {job},
+      PicselloWeb.Helpers
+    )
+  end
+
+  def is_manual_toggle?(nil), do: false
+  def is_manual_toggle?(%EmailSchedule{reminded_at: nil}), do: true
+  def is_manual_toggle?(_email), do: false
 end

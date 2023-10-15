@@ -289,7 +289,7 @@ defmodule Picsello.ClientAcceptsBookingProposalTest do
 
       photographer_session
       |> scroll_to_top()
-      |> click(button("Go to inbox"))
+      |> click(button("View inbox"))
       |> scroll_to_top()
       |> assert_text("actual message")
     end

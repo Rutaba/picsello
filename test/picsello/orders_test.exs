@@ -169,6 +169,10 @@ defmodule Picsello.OrdersTest do
         )
         |> Repo.update!()
 
+      Picsello.PhotoStorageMock
+      |> Mox.stub(:get, fn _ -> {:error, nil} end)
+      |> Mox.stub(:path_to_url, & &1)
+
       assert %{
                whcc_order: %{
                  entry_id: entry_id,

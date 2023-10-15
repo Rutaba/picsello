@@ -2,8 +2,10 @@ defmodule PicselloWeb.JobLive.NewComponent do
   @moduledoc false
   use PicselloWeb, :live_component
 
-  alias Ecto.Changeset
-  alias Picsello.{Job, Jobs, Clients, Profiles, Repo}
+  alias Picsello.{Job, Jobs, Clients, Profiles, Repo, EmailAutomationSchedules}
+  alias Picsello.EmailAutomation.EmailSchedule
+
+  import PicselloWeb.PackageLive.Shared, only: [current: 1]
   import PicselloWeb.JobLive.Shared, only: [job_form_fields: 1, search_clients: 1]
 
   @impl true
@@ -87,7 +89,7 @@ defmodule PicselloWeb.JobLive.NewComponent do
           }
         } = socket
       ) do
-    job = changeset |> Changeset.apply_changes()
+    job = current(changeset)
 
     client =
       cond do
@@ -107,6 +109,18 @@ defmodule PicselloWeb.JobLive.NewComponent do
            :lead,
            &Job.create_job_changeset(%{type: job.type, notes: job.notes, client_id: &1.client.id})
          )
+         |> Ecto.Multi.insert_all(:email_automation, EmailSchedule, fn %{lead: %Job{id: job_id}} ->
+           EmailAutomationSchedules.job_emails(
+             job.type,
+             current_user.organization_id,
+             job_id,
+             [:lead, :job],
+             [
+               :client_contact,
+               :abandoned_emails
+             ]
+           )
+         end)
          |> Repo.transaction() do
       {:ok, %{lead: %Job{id: job_id}}} ->
         socket |> push_redirect(to: Routes.job_path(socket, :leads, job_id)) |> noreply()
