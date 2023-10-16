@@ -373,6 +373,8 @@ defmodule PicselloWeb.EmailAutomationLive.Shared do
     end
   end
 
+  defp hours_to_days(hours), do: hours / 24
+
   defp make_positive_number(no), do: if(no > 0, do: no, else: -1 * no)
 
   def is_state_manually_trigger(state) do
@@ -443,8 +445,19 @@ defmodule PicselloWeb.EmailAutomationLive.Shared do
         gallery,
         _order
       ) do
-    %{calendar: calendar, count: count} = explode_hours(email.total_hours)
-    time_calendar = get_timex_calendar(calendar)
+    # Examples
+    # gallery.expired_at is ~D[2023-10-20]
+    # today is ~D[2023-10-09]
+    # diffrence days is 12 days
+    # send 7 days before expiration 12 <= 7
+
+    # gallery.expired_at is ~D[2023-10-20]
+    # today is ~D[2023-10-13]
+    # diffrence days is 7 days
+    # send 7 days before expiration 7 <= 7
+
+    days_to_compare = hours_to_days(email.total_hours)
+    %{sign: sign} = explode_hours(email.total_hours)
     today = NaiveDateTime.utc_now() |> Timex.end_of_day()
 
     cond do
@@ -452,7 +465,7 @@ defmodule PicselloWeb.EmailAutomationLive.Shared do
         nil
 
       not is_nil(gallery.expired_at) and
-          Timex.compare(gallery.expired_at, today, time_calendar) >= count ->
+          is_send_time?(Date.diff(gallery.expired_at, today), abs(days_to_compare), sign) ->
         gallery.expired_at
 
       true ->
@@ -481,15 +494,31 @@ defmodule PicselloWeb.EmailAutomationLive.Shared do
         gallery,
         _order
       ) do
+    # Examples
+    # gallery.gallery_send_at is ~D[2023-10-20]
+    # today is ~D[2023-10-09]
+    # difference is -12 days
+    # send 7 days after gallery send -12 >= 7
+
+    # gallery.gallery_send_at is ~D[2023-10-20]
+    # today is ~D[2023-10-23]
+    # difference is 3 days
+    # send 7 days after gallery send 3 >= 7
+
+    # gallery.gallery_send_at is ~D[2023-10-20]
+    # today is ~D[2023-10-27]
+    # difference is 7 days
+    # send 7 days after gallery send 7 >= 7
+
+    days_to_compare = hours_to_days(email.total_hours)
     today = NaiveDateTime.utc_now() |> Timex.end_of_day()
-    %{calendar: calendar, count: count} = explode_hours(email.total_hours)
-    time_calendar = get_timex_calendar(calendar)
+    %{sign: sign} = explode_hours(email.total_hours)
 
     cond do
       is_nil(gallery.gallery_send_at) ->
         nil
 
-      Timex.compare(today, gallery.gallery_send_at, time_calendar) >= count ->
+      is_send_time?(Date.diff(today, gallery.gallery_send_at), abs(days_to_compare), sign) ->
         gallery.gallery_send_at
 
       true ->
@@ -581,13 +610,24 @@ defmodule PicselloWeb.EmailAutomationLive.Shared do
   end
 
   def fetch_date_for_state(:before_shoot, email, _last_completed_email, job, _gallery, _order) do
+    # Examples
+    # shoot.start_at is ~D[2023-10-20]
+    # today is ~D[2023-10-09]
+    # difference is 12 days
+    # send 7 days before shoot start 12 <= 7 false
+
+    # shoot.start_at is ~D[2023-10-20]
+    # today is ~D[2023-10-13]
+    # difference is 7 days
+    # send 7 days before shoot start 7<= 7 true
+
     today = NaiveDateTime.utc_now() |> Timex.end_of_day()
-    %{calendar: calendar, count: count} = explode_hours(email.total_hours)
-    time_calendar = get_timex_calendar(calendar)
+    %{sign: sign} = explode_hours(email.total_hours)
+    days_to_compare = hours_to_days(email.total_hours)
 
     job.shoots
     |> Enum.filter(fn item ->
-      Timex.compare(item.starts_at, today, time_calendar) == count
+      is_send_time?(Date.diff(item.starts_at, today), abs(days_to_compare), sign)
     end)
     |> (fn filtered_list ->
           if Enum.empty?(filtered_list),
@@ -676,13 +716,27 @@ defmodule PicselloWeb.EmailAutomationLive.Shared do
   end
 
   def fetch_date_for_state(:shoot_thanks, email, _last_completed_email, job, _gallery, _order) do
+    # shoot.start_at is ~D[2023-10-20]
+    # today is ~D[2023-10-09]
+    # difference is -12 days
+    # send 7 days after shoot -12 >= 7 false
+
+    # shoot.start_at is ~D[2023-10-20]
+    # today is ~D[2023-10-23]
+    # difference is 3 days
+    # send 7 days after shoot 3 >= 7 false
+
+    # shoot.start_at is ~D[2023-10-20]
+    # today is ~D[2023-10-27]
+    # difference is 7 days
+    # send 7 days after shoot 7 >= 7 true
     today = NaiveDateTime.utc_now() |> Timex.end_of_day()
-    %{calendar: calendar, count: count} = explode_hours(email.total_hours)
-    time_calendar = get_timex_calendar(calendar)
+    %{sign: sign} = explode_hours(email.total_hours)
+    days_to_compare = hours_to_days(email.total_hours)
 
     job.shoots
     |> Enum.filter(fn item ->
-      Timex.compare(today, item.starts_at, time_calendar) >= count
+      is_send_time?(Date.diff(today, item.starts_at), abs(days_to_compare), sign)
     end)
     |> (fn filtered_list ->
           if Enum.empty?(filtered_list),
@@ -692,13 +746,28 @@ defmodule PicselloWeb.EmailAutomationLive.Shared do
   end
 
   def fetch_date_for_state(:post_shoot, email, _last_completed_email, job, _gallery, _order) do
+    # shoot.start_at is ~D[2023-10-20]
+    # today is ~D[2023-10-09]
+    # difference is -12 days
+    # send 7 days after shoot -12 >= 7 false
+
+    # shoot.start_at is ~D[2023-10-20]
+    # today is ~D[2023-10-23]
+    # difference is 3 days
+    # send 7 days after shoot 3 >= 7 false
+
+    # shoot.start_at is ~D[2023-10-20]
+    # today is ~D[2023-10-27]
+    # difference is 7 days
+    # send 7 days after shoot 7 >= 7 true
+
     today = NaiveDateTime.utc_now() |> Timex.end_of_day()
-    %{calendar: calendar, count: count} = explode_hours(email.total_hours)
-    time_calendar = get_timex_calendar(calendar)
+    %{sign: sign} = explode_hours(email.total_hours)
+    days_to_compare = hours_to_days(email.total_hours)
 
     filter_shoots_count =
       Enum.count(job.shoots, fn item ->
-        Timex.compare(today, item.starts_at, time_calendar) >= count
+        is_send_time?(Date.diff(today, item.starts_at), abs(days_to_compare), sign)
       end)
 
     shoots_count = Enum.count(job.shoots)
@@ -715,10 +784,8 @@ defmodule PicselloWeb.EmailAutomationLive.Shared do
   defp get_date_for_schedule(nil, date), do: date
   defp get_date_for_schedule(email, _date), do: email.reminded_at
 
-  defp get_timex_calendar("Year"), do: :years
-  defp get_timex_calendar("Month"), do: :months
-  defp get_timex_calendar("Day"), do: :days
-  defp get_timex_calendar("Hour"), do: :hours
+  defp is_send_time?(days_diff, days_to_compare, "+"), do: days_diff >= days_to_compare
+  defp is_send_time?(days_diff, days_to_compare, "-"), do: days_diff <= days_to_compare
 
   def assign_collapsed_sections(socket) do
     sub_categories = EmailAutomations.get_sub_categories() |> Enum.map(fn x -> x.name end)

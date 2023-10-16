@@ -148,7 +148,8 @@ defmodule Picsello.EmailAutomations do
              :manual_send_proofing_gallery_finals,
              :cart_abandoned,
              :gallery_expiration_soon,
-             :gallery_password_changed
+             :gallery_password_changed,
+             :after_gallery_send_feedback
            ] do
     gallery = gallery |> Galleries.set_gallery_hash() |> Repo.preload([:albums, job: :client])
 
