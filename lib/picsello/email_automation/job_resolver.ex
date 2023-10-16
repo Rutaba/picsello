@@ -104,9 +104,7 @@ defmodule Picsello.EmailPresets.JobResolver do
         &with(
           %Picsello.BookingProposal{id: proposal_id} <- current_proposal(&1),
           do: """
-            <a style="border:1px solid #1F1C1E;display:inline-block;background:white;color:#1F1C1E;font-family:Montserrat, sans-serif;font-size:18px;font-weight:normal;line-height:120%;margin:0;text-decoration:none;text-transform:none;padding:10px 15px;mso-padding-alt:0px;border-radius:0px;"
-              target="_blank"
-              href="#{Picsello.BookingProposal.url(proposal_id)}">
+            <a target="_blank" href="#{Picsello.BookingProposal.url(proposal_id)}">
               Invoice Link
             </a>
           """
@@ -116,9 +114,7 @@ defmodule Picsello.EmailPresets.JobResolver do
       "mini_session_link" => &noop/1,
       "booking_event_client_link" => fn resolver ->
         """
-          <a style="border:1px solid #1F1C1E;display:inline-block;background:white;color:#1F1C1E;font-family:Montserrat, sans-serif;font-size:18px;font-weight:normal;line-height:120%;margin:0;text-decoration:none;text-transform:none;padding:10px 15px;mso-padding-alt:0px;border-radius:0px;"
-            target="_blank"
-            href="#{helpers(resolver).client_booking_event_url(organization(resolver).slug, booking_event_id(resolver.job))}">
+          <a target="_blank" href="#{helpers(resolver).client_booking_event_url(organization(resolver).slug, booking_event_id(resolver.job))}">
             Client URL
           </a>
         """
@@ -136,9 +132,7 @@ defmodule Picsello.EmailPresets.JobResolver do
       "photography_company_s_name" => &organization(&1).name,
       "pricing_guide_link" => fn resolver ->
         """
-          <a style="border:1px solid #1F1C1E;display:inline-block;background:white;color:#1F1C1E;font-family:Montserrat, sans-serif;font-size:18px;font-weight:normal;line-height:120%;margin:0;text-decoration:none;text-transform:none;padding:10px 15px;mso-padding-alt:0px;border-radius:0px;"
-            target="_blank"
-            href="#{helpers(resolver).profile_pricing_job_type_url(organization(resolver).slug, resolver.job.type)}">
+          <a target="_blank" href="#{helpers(resolver).profile_pricing_job_type_url(organization(resolver).slug, resolver.job.type)}">
             Guide Link
           </a>
         """
