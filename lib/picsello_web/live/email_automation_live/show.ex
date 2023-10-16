@@ -477,7 +477,8 @@ defmodule PicselloWeb.Live.EmailAutomations.Show do
               :manual_send_proofing_gallery_finals,
               :cart_abandoned,
               :gallery_expiration_soon,
-              :gallery_password_changed
+              :gallery_password_changed,
+              :after_gallery_send_feedback
             ] do
     EmailAutomations.send_now_email(:gallery, email, gallery, state)
   end
