@@ -17,7 +17,9 @@ defmodule Picsello.Messages do
     ClientMessageRecipient,
     Notifiers.UserNotifier,
     Accounts.User,
-    Organization
+    Organization,
+    Campaign,
+    CampaignClient
   }
 
   def add_message_to_job(
@@ -71,8 +73,17 @@ defmodule Picsello.Messages do
     end
   end
 
+  def notify_inbound_campaign_message(%Campaign{} = campaign) do
+    Phoenix.PubSub.broadcast(
+      Picsello.PubSub,
+      "inbound_messages:#{campaign.organization_id}",
+      {:inbound_messages, campaign}
+    )
+  end
+
   def token(%Job{} = job), do: token(job, "JOB_ID")
   def token(%Organization{} = org), do: token(org, "ORGANIZATION_ID")
+  def token(%Campaign{} = compaign), do: token(compaign, "COMPAIGN_ID")
 
   def token(%{id: id, inserted_at: inserted_at}, key) do
     signed_at =
@@ -96,23 +107,11 @@ defmodule Picsello.Messages do
   end
 
   def find_by_token("" <> token) do
-    result = Phoenix.Token.verify(PicselloWeb.Endpoint, "JOB_ID", token, max_age: :infinity)
-
-    Logger.warning(
-      "[Token] find_by_token result {#{Tuple.to_list(result) |> List.first()}, #{Tuple.to_list(result) |> List.last()}}"
-    )
-
-    case result do
-      {:ok, id} ->
-        job = Repo.get(Job, id)
-        if job, do: job, else: find_by_token(token, "ORGANIZATION_ID")
-
-      _ ->
-        find_by_token(token, "ORGANIZATION_ID")
-    end
+    list = [{"JOB_ID", Job}, {"ORGANIZATION_ID", Organization}, {"COMPAIGN_ID", Campaign}]
+    Enum.find_value(list, fn {key, schema} -> find_by_token(token, key, schema) end)
   end
 
-  def find_by_token("" <> token, key) do
+  def find_by_token("" <> token, key, schema) do
     result = Phoenix.Token.verify(PicselloWeb.Endpoint, key, token, max_age: :infinity)
 
     Logger.warning(
@@ -120,7 +119,7 @@ defmodule Picsello.Messages do
     )
 
     case result do
-      {:ok, id} -> Repo.get(Organization, id)
+      {:ok, id} -> Repo.get(schema, id)
       _ -> nil
     end
   end
@@ -284,6 +283,31 @@ defmodule Picsello.Messages do
     end)
   end
 
+  @campaign_reply_segments ~w(client_reply user_reply)
+  def campaigns_threads(%User{organization_id: organization_id}) do
+    campains =
+      from(c in Campaign,
+        where:
+          c.organization_id == ^organization_id and
+            c.segment_type not in @campaign_reply_segments and is_nil(c.deleted_at)
+      )
+      |> Repo.all()
+
+    from(
+      from c in Campaign,
+        join: cc in CampaignClient,
+        on: c.id == cc.campaign_id,
+        distinct: cc.client_id,
+        order_by: [desc: c.inserted_at],
+        preload: [campaign_clients: :client],
+        where:
+          c.organization_id == ^organization_id and is_nil(c.deleted_at) and
+            c.segment_type in @campaign_reply_segments
+    )
+    |> Repo.all()
+    |> Enum.concat(campains)
+  end
+
   def for_job(job) do
     from(message in ClientMessage,
       where: message.job_id == ^job.id and is_nil(message.deleted_at),
@@ -314,7 +338,6 @@ defmodule Picsello.Messages do
       |> Job.for_user()
       |> ClientMessage.unread_messages()
       |> distinct([m], m.id)
-      |> order_by([m], asc: m.inserted_at)
       |> select([m], m.job_id)
       |> Repo.all()
 
@@ -323,32 +346,49 @@ defmodule Picsello.Messages do
       |> client_threads(unread?: true)
       |> Enum.map(&hd(&1.client_message_recipients).client_id)
 
-    message_ids =
-      from(m in ClientMessage,
-        left_join: cmr in assoc(m, :client_message_recipients),
-        left_join: c in assoc(cmr, :client),
-        where: c.organization_id == ^organization_id and is_nil(m.read_at),
-        select: m.id
-      )
+    campaign_ids =
+      Campaign
+      |> where([c], c.organization_id == ^organization_id)
+      |> where([c], is_nil(c.read_at) and not is_nil(c.parent_id))
+      |> select([c], c.id)
       |> Repo.all()
 
-    {job_ids, client_ids, message_ids}
+    message_ids =
+      ClientMessage
+      |> join(:left, [cm], cmr in assoc(cm, :client_message_recipients))
+      |> join(:left, [_cm, cmr], c in assoc(cmr, :client))
+      |> where([cm, _cmr, c], c.organization_id == ^organization_id and is_nil(cm.read_at))
+      |> select([cm], cm.id)
+      |> Repo.all()
+
+    {job_ids, client_ids, campaign_ids, message_ids}
   end
 
   def update_all(client_id, :client, column) do
-    from(m in ClientMessage,
-      join: cmr in assoc(m, :client_message_recipients),
-      where: is_nil(m.job_id) and cmr.client_id == ^client_id,
-      where: is_nil(field(m, ^column))
-    )
+    ClientMessage
+    |> join(:inner, [cm], cmr in assoc(cm, :client_message_recipients))
+    |> where([cm], is_nil(cm.job_id) and is_nil(field(cm, ^column)))
+    |> where([_cm, cmr], cmr.client_id == ^client_id)
     |> update_field(column)
   end
 
   def update_all(job_id, :job, column) do
-    from(m in ClientMessage,
-      where: m.job_id == ^job_id,
-      where: is_nil(field(m, ^column))
-    )
+    ClientMessage
+    |> where([cm], cm.job_id == ^job_id and is_nil(field(cm, ^column)))
+    |> update_field(column)
+  end
+
+  def update_all(campaign_id, :campaign, column) do
+    Campaign
+    |> where([c], c.id == ^campaign_id)
+    |> update_field(column)
+  end
+
+  def update_all(client_id, _, column) do
+    Campaign
+    |> join(:inner, [c], cc in assoc(c, :campaign_clients))
+    |> where([c], c.segment_type in @campaign_reply_segments)
+    |> where([_c, cc], cc.client_id == ^client_id)
     |> update_field(column)
   end
 

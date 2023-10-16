@@ -12,7 +12,7 @@ defmodule Picsello.CampaignClient do
   end
 
   @doc false
-  def changeset(campaign_client, attrs) do
+  def changeset(campaign_client \\ %__MODULE__{}, attrs) do
     campaign_client
     |> cast(attrs, [:client_id, :campaign_id])
     |> validate_required([:client_id, :campaign_id])
