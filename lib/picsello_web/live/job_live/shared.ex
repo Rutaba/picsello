@@ -954,7 +954,7 @@ defmodule PicselloWeb.JobLive.Shared do
   def communications_card(assigns) do
     ~H"""
     <.card color="orange-inbox-300" title="Communications" class="md:col-span-2">
-      <div {testid("inbox")} class="flex flex-col lg:flex-row gap-x-4">
+      <div {testid("inbox")} class="flex flex-col lg:flex-row gap-4">
 
         <div class="flex-1 flex flex-col border border-base-200 rounded-lg p-3">
 
@@ -996,7 +996,10 @@ defmodule PicselloWeb.JobLive.Shared do
             <span class="flex w-8 h-8 justify-center items-center">
             <.icon name="automation-card" class="text-orange-inbox-300 mr-2 w-6 h-6" />
             </span>
-            <span class="text-black font-black text-base-250">Automation Sequences</span>
+            <div class="flex items-center flex-wrap">
+              <span class="text-black font-black text-base-250">Automations</span>
+              <div class="bg-blue-planning-300 pt-0.5 pb-1 px-2 text-blue-planning-100 mt-1 sm:mt-0 sm:ml-2 uppercase font-bold text-xs rounded-md tracking-wider">Beta</div>
+            </div>
           </div>
           <% emails_count = EmailAutomationSchedules.get_active_email_schedule_count(@job.id) %>
           <div class="flex">

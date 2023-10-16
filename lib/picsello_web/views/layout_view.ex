@@ -190,7 +190,7 @@ defmodule PicselloWeb.LayoutView do
         heading: "Settings",
         items: [
           %{
-            title: "Automations",
+            title: "Automations (Beta)",
             icon: "play-icon",
             path: Routes.email_automations_index_path(socket, :index)
           },
@@ -258,7 +258,7 @@ defmodule PicselloWeb.LayoutView do
   def sub_nav_list(socket, :settings),
     do: [
       %{
-        title: "Automations",
+        title: "Automations (Beta)",
         icon: "play-icon",
         path: Routes.email_automations_index_path(socket, :index)
       },
