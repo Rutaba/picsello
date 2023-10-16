@@ -124,19 +124,19 @@ defmodule PicselloWeb.OnboardingLive.Mastermind.Index do
         Subscriptions.handle_stripe_subscription(subscription)
 
         return =
-          unless is_nil(subscription.pending_setup_intent) do
-            build_return(
-              subscription.pending_setup_intent.client_secret,
-              address,
-              promotion_code,
-              "setup"
-            )
-          else
+          if is_nil(subscription.pending_setup_intent) do
             build_return(
               subscription.latest_invoice.payment_intent.client_secret,
               address,
               promotion_code,
               "payment"
+            )
+          else
+            build_return(
+              subscription.pending_setup_intent.client_secret,
+              address,
+              promotion_code,
+              "setup"
             )
           end
 
