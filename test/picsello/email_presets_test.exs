@@ -2,6 +2,7 @@ defmodule Picsello.EmailPresetsTest do
   use Picsello.DataCase, async: true
   alias Picsello.{EmailPresets, EmailPresets.EmailPreset}
   import Money.Sigils
+  alias Picsello.Utils
 
   describe "for %Job{}" do
     test "post_shoot" do
@@ -45,7 +46,7 @@ defmodule Picsello.EmailPresetsTest do
     test "lead without proposal" do
       lead = insert(:lead, type: "wedding")
       %{id: expected_id} = insert(:email_preset, state: :lead, job_type: "wedding")
-      insert(:email_preset, state: :booking_proposal_sent, job_type: "wedding")
+      insert(:email_preset, state: :manual_booking_proposal_sent, job_type: "wedding")
       insert(:email_preset, state: :job, job_type: "wedding")
       insert(:email_preset, state: :lead, job_type: "event")
 
@@ -58,7 +59,7 @@ defmodule Picsello.EmailPresetsTest do
       insert(:email_preset, state: :lead, job_type: "wedding")
 
       %{id: expected_id} =
-        insert(:email_preset, state: :booking_proposal_sent, job_type: "wedding")
+        insert(:email_preset, state: :manual_booking_proposal_sent, job_type: "wedding")
 
       insert(:email_preset, state: :job, job_type: "wedding")
       insert(:email_preset, state: :lead, job_type: "event")
@@ -141,22 +142,22 @@ defmodule Picsello.EmailPresetsTest do
       session_date = "February 9, #{next_year}"
 
       assert %{
-               "brand_sentence" => "",
+               "brand_sentence" => nil,
                "client_first_name" => "Johann",
-               "delivery_expectations_sentence" => "",
+               "delivery_expectations_sentence" => nil,
                "delivery_time" => "2 weeks",
-               "email_signature" => "",
-               "invoice_amount" => "$10.00",
+               "email_signature" => nil,
+               "invoice_amount" => %Money{amount: 1000, currency: :USD},
                "invoice_due_date" => ^due_date,
                "invoice_link" => proposal_link,
                "job_name" => "Johann Zahn Wedding",
-               "mini_session_link" => "",
-               "payment_amount" => "",
+               "mini_session_link" => nil,
+               "payment_amount" => nil,
                "photographer_cell" => "(918) 555-1234",
                "photography_company_s_name" => "Kloster Oberzell",
                "pricing_guide_link" => pricing_guide_link,
-               "remaining_amount" => "$10.00",
-               "review_link" => "",
+               "remaining_amount" => %Money{amount: 1000, currency: :USD},
+               "review_link" => nil,
                "session_date" => ^session_date,
                "session_location" => "In Studio",
                "session_time" => "5:00 pm"
@@ -192,12 +193,10 @@ defmodule Picsello.EmailPresetsTest do
                  :job,
                  {job}
                )
-               |> Map.get(:body_template)
-               |> Jason.decode!()
+               |> Map.get(:short_codes)
 
-      assert String.ends_with?(pricing_guide_link, "/photographer/kloster-oberzell#wedding")
-
-      assert_proposal_link(proposal_link, proposal_id)
+      assert String.contains?(pricing_guide_link, "/photographer/kloster-oberzell#wedding")
+      proposal_link |> href() |> assert_proposal_link(proposal_id)
     end
 
     test "resolve strings for job with payment" do
@@ -255,6 +254,10 @@ defmodule Picsello.EmailPresetsTest do
           expired_at: ~U[2023-02-01 12:00:00Z]
         })
 
+      Picsello.PhotoStorageMock
+      |> Mox.stub(:get, fn _ -> {:error, nil} end)
+      |> Mox.stub(:path_to_url, & &1)
+
       assert %{
                "client_first_name" => "Johann",
                "photographer_first_name" => "Jane",
@@ -310,6 +313,10 @@ defmodule Picsello.EmailPresetsTest do
         |> promote_to_job()
 
       gallery = insert(:gallery, %{name: "Test Client Wedding", job: job})
+
+      Picsello.PhotoStorageMock
+      |> Mox.stub(:get, fn _ -> {:error, nil} end)
+      |> Mox.stub(:path_to_url, & &1)
 
       gallery_client =
         insert(:gallery_client, %{email: "client-1@example.com", gallery_id: gallery.id})
@@ -386,7 +393,7 @@ defmodule Picsello.EmailPresetsTest do
                resolve_variables(
                  "hi",
                  """
-                 invariant.{{#invoice_link}}the <a href="{{.}}">link</a>.{{/invoice_link}}
+                 invariant.{{invoice_link}}
                  """,
                  :job,
                  {job}
@@ -394,15 +401,17 @@ defmodule Picsello.EmailPresetsTest do
 
       %{id: proposal_id} = insert(:proposal, job: job)
 
-      %{body_template: proposal_link} =
+      proposal_link =
         resolve_variables(
           "hi",
           """
-          invariant.{{#invoice_link}}the <a href="{{.}}">link</a>.{{/invoice_link}}
+            invariant.{{invoice_link}}
           """,
           :job,
           {job}
         )
+        |> Map.get(:body_template)
+        |> Utils.normalize_body_template()
 
       proposal_link |> href() |> assert_proposal_link(proposal_id)
     end

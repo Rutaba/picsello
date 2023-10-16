@@ -55,6 +55,7 @@ config :picsello, :modal_transition_ms, 400
 config :picsello, :plug_parser_length, System.get_env("PLUG_PARSER_LENGTH") || 100_000_000
 config :picsello, :payments, Picsello.StripePayments
 config :picsello, :nylas_calendar, Picsello.NylasCalendar.Impl
+config :picsello, :email_automation_notifier, Picsello.Notifiers.EmailAutomationNotifier.Impl
 config :picsello, :google_site_verification, System.get_env("GOOGLE_SITE_VERIFICATION")
 config :picsello, :google_analytics_api_key, System.get_env("GOOGLE_ANALYTICS_API_KEY")
 config :picsello, :google_tag_manager_api_key, System.get_env("GOOGLE_TAG_MANAGER_API_KEY")
@@ -135,6 +136,8 @@ config :picsello, Oban,
     {Oban.Plugins.Cron,
      crontab: [
        {"*/10 * * * *", Picsello.Workers.SendProposalReminder},
+       {System.get_env("EMAIL_AUTOMATION_TIME") || "0 0 1 * *",
+        Picsello.Workers.ScheduleAutomationEmail},
        {"*/20 * * * *", Picsello.Workers.SendShootReminder},
        {"0 * * * *", Picsello.Workers.SendPaymentScheduleReminder},
        {"0 8 * * *", Picsello.Workers.SendGalleryExpirationReminder},

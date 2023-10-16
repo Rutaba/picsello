@@ -27,6 +27,8 @@ defmodule Picsello.PhotographerViewOrdersTest do
     |> click(button("Get Started", count: 2, at: 0))
     |> visit("/jobs/#{job.id}/")
     |> find(testid("card-buttons"))
+    |> click(button("Actions"))
+    |> assert_has(button("View orders"))
   end
 
   setup :authenticated_gallery

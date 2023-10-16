@@ -79,6 +79,7 @@ check:
 iex: setup
 	iex -S mix phx.server
 
-full_setup:
-	mix full_setup
+full-setup:
+	mix ecto.reset
+	mix setup
 	iex -S mix phx.server

@@ -79,7 +79,6 @@ defmodule Picsello.CreatePricingCalculationTest do
     |> assert_text("Results")
     |> click(button("Email results"))
     |> assert_text("Your results have been saved")
-    |> click(button("Go to my dashboard"))
 
     assert_receive {:delivered_email,
                     %{

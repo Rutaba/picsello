@@ -17,7 +17,8 @@ defmodule Picsello.Orders.Confirmations do
     Payments,
     Repo,
     WHCC,
-    OrganizationCard
+    OrganizationCard,
+    EmailAutomationSchedules
   }
 
   alias Picsello.WHCC.Order.Created, as: WHCCOrder
@@ -199,6 +200,9 @@ defmodule Picsello.Orders.Confirmations do
     end)
     |> run(:insert_card, fn _repo, %{order: order} ->
       OrganizationCard.insert_for_proofing_order(order)
+    end)
+    |> run(:insert_orders_emails, fn _repo, %{order: order} ->
+      EmailAutomationSchedules.insert_gallery_order_emails(nil, order)
     end)
     |> Repo.transaction()
     |> case do
