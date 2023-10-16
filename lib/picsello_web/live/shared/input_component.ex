@@ -51,7 +51,7 @@ defmodule PicselloWeb.Shared.InputComponent do
         <span class="text-sm text-orange-600"><%= @error %></span>
       <% end %>
       <div class="flex flex-col gap-2 mt-4">
-        <button class="w-full border border-current text-center p-1.5 font-semibold bg-black text-white" disabled={!is_nil(@error)} phx-disable-with="Saving&hellip;">
+        <button class="w-full border border-current text-center p-1.5 font-semibold bg-black text-white disabled:opacity-50 disabled:cursor-not-allowed" disabled={!is_nil(@error)} phx-disable-with="Saving&hellip;">
           <%= @save_label %>
         </button>
 
@@ -69,9 +69,10 @@ defmodule PicselloWeb.Shared.InputComponent do
         %{"input" => input},
         socket
       ) do
-    case String.length(input) do
-      5 -> assign(socket, :error, nil)
-      _ -> assign(socket, :error, "Please enter 5 digit zipcode")
+    if Regex.match?(~r/^\d{5}$/, input) do
+      assign(socket, :error, nil)
+    else
+      assign(socket, :error, "Please enter 5 digit zipcode")
     end
     |> noreply
   end
