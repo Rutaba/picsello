@@ -72,7 +72,7 @@ defmodule PicselloWeb.Shared.InputComponent do
     if Regex.match?(~r/^\d{5}$/, input) do
       assign(socket, :error, nil)
     else
-      assign(socket, :error, "Please enter 5 digit zipcode")
+      assign(socket, :error, "Zip code must be 5 characters long")
     end
     |> noreply
   end

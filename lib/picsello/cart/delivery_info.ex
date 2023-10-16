@@ -48,7 +48,6 @@ defmodule Picsello.Cart.DeliveryInfo do
     |> validate_required([:name, :email])
     |> validate_email(:email)
     |> validate_length(:name, min: 2, max: 30)
-    |> changeset_for_zipcode(attrs)
   end
 
   def changeset_for_zipcode(delivery_info \\ %__MODULE__{}, attrs) do
@@ -172,6 +171,7 @@ defmodule Picsello.Cart.DeliveryInfo do
       struct
       |> cast(attrs, [:city, :state, :zip, :addr1, :addr2])
       |> validate_required([:city, :state, :zip, :addr1])
+      |> validate_zip_code()
     end
 
     def changeset_for_zipcode(struct, attrs) do
@@ -190,7 +190,7 @@ defmodule Picsello.Cart.DeliveryInfo do
           if Regex.match?(~r/^\d{5}$/, zip_code) do
             changeset
           else
-            changeset |> add_error(:zip, "Please enter 5 digit zipcode")
+            changeset |> add_error(:zip, "code must be 5 characters long")
           end
       end
     end
