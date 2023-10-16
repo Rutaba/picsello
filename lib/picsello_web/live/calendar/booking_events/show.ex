@@ -598,58 +598,30 @@ defmodule PicselloWeb.Live.Calendar.BookingEvents.Show do
             </div>
           </div>
         <% "calendar" -> %>
-          <div class="border-2 border-base-200 rounded-lg flex md:items-center p-3">
+          <div class="border-2 border-base-200 rounded-lg flex items-center p-3">
             <div class="flex flex-col">
               <div class="mb-1 font-bold text-black md:text-lg flex-col justify-center">
                 <div class="flex items-center">
-                  <.icon name="clock-2" class="block md:hidden w-4 h-4 stroke-current text-blue-planning-300 mt-1" />
                   <button class={classes("ml-2", %{"text-blue-planning-300 underline" => @slot.status == :booked})}><%= slot_time_formatter(@slot) %></button>
                 </div>
               </div>
-
-              <div class="hidden md:block ml-2">
+              <div class="md:ml-2">
                 <%= cond do %>
                   <%= @slot.client_id && @slot.status in [:booked, :reserved] -> %>
                     <div class="flex gap-2 items-center mb-2">
-                      <.icon name="client-icon" class="block md:hidden w-4 h-4 text-blue-planning-300 mt-1.5" />
                       <button phx-click="open-client" phx-value-slot_client_id={@slot.client_id} class="text-blue-planning-300 underline"> Booked with <%= BEShared.slot_client_name(@current_user, @slot.client_id) %></button>
                     </div>
 
                   <%= @slot.status in [:hidden] -> %>
                     <div class="flex gap-2 items-center mb-2">
-                      <.icon name="client-icon" class="block md:hidden w-4 h-4 text-blue-planning-300 mt-1.5" />
                       <div phx-click="open-client" phx-value-slot_client_id={@slot.client_id} class="text-base-250 underline"> Booked (hidden) </div>
                     </div>
 
                   <%= true -> %>
                     <div class="flex gap-2 items-center mb-2">
-                      <.icon name="client-icon" class="block md:hidden w-4 h-4 text-blue-planning-300" />
                       <div>Open</div>
                     </div>
                 <% end %>
-              </div>
-              <div class="flex items-center md:hidden mb-2">
-                <.icon name={@slot.status != :open && "booked-slot" || "open-slot"} class="block md:hidden w-4 h-4 fill-blue-planning-300 mt-1" />
-                <div class={classes("ml-2", %{"text-base-250" => @slot.status in [:booked, :reserved, :hidden]})}>
-                  <%= cond do %>
-                    <%= @slot.client_id && @slot.status in [:booked, :reserved] -> %>
-                      Booked
-                    <%= @slot.status in [:hidden] -> %>
-                      Booked (hidden)
-                    <%= true -> %>
-                      Open
-                  <% end %>
-                </div>
-              </div>
-              <div class="flex items-center md:hidden">
-                <.icon name="client-icon" class="block md:hidden w-4 h-4 text-blue-planning-300 mt-1" />
-                <div class={classes("ml-2", %{"text-blue-planning-300" => @slot.client_id && @slot.status in [:booked, :reserved]})}>
-                  <%= if @slot.client_id && @slot.status in [:booked, :reserved] do %>
-                    <%= BEShared.slot_client_name(@current_user, @slot.client_id) %>
-                  <% else %>
-                    -
-                  <% end %>
-                </div>
               </div>
             </div>
             <div class="justify-start ml-auto">
