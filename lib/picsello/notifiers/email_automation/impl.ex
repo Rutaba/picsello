@@ -2,7 +2,7 @@ defmodule Picsello.Notifiers.EmailAutomationNotifier.Impl do
   @moduledoc false
 
   import Notifiers.Shared
-  alias Picsello.{Notifiers.EmailAutomationNotifier, Repo, Utils}
+  alias Picsello.{Notifiers.EmailAutomationNotifier, Repo}
 
   @behaviour EmailAutomationNotifier
 

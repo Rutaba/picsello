@@ -2539,7 +2539,8 @@ defmodule Mix.Tasks.ImportEmailPresets do
         <p><span style="color: rgb(0, 0, 0);">If you have any lingering questions or if there's anything more I can do to help you, please don't hesitate to reach out. </span></p>
         <p><span style="color: rgb(0, 0, 0);">I'm looking forward to your response and the possibility of working with you.</span></p>
         <p><span style="color: rgb(0, 0, 0);">Warm regards,</span></p>
-        <p><span style="color: rgb(0, 0, 0);">{{email_signature}}</span></p>        \"""
+        <p><span style="color: rgb(0, 0, 0);">{{email_signature}}</span></p>
+        """
         },
         %{
         email_automation_pipeline_id:
@@ -2551,7 +2552,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         position: 0,
         name: "Lead - Initial Inquiry",
         subject_template: "Checking in! | {{photography_company_s_name}}",
-        body_template: \"""
+        body_template: """
         <p><span style="color: rgb(0, 0, 0);">Hello {{client_first_name}},</span></p>
         <p><span style="color: rgb(0, 0, 0);">I hope this message finds you well. I understand that life can get busy, and the to-do list never seems to end. I'm just following up on your recent inquiry with me, and I'm excited about working with you. Please hit the reply button to this email and let me know how I can assist you.</span></p>
         <p><span style="color: rgb(0, 0, 0);">I'm here to ensure that your photography experience is nothing short of memorable!</span></p>

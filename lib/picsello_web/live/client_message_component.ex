@@ -581,7 +581,7 @@ defmodule PicselloWeb.ClientMessageComponent do
           </div>
         </div>
         <div class="flex flex-row ml-12">
-          <.form class="flex">
+          <.form for={%{}} class="flex">
             <label class="flex">
               <input id="pipeline-toggle" phx-target={@myself} phx-click="toggle"  phx-value-active={@toggle_value |> to_string} type="checkbox" class="peer hidden" checked={@toggle_value}/>
               <div class="hidden peer-checked:flex">
