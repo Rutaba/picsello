@@ -2541,8 +2541,8 @@ defmodule Mix.Tasks.ImportEmailPresets do
         <p><span style="color: rgb(0, 0, 0);">Warm regards,</span></p>
         <p><span style="color: rgb(0, 0, 0);">{{email_signature}}</span></p>
         """
-        },
-        %{
+      },
+      %{
         email_automation_pipeline_id:
           get_pipeline_id_by_state(pipelines, "manual_thank_you_lead"),
         total_hours: EmailPreset.calculate_total_hours(4, %{calendar: "Day", sign: "+"}),

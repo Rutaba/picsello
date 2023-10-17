@@ -37,7 +37,8 @@ defmodule Picsello.Notifiers.EmailAutomationNotifier.Impl do
         subject: subject,
         body: body
       },
-      %{"to" => gallery.job.client.email}
+      %{"to" => gallery.job.client.email},
+      gallery.job
     )
   end
 
