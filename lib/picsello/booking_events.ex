@@ -586,7 +586,7 @@ defmodule Picsello.BookingEvents do
              job.type,
              organization.id,
              job.id,
-             [:lead, :job],
+             :lead,
              [
                :client_contact
              ]

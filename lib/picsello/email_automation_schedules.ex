@@ -16,18 +16,18 @@ defmodule Picsello.EmailAutomationSchedules do
     |> Repo.one()
   end
 
-  def get_emails_by_gallery(table, gallery_id) do
-    from(es in table, where: es.gallery_id == ^gallery_id)
+  def get_emails_by_gallery(table, gallery_id, type) do
+    from(es in table, where: es.gallery_id == ^gallery_id and es.type == ^type)
     |> Repo.all()
   end
 
-  def get_emails_by_order(table, order_id) do
-    from(es in table, where: es.order_id == ^order_id)
+  def get_emails_by_order(table, order_id, type) do
+    from(es in table, where: es.order_id == ^order_id and es.type == ^type)
     |> Repo.all()
   end
 
-  def get_emails_by_job(table, job_id) do
-    from(es in table, where: es.job_id == ^job_id)
+  def get_emails_by_job(table, job_id, type) do
+    from(es in table, where: es.job_id == ^job_id and es.type == ^type)
     |> Repo.all()
   end
 
@@ -166,6 +166,7 @@ defmodule Picsello.EmailAutomationSchedules do
   defp filter_email_schedule(query, job_id, _type) do
     query
     |> where([es, _, _, _], es.job_id == ^job_id)
+    |> where([es, _, _, _], is_nil(es.gallery_id))
     |> select_merge([_, _, c, s], %{
       category_name: c.name,
       subcategory_name: s.name,
@@ -261,17 +262,18 @@ defmodule Picsello.EmailAutomationSchedules do
   @doc """
     Insert all emails templates for jobs & leads in email schedules
   """
-  def job_emails(type, organization_id, job_id, types, skip_states \\ []) do
+  def job_emails(type, organization_id, job_id, category_type, skip_states \\ []) do
     now = DateTime.utc_now() |> DateTime.truncate(:second)
 
     emails =
-      EmailAutomations.get_emails_for_schedule(organization_id, type, types)
+      EmailAutomations.get_emails_for_schedule(organization_id, type, category_type)
       |> Enum.map(fn email_data ->
         state = Map.get(email_data, :email_automation_pipeline) |> Map.get(:state)
 
         if state not in skip_states do
           [
             job_id: job_id,
+            type: category_type,
             total_hours: email_data.total_hours,
             condition: email_data.condition,
             body_template: email_data.body_template,
@@ -287,9 +289,9 @@ defmodule Picsello.EmailAutomationSchedules do
       end)
       |> Enum.filter(&(&1 != nil))
 
-    previous_emails_schedules = get_emails_by_job(EmailSchedule, job_id)
+    previous_emails_schedules = get_emails_by_job(EmailSchedule, job_id, category_type)
 
-    previous_emails_history = get_emails_by_job(EmailScheduleHistory, job_id)
+    previous_emails_history = get_emails_by_job(EmailScheduleHistory, job_id, category_type)
 
     if Enum.empty?(previous_emails_schedules) and Enum.empty?(previous_emails_history) do
       emails
@@ -298,14 +300,14 @@ defmodule Picsello.EmailAutomationSchedules do
     end
   end
 
-  def insert_job_emails_from_gallery(gallery, types) do
+  def insert_job_emails_from_gallery(gallery, type) do
     gallery =
       gallery
       |> Repo.preload([:job, organization: [organization_job_types: :jobtype]], force: true)
 
     job_type = gallery.job.type
     organization_id = gallery.organization.id
-    job_emails(job_type, organization_id, gallery.job.id, types)
+    job_emails(job_type, organization_id, gallery.job.id, type)
   end
 
   @doc """
@@ -330,12 +332,13 @@ defmodule Picsello.EmailAutomationSchedules do
         else: ["order_confirmation_emails", "order_status_emails"]
 
     order_id = if order, do: order.id, else: nil
+    category_type = if order, do: :order, else: :gallery
 
     emails =
       EmailAutomations.get_emails_for_schedule(
         gallery.organization.id,
         type,
-        [:gallery],
+        :gallery,
         skip_sub_categories
       )
       |> Enum.map(fn email_data ->
@@ -348,7 +351,9 @@ defmodule Picsello.EmailAutomationSchedules do
            ] do
           [
             gallery_id: gallery.id,
+            type: category_type,
             order_id: order_id,
+            job_id: gallery.job.id,
             total_hours: email_data.total_hours,
             condition: email_data.condition,
             body_template: email_data.body_template,
@@ -366,13 +371,13 @@ defmodule Picsello.EmailAutomationSchedules do
 
     previous_emails =
       if order,
-        do: get_emails_by_order(EmailSchedule, order.id),
-        else: get_emails_by_gallery(EmailSchedule, gallery.id)
+        do: get_emails_by_order(EmailSchedule, order.id, category_type),
+        else: get_emails_by_gallery(EmailSchedule, gallery.id, category_type)
 
     previous_emails_history =
       if order,
-        do: get_emails_by_order(EmailScheduleHistory, order.id),
-        else: get_emails_by_gallery(EmailScheduleHistory, gallery.id)
+        do: get_emails_by_order(EmailScheduleHistory, order.id, category_type),
+        else: get_emails_by_gallery(EmailScheduleHistory, gallery.id, category_type)
 
     if Enum.empty?(previous_emails) and Enum.empty?(previous_emails_history) do
       emails
@@ -390,8 +395,8 @@ defmodule Picsello.EmailAutomationSchedules do
     end
   end
 
-  def insert_job_emails(type, organization_id, job_id, types, skip_states \\ []) do
-    emails = job_emails(type, organization_id, job_id, types, skip_states)
+  def insert_job_emails(type, organization_id, job_id, category_type, skip_states \\ []) do
+    emails = job_emails(type, organization_id, job_id, category_type, skip_states)
 
     case Repo.insert_all(EmailSchedule, emails) do
       {count, nil} -> {:ok, count}

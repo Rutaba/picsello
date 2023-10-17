@@ -208,7 +208,7 @@ defmodule Picsello.Profiles do
               job.type,
               job.client.organization.id,
               job.id,
-              [:lead, :job],
+              :lead,
               [
                 :abandoned_emails
               ]

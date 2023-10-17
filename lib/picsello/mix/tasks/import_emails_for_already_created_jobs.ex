@@ -43,7 +43,7 @@ defmodule Mix.Tasks.ImportEmailForAlreadyCreatedJobs do
 
   defp leads_emails_insert(leads, org_id) do
     Enum.map(leads, fn lead ->
-      insert_email_schedules_job(lead.type, lead.id, org_id, [:lead], [
+      insert_email_schedules_job(lead.type, lead.id, org_id, :lead, [
         :client_contact,
         :abandoned_emails
       ])
@@ -53,7 +53,7 @@ defmodule Mix.Tasks.ImportEmailForAlreadyCreatedJobs do
   defp jobs_emails_insert(jobs, org_id) do
     Enum.map(jobs, fn job ->
       skip_states = skip_job_states(job)
-      insert_email_schedules_job(job.type, job.id, org_id, [:job], skip_states)
+      insert_email_schedules_job(job.type, job.id, org_id, :job, skip_states)
       galleries_emails(job.galleries)
     end)
   end
@@ -113,14 +113,14 @@ defmodule Mix.Tasks.ImportEmailForAlreadyCreatedJobs do
          job_type,
          job_id,
          organization_id,
-         categories,
+         category,
          skip_pipelines
        ) do
     EmailAutomationSchedules.insert_job_emails(
       job_type,
       organization_id,
       job_id,
-      categories,
+      category,
       skip_pipelines
     )
   end
