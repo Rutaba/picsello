@@ -607,17 +607,17 @@ defmodule PicselloWeb.Live.Calendar.BookingEvents.Show do
               </div>
               <div class="md:ml-2">
                 <%= cond do %>
-                  <%= @slot.client_id && @slot.status in [:booked, :reserved] -> %>
+                  <% @slot.client_id && @slot.status in [:booked, :reserved] -> %>
                     <div class="flex gap-2 items-center mb-2">
                       <button phx-click="open-client" phx-value-slot_client_id={@slot.client_id} class="text-blue-planning-300 underline"> Booked with <%= BEShared.slot_client_name(@current_user, @slot.client_id) %></button>
                     </div>
 
-                  <%= @slot.status in [:hidden] -> %>
+                  <% @slot.status in [:hidden] -> %>
                     <div class="flex gap-2 items-center mb-2">
                       <div phx-click="open-client" phx-value-slot_client_id={@slot.client_id} class="text-base-250 underline"> Booked (hidden) </div>
                     </div>
 
-                  <%= true -> %>
+                  <% true -> %>
                     <div class="flex gap-2 items-center mb-2">
                       <div>Open</div>
                     </div>
