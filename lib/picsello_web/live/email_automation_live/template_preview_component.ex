@@ -30,7 +30,7 @@ defmodule PicselloWeb.EmailAutomationLive.TemplatePreviewComponent do
             Loading...
           </div>
         <% content -> %>
-          <div class="flex justify-center p-2 mt-4 rounded-lg bg-base-200">
+          <div class="flex justify-center p-2 mt-10 rounded-lg bg-base-200">
             <iframe srcdoc={content} class="w-[30rem]" scrolling="no" phx-hook="IFrameAutoHeight" id="template-preview">
             </iframe>
           </div>

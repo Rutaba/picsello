@@ -68,7 +68,8 @@ defmodule Picsello.Utils do
     {"&lt;", "<"},
     {"&gt;", ">"},
     {"/a&gt;", "/a>"},
-    {"&quot;", "\""}
+    {"&quot;", "\""},
+    {"&apos;", "\'"}
   ]
 
   @spec normalize_body_template(body :: String.t()) :: String.t()
