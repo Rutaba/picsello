@@ -40,19 +40,21 @@ defmodule Mix.Tasks.ImportUpdateJobToComplete do
     |> Enum.filter(&(is_nil(&1.archived_at) and is_nil(&1.completed_at)))
   end
 
-  defp all_job_paid?(%Job{payment_schedules: payment_schedules})
-       when length(payment_schedules) == 0,
-       do: false
-
   defp all_job_paid?(%Job{payment_schedules: payment_schedules}) do
-    payment_schedules
-    |> Enum.all?(fn p -> not is_nil(p.paid_at) end)
+    if Enum.empty?(payment_schedules) do
+      false
+    else
+      payment_schedules
+      |> Enum.all?(fn p -> not is_nil(p.paid_at) end)
+    end
   end
 
-  defp any_shoots_before(%Job{shoots: shoots}) when length(shoots) == 0, do: true
-
   defp any_shoots_before(%Job{shoots: shoots}) do
-    Enum.any?(shoots, &(Date.diff(&1.starts_at |> Timex.shift(weeks: 4), Timex.now()) < 0))
+    if Enum.empty?(shoots) do
+      true
+    else
+      Enum.any?(shoots, &(Date.diff(&1.starts_at |> Timex.shift(weeks: 4), Timex.now()) < 0))
+    end
   end
 
   defp load_app do
