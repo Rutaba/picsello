@@ -53,22 +53,21 @@ defmodule Mix.Tasks.ImportEmailForAlreadyCreatedJobs do
   defp jobs_emails_insert(jobs, org_id) do
     Enum.map(jobs, fn job ->
       skip_states = skip_job_states(job)
-
       insert_email_schedules_job(job.type, job.id, org_id, [:job], skip_states)
       galleries_emails(job.galleries)
     end)
   end
 
   defp skip_job_states(job) do
-    skip_payment_states =
-      if is_payment_states_keep?(job.payment_schedules),
-        do: [""],
-        else: [:balance_due, :offline_payment, :paid_full, :paid_offline_full]
-
     skip_booking_states =
-      if Enum.count(job.payment_schedules) > 0,
+      if Enum.any?(job.payment_schedules),
         do: [:pays_retainer, :thanks_booking, :pays_retainer_offline],
-        else: [""]
+        else: []
+
+    skip_payment_states =
+      if is_payment_states_keep?(job.payment_schedules) or Enum.empty?(job.payment_schedules),
+        do: [],
+        else: [:balance_due, :offline_payment, :paid_full, :paid_offline_full]
 
     skip_shoot_states = skipping_actions_for_shoots(job.shoots)
 
@@ -79,14 +78,15 @@ defmodule Mix.Tasks.ImportEmailForAlreadyCreatedJobs do
     case {has_shoots_before_now?(shoots), has_shoots_before_48_hours?(shoots)} do
       {true, true} -> [:before_shoot, :shoot_thanks]
       {true, _} -> [:before_shoot]
-      _ -> [""]
+      _ -> []
     end
   end
 
-  defp has_shoots_before_now?(shoots), do: Enum.any?(shoots, &(&1.starts_at < Timex.now()))
+  defp has_shoots_before_now?(shoots),
+    do: Enum.any?(shoots, &(Date.diff(&1.starts_at, Timex.now()) < 0))
 
   defp has_shoots_before_48_hours?(shoots),
-    do: Enum.any?(shoots, &(&1.starts_at < Timex.shift(Timex.now(), days: 2)))
+    do: Enum.any?(shoots, &(Date.diff(&1.starts_at |> Timex.shift(days: 2), Timex.now()) < 0))
 
   defp is_payment_states_keep?(payment_schedules),
     do:

@@ -261,7 +261,7 @@ defmodule Picsello.EmailAutomationSchedules do
   @doc """
     Insert all emails templates for jobs & leads in email schedules
   """
-  def job_emails(type, organization_id, job_id, types, skip_states \\ [""]) do
+  def job_emails(type, organization_id, job_id, types, skip_states \\ []) do
     now = DateTime.utc_now() |> DateTime.truncate(:second)
 
     emails =
@@ -390,7 +390,7 @@ defmodule Picsello.EmailAutomationSchedules do
     end
   end
 
-  def insert_job_emails(type, organization_id, job_id, types, skip_states \\ [""]) do
+  def insert_job_emails(type, organization_id, job_id, types, skip_states \\ []) do
     emails = job_emails(type, organization_id, job_id, types, skip_states)
 
     case Repo.insert_all(EmailSchedule, emails) do
