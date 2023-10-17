@@ -231,7 +231,7 @@ defmodule PicselloWeb.Live.EmailAutomations.Index do
           <div class="flex flex-row items-center">
             <div class="w-8 h-8 rounded-full bg-white flex items-center justify-center">
               <%= if is_state_manually_trigger(@pipeline.state) do %>
-                <.icon name="click" class="w-5 h-5 text-blue-planning-300" />
+                <.icon name="paper-airplane" class="w-5 h-5 text-blue-planning-300" />
               <% else %>
                 <.icon name="play-icon" class="w-5 h-5 text-blue-planning-300" />
               <% end %>
@@ -269,7 +269,7 @@ defmodule PicselloWeb.Live.EmailAutomations.Index do
                   <div class={"h-auto pt-6 md:relative #{index != last_index && "md:before:absolute md:before:border md:before:h-full md:before:border-base-200 md:before:left-1/2 md:before:z-10 md:before:z-[-1]"}"}>
                     <div testid={"email-main-icon"} class="w-8 h-8 rounded-full bg-base-200 flex items-center justify-center">
                       <%= cond do %>
-                        <% is_state_manually_trigger(@pipeline.state) and index == 0 -> %> <.icon name="click" class="w-5 h-5 text-blue-planning-300" />
+                        <% is_state_manually_trigger(@pipeline.state) and index == 0 -> %> <.icon name="paper-airplane" class="w-5 h-5 text-blue-planning-300" />
                         <% email.status == :active -> %>  <.icon name="envelope" class="w-5 h-5 text-blue-planning-300" />
                         <% true -> %>  <.icon name="close-x" class="w-4 h-4 stroke-current stroke-3 text-blue-planning-300" />
                       <% end %>
