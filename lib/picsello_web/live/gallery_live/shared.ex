@@ -146,7 +146,6 @@ defmodule PicselloWeb.GalleryLive.Shared do
   defp automation_state(:proofing), do: :manual_send_proofing_gallery
   defp automation_state(:finals), do: :manual_send_proofing_gallery_finals
 
-
   defp modal_title(:standard), do: "Share gallery"
   defp modal_title(:proofing), do: "Share Proofing Album"
   defp modal_title(:finals), do: "Share Finals Album"

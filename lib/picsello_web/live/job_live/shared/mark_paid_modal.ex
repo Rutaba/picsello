@@ -192,6 +192,7 @@ defmodule PicselloWeb.JobLive.Shared.MarkPaidModal do
     |> case do
       {:ok, _} ->
         _send_worker = Picsello.Workers.ScheduleAutomationEmail.perform(nil)
+
         socket
         |> assign(:add_payment_show, !add_payment_show)
         |> assign_payments()

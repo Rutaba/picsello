@@ -482,7 +482,7 @@ I look forward to capturing these memories for you!"}
     "#{percentage_left}% paid"
   end
 
-  defp assign_job_emails( %{assigns: %{organization: organization, job: job}} =  socket) do
+  defp assign_job_emails(%{assigns: %{organization: organization, job: job}} = socket) do
     insert_job_emails(job.type, organization.id, job.id, :job, [])
     socket
   end
