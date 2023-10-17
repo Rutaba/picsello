@@ -137,6 +137,7 @@ defmodule PicselloWeb.GalleryLive.Shared do
         :changeset,
         Galleries.change_gallery(gallery, attrs) |> Map.put(:action, :validate)
       )
+      
   defp get_email_body_subject(nil, gallery, preset_state) do
     with [preset | _] <- Picsello.EmailPresets.for(gallery, preset_state) do
       Picsello.EmailPresets.resolve_variables(

@@ -1,10 +1,9 @@
 defmodule Picsello.BookingEvents do
   @moduledoc "context module for booking events"
-  alias Picsello.{Repo, BookingEvent, Job, Package, BookingEventDate, BookingEventDates}
+  alias Picsello.{Repo, BookingEvent, Job, Package, BookingEventDate, BookingEventDates, EmailAutomationSchedules}
   alias Ecto.{Multi, Changeset}
   alias Picsello.Workers.ExpireBooking
   alias PicselloWeb.Calendar.BookingEvents.Shared, as: BEShared
-  alias Picsello.{Repo, BookingEvent, Job, Package, EmailAutomationSchedules}
   import Ecto.Query
 
   defmodule Booking do
