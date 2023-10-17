@@ -251,11 +251,18 @@ defmodule PicselloWeb.Live.EmailAutomations.Show do
           <div class="flex flex-col">
             <div class=" flex flex-row items-center">
               <div class="flex-row w-8 h-8 rounded-full bg-white flex items-center justify-center">
-                <.icon name="play-icon" class="w-5 h-5 text-blue-planning-300" />
+                <%= if is_state_manually_trigger(@pipeline.state) do %>
+                  <.icon name="click" class="w-5 h-5 text-blue-planning-300" />
+                <% else %>
+                  <.icon name="play-icon" class="w-5 h-5 text-blue-planning-300" />
+                <% end %>
               </div>
               <span class="flex items-center text-blue-planning-300 text-xl font-bold ml-2">
                 <%= @pipeline.name %>
                 <span class="text-base-300 ml-2 rounded-md bg-white px-2 text-sm font-bold whitespace-nowrap"><%= Enum.count(sorted_emails) %> <%=ngettext("email", "emails", Enum.count(sorted_emails)) %></span>
+                <%= if is_state_manually_trigger(@pipeline.state) do %>
+                  <span class="text-base-300 ml-2 rounded-md bg-white px-2 text-sm font-bold whitespace-nowrap">Manual Trigger</span>
+                <% end %>
               </span>
             </div>
             <p class="text:xs text-base-250 lg:text-base ml-10">
@@ -283,7 +290,7 @@ defmodule PicselloWeb.Live.EmailAutomations.Show do
                     <%= cond do %>
                       <% not is_nil(email.reminded_at) -> %> <.icon name="tick" class="w-5 h-5 text-blue-planning-300" />
                       <% not is_nil(email.stopped_at) -> %> <.icon name="stop" class="w-5 h-5 text-red-sales-300" />
-                      <% is_state_manually_trigger(@pipeline.state) and index == 0 -> %> <.icon name="flag" class="w-5 h-5 text-blue-planning-300" />
+                      <% is_state_manually_trigger(@pipeline.state) and index == 0 -> %> <.icon name="click" class="w-5 h-5 text-blue-planning-300" />
                       <% true -> %>  <.icon name="envelope" class="w-5 h-5 text-blue-planning-300" />
                     <% end %>
                   </div>
