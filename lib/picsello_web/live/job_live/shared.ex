@@ -1916,6 +1916,8 @@ defmodule PicselloWeb.JobLive.Shared do
     %{body_template: body_html, subject_template: subject} =
       get_email_body_subject(email_by_state, job, :manual_thank_you_lead)
 
+    body_html = Utils.normalize_body_template(body_html)
+
     %{body_template: body_html, subject_template: subject} =
       if manual_toggle,
         do: %{body_template: body_html, subject_template: subject},

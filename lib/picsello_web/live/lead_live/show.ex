@@ -13,7 +13,8 @@ defmodule PicselloWeb.LeadLive.Show do
     Contracts,
     Messages,
     EmailAutomations,
-    EmailAutomationSchedules
+    EmailAutomationSchedules,
+    Utils
   }
 
   alias PicselloWeb.JobLive
@@ -169,6 +170,8 @@ defmodule PicselloWeb.LeadLive.Show do
 
     %{body_template: body_html, subject_template: subject} =
       get_email_body_subject(email_by_state, job, :booking_proposal)
+
+    body_html = Utils.normalize_body_template(body_html)
 
     socket
     |> assign(:job, job)
