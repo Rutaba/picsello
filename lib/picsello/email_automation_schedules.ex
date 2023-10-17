@@ -324,8 +324,6 @@ defmodule Picsello.EmailAutomationSchedules do
 
     type = gallery.job.type
 
-    now = DateTime.utc_now() |> DateTime.truncate(:second)
-
     skip_sub_categories =
       if order,
         do: ["gallery_notification_emails", "post_gallery_send_emails", "order_status_emails"],
@@ -341,32 +339,7 @@ defmodule Picsello.EmailAutomationSchedules do
         :gallery,
         skip_sub_categories
       )
-      |> Enum.map(fn email_data ->
-        state = Map.get(email_data, :email_automation_pipeline) |> Map.get(:state)
-
-        if state not in [
-             :gallery_password_changed,
-             :order_confirmation_physical,
-             :order_confirmation_digital
-           ] do
-          [
-            gallery_id: gallery.id,
-            type: category_type,
-            order_id: order_id,
-            job_id: gallery.job.id,
-            total_hours: email_data.total_hours,
-            condition: email_data.condition,
-            body_template: email_data.body_template,
-            name: email_data.name,
-            subject_template: email_data.subject_template,
-            private_name: email_data.private_name,
-            email_automation_pipeline_id: email_data.email_automation_pipeline_id,
-            organization_id: gallery.organization.id,
-            inserted_at: now,
-            updated_at: now
-          ]
-        end
-      end)
+      |> email_mapping(gallery, category_type, order_id)
       |> Enum.filter(&(&1 != nil))
 
     previous_emails =
@@ -402,5 +375,37 @@ defmodule Picsello.EmailAutomationSchedules do
       {count, nil} -> {:ok, count}
       _ -> {:error, "error insertion"}
     end
+  end
+
+  defp email_mapping(data, gallery, category_type, order_id) do
+    now = DateTime.utc_now() |> DateTime.truncate(:second)
+
+    data
+    |> Enum.map(fn email_data ->
+      state = Map.get(email_data, :email_automation_pipeline) |> Map.get(:state)
+
+      if state not in [
+           :gallery_password_changed,
+           :order_confirmation_physical,
+           :order_confirmation_digital
+         ] do
+        [
+          gallery_id: gallery.id,
+          type: category_type,
+          order_id: order_id,
+          job_id: gallery.job.id,
+          total_hours: email_data.total_hours,
+          condition: email_data.condition,
+          body_template: email_data.body_template,
+          name: email_data.name,
+          subject_template: email_data.subject_template,
+          private_name: email_data.private_name,
+          email_automation_pipeline_id: email_data.email_automation_pipeline_id,
+          organization_id: gallery.organization.id,
+          inserted_at: now,
+          updated_at: now
+        ]
+      end
+    end)
   end
 end
