@@ -381,6 +381,7 @@ defmodule PicselloWeb.Live.EmailAutomations.Show do
         pipeline_id
       )
       |> where([es], is_nil(es.reminded_at))
+      |> where([es], is_nil(es.stopped_at))
       |> Repo.all()
       |> sort_emails(state)
       |> List.first()

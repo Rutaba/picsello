@@ -4,7 +4,7 @@ defmodule PicselloWeb.BookingProposalLive.Show do
   require Logger
   alias Picsello.{Repo, BookingProposal, Job, Payments, PaymentSchedules, Messages}
   alias PicselloWeb.{BookingProposalLive.ScheduleComponent, Live.Brand.Shared}
-
+  import Picsello.EmailAutomationSchedules, only: [insert_job_emails: 5]
   import Picsello.PaymentSchedules, only: [set_payment_schedules_order: 1]
 
   import PicselloWeb.BookingProposalLive.Shared,
@@ -147,6 +147,7 @@ defmodule PicselloWeb.BookingProposalLive.Show do
       socket
       |> assign(job: job |> Repo.preload(:payment_schedules, force: true))
       |> reorder_payment_schedules()
+      |> assign_job_emails()
       |> show_confetti_banner()
       |> noreply()
 
@@ -479,5 +480,10 @@ I look forward to capturing these memories for you!"}
   defp pending_amount_details(job) do
     percentage_left = PaymentSchedules.percentage_paid(job) |> round() |> to_string()
     "#{percentage_left}% paid"
+  end
+
+  defp assign_job_emails(%{assigns: %{organization: organization, job: job}} = socket) do
+    insert_job_emails(job.type, organization.id, job.id, :job, [])
+    socket
   end
 end

@@ -147,11 +147,8 @@ defmodule Picsello.Workers.ScheduleAutomationEmail do
     do: Galleries.get_gallery!(id) |> Repo.preload([:orders, :albums, job: :client])
 
   defp group_key(email_schedule) do
-    if email_schedule.job_id != nil do
-      {email_schedule.job_id, nil, email_schedule.email_automation_pipeline_id}
-    else
-      {nil, email_schedule.gallery_id, email_schedule.email_automation_pipeline_id}
-    end
+    {email_schedule.job_id, email_schedule.gallery_id,
+     email_schedule.email_automation_pipeline_id}
   end
 
   defp is_email_send_time(nil, _state, _total_hours), do: false

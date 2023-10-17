@@ -16,11 +16,10 @@ defmodule Picsello.EmailAutomations do
 
   alias Picsello.EmailAutomation.{
     EmailAutomationPipeline,
-    EmailAutomationSubCategory,
-    EmailSchedule
+    EmailAutomationSubCategory
   }
 
-  def get_emails_for_schedule(organization_id, job_type, types, skip_sub_categories \\ [""]) do
+  def get_emails_for_schedule(organization_id, job_type, type, skip_sub_categories \\ [""]) do
     from(
       ep in EmailPreset,
       # distinct: ep.name,
@@ -33,7 +32,7 @@ defmodule Picsello.EmailAutomations do
         ep.organization_id == ^organization_id and
           ep.job_type == ^job_type and
           ep.status == :active and
-          eac.type in ^types and
+          eac.type == ^type and
           eas.slug not in ^skip_sub_categories
     )
     |> preload(:email_automation_pipeline)
@@ -111,7 +110,7 @@ defmodule Picsello.EmailAutomations do
         client: :organization
       ])
 
-  def resolve_variables(%EmailSchedule{} = preset, schemas, helpers) do
+  def resolve_variables(preset, schemas, helpers) do
     resolver_module =
       case preset.email_automation_pipeline.email_automation_category.type do
         :gallery -> Picsello.EmailPresets.GalleryResolver

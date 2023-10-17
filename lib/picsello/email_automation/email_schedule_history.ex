@@ -7,10 +7,12 @@ defmodule Picsello.EmailAutomation.EmailScheduleHistory do
     EmailAutomationPipeline
   }
 
+  @types ~w(lead job gallery order)a
   alias Picsello.{Job, Galleries.Gallery, Cart.Order, Organization}
 
   schema "email_schedules_history" do
     field :total_hours, :integer, default: 0
+    field :type, Ecto.Enum, values: @types
     field :condition, :string
     field :body_template, :string
     field :name, :string
@@ -32,9 +34,8 @@ defmodule Picsello.EmailAutomation.EmailScheduleHistory do
     email_preset
     |> cast(
       attrs,
-      ~w[email_automation_pipeline_id name private_name subject_template body_template total_hours condition stopped_at reminded_at job_id gallery_id order_id organization_id]a
+      ~w[email_automation_pipeline_id name type private_name subject_template body_template total_hours condition stopped_at reminded_at job_id gallery_id order_id organization_id]a
     )
-    |> validate_required(~w[email_automation_pipeline_id subject_template body_template]a)
-    |> check_constraint(:job_id, name: :job_gallery_constraint)
+    |> validate_required(~w[email_automation_pipeline_id type subject_template body_template]a)
   end
 end

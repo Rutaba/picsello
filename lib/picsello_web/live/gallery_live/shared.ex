@@ -40,7 +40,6 @@ defmodule PicselloWeb.GalleryLive.Shared do
     case prepare_gallery(gallery) do
       {:ok, _} ->
         gallery = gallery |> Galleries.set_gallery_hash() |> Repo.preload([:albums, job: :client])
-        preset_state = preset_state(type)
         state = automation_state(type)
         pipeline = EmailAutomations.get_pipeline_by_state(state)
         email_by_state = get_gallery_email_by_pipeline(gallery.id, pipeline)
@@ -54,14 +53,15 @@ defmodule PicselloWeb.GalleryLive.Shared do
             state,
             PicselloWeb.EmailAutomationLive.Shared
           )
+          |> Repo.preload(email_automation_pipeline: [:email_automation_category])
 
-        manual_toggle =
+        %{toggle: manual_toggle, email: email} =
           if is_manual_toggle?(email_by_state) and is_nil(last_completed_email),
-            do: true,
-            else: false
+            do: %{toggle: true, email: email_by_state},
+            else: %{toggle: false, email: last_completed_email}
 
         %{body_template: body_html, subject_template: subject} =
-          get_email_body_subject(email_by_state, gallery, preset_state)
+          get_email_body_subject(email, gallery, state)
 
         body_html = Utils.normalize_body_template(body_html)
 
@@ -103,17 +103,21 @@ defmodule PicselloWeb.GalleryLive.Shared do
     |> noreply()
   end
 
-  defp get_email_body_subject(nil, gallery, preset_state) do
-    with [preset | _] <- Picsello.EmailPresets.for(gallery, preset_state) do
-      Picsello.EmailPresets.resolve_variables(
-        preset,
-        schemas(gallery),
-        PicselloWeb.Helpers
-      )
+  defp get_email_body_subject(nil, gallery, state) do
+    case Picsello.EmailPresets.for(gallery, state) do
+      [preset | _] ->
+        Picsello.EmailPresets.resolve_variables(
+          preset,
+          schemas(gallery),
+          PicselloWeb.Helpers
+        )
+
+      _ ->
+        %{body_template: "", subject_template: ""}
     end
   end
 
-  defp get_email_body_subject(email_by_state, gallery, _preset_state) do
+  defp get_email_body_subject(email_by_state, gallery, _state) do
     EmailAutomations.resolve_variables(
       email_by_state,
       schemas(gallery),
@@ -142,11 +146,6 @@ defmodule PicselloWeb.GalleryLive.Shared do
   defp automation_state(:proofing), do: :manual_send_proofing_gallery
   defp automation_state(:finals), do: :manual_send_proofing_gallery_finals
 
-  defp preset_state(:standard), do: :gallery_send_link
-  defp preset_state(:proofing), do: :proofs_send_link
-  defp preset_state(:finals), do: :album_send_link
-
-  #
   defp modal_title(:standard), do: "Share gallery"
   defp modal_title(:proofing), do: "Share Proofing Album"
   defp modal_title(:finals), do: "Share Finals Album"
