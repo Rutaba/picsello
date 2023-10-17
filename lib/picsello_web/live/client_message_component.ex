@@ -5,7 +5,8 @@ defmodule PicselloWeb.ClientMessageComponent do
   import PicselloWeb.LiveModal, only: [close_x: 1, footer: 1]
   import PicselloWeb.Shared.Quill, only: [quill_input: 1]
   import Picsello.Messages, only: [get_emails: 2]
-  alias Picsello.{Repo, Job, Clients, AdminGlobalSettings}
+
+  alias Picsello.{Repo, Job, Clients, AdminGlobalSettings, EmailAutomationSchedules}
 
   @default_assigns %{
     composed_event: :message_composed,
@@ -18,7 +19,10 @@ defmodule PicselloWeb.ClientMessageComponent do
     show_subject: true,
     current_user: nil,
     enable_size: false,
-    enable_image: false
+    enable_image: false,
+    manual_toggle: false,
+    toggle_value: false,
+    email_schedule: nil
   }
 
   @impl true
@@ -97,6 +101,9 @@ defmodule PicselloWeb.ClientMessageComponent do
         <hr class="my-4"/>
       <% end %>
 
+      <%= if @manual_toggle do %>
+        <.manual_state_show email_schedule={@email_schedule} toggle_value={@toggle_value} myself={@myself}/>
+      <% end %>
       <.form :let={f} for={@changeset} phx-change="validate" phx-submit="save" phx-target={@myself}>
         <div class="grid grid-flow-row md:grid-flow-col md:auto-cols-fr md:gap-4 mt-2">
           <%= if Enum.any?(@preset_options), do: (labeled_select f, :preset_id, @preset_options, label: "Select email preset", class: "h-12") %>
@@ -189,6 +196,13 @@ defmodule PicselloWeb.ClientMessageComponent do
   end
 
   @impl true
+  def handle_event("toggle", %{"active" => active}, socket) do
+    socket
+    |> assign(:toggle_value, update_toggle(active))
+    |> noreply()
+  end
+
+  @impl true
   def handle_event(
         "validate",
         %{
@@ -230,6 +244,8 @@ defmodule PicselloWeb.ClientMessageComponent do
         %{"client_message" => _params},
         %{
           assigns: %{
+            email_schedule: email_schedule,
+            toggle_value: toggle_value,
             changeset: changeset,
             composed_event: composed_event,
             recipients: recipients
@@ -244,6 +260,12 @@ defmodule PicselloWeb.ClientMessageComponent do
           socket.parent_pid,
           {composed_event, changeset |> Map.put(:action, nil), updated_recipients}
         )
+
+    if toggle_value and changeset.valid? do
+      EmailAutomationSchedules.update_email_schedule(email_schedule.id, %{
+        reminded_at: DateTime.truncate(DateTime.utc_now(), :second)
+      })
+    end
 
     socket |> noreply()
   end
@@ -264,7 +286,9 @@ defmodule PicselloWeb.ClientMessageComponent do
           optional(:client) => Picsello.Client.t(),
           optional(:enable_size) => boolean,
           optional(:enable_image) => boolean,
-          optional(:recipients) => map()
+          optional(:recipients) => map(),
+          optional(:manual_toggle) => boolean,
+          optional(:email_schedule) => any
         }) :: Phoenix.LiveView.Socket.t()
   def open(%{assigns: assigns} = socket, opts \\ %{}),
     do:
@@ -526,4 +550,50 @@ defmodule PicselloWeb.ClientMessageComponent do
     </button>
     """
   end
+
+  defp manual_state_show(assigns) do
+    ~H"""
+      <div class="p-5 flex flex-col rounded-lg bg-gray-100 lg:w-1/2">
+        <div class="flex flex-row mb-5 items-center">
+          <div class="w-9 h-9 rounded-full bg-gray-200 flex items-center justify-center">
+            <.icon name="play-icon" class="inline-block w-5 h-5 fill-current text-blue-planning-300" />
+          </div>
+          <div class="ml-3">
+            <p class="text-sm uppercase font-bold text-base-250">Email Sequences</p>
+            <p class="text-blue-planning-300 text-2xl font-bold"><%= @email_schedule.name %></p>
+          </div>
+        </div>
+        <div class="flex flex-row ml-12">
+          <.form :let={_} for={%{}} as={:toggle} phx-target={@myself} phx-click="toggle"  phx-value-active={@toggle_value |> to_string}>
+          <label class="flex">
+            <input id="pipeline-toggle" type="checkbox" class="peer hidden" checked={@toggle_value}/>
+            <div class="hidden peer-checked:flex cursor-pointer">
+              <div class="rounded-full bg-blue-planning-300 border border-base-100 w-16 h-8 p-1 flex items-center justify-end mr-4">
+                <div class="rounded-full h-5 w-5 bg-base-100"></div>
+              </div>
+              <div>
+                <p class="font-bold">Allow automation to send sequence</p>
+                <p>(Disable to send a one-off)</p>
+                <p class="text-blue-planning-300 underline"><a>Review emails</a></p>
+              </div>
+            </div>
+            <div class="flex peer-checked:hidden cursor-pointer">
+              <div class="rounded-full w-16 h-8 p-1 flex items-center mr-4 border border-blue-planning-300">
+                <div class="rounded-full h-5 w-5 bg-blue-planning-300"></div>
+              </div>
+              <div>
+                <p class="font-bold">Allow automation to send sequence</p>
+                <p>(Disable to send a one-off)</p>
+                <p class="text-blue-planning-300 underline"><a>Review emails</a></p>
+              </div>
+            </div>
+          </label>
+          </.form>
+        </div>
+      </div>
+    """
+  end
+
+  defp update_toggle("true"), do: false
+  defp update_toggle("false"), do: true
 end

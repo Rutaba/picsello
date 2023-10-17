@@ -143,6 +143,7 @@ defmodule Picsello.CreateClientTest do
       |> click(css(".trash"))
     end)
     |> click(css("button", text: "Yes, archive"))
+    |> assert_text("Your Leads")
   end
 
   feature "order-details anchor click, renders the order-details for client", %{session: session} do

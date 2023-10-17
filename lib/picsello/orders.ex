@@ -24,6 +24,7 @@ defmodule Picsello.Orders do
       where: order.gallery_id == ^gallery_id,
       preload: [
         :package,
+        :album,
         :intent,
         :canceled_intents,
         digitals: [photo: ^photo_query],
@@ -334,6 +335,14 @@ defmodule Picsello.Orders do
     from(order in Order,
       preload: [gallery: :job],
       where: order.number == ^order_number
+    )
+    |> Repo.one()
+  end
+
+  def get_order(id) do
+    from(order in Order,
+      preload: [gallery: :job],
+      where: order.id == ^id
     )
     |> Repo.one()
   end

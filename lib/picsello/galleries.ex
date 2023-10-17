@@ -22,7 +22,9 @@ defmodule Picsello.Galleries do
     Client,
     Utils,
     WHCC,
-    Galleries.Gallery.UseGlobal
+    Galleries.Gallery.UseGlobal,
+    EmailAutomation.EmailSchedule,
+    EmailAutomationSchedules
   }
 
   alias Picsello.Workers.{UploadExistingFile, CleanStore}
@@ -573,6 +575,12 @@ defmodule Picsello.Galleries do
       |> Repo.preload(:package)
       |> check_watermark(user)
     end)
+    |> Multi.insert_all(:email_automation_job, EmailSchedule, fn %{gallery: gallery} ->
+      EmailAutomationSchedules.insert_job_emails_from_gallery(gallery, [:job])
+    end)
+    |> Multi.insert_all(:email_automation, EmailSchedule, fn %{gallery: gallery} ->
+      EmailAutomationSchedules.gallery_order_emails(gallery, nil)
+    end)
   end
 
   defp check_watermark(%{package: %{download_each_price: %Money{amount: 0}}}, _), do: Multi.new()
@@ -728,7 +736,11 @@ defmodule Picsello.Galleries do
   Generates new password for the gallery.
   """
   def regenerate_gallery_password(%Gallery{} = gallery) do
-    changeset = Gallery.update_changeset(gallery, %{password: Gallery.generate_password()})
+    changeset =
+      Gallery.update_changeset(gallery, %{
+        password: Gallery.generate_password(),
+        password_regenerated_at: DateTime.utc_now()
+      })
 
     Multi.new()
     |> Multi.update(:gallery, changeset)

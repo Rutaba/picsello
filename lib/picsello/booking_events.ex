@@ -4,6 +4,7 @@ defmodule Picsello.BookingEvents do
   alias Ecto.{Multi, Changeset}
   alias Picsello.Workers.ExpireBooking
   alias PicselloWeb.Calendar.BookingEvents.Shared, as: BEShared
+  alias Picsello.{Repo, BookingEvent, Job, Package, EmailAutomationSchedules}
   import Ecto.Query
 
   defmodule Booking do
@@ -734,6 +735,16 @@ defmodule Picsello.BookingEvents do
          } <-
            job |> Repo.preload([:payment_schedules, :job_status, client: :organization]),
          %Picsello.JobStatus{is_lead: true} <- job_status,
+         {:ok, _} <-
+           EmailAutomationSchedules.insert_job_emails(
+             job.type,
+             organization.id,
+             job.id,
+             [:lead, :job],
+             [
+               :client_contact
+             ]
+           ),
          {:ok, _} <- Picsello.Jobs.archive_job(job) do
       for %{stripe_session_id: "" <> session_id} <- payment_schedules,
           do:

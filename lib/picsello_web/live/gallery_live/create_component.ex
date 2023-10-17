@@ -456,7 +456,7 @@ defmodule PicselloWeb.GalleryLive.CreateComponent do
         "download_count" => Download.count(download),
         "download_each_price" => Download.each_price(download, currency),
         "buy_all" => Download.buy_all(download),
-        "name" => "New package",
+        "name" => "New package at: " <> date_time_now(),
         "organization_id" => current_user.organization_id,
         "status" => download.status,
         "job_type" => get_job_type(assigns, params),
@@ -475,6 +475,10 @@ defmodule PicselloWeb.GalleryLive.CreateComponent do
             package_pricing_params(package)
         )
     )
+  end
+
+  defp date_time_now() do
+    DateTime.utc_now() |> DateTime.to_string()
   end
 
   defp package_pricing_params(package) do

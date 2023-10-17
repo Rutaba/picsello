@@ -177,7 +177,7 @@ defmodule Picsello.InboxTest do
     |> click(button("Delete"))
     |> click(button("Yes, delete"))
     |> visit("/jobs/#{job.id}")
-    |> click(button("Go to inbox"))
+    |> click(button("View inbox"))
     |> assert_has(testid("thread-message", count: 0))
   end
 end

@@ -15,7 +15,8 @@ defmodule Picsello.PaymentSchedules do
     Shoot,
     Currency,
     UserCurrencies,
-    Workers.CalendarEvent
+    Workers.CalendarEvent,
+    EmailAutomationSchedules
   }
 
   def get_description(%Job{package: nil} = job),
@@ -204,6 +205,10 @@ defmodule Picsello.PaymentSchedules do
     |> Money.add(Map.get(job.package, :collected_price) || Money.new(0, currency))
   end
 
+  def get_is_with_cash(job) do
+    job |> payment_schedules() |> Enum.filter(& &1.is_with_cash)
+  end
+
   def paid_amount(%Job{} = job) do
     paid_price(job) |> Map.get(:amount)
   end
@@ -323,7 +328,12 @@ defmodule Picsello.PaymentSchedules do
         helpers
       )
 
-      %{job: %{shoots: shoots, client: %{organization: %{user: %{nylas_detail: nylas_detail}}}}} =
+      %{
+        job: %{
+          shoots: shoots,
+          client: %{organization: %{user: %{nylas_detail: nylas_detail}} = organization}
+        }
+      } =
         Repo.preload(payment_schedule,
           job: [:shoots, client: [organization: [user: :nylas_detail]]]
         )
@@ -334,6 +344,14 @@ defmodule Picsello.PaymentSchedules do
         |> Enum.map(&CalendarEvent.new(%{type: :insert, shoot_id: &1.id}))
         |> Oban.insert_all()
       end
+
+      EmailAutomationSchedules.insert_job_emails(
+        proposal.job.type,
+        organization.id,
+        proposal.job.id,
+        [:lead, :job],
+        [:client_contact, :abandoned_emails]
+      )
 
       {:ok, payment_schedule}
     else

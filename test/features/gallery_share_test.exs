@@ -10,7 +10,10 @@ defmodule Picsello.GalleryShareTest do
   setup :authenticated_gallery
 
   setup %{gallery: gallery} do
-    Mox.stub(Picsello.PhotoStorageMock, :path_to_url, & &1)
+    Picsello.PhotoStorageMock
+    |> Mox.stub(:get, fn _ -> {:error, nil} end)
+    |> Mox.stub(:path_to_url, & &1)
+
     photo_ids = insert_photo(%{gallery: gallery, total_photos: 20})
 
     Mox.verify_on_exit!()

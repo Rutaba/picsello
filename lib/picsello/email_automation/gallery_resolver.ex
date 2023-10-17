@@ -2,7 +2,7 @@ defmodule Picsello.EmailPresets.GalleryResolver do
   @moduledoc "resolves gallery mustache variables"
 
   defstruct [:gallery, :order, :album, :helpers]
-  alias Picsello.{Galleries.Gallery, Galleries.Album, Cart.Order}
+  alias Picsello.{Galleries.Gallery, Galleries.Album, Cart.Order, Pack}
 
   def new({%Gallery{} = gallery}, helpers),
     do: %__MODULE__{
@@ -52,6 +52,13 @@ defmodule Picsello.EmailPresets.GalleryResolver do
     resolver |> photographer() |> Map.get(:time_zone) |> helpers.strftime(date, format)
   end
 
+  defp download_photos_link(%__MODULE__{gallery: gallery}) do
+    case Pack.url(gallery) do
+      {:ok, url} -> url
+      _ -> nil
+    end
+  end
+
   defp helpers(%__MODULE__{helpers: helpers}), do: helpers
 
   def vars,
@@ -59,11 +66,26 @@ defmodule Picsello.EmailPresets.GalleryResolver do
       "client_first_name" => &(&1 |> client() |> Map.get(:name) |> String.split() |> hd),
       "password" => &(&1 |> gallery() |> Map.get(:password)),
       "gallery_link" => fn resolver ->
-        helpers(resolver).gallery_url(gallery(resolver).client_link_hash)
+        """
+        <a style="border:1px solid #1F1C1E;display:inline-block;background:white;color:#1F1C1E;font-family:Montserrat, sans-serif;font-size:18px;font-weight:normal;line-height:120%;margin:0;text-decoration:none;text-transform:none;padding:10px 15px;mso-padding-alt:0px;border-radius:0px;"
+           target="_blank"
+           href="#{helpers(resolver).gallery_url(gallery(resolver).client_link_hash)}"> Gallery Link
+        </a>
+        """
       end,
       "photography_company_s_name" => &organization(&1).name,
       "photographer_first_name" => &(&1 |> photographer() |> Picsello.Accounts.User.first_name()),
       "gallery_name" => &(&1 |> gallery() |> Map.get(:name)),
+      "download_photos" =>
+        &with(
+          link <- download_photos_link(&1),
+          do: """
+          <a style="border:1px solid #1F1C1E;display:inline-block;background:white;color:#1F1C1E;font-family:Montserrat, sans-serif;font-size:18px;font-weight:normal;line-height:120%;margin:0;text-decoration:none;text-transform:none;padding:10px 15px;mso-padding-alt:0px;border-radius:0px;"
+             target="_blank"
+             href="#{link}"> Download Photos Link
+          </a>
+          """
+        ),
       "gallery_expiration_date" =>
         &with(
           %DateTime{} = expired_at <- &1 |> gallery() |> Map.get(:expired_at),
@@ -82,7 +104,12 @@ defmodule Picsello.EmailPresets.GalleryResolver do
       "album_link" =>
         &with(
           %Album{client_link_hash: "" <> client_link_hash} <- album(&1),
-          do: helpers(&1).album_url(client_link_hash)
+          do: """
+          <a style="border:1px solid #1F1C1E;display:inline-block;background:white;color:#1F1C1E;font-family:Montserrat, sans-serif;font-size:18px;font-weight:normal;line-height:120%;margin:0;text-decoration:none;text-transform:none;padding:10px 15px;mso-padding-alt:0px;border-radius:0px;"
+             target="_blank"
+             href="#{helpers(&1).album_url(client_link_hash)}"> Download Photos Link
+          </a>
+          """
         ),
       "album_password" => &(&1 |> gallery() |> Map.get(:password))
     }

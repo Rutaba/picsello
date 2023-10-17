@@ -597,10 +597,12 @@ defmodule Picsello.Cart do
   def add_default_shipping_to_products(order, opts \\ %{}) do
     das_type = opts[:das_type]
     force_update = opts[:force_update]
-    details = %{shipping_type: @default_shipping, das_type: das_type}
 
     shipping = fn p ->
-      (!force_update && p.shipping_type && p) || add_shipping_details!(p, details)
+      shipping_type = Map.get(p, :shipping_type) || @default_shipping
+
+      (!force_update && p.shipping_type && p) ||
+        add_shipping_details!(p, %{das_type: das_type, shipping_type: shipping_type})
     end
 
     order

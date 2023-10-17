@@ -3,6 +3,8 @@ defmodule Picsello.JobType do
 
   use Ecto.Schema
   import Ecto.Query
+  import Ecto.Changeset
+
   alias Picsello.Repo
 
   @other_type "other"
@@ -10,6 +12,13 @@ defmodule Picsello.JobType do
   @primary_key {:name, :string, []}
   schema "job_types" do
     field(:position, :integer)
+  end
+
+  @doc false
+  def changeset(job_type \\ %__MODULE__{}, attrs) do
+    job_type
+    |> cast(attrs, [:name, :position])
+    |> validate_required([:name])
   end
 
   def all() do
