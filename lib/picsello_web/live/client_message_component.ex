@@ -406,8 +406,16 @@ defmodule PicselloWeb.ClientMessageComponent do
     value = String.to_integer(value)
 
     error =
-      length(email_list) > value &&
-        "Limit reached, #{ngettext("1 email", "%{count} emails", value)} allowed, Contact support to increase limit"
+      cond do
+        length(email_list) > value ->
+          "Limit reached, #{ngettext("1 email", "%{count} emails", value)} allowed, Contact support to increase limit"
+
+        Enum.empty?(email_list) ->
+          @error_3
+
+        true ->
+          nil
+      end
 
     error = if error, do: error, else: do_validate_emails(email_list, type, user)
 
