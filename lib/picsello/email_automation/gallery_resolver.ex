@@ -72,6 +72,13 @@ defmodule Picsello.EmailPresets.GalleryResolver do
         </a>
         """
       end,
+      "client_gallery_order_page" => fn resolver ->
+        """
+        <a target="_blank" href="#{helpers(resolver).gallery_url(gallery(resolver).client_link_hash)}/cart">
+          Order Page Link
+        </a>
+        """
+      end,
       "photography_company_s_name" => &organization(&1).name,
       "photographer_first_name" => &(&1 |> photographer() |> Picsello.Accounts.User.first_name()),
       "gallery_name" => &(&1 |> gallery() |> Map.get(:name)),
