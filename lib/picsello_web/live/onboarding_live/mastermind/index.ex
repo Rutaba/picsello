@@ -167,7 +167,7 @@ defmodule PicselloWeb.OnboardingLive.Mastermind.Index do
   @impl true
   def render(assigns) do
     ~H"""
-      <.form :let={f} for={@changeset} phx-change="validate" phx-submit="save" id={"onboarding-step-#{@step}"}>
+      <.form :let={f} for={@changeset} phx-change="validate" phx-submit="save" id={"onboarding-step-#{@step}"} class={classes("" , %{"pointer-events-none" => @stripe_elements_loading})}>
         <.step f={f} {assigns} />
       </.form>
     """

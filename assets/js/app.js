@@ -147,10 +147,21 @@ const ClearInput = {
   },
 };
 
-const TZCookie = {
+const OnboardingCookie = {
   mounted() {
+    function getQueryParam(paramName) {
+      const urlParams = new URLSearchParams(window.location.search);
+      return urlParams.get(paramName);
+    }
+
     const { timeZone } = Intl.DateTimeFormat().resolvedOptions();
     document.cookie = `time_zone=${timeZone}; path=/`;
+
+    if (getQueryParam('onboarding_type')) {
+      document.cookie = `onboarding_type=${getQueryParam(
+        'onboarding_type'
+      )}; path=/`;
+    }
   },
 };
 
@@ -252,7 +263,7 @@ const Hooks = {
   ResumeUpload,
   ScrollIntoView,
   Select,
-  TZCookie,
+  OnboardingCookie,
   ToggleContent,
   ToggleSiblings,
   Tooltip,

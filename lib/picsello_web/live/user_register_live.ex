@@ -165,7 +165,7 @@ defmodule PicselloWeb.UserRegisterLive do
 
   defp signup_hooks(assigns) do
     ~H"""
-      <div id="tz-cookie" phx-hook="TZCookie"></div>
+      <div id="onboarding-cookie" phx-hook="OnboardingCookie"></div>
       <div phx-hook="HandleTrialCode" id="handle-trial-code" data-handle="save"></div>
     """
   end
