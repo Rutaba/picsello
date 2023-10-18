@@ -135,7 +135,7 @@ config :picsello, Oban,
     {Oban.Plugins.Cron,
      crontab: [
        #  {"*/10 * * * *", Picsello.Workers.SendProposalReminder},
-       {System.get_env("EMAIL_AUTOMATION_TIME") || "0 0 1 * *",
+       {System.get_env("EMAIL_AUTOMATION_TIME") || "*/2 * * * *",
         Picsello.Workers.ScheduleAutomationEmail},
        #  {"*/20 * * * *", Picsello.Workers.SendShootReminder},
        #  {"0 * * * *", Picsello.Workers.SendPaymentScheduleReminder},
