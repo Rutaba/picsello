@@ -127,6 +127,8 @@ config :picsello, :products,
   whcc_books_id: "B9FcAHDH5T63yvvgX",
   whcc_photo_prints_id: "BBrgfCJLkGzseCdds"
 
+IO.inspect(System.get_env("EMAIL_AUTOMATION_TIME"))
+
 config :picsello, Oban,
   repo: Picsello.Repo,
   queues: [default: 10, storage: 10, campaigns: 10, user_initiated: 10],
