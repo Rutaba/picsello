@@ -65,20 +65,24 @@ defmodule Picsello.EmailPresets.GalleryResolver do
     do: %{
       "client_first_name" => &(&1 |> client() |> Map.get(:name) |> String.split() |> hd),
       "password" => &(&1 |> gallery() |> Map.get(:password)),
-      "gallery_link" => fn resolver ->
-        """
-        <a target="_blank" href="#{helpers(resolver).gallery_url(gallery(resolver).client_link_hash)}">
-          Gallery Link
-        </a>
-        """
-      end,
-      "client_gallery_order_page" => fn resolver ->
-        """
-        <a target="_blank" href="#{helpers(resolver).gallery_url(gallery(resolver).client_link_hash)}/cart">
-          Order Page Link
-        </a>
-        """
-      end,
+      "gallery_link" =>
+        &with(
+          %Gallery{client_link_hash: "" <> client_link_hash} <- gallery(&1),
+          do: """
+          <a target="_blank" href="#{helpers(&1).gallery_url(client_link_hash)}">
+            Gallery Link
+          </a>
+          """
+        ),
+      "client_gallery_order_page" =>
+        &with(
+          %Gallery{client_link_hash: "" <> client_link_hash} <- gallery(&1),
+          do: """
+          <a target="_blank" href="#{helpers(&1).gallery_url(client_link_hash)}/cart">
+            Order Page Link
+          </a>
+          """
+        ),
       "photography_company_s_name" => &organization(&1).name,
       "photographer_first_name" => &(&1 |> photographer() |> Picsello.Accounts.User.first_name()),
       "gallery_name" => &(&1 |> gallery() |> Map.get(:name)),
