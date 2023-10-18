@@ -20,14 +20,21 @@ defmodule PicselloWeb.GalleryLive.Shared do
     Utils,
     EmailAutomations,
     EmailAutomation.EmailSchedule,
-    EmailAutomationSchedules
+    EmailAutomationSchedules,
+    Galleries
   }
 
   alias Picsello.GlobalSettings.Gallery, as: GSGallery
   alias Cart.{Order, Digital}
-  alias Galleries.{GalleryProduct, Photo}
-  alias Picsello.Cart.Order
-  alias Galleries.{GalleryProduct, Photo, GalleryClient}
+
+  alias Galleries.{
+    GalleryProduct,
+    Photo,
+    GalleryClient,
+    PhotoProcessing.ProcessingManager,
+    Watermark
+  }
+
   alias PicselloWeb.Router.Helpers, as: Routes
 
   @card_blank "/images/card_gray.png"
@@ -1166,6 +1173,18 @@ defmodule PicselloWeb.GalleryLive.Shared do
     end
   end
 
+  def truncate_name(name, max_length) do
+    name_length = String.length(name)
+
+    if name_length > max_length do
+      String.slice(name, 0..max_length) <>
+        "..." <>
+        String.slice(name, (name_length - 10)..name_length)
+    else
+      name
+    end
+  end
+
   def toggle_preview(assigns) do
     assigns = Enum.into(assigns, %{disabled: nil, product_id: nil})
 
@@ -1247,5 +1266,14 @@ defmodule PicselloWeb.GalleryLive.Shared do
       nil -> false
       _ -> true
     end
+  end
+
+  def start_photo_processing(%{album: %{is_proofing: true}} = photo, %{watermark: nil} = gallery) do
+    %{job: %{client: %{organization: %{name: name}}}} = Galleries.populate_organization(gallery)
+    ProcessingManager.start(photo, Watermark.build(name, gallery))
+  end
+
+  def start_photo_processing(photo, %{watermark: watermark}) do
+    ProcessingManager.start(photo, watermark)
   end
 end

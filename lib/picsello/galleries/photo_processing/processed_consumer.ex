@@ -40,7 +40,7 @@ defmodule Picsello.Galleries.PhotoProcessing.ProcessedConsumer do
       err ->
         msg = "Failed to process PubSub message\n#{inspect(err)}\n\n#{inspect(message)}"
         Logger.error(msg)
-        Message.failed(message, msg)
+        message
     end
   end
 

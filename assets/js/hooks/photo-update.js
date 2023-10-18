@@ -12,12 +12,12 @@ export default {
    */
   updatePhotoImage(id, url) {
     const imgWrapper = document.querySelector(`#item-${id}`);
-    if(imgWrapper) {
-      const isLoader = imgWrapper?.querySelector('.galleryLoader');
+    if (imgWrapper) {
+      const isLoader = imgWrapper?.querySelector('.PhotoLoader');
       const img = imgWrapper.querySelector(`img`);
       if (isLoader) {
-        isLoader.classList.remove('galleryLoader');
-        isLoader.classList.add('galleryLoaderFinished');
+        isLoader.classList.remove('PhotoLoader');
+        isLoader.classList.add('hidden');
         if (img && img.src && img.src != url) {
           img.src = url;
         }
