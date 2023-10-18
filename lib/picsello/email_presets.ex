@@ -86,10 +86,9 @@ defmodule Picsello.EmailPresets do
 
   def resolve_variables(%EmailPreset{} = preset, schemas, helpers) do
     resolver_module =
-      cond do
-        preset.type in [:job, :lead] -> Picsello.EmailPresets.JobResolver
-        true -> Picsello.EmailPresets.GalleryResolver
-      end
+      if preset.type in [:job, :lead],
+        do: Picsello.EmailPresets.JobResolver,
+        else: Picsello.EmailPresets.GalleryResolver
 
     resolver = schemas |> resolver_module.new(helpers)
 
@@ -100,7 +99,8 @@ defmodule Picsello.EmailPresets do
 
     %{
       preset
-      | body_template: Utils.render(preset.body_template, data) |> Utils.normalize_body_template(),
+      | body_template:
+          Utils.render(preset.body_template, data) |> Utils.normalize_body_template(),
         subject_template: Utils.render(preset.subject_template, data),
         short_codes: data
     }

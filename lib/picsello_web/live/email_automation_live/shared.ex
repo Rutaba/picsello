@@ -256,7 +256,8 @@ defmodule PicselloWeb.EmailAutomationLive.Shared do
   defp get_email_schedule_name(_hours, 0, _state, name), do: name
 
   defp get_email_schedule_name(hours, _index, state, name) when state not in ["post_shoot"] do
-    %{calendar: calendar, count: count, sign: sign} = EmailAutomations.get_email_meta(hours, PicselloWeb.Helpers)
+    %{calendar: calendar, count: count, sign: sign} =
+      EmailAutomations.get_email_meta(hours, PicselloWeb.Helpers)
 
     "#{name} - #{count} #{calendar} #{sign}"
   end
@@ -272,7 +273,9 @@ defmodule PicselloWeb.EmailAutomationLive.Shared do
   end
 
   def get_email_schedule_text(hours, state, emails, index, job_type, _organization_id) do
-    %{calendar: calendar, count: count, sign: sign} = EmailAutomations.get_email_meta(hours, PicselloWeb.Helpers)
+    %{calendar: calendar, count: count, sign: sign} =
+      EmailAutomations.get_email_meta(hours, PicselloWeb.Helpers)
+
     email = get_preceding_email(emails, index)
 
     sub_text =

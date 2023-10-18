@@ -60,7 +60,8 @@ defmodule PicselloWeb.Shared.ShortCodeComponent do
   end
 
   def variables_codes(job_type, current_user, job, user_currency, total_hours) do
-    %{calendar: calendar, count: count, sign: sign} = EmailAutomations.get_email_meta(total_hours, PicselloWeb.Helpers)
+    %{calendar: calendar, count: count, sign: sign} =
+      EmailAutomations.get_email_meta(total_hours, PicselloWeb.Helpers)
 
     total_time =
       "#{count} #{calendar} #{sign}"
