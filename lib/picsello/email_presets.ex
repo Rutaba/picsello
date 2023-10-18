@@ -17,6 +17,15 @@ defmodule Picsello.EmailPresets do
     |> Repo.all()
   end
 
+  def user_email_automation_presets(type, job_type, pipeline_id, org_id) do
+    from(p in presets(type),
+      where:
+        p.job_type == ^job_type and p.organization_id == ^org_id and
+          p.email_automation_pipeline_id == ^pipeline_id
+    )
+    |> Repo.all()
+  end
+
   def for(%Gallery{}, state) do
     from(preset in gallery_presets(), where: preset.state == ^state)
     |> Repo.all()
@@ -70,7 +79,6 @@ defmodule Picsello.EmailPresets do
   end
 
   defp job_presets(), do: presets(:job)
-
   defp gallery_presets(), do: presets(:gallery)
 
   defp presets(type),
@@ -78,9 +86,9 @@ defmodule Picsello.EmailPresets do
 
   def resolve_variables(%EmailPreset{} = preset, schemas, helpers) do
     resolver_module =
-      case preset.type do
-        :job -> Picsello.EmailPresets.JobResolver
-        _ -> Picsello.EmailPresets.GalleryResolver
+      cond do
+        preset.type in [:job, :lead] -> Picsello.EmailPresets.JobResolver
+        true -> Picsello.EmailPresets.GalleryResolver
       end
 
     resolver = schemas |> resolver_module.new(helpers)

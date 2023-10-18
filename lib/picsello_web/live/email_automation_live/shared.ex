@@ -387,10 +387,10 @@ defmodule PicselloWeb.EmailAutomationLive.Shared do
     else fetch_date_for_state to handle all other states
   """
   def fetch_date_for_state_maybe_manual(state, email, pipeline_id, job, gallery, order) do
-    state = if is_atom(state), do: state, else: String.to_atom(state)
     job = Repo.preload(job, [:booking_event])
     job_id = get_job_id(job)
     gallery_id = get_gallery_id(gallery, order)
+    order = if order, do: Repo.preload(order, [:digitals]), else: nil
     type = if job_id, do: :job, else: :gallery
 
     last_completed_email =
@@ -431,6 +431,7 @@ defmodule PicselloWeb.EmailAutomationLive.Shared do
   def fetch_date_for_state(:cart_abandoned, _email, last_completed_email, _job, gallery, _order) do
     card_abandoned? =
       Enum.any?(gallery.orders, fn order ->
+        order = Repo.preload(order, [:digitals])
         is_nil(order.placed_at) and is_nil(order.intent) and Enum.any?(order.digitals)
       end)
 

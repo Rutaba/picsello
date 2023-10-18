@@ -10,6 +10,7 @@ defmodule Picsello.EmailAutomations do
     Utils,
     Jobs,
     Galleries,
+    Orders,
     EmailAutomationSchedules,
     Notifiers.EmailAutomationNotifier
   }
@@ -96,6 +97,18 @@ defmodule Picsello.EmailAutomations do
     |> group_by_sub_category()
   end
 
+  def get_order(nil), do: nil
+
+  def get_order(id),
+    do:
+      Orders.get_order(id)
+      |> Repo.preload([:digitals, gallery: :job])
+
+  def get_gallery(nil), do: nil
+
+  def get_gallery(id),
+    do: Galleries.get_gallery!(id) |> Repo.preload([:orders, :albums, job: :client])
+
   def get_job(nil), do: nil
 
   def get_job(id),
@@ -165,17 +178,6 @@ defmodule Picsello.EmailAutomations do
     |> update_schedule(email.id)
   end
 
-  def send_now_email(type, email, job, state) when type in [:lead, :job] do
-    EmailAutomationNotifier.Impl.deliver_automation_email_job(
-      email,
-      job,
-      {job},
-      state,
-      PicselloWeb.Helpers
-    )
-    |> update_schedule(email.id)
-  end
-
   def send_now_email(:order, email, order, state) do
     order = order |> Repo.preload(gallery: :job)
 
@@ -183,6 +185,17 @@ defmodule Picsello.EmailAutomations do
       email,
       order,
       {order, order.gallery},
+      state,
+      PicselloWeb.Helpers
+    )
+    |> update_schedule(email.id)
+  end
+
+  def send_now_email(type, email, job, state) when type in [:lead, :job] do
+    EmailAutomationNotifier.Impl.deliver_automation_email_job(
+      email,
+      job,
+      {job},
       state,
       PicselloWeb.Helpers
     )

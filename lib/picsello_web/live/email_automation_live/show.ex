@@ -415,8 +415,8 @@ defmodule PicselloWeb.Live.EmailAutomations.Show do
       _ ->
         %{sign: sign} = explode_hours(email_schedule.total_hours)
         job = EmailAutomations.get_job(job_id)
-        gallery = if is_nil(gallery_id), do: nil, else: Galleries.get_gallery!(gallery_id)
-
+        gallery = if is_nil(gallery_id), do: nil, else: EmailAutomations.get_gallery(gallery_id)
+        state = if is_atom(state), do: state, else: String.to_atom(state)
         date = get_conditional_date(state, email_schedule, pipeline_id, job, gallery)
 
         cond do

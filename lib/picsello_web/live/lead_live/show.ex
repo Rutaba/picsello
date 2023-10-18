@@ -23,7 +23,7 @@ defmodule PicselloWeb.LeadLive.Show do
     only: [
       is_manual_toggle?: 1,
       get_job_email_by_pipeline: 2,
-      get_email_body_subject: 3,
+      get_email_body_subject: 5,
       assign_job: 2,
       assign_proposal: 1,
       assign_disabled_copy_link: 1,
@@ -169,7 +169,13 @@ defmodule PicselloWeb.LeadLive.Show do
       if is_manual_toggle?(email_by_state) and is_nil(last_completed_email), do: true, else: false
 
     %{body_template: body_html, subject_template: subject} =
-      get_email_body_subject(email_by_state, job, :booking_proposal)
+      get_email_body_subject(
+        email_by_state,
+        job,
+        :manual_booking_proposal_sent,
+        pipeline.id,
+        :lead
+      )
 
     body_html = Utils.normalize_body_template(body_html)
 
