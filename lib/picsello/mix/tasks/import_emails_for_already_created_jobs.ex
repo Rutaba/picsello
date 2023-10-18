@@ -52,15 +52,15 @@ defmodule Mix.Tasks.ImportEmailForAlreadyCreatedJobs do
 
   defp jobs_emails_insert(jobs, org_id) do
     Enum.map(jobs, fn job ->
-      skip_states = skip_job_states(job)
-      insert_email_schedules_job(job.type, job.id, org_id, :job, skip_states)
-      galleries_emails(job.galleries)
+        skip_states = skip_job_states(job)
+        insert_email_schedules_job(job.type, job.id, org_id, :job, skip_states)
+        galleries_emails(job.galleries)
     end)
   end
 
   defp skip_job_states(job) do
     skip_booking_states =
-      if Enum.any?(job.payment_schedules),
+      if Enum.any?(job.payment_schedules, &(!is_nil(&1.paid_at))),
         do: [:pays_retainer, :thanks_booking, :pays_retainer_offline],
         else: []
 
