@@ -43,7 +43,13 @@ defmodule Picsello.CreateBookingProposalTest do
         }
       })
 
-    insert(:email_preset, job_type: lead.type, state: :booking_proposal)
+    insert(:email_preset,
+      job_type: lead.type,
+      type: :lead,
+      state: :manual_booking_proposal_sent,
+      email_automation_pipeline_id: 3,
+      organization_id: user.organization.id
+    )
 
     [lead: lead]
   end
