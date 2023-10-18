@@ -694,7 +694,7 @@ defmodule PicselloWeb.EmailAutomationLive.Shared do
   def fetch_date_for_state(:paid_full, _email, last_completed_email, job, _gallery, _order) do
     payment_schedules = PaymentSchedules.payment_schedules(job)
     # Trigger when all paid & last payment is paid by stripe
-    if Enum.any?(payment_schedules) and PaymentSchedules.all_paid?(payment_schedules) do
+    if Enum.any?(payment_schedules) and PaymentSchedules.all_paid?(job) do
       payment_schedule = payment_schedules |> List.last()
       paid_at = paid_online(payment_schedule)
       get_date_for_schedule(last_completed_email, paid_at)
@@ -728,7 +728,7 @@ defmodule PicselloWeb.EmailAutomationLive.Shared do
       ) do
     payment_schedules = PaymentSchedules.payment_schedules(job)
     # Trigger when all paid & last payment is paid by cash/check
-    if Enum.any?(payment_schedules) and PaymentSchedules.all_paid?(payment_schedules) do
+    if Enum.any?(payment_schedules) and PaymentSchedules.all_paid?(job) do
       payment_schedule = payment_schedules |> List.last()
       paid_at = paid_offline(payment_schedule)
       get_date_for_schedule(last_completed_email, paid_at)
