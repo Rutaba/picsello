@@ -153,7 +153,7 @@ defmodule Picsello.Workers.ScheduleAutomationEmail do
        do: true
 
   defp is_email_send_time(submit_time, _state, total_hours) do
-    %{sign: sign} = Shared.explode_hours(total_hours)
+    %{sign: sign} = EmailAutomations.explode_hours(total_hours)
     {:ok, current_time} = DateTime.now("Etc/UTC")
     diff_seconds = DateTime.diff(current_time, submit_time, :second)
     hours = div(diff_seconds, 3600)

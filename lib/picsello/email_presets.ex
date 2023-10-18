@@ -100,7 +100,7 @@ defmodule Picsello.EmailPresets do
 
     %{
       preset
-      | body_template: Utils.render(preset.body_template, data),
+      | body_template: Utils.render(preset.body_template, data) |> Utils.normalize_body_template(),
         subject_template: Utils.render(preset.subject_template, data),
         short_codes: data
     }

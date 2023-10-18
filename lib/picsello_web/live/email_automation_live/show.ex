@@ -14,7 +14,6 @@ defmodule PicselloWeb.Live.EmailAutomations.Show do
       get_pipline: 1,
       get_email_schedule_text: 6,
       get_email_name: 4,
-      explode_hours: 1,
       get_preceding_email: 2,
       fetch_date_for_state_maybe_manual: 6,
       get_sample_values: 4
@@ -413,7 +412,7 @@ defmodule PicselloWeb.Live.EmailAutomations.Show do
         }
 
       _ ->
-        %{sign: sign} = explode_hours(email_schedule.total_hours)
+        %{sign: sign} = EmailAutomations.explode_hours(email_schedule.total_hours)
         job = EmailAutomations.get_job(job_id)
         gallery = if is_nil(gallery_id), do: nil, else: EmailAutomations.get_gallery(gallery_id)
         state = if is_atom(state), do: state, else: String.to_atom(state)
