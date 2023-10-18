@@ -43,19 +43,19 @@ defmodule PicselloWeb.InboxLive.Index do
   @impl true
   def render(assigns) do
     ~H"""
-    <div class={classes(%{"hidden sm:block" => @current_thread})} {intro(@current_user, "intro_inbox")}><h1 class="px-6 py-10 text-4xl font-bold center-container" {testid("inbox-title")}>Inbox</h1></div>
+    <div class={classes(%{"hidden lg:block" => @current_thread})} {intro(@current_user, "intro_inbox")}><h1 class="px-6 py-10 text-4xl font-bold center-container" {testid("inbox-title")}>Inbox</h1></div>
     <div class={classes("center-container pb-6", %{"pt-0" => @current_thread})}>
-      <div class={classes("flex flex-col sm:flex-row bg-gray-100 py-6 items-center mb-6 px-4 rounded-lg", %{"hidden sm:flex" => @current_thread})}>
+      <div class={classes("flex flex-col lg:flex-row bg-gray-100 py-6 items-center mb-6 px-4 rounded-lg", %{"hidden lg:flex" => @current_thread})}>
         <h2 class="font-bold text-2xl mb-4">Viewing all messages</h2>
-        <div class="flex sm:ml-auto gap-3">
+        <div class="flex lg:ml-auto gap-3">
           <%= for %{name: name, action: action, concise_name: concise_name} <- @tabs do %>
             <button class={classes("border rounded-lg border-blue-planning-300 text-blue-planning-300 py-1 px-4", %{"text-white bg-blue-planning-300" => @tab_active === concise_name, "hover:opacity-100" => @tab_active !== concise_name})} type="button" phx-click={action} phx-value-tab={concise_name}><%=  name %></button>
           <% end %>
         </div>
       </div>
 
-      <div class="flex sm:h-[calc(100vh-18rem)]">
-        <div class={classes("border-t w-full lg:w-1/3 overflow-y-auto flex-shrink-0", %{"hidden sm:block" => @current_thread, "hidden" => Enum.empty?(@threads)})}>
+      <div class="flex lg:h-[calc(100vh-18rem)]">
+        <div class={classes("border-t w-full lg:w-1/3 overflow-y-auto flex-shrink-0", %{"hidden lg:block" => @current_thread, "hidden" => Enum.empty?(@threads)})}>
           <%= for thread <- @threads do %>
             <.thread_card {thread} unread={member?(assigns, thread)} selected={@current_thread && to_string(thread.id) == @current_thread.id && @current_thread_type == thread.type} />
           <% end %>
@@ -72,7 +72,7 @@ defmodule PicselloWeb.InboxLive.Index do
               </div>
             </div>
           <% true -> %>
-            <div class="hidden sm:flex w-2/3 items-center justify-center border ml-4 rounded-lg">
+            <div class="hidden lg:flex w-2/3 items-center justify-center border ml-4 rounded-lg">
               <div class="flex items-center">
                 <.icon name="envelope" class="text-blue-planning-300 w-20 h-32" />
                 <p class="ml-4 text-blue-planning-300 text-xl w-52">No message selected</p>
@@ -89,24 +89,23 @@ defmodule PicselloWeb.InboxLive.Index do
     <div {testid("thread-card")} phx-click="open-thread" phx-value-id={@id} phx-value-type={@type} class={classes("lg:flex justify-between py-6 border-b pl-2 p-8 cursor-pointer", %{"bg-blue-planning-300 rounded-lg text-white" => @selected, "hover:bg-gray-100 hover:text-black" => !@selected})}>
       <div class="px-4">
         <div class="flex items-center">
-          <div class="font-bold	text-2xl line-clamp-1">
-            <%= if String.length(@title)>12 do %>
-              <%= String.slice(@title, 0..12) <> "..."%>
-            <% else %>
-              <%= @title %>
-            <% end %>
+          <div class="font-bold	text-2xl lg:hidden">
+            <%= title_slice(@title, 26) %>
+          </div>
+          <div class="font-bold	text-2xl hidden lg:block">
+            <%= title_slice(@title, 12) %>
           </div>
           <%= if @unread do %>
             <span {testid("new-badge")} class="mx-4 px-2 py-0.5 text-xs rounded bg-orange-inbox-300 text-white">New</span>
           <% end %>
         </div>
-        <div class="line-clamp-1 font-semibold py-0.5">
-          <%= if String.length(@subtitle)>17 do %>
-              <%= String.slice(@subtitle, 0..4) <> "..." <> " " <> (String.split(@subtitle, " ") |> List.last())  %>
-          <% else %>
-            <%= @subtitle %>
-          <% end %>
+        <div class=" font-semibold py-0.5 hidden lg:block">
+           <%=  subtitle_slice(@subtitle, 17) %>
         </div>
+        <div class=" font-semibold py-0.5  lg:hidden">
+           <%=  subtitle_slice(@subtitle, 30) %>
+        </div>
+
         <%= if (@message) do %>
           <div class="line-clamp-1 w-48"><%= raw @message %></div>
         <% end %>
@@ -129,9 +128,9 @@ defmodule PicselloWeb.InboxLive.Index do
 
   defp current_thread(assigns) do
     ~H"""
-      <div class="flex flex-col w-full sm:overflow-y-auto sm:border rounded-lg ml-2">
-          <div class="sticky z-10 top-0 px-6 py-3 flex shadow-sm sm:shadow-none bg-base-200">
-            <.live_link to={Routes.inbox_path(@socket, :index)} class="sm:hidden pt-2 pr-4">
+      <div class="flex flex-col w-full lg:overflow-y-auto lg:border rounded-lg ml-2">
+          <div class="sticky z-10 top-0 px-6 py-3 flex shadow-sm lg:shadow-none bg-base-200">
+            <.live_link to={Routes.inbox_path(@socket, :index)} class="lg:hidden pt-2 pr-4">
               <.icon name="left-arrow" class="w-6 h-6" />
             </.live_link>
             <div>
@@ -817,6 +816,25 @@ defmodule PicselloWeb.InboxLive.Index do
     |> close_modal()
     |> push_redirect(to: Routes.inbox_path(socket, :index, type: tab), replace: true)
     |> noreply()
+  end
+
+  defp title_slice(title, digit) do
+    length = String.length(title)
+
+    if length > digit do
+      String.slice(title, 0..digit) <> "..."
+    else
+      title
+    end
+  end
+
+  defp subtitle_slice(subtitle, digit) do
+    if String.length(subtitle) > digit do
+      String.slice(subtitle, 0..div(digit, 3)) <>
+        "..." <> " " <> (String.split(subtitle, " ") |> List.last())
+    else
+      subtitle
+    end
   end
 
   defp insert_messages_query(message_changeset, recipients, %{
