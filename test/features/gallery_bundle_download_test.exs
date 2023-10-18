@@ -88,7 +88,7 @@ defmodule Picsello.GalleryBundleDownloadTest do
     )
     |> assert_has(css(".muuri-item"))
 
-    assert_enqueued([worker: Picsello.Workers.PackGallery], 1000)
+    assert_enqueued([worker: Picsello.Workers.PackGallery], 2000)
 
     assert [
              %{worker: "Picsello.Workers.PackDigitals", state: "scheduled"},

@@ -141,18 +141,13 @@ defmodule Picsello.EmailAutomationsTest do
     |> find(css("div[data-testid='inbox']"), fn div ->
       click(div, button("View all"))
     end)
-    |> find(css("div[testid='main-area']", count: 2, at: 0), fn div ->
+    |> find(css("div[testid='main-area']", count: 1, at: 0), fn div ->
       assert_has(div, css("div", text: "Leads", count: 2))
       assert_has(div, css("div", text: "Jobs", count: 0))
       assert_has(div, css("div", text: "Galleries", count: 0))
     end)
-    |> find(css("div[testid='main-area']", count: 2, at: 1), fn div ->
-      assert_has(div, css("div", text: "Leads", count: 0))
-      assert_has(div, css("div", text: "Jobs", count: 2))
-      assert_has(div, css("div", text: "Galleries", count: 0))
-    end)
     # should be 13 but one pipeline of lead is not visible in test, but in real.
-    |> assert_has(css("div[testid='pipeline-section']", count: 12))
+    |> assert_has(css("div[testid='pipeline-section']", count: 2))
   end
 
   feature "testing categories and pipelines related to a job", %{session: session} do

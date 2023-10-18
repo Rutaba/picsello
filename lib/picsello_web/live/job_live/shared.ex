@@ -3,7 +3,7 @@ defmodule PicselloWeb.JobLive.Shared do
   handlers used by both leads and jobs
   """
 
-  require Ecto.Query
+  import Ecto.Query
   require Logger
 
   use Phoenix.Component
@@ -1914,7 +1914,7 @@ defmodule PicselloWeb.JobLive.Shared do
       if is_manual_toggle?(email_by_state) and is_nil(last_completed_email), do: true, else: false
 
     %{body_template: body_html, subject_template: subject} =
-      get_email_body_subject(email_by_state, job, :manual_thank_you_lead)
+      get_email_body_subject(email_by_state, job, :manual_thank_you_lead, pipeline.id, :lead)
 
     body_html = Utils.normalize_body_template(body_html)
 
@@ -2001,15 +2001,26 @@ defmodule PicselloWeb.JobLive.Shared do
 
   def get_job_email_by_pipeline(job_id, pipeline) do
     EmailAutomationSchedules.query_get_email_schedule(:lead, nil, job_id, pipeline.id)
+    |> where([es], is_nil(es.stopped_at))
     |> Repo.all()
     |> Repo.preload(email_automation_pipeline: [:email_automation_category])
     |> sort_emails(pipeline.state)
     |> List.first()
   end
 
-  def get_email_body_subject(nil, job, state) do
-    case Picsello.EmailPresets.for(job, state) do
-      [preset | _] ->
+  def get_email_body_subject(nil, job, state, pipeline_id, type) do
+    presets =
+      Picsello.EmailPresets.user_email_automation_presets(
+        type,
+        job.type,
+        pipeline_id,
+        job.client.organization_id
+      )
+
+    case presets do
+      [_preset | _] = emails ->
+        preset = sort_emails(emails, state) |> List.first()
+
         Picsello.EmailPresets.resolve_variables(
           preset,
           {job},
@@ -2022,7 +2033,7 @@ defmodule PicselloWeb.JobLive.Shared do
     end
   end
 
-  def get_email_body_subject(email_by_state, job, _state) do
+  def get_email_body_subject(email_by_state, job, _state, _pipeline_id, _type) do
     EmailAutomations.resolve_variables(
       email_by_state,
       {job},

@@ -4,6 +4,7 @@ defmodule PicselloWeb.GalleryLive.Shared do
   use Phoenix.Component
   import Phoenix.LiveView
   import PicselloWeb.LiveHelpers
+  import Ecto.Query
   import PicselloWeb.EmailAutomationLive.Shared, only: [sort_emails: 2]
 
   alias Picsello.{
@@ -136,6 +137,7 @@ defmodule PicselloWeb.GalleryLive.Shared do
 
   defp get_gallery_email_by_pipeline(gallery_id, pipeline) do
     EmailAutomationSchedules.query_get_email_schedule(:gallery, gallery_id, nil, pipeline.id)
+    |> where([es], is_nil(es.stopped_at))
     |> Repo.all()
     |> Repo.preload(email_automation_pipeline: [:email_automation_category])
     |> sort_emails(pipeline.state)

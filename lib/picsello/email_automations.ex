@@ -10,6 +10,7 @@ defmodule Picsello.EmailAutomations do
     Utils,
     Jobs,
     Galleries,
+    Orders,
     EmailAutomationSchedules,
     Notifiers.EmailAutomationNotifier
   }
@@ -96,6 +97,18 @@ defmodule Picsello.EmailAutomations do
     |> group_by_sub_category()
   end
 
+  def get_order(nil), do: nil
+
+  def get_order(id),
+    do:
+      Orders.get_order(id)
+      |> Repo.preload([:digitals, gallery: :job])
+
+  def get_gallery(nil), do: nil
+
+  def get_gallery(id),
+    do: Galleries.get_gallery!(id) |> Repo.preload([:orders, :albums, job: :client])
+
   def get_job(nil), do: nil
 
   def get_job(id),
@@ -119,11 +132,18 @@ defmodule Picsello.EmailAutomations do
 
     resolver = schemas |> resolver_module.new(helpers)
 
+    %{calendar: calendar, count: count, sign: sign} = get_email_meta(preset.total_hours, helpers)
+
+    total_time =
+      "#{count} #{calendar} #{sign}"
+      |> String.split()
+      |> Enum.map_join(" ", &String.capitalize/1)
+
     data =
       for {key, func} <- resolver_module.vars(), into: %{} do
         {key, func.(resolver)}
       end
-      |> Map.put("total_time", preset.total_hours)
+      |> Map.put("total_time", total_time)
 
     %{
       preset
@@ -165,17 +185,6 @@ defmodule Picsello.EmailAutomations do
     |> update_schedule(email.id)
   end
 
-  def send_now_email(type, email, job, state) when type in [:lead, :job] do
-    EmailAutomationNotifier.Impl.deliver_automation_email_job(
-      email,
-      job,
-      {job},
-      state,
-      PicselloWeb.Helpers
-    )
-    |> update_schedule(email.id)
-  end
-
   def send_now_email(:order, email, order, state) do
     order = order |> Repo.preload(gallery: :job)
 
@@ -183,6 +192,17 @@ defmodule Picsello.EmailAutomations do
       email,
       order,
       {order, order.gallery},
+      state,
+      PicselloWeb.Helpers
+    )
+    |> update_schedule(email.id)
+  end
+
+  def send_now_email(type, email, job, state) when type in [:lead, :job] do
+    EmailAutomationNotifier.Impl.deliver_automation_email_job(
+      email,
+      job,
+      {job},
       state,
       PicselloWeb.Helpers
     )
@@ -309,4 +329,33 @@ defmodule Picsello.EmailAutomations do
 
   defp schemas(%{type: :standard} = gallery), do: {gallery}
   defp schemas(%{albums: [album]} = gallery), do: {gallery, album}
+
+  def get_email_meta(hours, helpers) do
+    %{calendar: calendar, count: count, sign: sign} = explode_hours(hours)
+    sign = if sign == "+", do: "after", else: "before"
+    calendar = calendar_text(calendar, count, helpers)
+
+    %{calendar: calendar, count: count, sign: sign}
+  end
+
+  defp calendar_text("Hour", count, helpers), do: helpers.ngettext("hour", "hours", count)
+  defp calendar_text("Day", count, helpers), do: helpers.ngettext("day", "days", count)
+  defp calendar_text("Month", count, helpers), do: helpers.ngettext("month", "months", count)
+  defp calendar_text("Year", count, helpers), do: helpers.ngettext("year", "years", count)
+
+  def explode_hours(hours) do
+    year = 365 * 24
+    month = 30 * 24
+    sign = if hours > 0, do: "+", else: "-"
+    hours = make_positive_number(hours)
+
+    cond do
+      rem(hours, year) == 0 -> %{count: trunc(hours / year), calendar: "Year", sign: sign}
+      rem(hours, month) == 0 -> %{count: trunc(hours / month), calendar: "Month", sign: sign}
+      rem(hours, 24) == 0 -> %{count: trunc(hours / 24), calendar: "Day", sign: sign}
+      true -> %{count: hours, calendar: "Hour", sign: sign}
+    end
+  end
+
+  defp make_positive_number(no), do: if(no > 0, do: no, else: -1 * no)
 end

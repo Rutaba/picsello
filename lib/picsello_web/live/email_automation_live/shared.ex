@@ -2,7 +2,6 @@ defmodule PicselloWeb.EmailAutomationLive.Shared do
   @moduledoc false
   use Phoenix.Component
   import Phoenix.LiveView
-  import PicselloWeb.Gettext, only: [ngettext: 3]
 
   import PicselloWeb.LiveHelpers
   import PicselloWeb.PackageLive.Shared, only: [current: 1]
@@ -257,7 +256,8 @@ defmodule PicselloWeb.EmailAutomationLive.Shared do
   defp get_email_schedule_name(_hours, 0, _state, name), do: name
 
   defp get_email_schedule_name(hours, _index, state, name) when state not in ["post_shoot"] do
-    %{calendar: calendar, count: count, sign: sign} = get_email_meta(hours)
+    %{calendar: calendar, count: count, sign: sign} =
+      EmailAutomations.get_email_meta(hours, PicselloWeb.Helpers)
 
     "#{name} - #{count} #{calendar} #{sign}"
   end
@@ -273,7 +273,9 @@ defmodule PicselloWeb.EmailAutomationLive.Shared do
   end
 
   def get_email_schedule_text(hours, state, emails, index, job_type, _organization_id) do
-    %{calendar: calendar, count: count, sign: sign} = get_email_meta(hours)
+    %{calendar: calendar, count: count, sign: sign} =
+      EmailAutomations.get_email_meta(hours, PicselloWeb.Helpers)
+
     email = get_preceding_email(emails, index)
 
     sub_text =
@@ -333,7 +335,7 @@ defmodule PicselloWeb.EmailAutomationLive.Shared do
             <%= if @email.total_hours == 0 do %>
               <%= get_email_schedule_text(0, @pipeline.state, nil, @index, nil, nil) %>
             <% else %>
-              <% %{calendar: calendar, count: count, sign: sign} = get_email_meta(@email.total_hours) %>
+              <% %{calendar: calendar, count: count, sign: sign} = EmailAutomations.get_email_meta(@email.total_hours, PicselloWeb.Helpers) %>
               <%= "Send email #{count} #{calendar} #{sign} #{String.downcase(@pipeline.name)}" %>
             <% end %>
           </p>
@@ -347,36 +349,7 @@ defmodule PicselloWeb.EmailAutomationLive.Shared do
     if email, do: email, else: List.last(emails)
   end
 
-  def get_email_meta(hours) do
-    %{calendar: calendar, count: count, sign: sign} = explode_hours(hours)
-    sign = if sign == "+", do: "after", else: "before"
-    calendar = calendar_text(calendar, count)
-
-    %{calendar: calendar, count: count, sign: sign}
-  end
-
-  defp calendar_text("Hour", count), do: ngettext("hour", "hours", count)
-  defp calendar_text("Day", count), do: ngettext("day", "days", count)
-  defp calendar_text("Month", count), do: ngettext("month", "months", count)
-  defp calendar_text("Year", count), do: ngettext("year", "years", count)
-
-  def explode_hours(hours) do
-    year = 365 * 24
-    month = 30 * 24
-    sign = if hours > 0, do: "+", else: "-"
-    hours = make_positive_number(hours)
-
-    cond do
-      rem(hours, year) == 0 -> %{count: trunc(hours / year), calendar: "Year", sign: sign}
-      rem(hours, month) == 0 -> %{count: trunc(hours / month), calendar: "Month", sign: sign}
-      rem(hours, 24) == 0 -> %{count: trunc(hours / 24), calendar: "Day", sign: sign}
-      true -> %{count: hours, calendar: "Hour", sign: sign}
-    end
-  end
-
   defp hours_to_days(hours), do: hours / 24
-
-  defp make_positive_number(no), do: if(no > 0, do: no, else: -1 * no)
 
   def is_state_manually_trigger(state) do
     String.starts_with?(to_string(state), "manual")
@@ -387,10 +360,10 @@ defmodule PicselloWeb.EmailAutomationLive.Shared do
     else fetch_date_for_state to handle all other states
   """
   def fetch_date_for_state_maybe_manual(state, email, pipeline_id, job, gallery, order) do
-    state = if is_atom(state), do: state, else: String.to_atom(state)
     job = Repo.preload(job, [:booking_event])
     job_id = get_job_id(job)
     gallery_id = get_gallery_id(gallery, order)
+    order = if order, do: Repo.preload(order, [:digitals]), else: nil
     type = if job_id, do: :job, else: :gallery
 
     last_completed_email =
@@ -431,6 +404,7 @@ defmodule PicselloWeb.EmailAutomationLive.Shared do
   def fetch_date_for_state(:cart_abandoned, _email, last_completed_email, _job, gallery, _order) do
     card_abandoned? =
       Enum.any?(gallery.orders, fn order ->
+        order = Repo.preload(order, [:digitals])
         is_nil(order.placed_at) and is_nil(order.intent) and Enum.any?(order.digitals)
       end)
 
@@ -459,7 +433,7 @@ defmodule PicselloWeb.EmailAutomationLive.Shared do
     # send 7 days before expiration 7 <= 7
 
     days_to_compare = hours_to_days(email.total_hours)
-    %{sign: sign} = explode_hours(email.total_hours)
+    %{sign: sign} = EmailAutomations.explode_hours(email.total_hours)
     today = NaiveDateTime.utc_now() |> Timex.end_of_day()
 
     cond do
@@ -514,7 +488,7 @@ defmodule PicselloWeb.EmailAutomationLive.Shared do
 
     days_to_compare = hours_to_days(email.total_hours)
     today = NaiveDateTime.utc_now() |> Timex.end_of_day()
-    %{sign: sign} = explode_hours(email.total_hours)
+    %{sign: sign} = EmailAutomations.explode_hours(email.total_hours)
 
     cond do
       is_nil(gallery.gallery_send_at) ->
@@ -639,7 +613,7 @@ defmodule PicselloWeb.EmailAutomationLive.Shared do
     # send 7 days before shoot start 7<= 7 true
 
     today = NaiveDateTime.utc_now() |> Timex.end_of_day()
-    %{sign: sign} = explode_hours(email.total_hours)
+    %{sign: sign} = EmailAutomations.explode_hours(email.total_hours)
     days_to_compare = hours_to_days(email.total_hours)
 
     job.shoots
@@ -768,7 +742,7 @@ defmodule PicselloWeb.EmailAutomationLive.Shared do
     # difference is 7 days
     # send 7 days after shoot 7 >= 7 true
     today = NaiveDateTime.utc_now() |> Timex.end_of_day()
-    %{sign: sign} = explode_hours(email.total_hours)
+    %{sign: sign} = EmailAutomations.explode_hours(email.total_hours)
     days_to_compare = hours_to_days(email.total_hours)
 
     job.shoots
@@ -799,7 +773,7 @@ defmodule PicselloWeb.EmailAutomationLive.Shared do
     # send 7 days after shoot 7 >= 7 true
 
     today = NaiveDateTime.utc_now() |> Timex.end_of_day()
-    %{sign: sign} = explode_hours(email.total_hours)
+    %{sign: sign} = EmailAutomations.explode_hours(email.total_hours)
     days_to_compare = hours_to_days(email.total_hours)
 
     filter_shoots_count =
