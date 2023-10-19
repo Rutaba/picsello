@@ -83,6 +83,7 @@ defmodule Picsello.Job do
   def archive_changeset(job), do: job |> timestamp_changeset(:archived_at)
   def unarchive_changeset(job), do: job |> Ecto.Changeset.change(%{archived_at: nil})
   def complete_changeset(job), do: job |> timestamp_changeset(:completed_at)
+  def uncomplete_changeset(job), do: job |> Ecto.Changeset.change(%{completed_at: nil})
 
   def add_package_changeset(job \\ %__MODULE__{}, attrs) do
     job
