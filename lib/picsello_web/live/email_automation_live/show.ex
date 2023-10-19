@@ -392,18 +392,26 @@ defmodule PicselloWeb.Live.EmailAutomations.Show do
       |> sort_emails(state)
       |> List.first()
 
-    case email_schedule do
-      nil ->
-        last_completed_email =
-          EmailAutomationSchedules.get_last_completed_email(
-            category_type,
-            gallery_id,
-            job_id,
-            pipeline_id,
-            state,
-            PicselloWeb.EmailAutomationLive.Shared
-          )
+    last_completed_email =
+      EmailAutomationSchedules.get_last_completed_email(
+        category_type,
+        gallery_id,
+        job_id,
+        pipeline_id,
+        state,
+        PicselloWeb.EmailAutomationLive.Shared
+      )
 
+    case {email_schedule, last_completed_email} do
+      {nil, nil} ->
+        %{
+          text: "",
+          date: "",
+          email_preview_id: nil,
+          is_completed: false
+        }
+
+      {nil, _} ->
         %{
           text: "Completed",
           date: last_completed_email.reminded_at |> Calendar.strftime("%m/%d/%Y"),
