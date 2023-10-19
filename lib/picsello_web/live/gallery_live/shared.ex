@@ -148,69 +148,6 @@ defmodule PicselloWeb.GalleryLive.Shared do
         Galleries.change_gallery(gallery, attrs) |> Map.put(:action, :validate)
       )
 
-  defp get_email_body_subject(nil, gallery, preset_state) do
-    with [preset | _] <- Picsello.EmailPresets.for(gallery, preset_state) do
-      Picsello.EmailPresets.resolve_variables(
-        preset,
-        schemas(gallery),
-        PicselloWeb.Helpers
-      )
-  defp get_email_body_subject(nil, gallery, state) do
-    case Picsello.EmailPresets.for(gallery, state) do
-      [preset | _] ->
-        Picsello.EmailPresets.resolve_variables(
-          preset,
-          schemas(gallery),
-          PicselloWeb.Helpers
-        )
-
-      _ ->
-        %{body_template: "", subject_template: ""}
-    end
-  end
-
-  defp get_email_body_subject(email_by_state, gallery, _state) do
-    EmailAutomations.resolve_variables(
-      email_by_state,
-      schemas(gallery),
-      PicselloWeb.Helpers
-    )
-  end
-
-  defp get_gallery_email_by_pipeline(_gallery_id, nil), do: nil
-
-  defp get_gallery_email_by_pipeline(gallery_id, pipeline) do
-    EmailAutomationSchedules.query_get_email_schedule(:gallery, gallery_id, nil, pipeline.id)
-    |> where([es], is_nil(es.stopped_at))
-    |> Repo.all()
-    |> Repo.preload(email_automation_pipeline: [:email_automation_category])
-    |> sort_emails(pipeline.state)
-    |> List.first()
-  end
-
-  defp is_manual_toggle?(nil), do: false
-  defp is_manual_toggle?(%EmailSchedule{reminded_at: nil}), do: true
-  defp is_manual_toggle?(_email), do: false
-
-  defp schemas(%{type: :standard} = gallery), do: {gallery}
-  defp schemas(%{albums: [album]} = gallery), do: {gallery, album}
-
-  defp automation_state(:standard), do: :manual_gallery_send_link
-  defp automation_state(:proofing), do: :manual_send_proofing_gallery
-  defp automation_state(:finals), do: :manual_send_proofing_gallery_finals
-
-  defp modal_title(:standard), do: "Share gallery"
-  defp modal_title(:proofing), do: "Share Proofing Album"
-  defp modal_title(:finals), do: "Share Finals Album"
-
-  defp composed_event(:standard), do: :message_composed
-  defp composed_event(_type), do: :message_composed_for_album
-
-  defp maybe_insert_gallery_client(gallery, email) do
-    {:ok, gallery_client} = Galleries.insert_gallery_client(gallery, email)
-    gallery_client
-  end
-
   def get_client_by_email(%{client_email: client_email, gallery: gallery} = assigns) do
     result =
       with true <- is_nil(client_email),
@@ -1222,9 +1159,13 @@ defmodule PicselloWeb.GalleryLive.Shared do
   defp schemas(%{type: :standard} = gallery), do: {gallery}
   defp schemas(%{albums: [album]} = gallery), do: {gallery, album}
 
-  defp preset_state(:standard), do: :gallery_send_link
-  defp preset_state(:proofing), do: :proofs_send_link
-  defp preset_state(:finals), do: :album_send_link
+  defp is_manual_toggle?(nil), do: false
+  defp is_manual_toggle?(%EmailSchedule{reminded_at: nil}), do: true
+  defp is_manual_toggle?(_email), do: false
+
+  defp automation_state(:standard), do: :manual_gallery_send_link
+  defp automation_state(:proofing), do: :manual_send_proofing_gallery
+  defp automation_state(:finals), do: :manual_send_proofing_gallery_finals
 
   defp modal_title(:standard), do: "Share gallery"
   defp modal_title(:proofing), do: "Share Proofing Album"
@@ -1291,6 +1232,39 @@ defmodule PicselloWeb.GalleryLive.Shared do
     end)
   end
 
+  defp get_email_body_subject(nil, gallery, state) do
+    case Picsello.EmailPresets.for(gallery, state) do
+      [preset | _] ->
+        Picsello.EmailPresets.resolve_variables(
+          preset,
+          schemas(gallery),
+          PicselloWeb.Helpers
+        )
+
+      _ ->
+        %{body_template: "", subject_template: ""}
+    end
+  end
+
+  defp get_email_body_subject(email_by_state, gallery, _state) do
+    EmailAutomations.resolve_variables(
+      email_by_state,
+      schemas(gallery),
+      PicselloWeb.Helpers
+    )
+  end
+
+  defp get_gallery_email_by_pipeline(_gallery_id, nil), do: nil
+
+  defp get_gallery_email_by_pipeline(gallery_id, pipeline) do
+    EmailAutomationSchedules.query_get_email_schedule(:gallery, gallery_id, nil, pipeline.id)
+    |> where([es], is_nil(es.stopped_at))
+    |> Repo.all()
+    |> Repo.preload(email_automation_pipeline: [:email_automation_category])
+    |> sort_emails(pipeline.state)
+    |> List.first()
+  end
+
   defp button_element(%{element: "a"} = assigns) do
     attrs = Map.drop(assigns, [:inner_block, :__changed__, :element])
     assigns = Enum.into(assigns, %{attrs: attrs})
@@ -1328,6 +1302,8 @@ defmodule PicselloWeb.GalleryLive.Shared do
   defp get_expiry_date() do
     {:ok, date} = DateTime.new(~D[3022-02-01], ~T[12:00:00], "Etc/UTC")
     date
+  end
+
   def start_photo_processing(%{album: %{is_proofing: true}} = photo, %{watermark: nil} = gallery) do
     %{job: %{client: %{organization: %{name: name}}}} = Galleries.populate_organization(gallery)
     ProcessingManager.start(photo, Watermark.build(name, gallery))

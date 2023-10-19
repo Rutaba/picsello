@@ -34,7 +34,8 @@ defmodule PicselloWeb.HomeLive.Index do
     JobLive.ImportWizard,
     QuestionnaireFormComponent
   }
-  alias PicselloWeb.Live.Calendar.BookingEvents
+
+  alias PicselloWeb.Live.Calendar.BookingEvents.Index
   alias PicselloWeb.Calendar.BookingEvents.Shared, as: BEShared
 
   import PicselloWeb.JobLive.Shared, only: [status_badge: 1, open_email_compose: 1]
@@ -615,8 +616,7 @@ defmodule PicselloWeb.HomeLive.Index do
         {:confirm_event, "create-single-event"} = message,
         socket
       ),
-  do:
-    BookingEvents.Index.handle_info(message, socket)
+      do: Index.handle_info(message, socket)
 
   defdelegate handle_info(message, socket), to: PicselloWeb.JobLive.Shared
 

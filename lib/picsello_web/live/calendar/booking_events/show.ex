@@ -5,7 +5,10 @@ defmodule PicselloWeb.Live.Calendar.BookingEvents.Show do
   import PicselloWeb.Live.Shared, only: [update_package_questionnaire: 1]
   import PicselloWeb.Shared.EditNameComponent, only: [edit_name_input: 1]
   import PicselloWeb.GalleryLive.Shared, only: [add_message_and_notify: 3]
-  import PicselloWeb.ClientBookingEventLive.Shared, only: [blurred_thumbnail: 1, formatted_date: 1]
+
+  import PicselloWeb.ClientBookingEventLive.Shared,
+    only: [blurred_thumbnail: 1, formatted_date: 1]
+
   import PicselloWeb.BookingProposalLive.Shared, only: [package_description_length_long?: 1]
 
   alias Picsello.{
