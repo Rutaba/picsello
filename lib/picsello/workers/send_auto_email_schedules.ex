@@ -22,11 +22,9 @@ defmodule Picsello.Workers.ScheduleAutomationEmail do
     |> Enum.each(fn organizations ->
       get_all_emails(organizations)
       |> Enum.map(fn job_pipeline ->
-        gallery =
-          Task.async(fn -> EmailAutomations.get_gallery(job_pipeline.gallery_id) end)
-          |> Task.await()
+        gallery = EmailAutomations.get_gallery(job_pipeline.gallery_id)
+        job = EmailAutomations.get_job(job_pipeline.job_id)
 
-        job = Task.async(fn -> EmailAutomations.get_job(job_pipeline.job_id) end) |> Task.await()
         job = if is_nil(job_pipeline.gallery_id), do: job, else: gallery.job
         send_email_by(job, gallery, job_pipeline)
       end)
@@ -37,7 +35,7 @@ defmodule Picsello.Workers.ScheduleAutomationEmail do
   end
 
   defp send_email_by(job, gallery, job_pipeline) do
-    subjects_task = Task.async(fn -> get_subjects_for_job_pipeline(job_pipeline.emails) end)
+    subjects = get_subjects_for_job_pipeline(job_pipeline.emails)
     state = job_pipeline.state
 
     type =
@@ -50,7 +48,6 @@ defmodule Picsello.Workers.ScheduleAutomationEmail do
     Logger.info("[email category] #{type}")
 
     if is_job_emails?(job) do
-      subjects = Task.await(subjects_task)
       Logger.info("Email Subjects #{subjects}")
 
       # Each pipeline emails subjects resolve variables
@@ -187,10 +184,9 @@ defmodule Picsello.Workers.ScheduleAutomationEmail do
         _ -> job
       end
 
-    send_email_task =
-      Task.async(fn -> EmailAutomations.send_now_email(type, schedule, schema, state) end)
+    send_email_task = EmailAutomations.send_now_email(type, schedule, schema, state)
 
-    case Task.await(send_email_task) do
+    case send_email_task do
       {:ok, _result} ->
         Logger.info(
           "Email #{schedule.name} sent at #{DateTime.truncate(DateTime.utc_now(), :second)}"
