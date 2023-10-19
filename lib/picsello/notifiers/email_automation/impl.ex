@@ -1,5 +1,6 @@
 defmodule Picsello.Notifiers.EmailAutomationNotifier.Impl do
   @moduledoc false
+  require Logger
 
   import Notifiers.Shared
   alias Picsello.{Notifiers.EmailAutomationNotifier, Repo}
