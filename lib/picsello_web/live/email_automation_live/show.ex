@@ -14,7 +14,6 @@ defmodule PicselloWeb.Live.EmailAutomations.Show do
       get_pipline: 1,
       get_email_schedule_text: 6,
       get_email_name: 4,
-      explode_hours: 1,
       get_preceding_email: 2,
       fetch_date_for_state_maybe_manual: 6,
       get_sample_values: 4
@@ -251,11 +250,18 @@ defmodule PicselloWeb.Live.EmailAutomations.Show do
           <div class="flex flex-col">
             <div class=" flex flex-row items-center">
               <div class="flex-row w-8 h-8 rounded-full bg-white flex items-center justify-center">
-                <.icon name="play-icon" class="w-5 h-5 text-blue-planning-300" />
+                <%= if is_state_manually_trigger(@pipeline.state) do %>
+                  <.icon name="paper-airplane" class="w-5 h-5 text-blue-planning-300" />
+                <% else %>
+                  <.icon name="play-icon" class="w-5 h-5 text-blue-planning-300" />
+                <% end %>
               </div>
               <span class="flex items-center text-blue-planning-300 text-xl font-bold ml-2">
                 <%= @pipeline.name %>
                 <span class="text-base-300 ml-2 rounded-md bg-white px-2 text-sm font-bold whitespace-nowrap"><%= Enum.count(sorted_emails) %> <%=ngettext("email", "emails", Enum.count(sorted_emails)) %></span>
+                <%= if is_state_manually_trigger(@pipeline.state) do %>
+                  <span class="text-base-300 ml-2 rounded-md bg-white px-2 text-sm font-bold whitespace-nowrap">Manual Trigger</span>
+                <% end %>
               </span>
             </div>
             <p class="text:xs text-base-250 lg:text-base ml-10">
@@ -283,7 +289,7 @@ defmodule PicselloWeb.Live.EmailAutomations.Show do
                     <%= cond do %>
                       <% not is_nil(email.reminded_at) -> %> <.icon name="tick" class="w-5 h-5 text-blue-planning-300" />
                       <% not is_nil(email.stopped_at) -> %> <.icon name="stop" class="w-5 h-5 text-red-sales-300" />
-                      <% is_state_manually_trigger(@pipeline.state) and index == 0 -> %> <.icon name="flag" class="w-5 h-5 text-blue-planning-300" />
+                      <% is_state_manually_trigger(@pipeline.state) and index == 0 -> %> <.icon name="paper-airplane" class="w-5 h-5 text-blue-planning-300" />
                       <% true -> %>  <.icon name="envelope" class="w-5 h-5 text-blue-planning-300" />
                     <% end %>
                   </div>
@@ -381,6 +387,7 @@ defmodule PicselloWeb.Live.EmailAutomations.Show do
         pipeline_id
       )
       |> where([es], is_nil(es.reminded_at))
+      |> where([es], is_nil(es.stopped_at))
       |> Repo.all()
       |> sort_emails(state)
       |> List.first()
@@ -405,10 +412,10 @@ defmodule PicselloWeb.Live.EmailAutomations.Show do
         }
 
       _ ->
-        %{sign: sign} = explode_hours(email_schedule.total_hours)
+        %{sign: sign} = EmailAutomations.explode_hours(email_schedule.total_hours)
         job = EmailAutomations.get_job(job_id)
-        gallery = if is_nil(gallery_id), do: nil, else: Galleries.get_gallery!(gallery_id)
-
+        gallery = if is_nil(gallery_id), do: nil, else: EmailAutomations.get_gallery(gallery_id)
+        state = if is_atom(state), do: state, else: String.to_atom(state)
         date = get_conditional_date(state, email_schedule, pipeline_id, job, gallery)
 
         cond do

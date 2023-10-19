@@ -8,8 +8,6 @@ defmodule Picsello.Workers.ScheduleAutomationEmail do
   alias Picsello.{
     EmailAutomations,
     EmailAutomationSchedules,
-    Orders,
-    Galleries,
     ClientMessage,
     Organization,
     Job,
@@ -17,20 +15,24 @@ defmodule Picsello.Workers.ScheduleAutomationEmail do
   }
 
   alias PicselloWeb.EmailAutomationLive.Shared
-
+  @impl Oban.Worker
   def perform(_) do
     get_all_organizations()
     |> Enum.chunk_every(2)
     |> Enum.each(fn organizations ->
       get_all_emails(organizations)
       |> Enum.map(fn job_pipeline ->
-        gallery = Task.async(fn -> get_gallery(job_pipeline.gallery_id) end) |> Task.await()
+        gallery =
+          Task.async(fn -> EmailAutomations.get_gallery(job_pipeline.gallery_id) end)
+          |> Task.await()
+
         job = Task.async(fn -> EmailAutomations.get_job(job_pipeline.job_id) end) |> Task.await()
         job = if is_nil(job_pipeline.gallery_id), do: job, else: gallery.job
         send_email_by(job, gallery, job_pipeline)
       end)
     end)
 
+    Logger.info("------------Email Automation Schedule Completed")
     :ok
   end
 
@@ -111,9 +113,7 @@ defmodule Picsello.Workers.ScheduleAutomationEmail do
               :order_confirmation_digital,
               :order_confirmation_physical
             ] do
-    order =
-      Orders.get_order(schedule.order_id)
-      |> Repo.preload([:digitals, gallery: :job])
+    order = EmailAutomations.get_order(schedule.order_id)
 
     send_email(state, pipeline_id, schedule, job, gallery, order)
   end
@@ -124,8 +124,9 @@ defmodule Picsello.Workers.ScheduleAutomationEmail do
 
   defp send_email(state, pipeline_id, schedule, job, gallery, order) do
     type = schedule.email_automation_pipeline.email_automation_category.type
-
-    Logger.info("state #{state}")
+    type = if order, do: :order, else: type
+    Logger.info("state #{state} and type #{type}")
+    state = if is_atom(state), do: state, else: String.to_atom(state)
 
     job_date_time =
       Shared.fetch_date_for_state_maybe_manual(state, schedule, pipeline_id, job, gallery, order)
@@ -141,17 +142,9 @@ defmodule Picsello.Workers.ScheduleAutomationEmail do
     end
   end
 
-  defp get_gallery(nil), do: nil
-
-  defp get_gallery(id),
-    do: Galleries.get_gallery!(id) |> Repo.preload([:orders, :albums, job: :client])
-
   defp group_key(email_schedule) do
-    if email_schedule.job_id != nil do
-      {email_schedule.job_id, nil, email_schedule.email_automation_pipeline_id}
-    else
-      {nil, email_schedule.gallery_id, email_schedule.email_automation_pipeline_id}
-    end
+    {email_schedule.job_id, email_schedule.gallery_id,
+     email_schedule.email_automation_pipeline_id}
   end
 
   defp is_email_send_time(nil, _state, _total_hours), do: false
@@ -161,7 +154,7 @@ defmodule Picsello.Workers.ScheduleAutomationEmail do
        do: true
 
   defp is_email_send_time(submit_time, _state, total_hours) do
-    %{sign: sign} = Shared.explode_hours(total_hours)
+    %{sign: sign} = EmailAutomations.explode_hours(total_hours)
     {:ok, current_time} = DateTime.now("Etc/UTC")
     diff_seconds = DateTime.diff(current_time, submit_time, :second)
     hours = div(diff_seconds, 3600)
@@ -189,7 +182,8 @@ defmodule Picsello.Workers.ScheduleAutomationEmail do
   defp send_email_task(type, state, schedule, job, gallery, order) do
     schema =
       case type do
-        :gallery -> if is_nil(order), do: gallery, else: order
+        :gallery -> gallery
+        :order -> order
         _ -> job
       end
 

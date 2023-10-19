@@ -774,7 +774,7 @@ defmodule PicselloWeb.Live.Shared do
                                                                       type: type
                                                                     }
                                                                   } ->
-      EmailAutomationSchedules.job_emails(type, current_user.organization_id, job_id, [:job])
+      EmailAutomationSchedules.job_emails(type, current_user.organization_id, job_id, :job)
     end)
     |> Repo.transaction()
     |> then(fn

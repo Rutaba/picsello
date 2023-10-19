@@ -460,8 +460,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         <p><span style="color: rgb(0, 0, 0);">Hello {{client_first_name}},</span></p>
         <p><span style="color: rgb(0, 0, 0);">Great news – your gallery is now available!</span></p>
         <p><span style="color: rgb(0, 0, 0);">Please remember that your photos are password-protected, and you'll need this password to access them: <strong>{{password}}</strong> </span></p>
-        <p><span style="color: rgb(0, 0, 0);">You can access your private gallery to view all your images at:</span></p>
-        <p>{{gallery_link}}</p>
+        <p><span style="color: rgb(0, 0, 0);">You can access your private gallery to view all your images at:</span> {{gallery_link}}</p>
         <p><span style="color: rgb(0, 0, 0);">If you have any digital image and/or print credits to use, please be sure to log in with the email address to which this email was sent. When you share the gallery with friends and family, kindly ask them to log in with their unique email addresses to ensure only you have access to those credits.</span></p>
         <p><span style="color: rgb(0, 0, 0);">Your gallery will be available until {{gallery_expiration_date}}, so please ensure you make your selections before then.</span></p>
         <p><span style="color: rgb(0, 0, 0);">It's been a pleasure working with you, and I'm eagerly awaiting your thoughts!</span></p>
@@ -483,8 +482,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         <p><span style="color: rgb(0, 0, 0);">Hello {{client_first_name}},</span></p>
         <p><span style="color: rgb(0, 0, 0);">I'm thrilled to let you know that your proofs are now ready for your viewing pleasure! </span></p>
         <p><span style="color: rgb(0, 0, 0);">Please keep in mind that your photos are under password protection for your privacy. You can use the following password to access them: {{album_password}}.</span></p>
-        <p><span style="color: rgb(0, 0, 0);">You can access your proofing album by clicking on the following link:</span></p>
-        <p>{{album_link}}</p>
+        <p><span style="color: rgb(0, 0, 0);">You can access your proofing album by clicking on the following link:</span> {{album_link}}</p>
         <p><span style="color: rgb(0, 0, 0);">To use any digital image credits, please be sure to log in with the email address to which this email was sent. You can also select more for purchase as well! If you do share the gallery with someone else, please ask them to use their own email address when logging in to prevent any issues related to your credits.</span></p>
         <p><span style="color: rgb(0, 0, 0);">In order to select the photos you'd like to move forward with retouching, simply choose each image and complete the checkout process by selecting "Send to Photographer." </span></p>
         <p><span style="color: rgb(0, 0, 0);">﻿Once that's done, I'll proceed with the full editing and send them your way. If you have any questions, please let me know I am happy to help you! </span></p>
@@ -507,8 +505,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         <p><span style="color: rgb(0, 0, 0);">Hello {{client_first_name}},</span></p>
         <p><span style="color: rgb(0, 0, 0);">I'm delighted to share that your retouched images are now available! </span></p>
         <p><span style="color: rgb(0, 0, 0);">To maintain the privacy of your photos, they are protected by a password. Please use the following password to view them: {{album_password}}. </span></p>
-        <p><span style="color: rgb(0, 0, 0);">You can access your Finals album by clicking on the following link and you can easily download them all with a simple click. </span></p>
-        <p>{{album_link}}</p>
+        <p><span style="color: rgb(0, 0, 0);">You can access your Finals album by clicking on the following link and you can easily download them all with a simple click:</span> {{album_link}}</p>
         <p><span style="color: rgb(0, 0, 0);">If you have any questions, please let me know! </span></p>
         <p><span style="color: rgb(0, 0, 0);">I hope you love your images as much as I do!</span></p>
         <p><span style="color: rgb(0, 0, 0);">Warm regards, </span></p>
@@ -527,8 +524,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         body_template: """
         <p><span style="color: rgb(0, 0, 0);">Hello {{order_first_name}},</span></p>
         <p><span style="color: rgb(0, 0, 0);">I noticed that you still have items in your cart! I wanted to see if you had any questions, if you do - simply reply to this email and I can help you.</span></p>
-        <p><span style="color: rgb(0, 0, 0);">If life got busy, simply just click on the following link to complete your order.</span></p>
-        <p>{{client_gallery_order_page}}</p>
+        <p><span style="color: rgb(0, 0, 0);">If life got busy, simply just click on the following link to complete your order:</span> {{client_gallery_order_page}}</p>
         <p><span style="color: rgb(0, 0, 0);">Your order will be confirmed and sent to production as soon as you complete your purchase. </span></p>
         <p><span style="color: rgb(0, 0, 0);">Warm regards, </span></p>
         <p><span style="color: rgb(0, 0, 0);">{{email_signature}}</span></p>
@@ -546,8 +542,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         body_template: """
         <p><span style="color: rgb(0, 0, 0);">Hello {{order_first_name}},</span></p>
         <p><span style="color: rgb(0, 0, 0);">I wanted to remind you that your recent order from {{photography_company_s_name}} is still pending in your cart.</span></p>
-        <p><span style="color: rgb(0, 0, 0);">To finalize your order, please click on the following link:</span></p>
-        <p>{{client_gallery_order_page}}</p>
+        <p><span style="color: rgb(0, 0, 0);">To finalize your order, please click on the following link:</span> {{client_gallery_order_page}}</p>
         <p><span style="color: rgb(0, 0, 0);">Completing your purchase will confirm your order and initiate production.</span></p>
         <p><span style="color: rgb(0, 0, 0);">Should you have any questions or require assistance, please don't hesitate to reach out to me!</span></p>
         <p><span style="color: rgb(0, 0, 0);">Thanks!</span></p>
@@ -567,8 +562,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         body_template: """
         <p><span style="color: rgb(0, 0, 0);">Hello {{order_first_name}},</span></p>
         <p><span style="color: rgb(0, 0, 0);">Another friendly reminder that you still have an order from {{photography_company_s_name}} waiting in your cart.</span></p>
-        <p><span style="color: rgb(0, 0, 0);">Simply click on the following link to complete your order.</span></p>
-        <p>{{client_gallery_order_page}}</p>
+        <p><span style="color: rgb(0, 0, 0);">Simply click on the following link to complete your order:</span> {{client_gallery_order_page}}</p>
         <p><span style="color: rgb(0, 0, 0);">Your order will be confirmed and sent to production as soon as you complete your purchase.</span></p>
         <p><span style="color: rgb(0, 0, 0);">If you have any questions, please let me know! </span></p>
         <p><span style="color: rgb(0, 0, 0);">Warm regards, </span></p>
@@ -589,8 +583,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         <p><span style="color: rgb(0, 0, 0);">Hello {{client_first_name}},</span></p>
         <p><span style="color: rgb(0, 0, 0);">I hope this message finds you well. I wanted to remind you that your gallery is nearing its expiration date. To ensure you don't miss out, please take a moment to log into your gallery and make your selections before it expires on {{gallery_expiration_date}}.</span></p>
         <p><span style="color: rgb(0, 0, 0);">As a quick reminder, your photos are protected with a password, so you'll need to enter it to view them: <strong>{{password}}</strong> </span></p>
-        <p><span style="color: rgb(0, 0, 0);">You can access your private gallery containing all of your images by following this link:</span></p>
-        <p>{{gallery_link}}</p>
+        <p><span style="color: rgb(0, 0, 0);">You can access your private gallery containing all of your images by following this link:</span> {{gallery_link}}</p>
         <p><span style="color: rgb(0, 0, 0);">If you have any questions or need assistance with anything related to your gallery, please don't hesitate to reach out. I'm here to help! </span></p>
         <p><span style="color: rgb(0, 0, 0);">Best regards,</span></p>
         <p><span style="color: rgb(0, 0, 0);">{{email_signature}}</span></p>
@@ -610,8 +603,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         body_template: """
         <p><span style="color: rgb(0, 0, 0);">Hello {{client_first_name}},</span></p>
         <p><span style="color: rgb(0, 0, 0);">I'm following up with another reminder that the expiration date for your gallery is approaching. To ensure you have ample time to make your selections, please log in to your gallery and make your choices before it expires on {{gallery_expiration_date}}.</span></p>
-        <p><span style="color: rgb(0, 0, 0);">You can easily access your private gallery, where all your images are waiting for you, by clicking on this link:</span></p>
-        <p>{{gallery_link}}</p>
+        <p><span style="color: rgb(0, 0, 0);">You can easily access your private gallery, where all your images are waiting for you, by clicking on this link:</span> {{gallery_link}}</p>
         <p><span style="color: rgb(0, 0, 0);">Just a quick reminder, your photos are protected with a password for your privacy and security. To access your images, simply use the provided password: <strong>{{password}}</strong></span></p>
         <p><span style="color: rgb(0, 0, 0);">If you need help or have any questions, please let me know!</span></p>
         <p><span style="color: rgb(0, 0, 0);">Best regards,</span></p>
@@ -632,8 +624,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         <p><span style="color: rgb(0, 0, 0);">Hello {{client_first_name}},</span></p>
         <p><span style="color: rgb(0, 0, 0);">I wanted to send along one last reminder in case you forgot! Your gallery is going to expire tomorrow! Please log into your gallery and make your selections before the gallery expires on {{gallery_expiration_date}}</span></p>
         <p><span style="color: rgb(0, 0, 0);">A reminder your photos are password-protected, so you will need to use this password to view: <strong>{{password}}</strong></span></p>
-        <p><span style="color: rgb(0, 0, 0);">You can log into your private gallery to see all of your images here:</span></p>
-        <p>{{gallery_link}}</p>
+        <p><span style="color: rgb(0, 0, 0);">You can log into your private gallery to see all of your images here:</span> {{gallery_link}}</p>
         <p><span style="color: rgb(0, 0, 0);">Any questions, please let me know! </span></p>
         <p><span style="color: rgb(0, 0, 0);">{{email_signature}}</span></p>
         """
@@ -712,8 +703,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         body_template: """
         <p><span style="color: rgb(0, 0, 0);">Hello {{order_first_name}},</span></p>
         <p><span style="color: rgb(0, 0, 0);">Congratulations on successfully placing an order from your gallery! I'm truly excited for you to have these beautiful images in your hands!</span></p>
-        <p><span style="color: rgb(0, 0, 0);">Your order is now in the production phase and is being prepared with great care. You can easily track the order by visiting:</span></p>
-        <p>{{client_gallery_order_page}}</p>
+        <p><span style="color: rgb(0, 0, 0);">Your order is now in the production phase and is being prepared with great care. You can easily track the order by visiting:</span> {{client_gallery_order_page}}</p>
         <p><span style="color: rgb(0, 0, 0);">Should you have any questions or need further assistance regarding your order, please don't hesitate to reach out. </span></p>
         <p><span style="color: rgb(0, 0, 0);">Best regards,</span></p>
         <p><span style="color: rgb(0, 0, 0);">{{email_signature}}</span></p>
@@ -734,8 +724,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         <p><span style="color: rgb(0, 0, 0);">I'm thrilled to confirm your gallery order from {{photography_company_s_name}} has been successfully processed.</span></p>
         <p><span style="color: rgb(0, 0, 0);">- If you have ordered digital images, you can expect to receive a follow-up email with your images. Since these files can be quite large, it may take a little time to package them properly.</span></p>
         <p><span style="color: rgb(0, 0, 0);">-If you have ordered print products,  your order is now in production and is being prepared with great care.</span></p>
-        <p><span style="color: rgb(0, 0, 0);">You can easily track the progress of your order by visiting:</span></p>
-        <p>{{client_gallery_order_page}}</p>
+        <p><span style="color: rgb(0, 0, 0);">You can easily track the progress of your order by visiting:</span> {{client_gallery_order_page}}</p>
         <p><span style="color: rgb(0, 0, 0);">Should you have any questions or need further assistance regarding your order, please don't hesitate to reach out.</span></p>
         <p><span style="color: rgb(0, 0, 0);">Best regards,</span></p>
         <p><span style="color: rgb(0, 0, 0);">{{email_signature}}</span></p>
@@ -1307,8 +1296,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         <p><span style="color: rgb(0, 0, 0);">Hello {{client_first_name}},</span></p>
         <p><span style="color: rgb(0, 0, 0);">Great news – your gallery is now available!</span></p>
         <p><span style="color: rgb(0, 0, 0);">Please remember that your photos are password-protected, and you'll need this password to access them: <strong>{{password}}</strong> </span></p>
-        <p><span style="color: rgb(0, 0, 0);">You can access your private gallery to view all your images at:</span></p>
-        <p>{{gallery_link}}</p>
+        <p><span style="color: rgb(0, 0, 0);">You can access your private gallery to view all your images at:</span> {{gallery_link}}</p>
         <p><span style="color: rgb(0, 0, 0);">If you have any digital image and/or print credits to use, please be sure to log in with the email address to which this email was sent. When you share the gallery with friends and family, kindly ask them to log in with their unique email addresses to ensure only you have access to those credits.</span></p>
         <p><span style="color: rgb(0, 0, 0);">Your gallery will be available until {{gallery_expiration_date}}, so please ensure you make your selections before then.</span></p>
         <p><span style="color: rgb(0, 0, 0);">It's been a pleasure working with you, and I'm eagerly awaiting your thoughts!</span></p>
@@ -1330,8 +1318,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         <p><span style="color: rgb(0, 0, 0);">Hello {{client_first_name}},</span></p>
         <p><span style="color: rgb(0, 0, 0);">I'm thrilled to let you know that your proofs are now ready for your viewing pleasure! </span></p>
         <p><span style="color: rgb(0, 0, 0);">Please keep in mind that your photos are under password protection for your privacy. You can use the following password to access them: {{album_password}}.</span></p>
-        <p><span style="color: rgb(0, 0, 0);">You can access your proofing album by clicking on the following link:</span></p>
-        <p>{{album_link}}</p>
+        <p><span style="color: rgb(0, 0, 0);">You can access your proofing album by clicking on the following link:</span> {{album_link}}</p>
         <p><span style="color: rgb(0, 0, 0);">To use any digital image credits, please be sure to log in with the email address to which this email was sent. You can also select more for purchase as well! If you do share the gallery with someone else, please ask them to use their own email address when logging in to prevent any issues related to your credits.</span></p>
         <p><span style="color: rgb(0, 0, 0);">In order to select the photos you'd like to move forward with retouching, simply choose each image and complete the checkout process by selecting "Send to Photographer." </span></p>
         <p><span style="color: rgb(0, 0, 0);">﻿Once that's done, I'll proceed with the full editing and send them your way. If you have any questions, please let me know I am happy to help you! </span></p>
@@ -1354,8 +1341,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         <p><span style="color: rgb(0, 0, 0);">Hello {{client_first_name}},</span></p>
         <p><span style="color: rgb(0, 0, 0);">I'm delighted to share that your retouched images are now available! </span></p>
         <p><span style="color: rgb(0, 0, 0);">To maintain the privacy of your photos, they are protected by a password. Please use the following password to view them: {{album_password}}. </span></p>
-        <p><span style="color: rgb(0, 0, 0);">You can access your Finals album by clicking on the following link and you can easily download them all with a simple click. </span></p>
-        <p>{{album_link}}</p>
+        <p><span style="color: rgb(0, 0, 0);">You can access your Finals album by clicking on the following link and you can easily download them all with a simple click:</span> {{album_link}}</p>
         <p><span style="color: rgb(0, 0, 0);">If you have any questions, please let me know! </span></p>
         <p><span style="color: rgb(0, 0, 0);">I hope you love your images as much as I do!</span></p>
         <p><span style="color: rgb(0, 0, 0);">Warm regards, </span></p>
@@ -1374,8 +1360,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         body_template: """
         <p><span style="color: rgb(0, 0, 0);">Hello {{order_first_name}},</span></p>
         <p><span style="color: rgb(0, 0, 0);">I noticed that you still have items in your cart! I wanted to see if you had any questions, if you do - simply reply to this email and I can help you.</span></p>
-        <p><span style="color: rgb(0, 0, 0);">If life got busy, simply just click on the following link to complete your order.</span></p>
-        <p>{{client_gallery_order_page}}</p>
+        <p><span style="color: rgb(0, 0, 0);">If life got busy, simply just click on the following link to complete your order:</span> {{client_gallery_order_page}}</p>
         <p><span style="color: rgb(0, 0, 0);">Your order will be confirmed and sent to production as soon as you complete your purchase. </span></p>
         <p><span style="color: rgb(0, 0, 0);">Warm regards, </span></p>
         <p><span style="color: rgb(0, 0, 0);">{{email_signature}}</span></p>
@@ -1393,8 +1378,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         body_template: """
         <p><span style="color: rgb(0, 0, 0);">Hello {{order_first_name}},</span></p>
         <p><span style="color: rgb(0, 0, 0);">I wanted to remind you that your recent order from {{photography_company_s_name}} is still pending in your cart.</span></p>
-        <p><span style="color: rgb(0, 0, 0);">To finalize your order, please click on the following link:</span></p>
-        <p>{{client_gallery_order_page}}</p>
+        <p><span style="color: rgb(0, 0, 0);">To finalize your order, please click on the following link:</span> {{client_gallery_order_page}}</p>
         <p><span style="color: rgb(0, 0, 0);">Completing your purchase will confirm your order and initiate production.</span></p>
         <p><span style="color: rgb(0, 0, 0);">Should you have any questions or require assistance, please don't hesitate to reach out to me!</span></p>
         <p><span style="color: rgb(0, 0, 0);">Thanks!</span></p>
@@ -1414,8 +1398,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         body_template: """
         <p><span style="color: rgb(0, 0, 0);">Hello {{order_first_name}},</span></p>
         <p><span style="color: rgb(0, 0, 0);">Another friendly reminder that you still have an order from {{photography_company_s_name}} waiting in your cart.</span></p>
-        <p><span style="color: rgb(0, 0, 0);">Simply click on the following link to complete your order.</span></p>
-        <p>{{client_gallery_order_page}}</p>
+        <p><span style="color: rgb(0, 0, 0);">Simply click on the following link to complete your order:</span> {{client_gallery_order_page}}</p>
         <p><span style="color: rgb(0, 0, 0);">Your order will be confirmed and sent to production as soon as you complete your purchase.</span></p>
         <p><span style="color: rgb(0, 0, 0);">If you have any questions, please let me know! </span></p>
         <p><span style="color: rgb(0, 0, 0);">Warm regards, </span></p>
@@ -1436,8 +1419,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         <p><span style="color: rgb(0, 0, 0);">Hello {{client_first_name}},</span></p>
         <p><span style="color: rgb(0, 0, 0);">I hope this message finds you well. I wanted to remind you that your gallery is nearing its expiration date. To ensure you don't miss out, please take a moment to log into your gallery and make your selections before it expires on {{gallery_expiration_date}}.</span></p>
         <p><span style="color: rgb(0, 0, 0);">As a quick reminder, your photos are protected with a password, so you'll need to enter it to view them: <strong>{{password}}</strong> </span></p>
-        <p><span style="color: rgb(0, 0, 0);">You can access your private gallery containing all of your images by following this link:</span></p>
-        <p>{{gallery_link}}</p>
+        <p><span style="color: rgb(0, 0, 0);">You can access your private gallery containing all of your images by following this link:</span> {{gallery_link}}</p>
         <p><span style="color: rgb(0, 0, 0);">If you have any questions or need assistance with anything related to your gallery, please don't hesitate to reach out. I'm here to help! </span></p>
         <p><span style="color: rgb(0, 0, 0);">Best regards,</span></p>
         <p><span style="color: rgb(0, 0, 0);">{{email_signature}}</span></p>
@@ -1456,8 +1438,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         body_template: """
         <p><span style="color: rgb(0, 0, 0);">Hello {{client_first_name}},</span></p>
         <p><span style="color: rgb(0, 0, 0);">I'm following up with another reminder that the expiration date for your gallery is approaching. To ensure you have ample time to make your selections, please log in to your gallery and make your choices before it expires on {{gallery_expiration_date}}.</span></p>
-        <p><span style="color: rgb(0, 0, 0);">You can easily access your private gallery, where all your images are waiting for you, by clicking on this link:</span></p>
-        <p>{{gallery_link}}</p>
+        <p><span style="color: rgb(0, 0, 0);">You can easily access your private gallery, where all your images are waiting for you, by clicking on this link:</span> {{gallery_link}}</p>
         <p><span style="color: rgb(0, 0, 0);">Just a quick reminder, your photos are protected with a password for your privacy and security. To access your images, simply use the provided password: <strong>{{password}}</strong></span></p>
         <p><span style="color: rgb(0, 0, 0);">If you need help or have any questions, please let me know!</span></p>
         <p><span style="color: rgb(0, 0, 0);">Best regards,</span></p>
@@ -1478,8 +1459,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         <p><span style="color: rgb(0, 0, 0);">Hello {{client_first_name}},</span></p>
         <p><span style="color: rgb(0, 0, 0);">I wanted to send along one last reminder in case you forgot! Your gallery is going to expire tomorrow! Please log into your gallery and make your selections before the gallery expires on {{gallery_expiration_date}}</span></p>
         <p><span style="color: rgb(0, 0, 0);">A reminder your photos are password-protected, so you will need to use this password to view: <strong>{{password}}</strong></span></p>
-        <p><span style="color: rgb(0, 0, 0);">You can log into your private gallery to see all of your images here:</span></p>
-        <p>{{gallery_link}}</p>
+        <p><span style="color: rgb(0, 0, 0);">You can log into your private gallery to see all of your images here:</span> {{gallery_link}}</p>
         <p><span style="color: rgb(0, 0, 0);">Any questions, please let me know! </span></p>
         <p><span style="color: rgb(0, 0, 0);">{{email_signature}}</span></p>
         """
@@ -1558,8 +1538,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         body_template: """
         <p><span style="color: rgb(0, 0, 0);">Hello {{order_first_name}},</span></p>
         <p><span style="color: rgb(0, 0, 0);">Congratulations on successfully placing an order from your gallery! I'm truly excited for you to have these beautiful images in your hands!</span></p>
-        <p><span style="color: rgb(0, 0, 0);">Your order is now in the production phase and is being prepared with great care. You can easily track the order by visiting:</span></p>
-        <p>{{client_gallery_order_page}}</p>
+        <p><span style="color: rgb(0, 0, 0);">Your order is now in the production phase and is being prepared with great care. You can easily track the order by visiting:</span> {{client_gallery_order_page}}</p>
         <p><span style="color: rgb(0, 0, 0);">Should you have any questions or need further assistance regarding your order, please don't hesitate to reach out. </span></p>
         <p><span style="color: rgb(0, 0, 0);">Best regards,</span></p>
         <p><span style="color: rgb(0, 0, 0);">{{email_signature}}</span></p>
@@ -1580,8 +1559,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         <p><span style="color: rgb(0, 0, 0);">I'm thrilled to confirm your gallery order from {{photography_company_s_name}} has been successfully processed.</span></p>
         <p><span style="color: rgb(0, 0, 0);">- If you have ordered digital images, you can expect to receive a follow-up email with your images. Since these files can be quite large, it may take a little time to package them properly.</span></p>
         <p><span style="color: rgb(0, 0, 0);">-If you have ordered print products,  your order is now in production and is being prepared with great care.</span></p>
-        <p><span style="color: rgb(0, 0, 0);">You can easily track the progress of your order by visiting:</span></p>
-        <p>{{client_gallery_order_page}}</p>
+        <p><span style="color: rgb(0, 0, 0);">You can easily track the progress of your order by visiting:</span> {{client_gallery_order_page}}</p>
         <p><span style="color: rgb(0, 0, 0);">Should you have any questions or need further assistance regarding your order, please don't hesitate to reach out.</span></p>
         <p><span style="color: rgb(0, 0, 0);">Best regards,</span></p>
         <p><span style="color: rgb(0, 0, 0);">{{email_signature}}</span></p>
@@ -2144,8 +2122,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         <p><span style="color: rgb(0, 0, 0);">Hello {{client_first_name}},</span></p>
         <p><span style="color: rgb(0, 0, 0);">Great news – your gallery is now available!</span></p>
         <p><span style="color: rgb(0, 0, 0);">Please remember that your photos are password-protected, and you'll need this password to access them: <strong>{{password}}</strong> </span></p>
-        <p><span style="color: rgb(0, 0, 0);">You can access your private gallery to view all your images at:</span></p>
-        <p>{{gallery_link}}</p>
+        <p><span style="color: rgb(0, 0, 0);">You can access your private gallery to view all your images at:</span> {{gallery_link}}</p>
         <p><span style="color: rgb(0, 0, 0);">If you have any digital image and/or print credits to use, please be sure to log in with the email address to which this email was sent. When you share the gallery with friends and family, kindly ask them to log in with their unique email addresses to ensure only you have access to those credits.</span></p>
         <p><span style="color: rgb(0, 0, 0);">Your gallery will be available until {{gallery_expiration_date}}, so please ensure you make your selections before then.</span></p>
         <p><span style="color: rgb(0, 0, 0);">It's been a pleasure working with you, and I'm eagerly awaiting your thoughts!</span></p>
@@ -2167,8 +2144,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         <p><span style="color: rgb(0, 0, 0);">Hello {{client_first_name}},</span></p>
         <p><span style="color: rgb(0, 0, 0);">I'm thrilled to let you know that your proofs are now ready for your viewing pleasure! </span></p>
         <p><span style="color: rgb(0, 0, 0);">Please keep in mind that your photos are under password protection for your privacy. You can use the following password to access them: {{album_password}}.</span></p>
-        <p><span style="color: rgb(0, 0, 0);">You can access your proofing album by clicking on the following link:</span></p>
-        <p>{{album_link}}</p>
+        <p><span style="color: rgb(0, 0, 0);">You can access your proofing album by clicking on the following link:</span> {{album_link}}</p>
         <p><span style="color: rgb(0, 0, 0);">To use any digital image credits, please be sure to log in with the email address to which this email was sent. You can also select more for purchase as well! If you do share the gallery with someone else, please ask them to use their own email address when logging in to prevent any issues related to your credits.</span></p>
         <p><span style="color: rgb(0, 0, 0);">In order to select the photos you'd like to move forward with retouching, simply choose each image and complete the checkout process by selecting "Send to Photographer." </span></p>
         <p><span style="color: rgb(0, 0, 0);">﻿Once that's done, I'll proceed with the full editing and send them your way. If you have any questions, please let me know I am happy to help you! </span></p>
@@ -2191,8 +2167,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         <p><span style="color: rgb(0, 0, 0);">Hello {{client_first_name}},</span></p>
         <p><span style="color: rgb(0, 0, 0);">I'm delighted to share that your retouched images are now available! </span></p>
         <p><span style="color: rgb(0, 0, 0);">To maintain the privacy of your photos, they are protected by a password. Please use the following password to view them: {{album_password}}. </span></p>
-        <p><span style="color: rgb(0, 0, 0);">You can access your Finals album by clicking on the following link and you can easily download them all with a simple click. </span></p>
-        <p>{{album_link}}</p>
+        <p><span style="color: rgb(0, 0, 0);">You can access your Finals album by clicking on the following link and you can easily download them all with a simple click:</span> {{album_link}}</p>
         <p><span style="color: rgb(0, 0, 0);">If you have any questions, please let me know! </span></p>
         <p><span style="color: rgb(0, 0, 0);">I hope you love your images as much as I do!</span></p>
         <p><span style="color: rgb(0, 0, 0);">Warm regards, </span></p>
@@ -2211,8 +2186,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         body_template: """
         <p><span style="color: rgb(0, 0, 0);">Hello {{order_first_name}},</span></p>
         <p><span style="color: rgb(0, 0, 0);">I noticed that you still have items in your cart! I wanted to see if you had any questions, if you do - simply reply to this email and I can help you.</span></p>
-        <p><span style="color: rgb(0, 0, 0);">If life got busy, simply just click on the following link to complete your order.</span></p>
-        <p>{{client_gallery_order_page}}</p>
+        <p><span style="color: rgb(0, 0, 0);">If life got busy, simply just click on the following link to complete your order:</span> {{client_gallery_order_page}}</p>
         <p><span style="color: rgb(0, 0, 0);">Your order will be confirmed and sent to production as soon as you complete your purchase. </span></p>
         <p><span style="color: rgb(0, 0, 0);">Warm regards, </span></p>
         <p><span style="color: rgb(0, 0, 0);">{{email_signature}}</span></p>
@@ -2230,8 +2204,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         body_template: """
         <p><span style="color: rgb(0, 0, 0);">Hello {{order_first_name}},</span></p>
         <p><span style="color: rgb(0, 0, 0);">I wanted to remind you that your recent order from {{photography_company_s_name}} is still pending in your cart.</span></p>
-        <p><span style="color: rgb(0, 0, 0);">To finalize your order, please click on the following link:</span></p>
-        <p>{{client_gallery_order_page}}</p>
+        <p><span style="color: rgb(0, 0, 0);">To finalize your order, please click on the following link:</span> {{client_gallery_order_page}}</p>
         <p><span style="color: rgb(0, 0, 0);">Completing your purchase will confirm your order and initiate production.</span></p>
         <p><span style="color: rgb(0, 0, 0);">Should you have any questions or require assistance, please don't hesitate to reach out to me!</span></p>
         <p><span style="color: rgb(0, 0, 0);">Thanks!</span></p>
@@ -2251,8 +2224,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         body_template: """
         <p><span style="color: rgb(0, 0, 0);">Hello {{order_first_name}},</span></p>
         <p><span style="color: rgb(0, 0, 0);">Another friendly reminder that you still have an order from {{photography_company_s_name}} waiting in your cart.</span></p>
-        <p><span style="color: rgb(0, 0, 0);">Simply click on the following link to complete your order.</span></p>
-        <p>{{client_gallery_order_page}}</p>
+        <p><span style="color: rgb(0, 0, 0);">Simply click on the following link to complete your order:</span> {{client_gallery_order_page}}</p>
         <p><span style="color: rgb(0, 0, 0);">Your order will be confirmed and sent to production as soon as you complete your purchase.</span></p>
         <p><span style="color: rgb(0, 0, 0);">If you have any questions, please let me know! </span></p>
         <p><span style="color: rgb(0, 0, 0);">Warm regards, </span></p>
@@ -2273,8 +2245,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         <p><span style="color: rgb(0, 0, 0);">Hello {{client_first_name}},</span></p>
         <p><span style="color: rgb(0, 0, 0);">I hope this message finds you well. I wanted to remind you that your gallery is nearing its expiration date. To ensure you don't miss out, please take a moment to log into your gallery and make your selections before it expires on {{gallery_expiration_date}}.</span></p>
         <p><span style="color: rgb(0, 0, 0);">As a quick reminder, your photos are protected with a password, so you'll need to enter it to view them: <strong>{{password}}</strong> </span></p>
-        <p><span style="color: rgb(0, 0, 0);">You can access your private gallery containing all of your images by following this link:</span></p>
-        <p>{{gallery_link}}</p>
+        <p><span style="color: rgb(0, 0, 0);">You can access your private gallery containing all of your images by following this link:</span> {{gallery_link}}</p>
         <p><span style="color: rgb(0, 0, 0);">If you have any questions or need assistance with anything related to your gallery, please don't hesitate to reach out. I'm here to help! </span></p>
         <p><span style="color: rgb(0, 0, 0);">Best regards,</span></p>
         <p><span style="color: rgb(0, 0, 0);">{{email_signature}}</span></p>
@@ -2294,8 +2265,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         body_template: """
         <p><span style="color: rgb(0, 0, 0);">Hello {{client_first_name}},</span></p>
         <p><span style="color: rgb(0, 0, 0);">I'm following up with another reminder that the expiration date for your gallery is approaching. To ensure you have ample time to make your selections, please log in to your gallery and make your choices before it expires on {{gallery_expiration_date}}.</span></p>
-        <p><span style="color: rgb(0, 0, 0);">You can easily access your private gallery, where all your images are waiting for you, by clicking on this link:</span></p>
-        <p>{{gallery_link}}</p>
+        <p><span style="color: rgb(0, 0, 0);">You can easily access your private gallery, where all your images are waiting for you, by clicking on this link:</span> {{gallery_link}}</p>
         <p><span style="color: rgb(0, 0, 0);">Just a quick reminder, your photos are protected with a password for your privacy and security. To access your images, simply use the provided password: <strong>{{password}}</strong></span></p>
         <p><span style="color: rgb(0, 0, 0);">If you need help or have any questions, please let me know!</span></p>
         <p><span style="color: rgb(0, 0, 0);">Best regards,</span></p>
@@ -2316,8 +2286,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         <p><span style="color: rgb(0, 0, 0);">Hello {{client_first_name}},</span></p>
         <p><span style="color: rgb(0, 0, 0);">I wanted to send along one last reminder in case you forgot! Your gallery is going to expire tomorrow! Please log into your gallery and make your selections before the gallery expires on {{gallery_expiration_date}}</span></p>
         <p><span style="color: rgb(0, 0, 0);">A reminder your photos are password-protected, so you will need to use this password to view: <strong>{{password}}</strong></span></p>
-        <p><span style="color: rgb(0, 0, 0);">You can log into your private gallery to see all of your images here:</span></p>
-        <p>{{gallery_link}}</p>
+        <p><span style="color: rgb(0, 0, 0);">You can log into your private gallery to see all of your images here:</span> {{gallery_link}}</p>
         <p><span style="color: rgb(0, 0, 0);">Any questions, please let me know! </span></p>
         <p><span style="color: rgb(0, 0, 0);">{{email_signature}}</span></p>
         """
@@ -2396,8 +2365,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         body_template: """
         <p><span style="color: rgb(0, 0, 0);">Hello {{order_first_name}},</span></p>
         <p><span style="color: rgb(0, 0, 0);">Congratulations on successfully placing an order from your gallery! I'm truly excited for you to have these beautiful images in your hands!</span></p>
-        <p><span style="color: rgb(0, 0, 0);">Your order is now in the production phase and is being prepared with great care. You can easily track the order by visiting:</span></p>
-        <p>{{client_gallery_order_page}}</p>
+        <p><span style="color: rgb(0, 0, 0);">Your order is now in the production phase and is being prepared with great care. You can easily track the order by visiting:</span> {{client_gallery_order_page}}</p>
         <p><span style="color: rgb(0, 0, 0);">Should you have any questions or need further assistance regarding your order, please don't hesitate to reach out. </span></p>
         <p><span style="color: rgb(0, 0, 0);">Best regards,</span></p>
         <p><span style="color: rgb(0, 0, 0);">{{email_signature}}</span></p>
@@ -2418,8 +2386,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         <p><span style="color: rgb(0, 0, 0);">I'm thrilled to confirm your gallery order from {{photography_company_s_name}} has been successfully processed.</span></p>
         <p><span style="color: rgb(0, 0, 0);">- If you have ordered digital images, you can expect to receive a follow-up email with your images. Since these files can be quite large, it may take a little time to package them properly.</span></p>
         <p><span style="color: rgb(0, 0, 0);">-If you have ordered print products,  your order is now in production and is being prepared with great care.</span></p>
-        <p><span style="color: rgb(0, 0, 0);">You can easily track the progress of your order by visiting:</span></p>
-        <p>{{client_gallery_order_page}}</p>
+        <p><span style="color: rgb(0, 0, 0);">You can easily track the progress of your order by visiting:</span> {{client_gallery_order_page}}</p>
         <p><span style="color: rgb(0, 0, 0);">Should you have any questions or need further assistance regarding your order, please don't hesitate to reach out.</span></p>
         <p><span style="color: rgb(0, 0, 0);">Best regards,</span></p>
         <p><span style="color: rgb(0, 0, 0);">{{email_signature}}</span></p>
@@ -2572,9 +2539,10 @@ defmodule Mix.Tasks.ImportEmailPresets do
         <p><span style="color: rgb(0, 0, 0);">If you have any lingering questions or if there's anything more I can do to help you, please don't hesitate to reach out. </span></p>
         <p><span style="color: rgb(0, 0, 0);">I'm looking forward to your response and the possibility of working with you.</span></p>
         <p><span style="color: rgb(0, 0, 0);">Warm regards,</span></p>
-        <p><span style="color: rgb(0, 0, 0);">{{email_signature}}</span></p>        \"""
-        },
-        %{
+        <p><span style="color: rgb(0, 0, 0);">{{email_signature}}</span></p>
+        """
+      },
+      %{
         email_automation_pipeline_id:
           get_pipeline_id_by_state(pipelines, "manual_thank_you_lead"),
         total_hours: EmailPreset.calculate_total_hours(4, %{calendar: "Day", sign: "+"}),
@@ -2584,7 +2552,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         position: 0,
         name: "Lead - Initial Inquiry",
         subject_template: "Checking in! | {{photography_company_s_name}}",
-        body_template: \"""
+        body_template: """
         <p><span style="color: rgb(0, 0, 0);">Hello {{client_first_name}},</span></p>
         <p><span style="color: rgb(0, 0, 0);">I hope this message finds you well. I understand that life can get busy, and the to-do list never seems to end. I'm just following up on your recent inquiry with me, and I'm excited about working with you. Please hit the reply button to this email and let me know how I can assist you.</span></p>
         <p><span style="color: rgb(0, 0, 0);">I'm here to ensure that your photography experience is nothing short of memorable!</span></p>
@@ -2981,8 +2949,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         <p><span style="color: rgb(0, 0, 0);">Hello {{client_first_name}},</span></p>
         <p><span style="color: rgb(0, 0, 0);">Great news – your gallery is now available!</span></p>
         <p><span style="color: rgb(0, 0, 0);">Please remember that your photos are password-protected, and you'll need this password to access them: <strong>{{password}}</strong> </span></p>
-        <p><span style="color: rgb(0, 0, 0);">You can access your private gallery to view all your images at:</span></p>
-        <p>{{gallery_link}}</p>
+        <p><span style="color: rgb(0, 0, 0);">You can access your private gallery to view all your images at:</span> {{gallery_link}}</p>
         <p><span style="color: rgb(0, 0, 0);">If you have any digital image and/or print credits to use, please be sure to log in with the email address to which this email was sent. When you share the gallery with friends and family, kindly ask them to log in with their unique email addresses to ensure only you have access to those credits.</span></p>
         <p><span style="color: rgb(0, 0, 0);">Your gallery will be available until {{gallery_expiration_date}}, so please ensure you make your selections before then.</span></p>
         <p><span style="color: rgb(0, 0, 0);">It's been a pleasure working with you, and I'm eagerly awaiting your thoughts!</span></p>
@@ -3004,8 +2971,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         <p><span style="color: rgb(0, 0, 0);">Hello {{client_first_name}},</span></p>
         <p><span style="color: rgb(0, 0, 0);">I'm thrilled to let you know that your proofs are now ready for your viewing pleasure! </span></p>
         <p><span style="color: rgb(0, 0, 0);">Please keep in mind that your photos are under password protection for your privacy. You can use the following password to access them: {{album_password}}.</span></p>
-        <p><span style="color: rgb(0, 0, 0);">You can access your proofing album by clicking on the following link:</span></p>
-        <p>{{album_link}}</p>
+        <p><span style="color: rgb(0, 0, 0);">You can access your proofing album by clicking on the following link:</span> {{album_link}}</p>
         <p><span style="color: rgb(0, 0, 0);">To use any digital image credits, please be sure to log in with the email address to which this email was sent. You can also select more for purchase as well! If you do share the gallery with someone else, please ask them to use their own email address when logging in to prevent any issues related to your credits.</span></p>
         <p><span style="color: rgb(0, 0, 0);">In order to select the photos you'd like to move forward with retouching, simply choose each image and complete the checkout process by selecting "Send to Photographer." </span></p>
         <p><span style="color: rgb(0, 0, 0);">﻿Once that's done, I'll proceed with the full editing and send them your way. If you have any questions, please let me know I am happy to help you! </span></p>
@@ -3028,8 +2994,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         <p><span style="color: rgb(0, 0, 0);">Hello {{client_first_name}},</span></p>
         <p><span style="color: rgb(0, 0, 0);">I'm delighted to share that your retouched images are now available! </span></p>
         <p><span style="color: rgb(0, 0, 0);">To maintain the privacy of your photos, they are protected by a password. Please use the following password to view them: {{album_password}}. </span></p>
-        <p><span style="color: rgb(0, 0, 0);">You can access your Finals album by clicking on the following link and you can easily download them all with a simple click. </span></p>
-        <p>{{album_link}}</p>
+        <p><span style="color: rgb(0, 0, 0);">You can access your Finals album by clicking on the following link and you can easily download them all with a simple click:</span> {{album_link}}</p>
         <p><span style="color: rgb(0, 0, 0);">If you have any questions, please let me know! </span></p>
         <p><span style="color: rgb(0, 0, 0);">I hope you love your images as much as I do!</span></p>
         <p><span style="color: rgb(0, 0, 0);">Warm regards, </span></p>
@@ -3048,8 +3013,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         body_template: """
         <p><span style="color: rgb(0, 0, 0);">Hello {{order_first_name}},</span></p>
         <p><span style="color: rgb(0, 0, 0);">I noticed that you still have items in your cart! I wanted to see if you had any questions, if you do - simply reply to this email and I can help you.</span></p>
-        <p><span style="color: rgb(0, 0, 0);">If life got busy, simply just click on the following link to complete your order.</span></p>
-        <p>{{client_gallery_order_page}}</p>
+        <p><span style="color: rgb(0, 0, 0);">If life got busy, simply just click on the following link to complete your order:</span> {{client_gallery_order_page}}</p>
         <p><span style="color: rgb(0, 0, 0);">Your order will be confirmed and sent to production as soon as you complete your purchase. </span></p>
         <p><span style="color: rgb(0, 0, 0);">Warm regards, </span></p>
         <p><span style="color: rgb(0, 0, 0);">{{email_signature}}</span></p>
@@ -3067,8 +3031,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         body_template: """
         <p><span style="color: rgb(0, 0, 0);">Hello {{order_first_name}},</span></p>
         <p><span style="color: rgb(0, 0, 0);">I wanted to remind you that your recent order from {{photography_company_s_name}} is still pending in your cart.</span></p>
-        <p><span style="color: rgb(0, 0, 0);">To finalize your order, please click on the following link:</span></p>
-        <p>{{client_gallery_order_page}}</p>
+        <p><span style="color: rgb(0, 0, 0);">To finalize your order, please click on the following link:</span> {{client_gallery_order_page}}</p>
         <p><span style="color: rgb(0, 0, 0);">Completing your purchase will confirm your order and initiate production.</span></p>
         <p><span style="color: rgb(0, 0, 0);">Should you have any questions or require assistance, please don't hesitate to reach out to me!</span></p>
         <p><span style="color: rgb(0, 0, 0);">Thanks!</span></p>
@@ -3088,8 +3051,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         body_template: """
         <p><span style="color: rgb(0, 0, 0);">Hello {{order_first_name}},</span></p>
         <p><span style="color: rgb(0, 0, 0);">Another friendly reminder that you still have an order from {{photography_company_s_name}} waiting in your cart.</span></p>
-        <p><span style="color: rgb(0, 0, 0);">Simply click on the following link to complete your order.</span></p>
-        <p>{{client_gallery_order_page}}</p>
+        <p><span style="color: rgb(0, 0, 0);">Simply click on the following link to complete your order:</span> {{client_gallery_order_page}}</p>
         <p><span style="color: rgb(0, 0, 0);">Your order will be confirmed and sent to production as soon as you complete your purchase.</span></p>
         <p><span style="color: rgb(0, 0, 0);">If you have any questions, please let me know! </span></p>
         <p><span style="color: rgb(0, 0, 0);">Warm regards, </span></p>
@@ -3110,8 +3072,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         <p><span style="color: rgb(0, 0, 0);">Hello {{client_first_name}},</span></p>
         <p><span style="color: rgb(0, 0, 0);">I hope this message finds you well. I wanted to remind you that your gallery is nearing its expiration date. To ensure you don't miss out, please take a moment to log into your gallery and make your selections before it expires on {{gallery_expiration_date}}.</span></p>
         <p><span style="color: rgb(0, 0, 0);">As a quick reminder, your photos are protected with a password, so you'll need to enter it to view them: <strong>{{password}}</strong> </span></p>
-        <p><span style="color: rgb(0, 0, 0);">You can access your private gallery containing all of your images by following this link:</span></p>
-        <p>{{gallery_link}}</p>
+        <p><span style="color: rgb(0, 0, 0);">You can access your private gallery containing all of your images by following this link:</span> {{gallery_link}}</p>
         <p><span style="color: rgb(0, 0, 0);">If you have any questions or need assistance with anything related to your gallery, please don't hesitate to reach out. I'm here to help! </span></p>
         <p><span style="color: rgb(0, 0, 0);">Best regards,</span></p>
         <p><span style="color: rgb(0, 0, 0);">{{email_signature}}</span></p>
@@ -3131,8 +3092,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         body_template: """
         <p><span style="color: rgb(0, 0, 0);">Hello {{client_first_name}},</span></p>
         <p><span style="color: rgb(0, 0, 0);">I'm following up with another reminder that the expiration date for your gallery is approaching. To ensure you have ample time to make your selections, please log in to your gallery and make your choices before it expires on {{gallery_expiration_date}}.</span></p>
-        <p><span style="color: rgb(0, 0, 0);">You can easily access your private gallery, where all your images are waiting for you, by clicking on this link:</span></p>
-        <p>{{gallery_link}}</p>
+        <p><span style="color: rgb(0, 0, 0);">You can easily access your private gallery, where all your images are waiting for you, by clicking on this link:</span> {{gallery_link}}</p>
         <p><span style="color: rgb(0, 0, 0);">Just a quick reminder, your photos are protected with a password for your privacy and security. To access your images, simply use the provided password: <strong>{{password}}</strong></span></p>
         <p><span style="color: rgb(0, 0, 0);">If you need help or have any questions, please let me know!</span></p>
         <p><span style="color: rgb(0, 0, 0);">Best regards,</span></p>
@@ -3153,8 +3113,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         <p><span style="color: rgb(0, 0, 0);">Hello {{client_first_name}},</span></p>
         <p><span style="color: rgb(0, 0, 0);">I wanted to send along one last reminder in case you forgot! Your gallery is going to expire tomorrow! Please log into your gallery and make your selections before the gallery expires on {{gallery_expiration_date}}</span></p>
         <p><span style="color: rgb(0, 0, 0);">A reminder your photos are password-protected, so you will need to use this password to view: <strong>{{password}}</strong></span></p>
-        <p><span style="color: rgb(0, 0, 0);">You can log into your private gallery to see all of your images here:</span></p>
-        <p>{{gallery_link}}</p>
+        <p><span style="color: rgb(0, 0, 0);">You can log into your private gallery to see all of your images here:</span> {{gallery_link}}</p>
         <p><span style="color: rgb(0, 0, 0);">Any questions, please let me know! </span></p>
         <p><span style="color: rgb(0, 0, 0);">{{email_signature}}</span></p>
         """
@@ -3233,8 +3192,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         body_template: """
         <p><span style="color: rgb(0, 0, 0);">Hello {{order_first_name}},</span></p>
         <p><span style="color: rgb(0, 0, 0);">Congratulations on successfully placing an order from your gallery! I'm truly excited for you to have these beautiful images in your hands!</span></p>
-        <p><span style="color: rgb(0, 0, 0);">Your order is now in the production phase and is being prepared with great care. You can easily track the order by visiting:</span></p>
-        <p>{{client_gallery_order_page}}</p>
+        <p><span style="color: rgb(0, 0, 0);">Your order is now in the production phase and is being prepared with great care. You can easily track the order by visiting:</span> {{client_gallery_order_page}}</p>
         <p><span style="color: rgb(0, 0, 0);">Should you have any questions or need further assistance regarding your order, please don't hesitate to reach out. </span></p>
         <p><span style="color: rgb(0, 0, 0);">Best regards,</span></p>
         <p><span style="color: rgb(0, 0, 0);">{{email_signature}}</span></p>
@@ -3255,8 +3213,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         <p><span style="color: rgb(0, 0, 0);">I'm thrilled to confirm your gallery order from {{photography_company_s_name}} has been successfully processed.</span></p>
         <p><span style="color: rgb(0, 0, 0);">- If you have ordered digital images, you can expect to receive a follow-up email with your images. Since these files can be quite large, it may take a little time to package them properly.</span></p>
         <p><span style="color: rgb(0, 0, 0);">-If you have ordered print products,  your order is now in production and is being prepared with great care.</span></p>
-        <p><span style="color: rgb(0, 0, 0);">You can easily track the progress of your order by visiting:</span></p>
-        <p>{{client_gallery_order_page}}</p>
+        <p><span style="color: rgb(0, 0, 0);">You can easily track the progress of your order by visiting:</span> {{client_gallery_order_page}}</p>
         <p><span style="color: rgb(0, 0, 0);">Should you have any questions or need further assistance regarding your order, please don't hesitate to reach out.</span></p>
         <p><span style="color: rgb(0, 0, 0);">Best regards,</span></p>
         <p><span style="color: rgb(0, 0, 0);">{{email_signature}}</span></p>
@@ -3806,8 +3763,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         <p><span style="color: rgb(0, 0, 0);">Hello {{client_first_name}},</span></p>
         <p><span style="color: rgb(0, 0, 0);">Great news – your gallery is now available!</span></p>
         <p><span style="color: rgb(0, 0, 0);">Please remember that your photos are password-protected, and you'll need this password to access them: <strong>{{password}}</strong> </span></p>
-        <p><span style="color: rgb(0, 0, 0);">You can access your private gallery to view all your images at:</span></p>
-        <p>{{gallery_link}}</p>
+        <p><span style="color: rgb(0, 0, 0);">You can access your private gallery to view all your images at:</span> {{gallery_link}}</p>
         <p><span style="color: rgb(0, 0, 0);">If you have any digital image and/or print credits to use, please be sure to log in with the email address to which this email was sent. When you share the gallery with friends and family, kindly ask them to log in with their unique email addresses to ensure only you have access to those credits.</span></p>
         <p><span style="color: rgb(0, 0, 0);">Your gallery will be available until {{gallery_expiration_date}}, so please ensure you make your selections before then.</span></p>
         <p><span style="color: rgb(0, 0, 0);">It's been a pleasure working with you, and I'm eagerly awaiting your thoughts!</span></p>
@@ -3829,8 +3785,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         <p><span style="color: rgb(0, 0, 0);">Hello {{client_first_name}},</span></p>
         <p><span style="color: rgb(0, 0, 0);">I'm thrilled to let you know that your proofs are now ready for your viewing pleasure! </span></p>
         <p><span style="color: rgb(0, 0, 0);">Please keep in mind that your photos are under password protection for your privacy. You can use the following password to access them: {{album_password}}.</span></p>
-        <p><span style="color: rgb(0, 0, 0);">You can access your proofing album by clicking on the following link:</span></p>
-        <p>{{album_link}}</p>
+        <p><span style="color: rgb(0, 0, 0);">You can access your proofing album by clicking on the following link:</span> {{album_link}}</p>
         <p><span style="color: rgb(0, 0, 0);">To use any digital image credits, please be sure to log in with the email address to which this email was sent. You can also select more for purchase as well! If you do share the gallery with someone else, please ask them to use their own email address when logging in to prevent any issues related to your credits.</span></p>
         <p><span style="color: rgb(0, 0, 0);">In order to select the photos you'd like to move forward with retouching, simply choose each image and complete the checkout process by selecting "Send to Photographer." </span></p>
         <p><span style="color: rgb(0, 0, 0);">﻿Once that's done, I'll proceed with the full editing and send them your way. If you have any questions, please let me know I am happy to help you! </span></p>
@@ -3853,8 +3808,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         <p><span style="color: rgb(0, 0, 0);">Hello {{client_first_name}},</span></p>
         <p><span style="color: rgb(0, 0, 0);">I'm delighted to share that your retouched images are now available! </span></p>
         <p><span style="color: rgb(0, 0, 0);">To maintain the privacy of your photos, they are protected by a password. Please use the following password to view them: {{album_password}}. </span></p>
-        <p><span style="color: rgb(0, 0, 0);">You can access your Finals album by clicking on the following link and you can easily download them all with a simple click. </span></p>
-        <p>{{album_link}}</p>
+        <p><span style="color: rgb(0, 0, 0);">You can access your Finals album by clicking on the following link and you can easily download them all with a simple click:</span> {{album_link}}</p>
         <p><span style="color: rgb(0, 0, 0);">If you have any questions, please let me know! </span></p>
         <p><span style="color: rgb(0, 0, 0);">I hope you love your images as much as I do!</span></p>
         <p><span style="color: rgb(0, 0, 0);">Warm regards, </span></p>
@@ -3873,8 +3827,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         body_template: """
         <p><span style="color: rgb(0, 0, 0);">Hello {{order_first_name}},</span></p>
         <p><span style="color: rgb(0, 0, 0);">I noticed that you still have items in your cart! I wanted to see if you had any questions, if you do - simply reply to this email and I can help you.</span></p>
-        <p><span style="color: rgb(0, 0, 0);">If life got busy, simply just click on the following link to complete your order.</span></p>
-        <p>{{client_gallery_order_page}}</p>
+        <p><span style="color: rgb(0, 0, 0);">If life got busy, simply just click on the following link to complete your order:</span> {{client_gallery_order_page}}</p>
         <p><span style="color: rgb(0, 0, 0);">Your order will be confirmed and sent to production as soon as you complete your purchase. </span></p>
         <p><span style="color: rgb(0, 0, 0);">Warm regards, </span></p>
         <p><span style="color: rgb(0, 0, 0);">{{email_signature}}</span></p>
@@ -3892,8 +3845,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         body_template: """
         <p><span style="color: rgb(0, 0, 0);">Hello {{order_first_name}},</span></p>
         <p><span style="color: rgb(0, 0, 0);">I wanted to remind you that your recent order from {{photography_company_s_name}} is still pending in your cart.</span></p>
-        <p><span style="color: rgb(0, 0, 0);">To finalize your order, please click on the following link:</span></p>
-        <p>{{client_gallery_order_page}}</p>
+        <p><span style="color: rgb(0, 0, 0);">To finalize your order, please click on the following link:</span> {{client_gallery_order_page}}</p>
         <p><span style="color: rgb(0, 0, 0);">Completing your purchase will confirm your order and initiate production.</span></p>
         <p><span style="color: rgb(0, 0, 0);">Should you have any questions or require assistance, please don't hesitate to reach out to me!</span></p>
         <p><span style="color: rgb(0, 0, 0);">Thanks!</span></p>
@@ -3913,8 +3865,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         body_template: """
         <p><span style="color: rgb(0, 0, 0);">Hello {{order_first_name}},</span></p>
         <p><span style="color: rgb(0, 0, 0);">Another friendly reminder that you still have an order from {{photography_company_s_name}} waiting in your cart.</span></p>
-        <p><span style="color: rgb(0, 0, 0);">Simply click on the following link to complete your order.</span></p>
-        <p>{{client_gallery_order_page}}</p>
+        <p><span style="color: rgb(0, 0, 0);">Simply click on the following link to complete your order:</span> {{client_gallery_order_page}}</p>
         <p><span style="color: rgb(0, 0, 0);">Your order will be confirmed and sent to production as soon as you complete your purchase.</span></p>
         <p><span style="color: rgb(0, 0, 0);">If you have any questions, please let me know! </span></p>
         <p><span style="color: rgb(0, 0, 0);">Warm regards, </span></p>
@@ -3935,8 +3886,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         <p><span style="color: rgb(0, 0, 0);">Hello {{client_first_name}},</span></p>
         <p><span style="color: rgb(0, 0, 0);">I hope this message finds you well. I wanted to remind you that your gallery is nearing its expiration date. To ensure you don't miss out, please take a moment to log into your gallery and make your selections before it expires on {{gallery_expiration_date}}.</span></p>
         <p><span style="color: rgb(0, 0, 0);">As a quick reminder, your photos are protected with a password, so you'll need to enter it to view them: <strong>{{password}}</strong> </span></p>
-        <p><span style="color: rgb(0, 0, 0);">You can access your private gallery containing all of your images by following this link:</span></p>
-        <p>{{gallery_link}}</p>
+        <p><span style="color: rgb(0, 0, 0);">You can access your private gallery containing all of your images by following this link:</span> {{gallery_link}}</p>
         <p><span style="color: rgb(0, 0, 0);">If you have any questions or need assistance with anything related to your gallery, please don't hesitate to reach out. I'm here to help! </span></p>
         <p><span style="color: rgb(0, 0, 0);">Best regards,</span></p>
         <p><span style="color: rgb(0, 0, 0);">{{email_signature}}</span></p>
@@ -3956,8 +3906,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         body_template: """
         <p><span style="color: rgb(0, 0, 0);">Hello {{client_first_name}},</span></p>
         <p><span style="color: rgb(0, 0, 0);">I'm following up with another reminder that the expiration date for your gallery is approaching. To ensure you have ample time to make your selections, please log in to your gallery and make your choices before it expires on {{gallery_expiration_date}}.</span></p>
-        <p><span style="color: rgb(0, 0, 0);">You can easily access your private gallery, where all your images are waiting for you, by clicking on this link:</span></p>
-        <p>{{gallery_link}}</p>
+        <p><span style="color: rgb(0, 0, 0);">You can easily access your private gallery, where all your images are waiting for you, by clicking on this link:</span> {{gallery_link}}</p>
         <p><span style="color: rgb(0, 0, 0);">Just a quick reminder, your photos are protected with a password for your privacy and security. To access your images, simply use the provided password: <strong>{{password}}</strong></span></p>
         <p><span style="color: rgb(0, 0, 0);">If you need help or have any questions, please let me know!</span></p>
         <p><span style="color: rgb(0, 0, 0);">Best regards,</span></p>
@@ -3978,8 +3927,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         <p><span style="color: rgb(0, 0, 0);">Hello {{client_first_name}},</span></p>
         <p><span style="color: rgb(0, 0, 0);">I wanted to send along one last reminder in case you forgot! Your gallery is going to expire tomorrow! Please log into your gallery and make your selections before the gallery expires on {{gallery_expiration_date}}</span></p>
         <p><span style="color: rgb(0, 0, 0);">A reminder your photos are password-protected, so you will need to use this password to view: <strong>{{password}}</strong></span></p>
-        <p><span style="color: rgb(0, 0, 0);">You can log into your private gallery to see all of your images here:</span></p>
-        <p>{{gallery_link}}</p>
+        <p><span style="color: rgb(0, 0, 0);">You can log into your private gallery to see all of your images here:</span> {{gallery_link}}</p>
         <p><span style="color: rgb(0, 0, 0);">Any questions, please let me know! </span></p>
         <p><span style="color: rgb(0, 0, 0);">{{email_signature}}</span></p>
         """
@@ -4058,8 +4006,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         body_template: """
         <p><span style="color: rgb(0, 0, 0);">Hello {{order_first_name}},</span></p>
         <p><span style="color: rgb(0, 0, 0);">Congratulations on successfully placing an order from your gallery! I'm truly excited for you to have these beautiful images in your hands!</span></p>
-        <p><span style="color: rgb(0, 0, 0);">Your order is now in the production phase and is being prepared with great care. You can easily track the order by visiting:</span></p>
-        <p>{{client_gallery_order_page}}</p>
+        <p><span style="color: rgb(0, 0, 0);">Your order is now in the production phase and is being prepared with great care. You can easily track the order by visiting:</span> {{client_gallery_order_page}}</p>
         <p><span style="color: rgb(0, 0, 0);">Should you have any questions or need further assistance regarding your order, please don't hesitate to reach out. </span></p>
         <p><span style="color: rgb(0, 0, 0);">Best regards,</span></p>
         <p><span style="color: rgb(0, 0, 0);">{{email_signature}}</span></p>
@@ -4080,8 +4027,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         <p><span style="color: rgb(0, 0, 0);">I'm thrilled to confirm your gallery order from {{photography_company_s_name}} has been successfully processed.</span></p>
         <p><span style="color: rgb(0, 0, 0);">- If you have ordered digital images, you can expect to receive a follow-up email with your images. Since these files can be quite large, it may take a little time to package them properly.</span></p>
         <p><span style="color: rgb(0, 0, 0);">-If you have ordered print products,  your order is now in production and is being prepared with great care.</span></p>
-        <p><span style="color: rgb(0, 0, 0);">You can easily track the progress of your order by visiting:</span></p>
-        <p>{{client_gallery_order_page}}</p>
+        <p><span style="color: rgb(0, 0, 0);">You can easily track the progress of your order by visiting:</span> {{client_gallery_order_page}}</p>
         <p><span style="color: rgb(0, 0, 0);">Should you have any questions or need further assistance regarding your order, please don't hesitate to reach out.</span></p>
         <p><span style="color: rgb(0, 0, 0);">Best regards,</span></p>
         <p><span style="color: rgb(0, 0, 0);">{{email_signature}}</span></p>
@@ -4631,8 +4577,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         <p><span style="color: rgb(0, 0, 0);">Hello {{client_first_name}},</span></p>
         <p><span style="color: rgb(0, 0, 0);">Great news – your gallery is now available!</span></p>
         <p><span style="color: rgb(0, 0, 0);">Please remember that your photos are password-protected, and you'll need this password to access them: <strong>{{password}}</strong> </span></p>
-        <p><span style="color: rgb(0, 0, 0);">You can access your private gallery to view all your images at:</span></p>
-        <p>{{gallery_link}}</p>
+        <p><span style="color: rgb(0, 0, 0);">You can access your private gallery to view all your images at:</span> {{gallery_link}}</p>
         <p><span style="color: rgb(0, 0, 0);">If you have any digital image and/or print credits to use, please be sure to log in with the email address to which this email was sent. When you share the gallery with friends and family, kindly ask them to log in with their unique email addresses to ensure only you have access to those credits.</span></p>
         <p><span style="color: rgb(0, 0, 0);">Your gallery will be available until {{gallery_expiration_date}}, so please ensure you make your selections before then.</span></p>
         <p><span style="color: rgb(0, 0, 0);">It's been a pleasure working with you, and I'm eagerly awaiting your thoughts!</span></p>
@@ -4654,8 +4599,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         <p><span style="color: rgb(0, 0, 0);">Hello {{client_first_name}},</span></p>
         <p><span style="color: rgb(0, 0, 0);">I'm thrilled to let you know that your proofs are now ready for your viewing pleasure! </span></p>
         <p><span style="color: rgb(0, 0, 0);">Please keep in mind that your photos are under password protection for your privacy. You can use the following password to access them: {{album_password}}.</span></p>
-        <p><span style="color: rgb(0, 0, 0);">You can access your proofing album by clicking on the following link:</span></p>
-        <p>{{album_link}}</p>
+        <p><span style="color: rgb(0, 0, 0);">You can access your proofing album by clicking on the following link:</span> {{album_link}}</p>
         <p><span style="color: rgb(0, 0, 0);">To use any digital image credits, please be sure to log in with the email address to which this email was sent. You can also select more for purchase as well! If you do share the gallery with someone else, please ask them to use their own email address when logging in to prevent any issues related to your credits.</span></p>
         <p><span style="color: rgb(0, 0, 0);">In order to select the photos you'd like to move forward with retouching, simply choose each image and complete the checkout process by selecting "Send to Photographer." </span></p>
         <p><span style="color: rgb(0, 0, 0);">﻿Once that's done, I'll proceed with the full editing and send them your way. If you have any questions, please let me know I am happy to help you! </span></p>
@@ -4678,8 +4622,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         <p><span style="color: rgb(0, 0, 0);">Hello {{client_first_name}},</span></p>
         <p><span style="color: rgb(0, 0, 0);">I'm delighted to share that your retouched images are now available! </span></p>
         <p><span style="color: rgb(0, 0, 0);">To maintain the privacy of your photos, they are protected by a password. Please use the following password to view them: {{album_password}}. </span></p>
-        <p><span style="color: rgb(0, 0, 0);">You can access your Finals album by clicking on the following link and you can easily download them all with a simple click. </span></p>
-        <p>{{album_link}}</p>
+        <p><span style="color: rgb(0, 0, 0);">You can access your Finals album by clicking on the following link and you can easily download them all with a simple click:</span> {{album_link}}</p>
         <p><span style="color: rgb(0, 0, 0);">If you have any questions, please let me know! </span></p>
         <p><span style="color: rgb(0, 0, 0);">I hope you love your images as much as I do!</span></p>
         <p><span style="color: rgb(0, 0, 0);">Warm regards, </span></p>
@@ -4698,8 +4641,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         body_template: """
         <p><span style="color: rgb(0, 0, 0);">Hello {{order_first_name}},</span></p>
         <p><span style="color: rgb(0, 0, 0);">I noticed that you still have items in your cart! I wanted to see if you had any questions, if you do - simply reply to this email and I can help you.</span></p>
-        <p><span style="color: rgb(0, 0, 0);">If life got busy, simply just click on the following link to complete your order.</span></p>
-        <p>{{client_gallery_order_page}}</p>
+        <p><span style="color: rgb(0, 0, 0);">If life got busy, simply just click on the following link to complete your order:</span> {{client_gallery_order_page}}</p>
         <p><span style="color: rgb(0, 0, 0);">Your order will be confirmed and sent to production as soon as you complete your purchase. </span></p>
         <p><span style="color: rgb(0, 0, 0);">Warm regards, </span></p>
         <p><span style="color: rgb(0, 0, 0);">{{email_signature}}</span></p>
@@ -4717,8 +4659,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         body_template: """
         <p><span style="color: rgb(0, 0, 0);">Hello {{order_first_name}},</span></p>
         <p><span style="color: rgb(0, 0, 0);">I wanted to remind you that your recent order from {{photography_company_s_name}} is still pending in your cart.</span></p>
-        <p><span style="color: rgb(0, 0, 0);">To finalize your order, please click on the following link:</span></p>
-        <p>{{client_gallery_order_page}}</p>
+        <p><span style="color: rgb(0, 0, 0);">To finalize your order, please click on the following link:</span> {{client_gallery_order_page}}</p>
         <p><span style="color: rgb(0, 0, 0);">Completing your purchase will confirm your order and initiate production.</span></p>
         <p><span style="color: rgb(0, 0, 0);">Should you have any questions or require assistance, please don't hesitate to reach out to me!</span></p>
         <p><span style="color: rgb(0, 0, 0);">Thanks!</span></p>
@@ -4738,8 +4679,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         body_template: """
         <p><span style="color: rgb(0, 0, 0);">Hello {{order_first_name}},</span></p>
         <p><span style="color: rgb(0, 0, 0);">Another friendly reminder that you still have an order from {{photography_company_s_name}} waiting in your cart.</span></p>
-        <p><span style="color: rgb(0, 0, 0);">Simply click on the following link to complete your order.</span></p>
-        <p>{{client_gallery_order_page}}</p>
+        <p><span style="color: rgb(0, 0, 0);">Simply click on the following link to complete your order:</span> {{client_gallery_order_page}}</p>
         <p><span style="color: rgb(0, 0, 0);">Your order will be confirmed and sent to production as soon as you complete your purchase.</span></p>
         <p><span style="color: rgb(0, 0, 0);">If you have any questions, please let me know! </span></p>
         <p><span style="color: rgb(0, 0, 0);">Warm regards, </span></p>
@@ -4760,8 +4700,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         <p><span style="color: rgb(0, 0, 0);">Hello {{client_first_name}},</span></p>
         <p><span style="color: rgb(0, 0, 0);">I hope this message finds you well. I wanted to remind you that your gallery is nearing its expiration date. To ensure you don't miss out, please take a moment to log into your gallery and make your selections before it expires on {{gallery_expiration_date}}.</span></p>
         <p><span style="color: rgb(0, 0, 0);">As a quick reminder, your photos are protected with a password, so you'll need to enter it to view them: <strong>{{password}}</strong> </span></p>
-        <p><span style="color: rgb(0, 0, 0);">You can access your private gallery containing all of your images by following this link:</span></p>
-        <p>{{gallery_link}}</p>
+        <p><span style="color: rgb(0, 0, 0);">You can access your private gallery containing all of your images by following this link:</span> {{gallery_link}}</p>
         <p><span style="color: rgb(0, 0, 0);">If you have any questions or need assistance with anything related to your gallery, please don't hesitate to reach out. I'm here to help! </span></p>
         <p><span style="color: rgb(0, 0, 0);">Best regards,</span></p>
         <p><span style="color: rgb(0, 0, 0);">{{email_signature}}</span></p>
@@ -4781,8 +4720,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         body_template: """
         <p><span style="color: rgb(0, 0, 0);">Hello {{client_first_name}},</span></p>
         <p><span style="color: rgb(0, 0, 0);">I'm following up with another reminder that the expiration date for your gallery is approaching. To ensure you have ample time to make your selections, please log in to your gallery and make your choices before it expires on {{gallery_expiration_date}}.</span></p>
-        <p><span style="color: rgb(0, 0, 0);">You can easily access your private gallery, where all your images are waiting for you, by clicking on this link:</span></p>
-        <p>{{gallery_link}}</p>
+        <p><span style="color: rgb(0, 0, 0);">You can easily access your private gallery, where all your images are waiting for you, by clicking on this link:</span> {{gallery_link}}</p>
         <p><span style="color: rgb(0, 0, 0);">Just a quick reminder, your photos are protected with a password for your privacy and security. To access your images, simply use the provided password: <strong>{{password}}</strong></span></p>
         <p><span style="color: rgb(0, 0, 0);">If you need help or have any questions, please let me know!</span></p>
         <p><span style="color: rgb(0, 0, 0);">Best regards,</span></p>
@@ -4803,8 +4741,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         <p><span style="color: rgb(0, 0, 0);">Hello {{client_first_name}},</span></p>
         <p><span style="color: rgb(0, 0, 0);">I wanted to send along one last reminder in case you forgot! Your gallery is going to expire tomorrow! Please log into your gallery and make your selections before the gallery expires on {{gallery_expiration_date}}</span></p>
         <p><span style="color: rgb(0, 0, 0);">A reminder your photos are password-protected, so you will need to use this password to view: <strong>{{password}}</strong></span></p>
-        <p><span style="color: rgb(0, 0, 0);">You can log into your private gallery to see all of your images here:</span></p>
-        <p>{{gallery_link}}</p>
+        <p><span style="color: rgb(0, 0, 0);">You can log into your private gallery to see all of your images here:</span> {{gallery_link}}</p>
         <p><span style="color: rgb(0, 0, 0);">Any questions, please let me know! </span></p>
         <p><span style="color: rgb(0, 0, 0);">{{email_signature}}</span></p>
         """
@@ -4883,8 +4820,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         body_template: """
         <p><span style="color: rgb(0, 0, 0);">Hello {{order_first_name}},</span></p>
         <p><span style="color: rgb(0, 0, 0);">Congratulations on successfully placing an order from your gallery! I'm truly excited for you to have these beautiful images in your hands!</span></p>
-        <p><span style="color: rgb(0, 0, 0);">Your order is now in the production phase and is being prepared with great care. You can easily track the order by visiting:</span></p>
-        <p>{{client_gallery_order_page}}</p>
+        <p><span style="color: rgb(0, 0, 0);">Your order is now in the production phase and is being prepared with great care. You can easily track the order by visiting:</span> {{client_gallery_order_page}}</p>
         <p><span style="color: rgb(0, 0, 0);">Should you have any questions or need further assistance regarding your order, please don't hesitate to reach out. </span></p>
         <p><span style="color: rgb(0, 0, 0);">Best regards,</span></p>
         <p><span style="color: rgb(0, 0, 0);">{{email_signature}}</span></p>
@@ -4905,8 +4841,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         <p><span style="color: rgb(0, 0, 0);">I'm thrilled to confirm your gallery order from {{photography_company_s_name}} has been successfully processed.</span></p>
         <p><span style="color: rgb(0, 0, 0);">- If you have ordered digital images, you can expect to receive a follow-up email with your images. Since these files can be quite large, it may take a little time to package them properly.</span></p>
         <p><span style="color: rgb(0, 0, 0);">-If you have ordered print products,  your order is now in production and is being prepared with great care.</span></p>
-        <p><span style="color: rgb(0, 0, 0);">You can easily track the progress of your order by visiting:</span></p>
-        <p>{{client_gallery_order_page}}</p>
+        <p><span style="color: rgb(0, 0, 0);">You can easily track the progress of your order by visiting:</span> {{client_gallery_order_page}}</p>
         <p><span style="color: rgb(0, 0, 0);">Should you have any questions or need further assistance regarding your order, please don't hesitate to reach out.</span></p>
         <p><span style="color: rgb(0, 0, 0);">Best regards,</span></p>
         <p><span style="color: rgb(0, 0, 0);">{{email_signature}}</span></p>
@@ -5455,8 +5390,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         <p><span style="color: rgb(0, 0, 0);">Hello {{client_first_name}},</span></p>
         <p><span style="color: rgb(0, 0, 0);">Great news – your gallery is now available!</span></p>
         <p><span style="color: rgb(0, 0, 0);">Please remember that your photos are password-protected, and you'll need this password to access them: <strong>{{password}}</strong> </span></p>
-        <p><span style="color: rgb(0, 0, 0);">You can access your private gallery to view all your images at:</span></p>
-        <p>{{gallery_link}}</p>
+        <p><span style="color: rgb(0, 0, 0);">You can access your private gallery to view all your images at:</span> {{gallery_link}}</p>
         <p><span style="color: rgb(0, 0, 0);">If you have any digital image and/or print credits to use, please be sure to log in with the email address to which this email was sent. When you share the gallery with friends and family, kindly ask them to log in with their unique email addresses to ensure only you have access to those credits.</span></p>
         <p><span style="color: rgb(0, 0, 0);">Your gallery will be available until {{gallery_expiration_date}}, so please ensure you make your selections before then.</span></p>
         <p><span style="color: rgb(0, 0, 0);">It's been a pleasure working with you, and I'm eagerly awaiting your thoughts!</span></p>
@@ -5478,8 +5412,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         <p><span style="color: rgb(0, 0, 0);">Hello {{client_first_name}},</span></p>
         <p><span style="color: rgb(0, 0, 0);">I'm thrilled to let you know that your proofs are now ready for your viewing pleasure! </span></p>
         <p><span style="color: rgb(0, 0, 0);">Please keep in mind that your photos are under password protection for your privacy. You can use the following password to access them: {{album_password}}.</span></p>
-        <p><span style="color: rgb(0, 0, 0);">You can access your proofing album by clicking on the following link:</span></p>
-        <p>{{album_link}}</p>
+        <p><span style="color: rgb(0, 0, 0);">You can access your proofing album by clicking on the following link:</span> {{album_link}}</p>
         <p><span style="color: rgb(0, 0, 0);">To use any digital image credits, please be sure to log in with the email address to which this email was sent. You can also select more for purchase as well! If you do share the gallery with someone else, please ask them to use their own email address when logging in to prevent any issues related to your credits.</span></p>
         <p><span style="color: rgb(0, 0, 0);">In order to select the photos you'd like to move forward with retouching, simply choose each image and complete the checkout process by selecting "Send to Photographer." </span></p>
         <p><span style="color: rgb(0, 0, 0);">﻿Once that's done, I'll proceed with the full editing and send them your way. If you have any questions, please let me know I am happy to help you! </span></p>
@@ -5502,8 +5435,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         <p><span style="color: rgb(0, 0, 0);">Hello {{client_first_name}},</span></p>
         <p><span style="color: rgb(0, 0, 0);">I'm delighted to share that your retouched images are now available! </span></p>
         <p><span style="color: rgb(0, 0, 0);">To maintain the privacy of your photos, they are protected by a password. Please use the following password to view them: {{album_password}}. </span></p>
-        <p><span style="color: rgb(0, 0, 0);">You can access your Finals album by clicking on the following link and you can easily download them all with a simple click. </span></p>
-        <p>{{album_link}}</p>
+        <p><span style="color: rgb(0, 0, 0);">You can access your Finals album by clicking on the following link and you can easily download them all with a simple click:</span> {{album_link}}</p>
         <p><span style="color: rgb(0, 0, 0);">If you have any questions, please let me know! </span></p>
         <p><span style="color: rgb(0, 0, 0);">I hope you love your images as much as I do!</span></p>
         <p><span style="color: rgb(0, 0, 0);">Warm regards, </span></p>
@@ -5522,8 +5454,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         body_template: """
         <p><span style="color: rgb(0, 0, 0);">Hello {{order_first_name}},</span></p>
         <p><span style="color: rgb(0, 0, 0);">I noticed that you still have items in your cart! I wanted to see if you had any questions, if you do - simply reply to this email and I can help you.</span></p>
-        <p><span style="color: rgb(0, 0, 0);">If life got busy, simply just click on the following link to complete your order.</span></p>
-        <p>{{client_gallery_order_page}}</p>
+        <p><span style="color: rgb(0, 0, 0);">If life got busy, simply just click on the following link to complete your order:</span> {{client_gallery_order_page}}</p>
         <p><span style="color: rgb(0, 0, 0);">Your order will be confirmed and sent to production as soon as you complete your purchase. </span></p>
         <p><span style="color: rgb(0, 0, 0);">Warm regards, </span></p>
         <p><span style="color: rgb(0, 0, 0);">{{email_signature}}</span></p>
@@ -5541,8 +5472,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         body_template: """
         <p><span style="color: rgb(0, 0, 0);">Hello {{order_first_name}},</span></p>
         <p><span style="color: rgb(0, 0, 0);">I wanted to remind you that your recent order from {{photography_company_s_name}} is still pending in your cart.</span></p>
-        <p><span style="color: rgb(0, 0, 0);">To finalize your order, please click on the following link:</span></p>
-        <p>{{client_gallery_order_page}}</p>
+        <p><span style="color: rgb(0, 0, 0);">To finalize your order, please click on the following link:</span> {{client_gallery_order_page}}</p>
         <p><span style="color: rgb(0, 0, 0);">Completing your purchase will confirm your order and initiate production.</span></p>
         <p><span style="color: rgb(0, 0, 0);">Should you have any questions or require assistance, please don't hesitate to reach out to me!</span></p>
         <p><span style="color: rgb(0, 0, 0);">Thanks!</span></p>
@@ -5562,8 +5492,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         body_template: """
         <p><span style="color: rgb(0, 0, 0);">Hello {{order_first_name}},</span></p>
         <p><span style="color: rgb(0, 0, 0);">Another friendly reminder that you still have an order from {{photography_company_s_name}} waiting in your cart.</span></p>
-        <p><span style="color: rgb(0, 0, 0);">Simply click on the following link to complete your order.</span></p>
-        <p>{{client_gallery_order_page}}</p>
+        <p><span style="color: rgb(0, 0, 0);">Simply click on the following link to complete your order:</span> {{client_gallery_order_page}}</p>
         <p><span style="color: rgb(0, 0, 0);">Your order will be confirmed and sent to production as soon as you complete your purchase.</span></p>
         <p><span style="color: rgb(0, 0, 0);">If you have any questions, please let me know! </span></p>
         <p><span style="color: rgb(0, 0, 0);">Warm regards, </span></p>
@@ -5584,8 +5513,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         <p><span style="color: rgb(0, 0, 0);">Hello {{client_first_name}},</span></p>
         <p><span style="color: rgb(0, 0, 0);">I hope this message finds you well. I wanted to remind you that your gallery is nearing its expiration date. To ensure you don't miss out, please take a moment to log into your gallery and make your selections before it expires on {{gallery_expiration_date}}.</span></p>
         <p><span style="color: rgb(0, 0, 0);">As a quick reminder, your photos are protected with a password, so you'll need to enter it to view them: <strong>{{password}}</strong> </span></p>
-        <p><span style="color: rgb(0, 0, 0);">You can access your private gallery containing all of your images by following this link:</span></p>
-        <p>{{gallery_link}}</p>
+        <p><span style="color: rgb(0, 0, 0);">You can access your private gallery containing all of your images by following this link:</span> {{gallery_link}}</p>
         <p><span style="color: rgb(0, 0, 0);">If you have any questions or need assistance with anything related to your gallery, please don't hesitate to reach out. I'm here to help! </span></p>
         <p><span style="color: rgb(0, 0, 0);">Best regards,</span></p>
         <p><span style="color: rgb(0, 0, 0);">{{email_signature}}</span></p>
@@ -5605,8 +5533,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         body_template: """
         <p><span style="color: rgb(0, 0, 0);">Hello {{client_first_name}},</span></p>
         <p><span style="color: rgb(0, 0, 0);">I'm following up with another reminder that the expiration date for your gallery is approaching. To ensure you have ample time to make your selections, please log in to your gallery and make your choices before it expires on {{gallery_expiration_date}}.</span></p>
-        <p><span style="color: rgb(0, 0, 0);">You can easily access your private gallery, where all your images are waiting for you, by clicking on this link:</span></p>
-        <p>{{gallery_link}}</p>
+        <p><span style="color: rgb(0, 0, 0);">You can easily access your private gallery, where all your images are waiting for you, by clicking on this link:</span> {{gallery_link}}</p>
         <p><span style="color: rgb(0, 0, 0);">Just a quick reminder, your photos are protected with a password for your privacy and security. To access your images, simply use the provided password: <strong>{{password}}</strong></span></p>
         <p><span style="color: rgb(0, 0, 0);">If you need help or have any questions, please let me know!</span></p>
         <p><span style="color: rgb(0, 0, 0);">Best regards,</span></p>
@@ -5627,8 +5554,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         <p><span style="color: rgb(0, 0, 0);">Hello {{client_first_name}},</span></p>
         <p><span style="color: rgb(0, 0, 0);">I wanted to send along one last reminder in case you forgot! Your gallery is going to expire tomorrow! Please log into your gallery and make your selections before the gallery expires on {{gallery_expiration_date}}</span></p>
         <p><span style="color: rgb(0, 0, 0);">A reminder your photos are password-protected, so you will need to use this password to view: <strong>{{password}}</strong></span></p>
-        <p><span style="color: rgb(0, 0, 0);">You can log into your private gallery to see all of your images here:</span></p>
-        <p>{{gallery_link}}</p>
+        <p><span style="color: rgb(0, 0, 0);">You can log into your private gallery to see all of your images here:</span> {{gallery_link}}</p>
         <p><span style="color: rgb(0, 0, 0);">Any questions, please let me know! </span></p>
         <p><span style="color: rgb(0, 0, 0);">{{email_signature}}</span></p>
         """
@@ -5707,8 +5633,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         body_template: """
         <p><span style="color: rgb(0, 0, 0);">Hello {{order_first_name}},</span></p>
         <p><span style="color: rgb(0, 0, 0);">Congratulations on successfully placing an order from your gallery! I'm truly excited for you to have these beautiful images in your hands!</span></p>
-        <p><span style="color: rgb(0, 0, 0);">Your order is now in the production phase and is being prepared with great care. You can easily track the order by visiting:</span></p>
-        <p>{{client_gallery_order_page}}</p>
+        <p><span style="color: rgb(0, 0, 0);">Your order is now in the production phase and is being prepared with great care. You can easily track the order by visiting:</span> {{client_gallery_order_page}}</p>
         <p><span style="color: rgb(0, 0, 0);">Should you have any questions or need further assistance regarding your order, please don't hesitate to reach out. </span></p>
         <p><span style="color: rgb(0, 0, 0);">Best regards,</span></p>
         <p><span style="color: rgb(0, 0, 0);">{{email_signature}}</span></p>
@@ -5729,8 +5654,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         <p><span style="color: rgb(0, 0, 0);">I'm thrilled to confirm your gallery order from {{photography_company_s_name}} has been successfully processed.</span></p>
         <p><span style="color: rgb(0, 0, 0);">- If you have ordered digital images, you can expect to receive a follow-up email with your images. Since these files can be quite large, it may take a little time to package them properly.</span></p>
         <p><span style="color: rgb(0, 0, 0);">-If you have ordered print products,  your order is now in production and is being prepared with great care.</span></p>
-        <p><span style="color: rgb(0, 0, 0);">You can easily track the progress of your order by visiting:</span></p>
-        <p>{{client_gallery_order_page}}</p>
+        <p><span style="color: rgb(0, 0, 0);">You can easily track the progress of your order by visiting:</span> {{client_gallery_order_page}}</p>
         <p><span style="color: rgb(0, 0, 0);">Should you have any questions or need further assistance regarding your order, please don't hesitate to reach out.</span></p>
         <p><span style="color: rgb(0, 0, 0);">Best regards,</span></p>
         <p><span style="color: rgb(0, 0, 0);">{{email_signature}}</span></p>
@@ -6278,8 +6202,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         <p><span style="color: rgb(0, 0, 0);">Hello {{client_first_name}},</span></p>
         <p><span style="color: rgb(0, 0, 0);">Great news – your gallery is now available!</span></p>
         <p><span style="color: rgb(0, 0, 0);">Please remember that your photos are password-protected, and you'll need this password to access them: <strong>{{password}}</strong> </span></p>
-        <p><span style="color: rgb(0, 0, 0);">You can access your private gallery to view all your images at:</span></p>
-        <p>{{gallery_link}}</p>
+        <p><span style="color: rgb(0, 0, 0);">You can access your private gallery to view all your images at:</span> {{gallery_link}}</p>
         <p><span style="color: rgb(0, 0, 0);">If you have any digital image and/or print credits to use, please be sure to log in with the email address to which this email was sent. When you share the gallery with friends and family, kindly ask them to log in with their unique email addresses to ensure only you have access to those credits.</span></p>
         <p><span style="color: rgb(0, 0, 0);">Your gallery will be available until {{gallery_expiration_date}}, so please ensure you make your selections before then.</span></p>
         <p><span style="color: rgb(0, 0, 0);">It's been a pleasure working with you, and I'm eagerly awaiting your thoughts!</span></p>
@@ -6301,8 +6224,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         <p><span style="color: rgb(0, 0, 0);">Hello {{client_first_name}},</span></p>
         <p><span style="color: rgb(0, 0, 0);">I'm thrilled to let you know that your proofs are now ready for your viewing pleasure! </span></p>
         <p><span style="color: rgb(0, 0, 0);">Please keep in mind that your photos are under password protection for your privacy. You can use the following password to access them: {{album_password}}.</span></p>
-        <p><span style="color: rgb(0, 0, 0);">You can access your proofing album by clicking on the following link:</span></p>
-        <p>{{album_link}}</p>
+        <p><span style="color: rgb(0, 0, 0);">You can access your proofing album by clicking on the following link:</span> {{album_link}}</p>
         <p><span style="color: rgb(0, 0, 0);">To use any digital image credits, please be sure to log in with the email address to which this email was sent. You can also select more for purchase as well! If you do share the gallery with someone else, please ask them to use their own email address when logging in to prevent any issues related to your credits.</span></p>
         <p><span style="color: rgb(0, 0, 0);">In order to select the photos you'd like to move forward with retouching, simply choose each image and complete the checkout process by selecting "Send to Photographer." </span></p>
         <p><span style="color: rgb(0, 0, 0);">﻿Once that's done, I'll proceed with the full editing and send them your way. If you have any questions, please let me know I am happy to help you! </span></p>
@@ -6325,8 +6247,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         <p><span style="color: rgb(0, 0, 0);">Hello {{client_first_name}},</span></p>
         <p><span style="color: rgb(0, 0, 0);">I'm delighted to share that your retouched images are now available! </span></p>
         <p><span style="color: rgb(0, 0, 0);">To maintain the privacy of your photos, they are protected by a password. Please use the following password to view them: {{album_password}}. </span></p>
-        <p><span style="color: rgb(0, 0, 0);">You can access your Finals album by clicking on the following link and you can easily download them all with a simple click. </span></p>
-        <p>{{album_link}}</p>
+        <p><span style="color: rgb(0, 0, 0);">You can access your Finals album by clicking on the following link and you can easily download them all with a simple click:</span> {{album_link}}</p>
         <p><span style="color: rgb(0, 0, 0);">If you have any questions, please let me know! </span></p>
         <p><span style="color: rgb(0, 0, 0);">I hope you love your images as much as I do!</span></p>
         <p><span style="color: rgb(0, 0, 0);">Warm regards, </span></p>
@@ -6345,8 +6266,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         body_template: """
         <p><span style="color: rgb(0, 0, 0);">Hello {{order_first_name}},</span></p>
         <p><span style="color: rgb(0, 0, 0);">I noticed that you still have items in your cart! I wanted to see if you had any questions, if you do - simply reply to this email and I can help you.</span></p>
-        <p><span style="color: rgb(0, 0, 0);">If life got busy, simply just click on the following link to complete your order.</span></p>
-        <p>{{client_gallery_order_page}}</p>
+        <p><span style="color: rgb(0, 0, 0);">If life got busy, simply just click on the following link to complete your order:</span> {{client_gallery_order_page}}</p>
         <p><span style="color: rgb(0, 0, 0);">Your order will be confirmed and sent to production as soon as you complete your purchase. </span></p>
         <p><span style="color: rgb(0, 0, 0);">Warm regards, </span></p>
         <p><span style="color: rgb(0, 0, 0);">{{email_signature}}</span></p>
@@ -6364,8 +6284,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         body_template: """
         <p><span style="color: rgb(0, 0, 0);">Hello {{order_first_name}},</span></p>
         <p><span style="color: rgb(0, 0, 0);">I wanted to remind you that your recent order from {{photography_company_s_name}} is still pending in your cart.</span></p>
-        <p><span style="color: rgb(0, 0, 0);">To finalize your order, please click on the following link:</span></p>
-        <p>{{client_gallery_order_page}}</p>
+        <p><span style="color: rgb(0, 0, 0);">To finalize your order, please click on the following link:</span> {{client_gallery_order_page}}</p>
         <p><span style="color: rgb(0, 0, 0);">Completing your purchase will confirm your order and initiate production.</span></p>
         <p><span style="color: rgb(0, 0, 0);">Should you have any questions or require assistance, please don't hesitate to reach out to me!</span></p>
         <p><span style="color: rgb(0, 0, 0);">Thanks!</span></p>
@@ -6385,8 +6304,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         body_template: """
         <p><span style="color: rgb(0, 0, 0);">Hello {{order_first_name}},</span></p>
         <p><span style="color: rgb(0, 0, 0);">Another friendly reminder that you still have an order from {{photography_company_s_name}} waiting in your cart.</span></p>
-        <p><span style="color: rgb(0, 0, 0);">Simply click on the following link to complete your order.</span></p>
-        <p>{{client_gallery_order_page}}</p>
+        <p><span style="color: rgb(0, 0, 0);">Simply click on the following link to complete your order:</span> {{client_gallery_order_page}}</p>
         <p><span style="color: rgb(0, 0, 0);">Your order will be confirmed and sent to production as soon as you complete your purchase.</span></p>
         <p><span style="color: rgb(0, 0, 0);">If you have any questions, please let me know! </span></p>
         <p><span style="color: rgb(0, 0, 0);">Warm regards, </span></p>
@@ -6407,8 +6325,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         <p><span style="color: rgb(0, 0, 0);">Hello {{client_first_name}},</span></p>
         <p><span style="color: rgb(0, 0, 0);">I hope this message finds you well. I wanted to remind you that your gallery is nearing its expiration date. To ensure you don't miss out, please take a moment to log into your gallery and make your selections before it expires on {{gallery_expiration_date}}.</span></p>
         <p><span style="color: rgb(0, 0, 0);">As a quick reminder, your photos are protected with a password, so you'll need to enter it to view them: <strong>{{password}}</strong> </span></p>
-        <p><span style="color: rgb(0, 0, 0);">You can access your private gallery containing all of your images by following this link:</span></p>
-        <p>{{gallery_link}}</p>
+        <p><span style="color: rgb(0, 0, 0);">You can access your private gallery containing all of your images by following this link:</span> {{gallery_link}}</p>
         <p><span style="color: rgb(0, 0, 0);">If you have any questions or need assistance with anything related to your gallery, please don't hesitate to reach out. I'm here to help! </span></p>
         <p><span style="color: rgb(0, 0, 0);">Best regards,</span></p>
         <p><span style="color: rgb(0, 0, 0);">{{email_signature}}</span></p>
@@ -6428,8 +6345,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         body_template: """
         <p><span style="color: rgb(0, 0, 0);">Hello {{client_first_name}},</span></p>
         <p><span style="color: rgb(0, 0, 0);">I'm following up with another reminder that the expiration date for your gallery is approaching. To ensure you have ample time to make your selections, please log in to your gallery and make your choices before it expires on {{gallery_expiration_date}}.</span></p>
-        <p><span style="color: rgb(0, 0, 0);">You can easily access your private gallery, where all your images are waiting for you, by clicking on this link:</span></p>
-        <p>{{gallery_link}}</p>
+        <p><span style="color: rgb(0, 0, 0);">You can easily access your private gallery, where all your images are waiting for you, by clicking on this link:</span> {{gallery_link}}</p>
         <p><span style="color: rgb(0, 0, 0);">Just a quick reminder, your photos are protected with a password for your privacy and security. To access your images, simply use the provided password: <strong>{{password}}</strong></span></p>
         <p><span style="color: rgb(0, 0, 0);">If you need help or have any questions, please let me know!</span></p>
         <p><span style="color: rgb(0, 0, 0);">Best regards,</span></p>
@@ -6450,8 +6366,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         <p><span style="color: rgb(0, 0, 0);">Hello {{client_first_name}},</span></p>
         <p><span style="color: rgb(0, 0, 0);">I wanted to send along one last reminder in case you forgot! Your gallery is going to expire tomorrow! Please log into your gallery and make your selections before the gallery expires on {{gallery_expiration_date}}</span></p>
         <p><span style="color: rgb(0, 0, 0);">A reminder your photos are password-protected, so you will need to use this password to view: <strong>{{password}}</strong></span></p>
-        <p><span style="color: rgb(0, 0, 0);">You can log into your private gallery to see all of your images here:</span></p>
-        <p>{{gallery_link}}</p>
+        <p><span style="color: rgb(0, 0, 0);">You can log into your private gallery to see all of your images here:</span> {{gallery_link}}</p>
         <p><span style="color: rgb(0, 0, 0);">Any questions, please let me know! </span></p>
         <p><span style="color: rgb(0, 0, 0);">{{email_signature}}</span></p>
         """
@@ -6530,8 +6445,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         body_template: """
         <p><span style="color: rgb(0, 0, 0);">Hello {{order_first_name}},</span></p>
         <p><span style="color: rgb(0, 0, 0);">Congratulations on successfully placing an order from your gallery! I'm truly excited for you to have these beautiful images in your hands!</span></p>
-        <p><span style="color: rgb(0, 0, 0);">Your order is now in the production phase and is being prepared with great care. You can easily track the order by visiting:</span></p>
-        <p>{{client_gallery_order_page}}</p>
+        <p><span style="color: rgb(0, 0, 0);">Your order is now in the production phase and is being prepared with great care. You can easily track the order by visiting:</span> {{client_gallery_order_page}}</p>
         <p><span style="color: rgb(0, 0, 0);">Should you have any questions or need further assistance regarding your order, please don't hesitate to reach out. </span></p>
         <p><span style="color: rgb(0, 0, 0);">Best regards,</span></p>
         <p><span style="color: rgb(0, 0, 0);">{{email_signature}}</span></p>
@@ -6552,8 +6466,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         <p><span style="color: rgb(0, 0, 0);">I'm thrilled to confirm your gallery order from {{photography_company_s_name}} has been successfully processed.</span></p>
         <p><span style="color: rgb(0, 0, 0);">- If you have ordered digital images, you can expect to receive a follow-up email with your images. Since these files can be quite large, it may take a little time to package them properly.</span></p>
         <p><span style="color: rgb(0, 0, 0);">-If you have ordered print products,  your order is now in production and is being prepared with great care.</span></p>
-        <p><span style="color: rgb(0, 0, 0);">You can easily track the progress of your order by visiting:</span></p>
-        <p>{{client_gallery_order_page}}</p>
+        <p><span style="color: rgb(0, 0, 0);">You can easily track the progress of your order by visiting:</span> {{client_gallery_order_page}}</p>
         <p><span style="color: rgb(0, 0, 0);">Should you have any questions or need further assistance regarding your order, please don't hesitate to reach out.</span></p>
         <p><span style="color: rgb(0, 0, 0);">Best regards,</span></p>
         <p><span style="color: rgb(0, 0, 0);">{{email_signature}}</span></p>
@@ -7102,8 +7015,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         <p><span style="color: rgb(0, 0, 0);">Hello {{client_first_name}},</span></p>
         <p><span style="color: rgb(0, 0, 0);">Great news – your gallery is now available!</span></p>
         <p><span style="color: rgb(0, 0, 0);">Please remember that your photos are password-protected, and you'll need this password to access them: <strong>{{password}}</strong> </span></p>
-        <p><span style="color: rgb(0, 0, 0);">You can access your private gallery to view all your images at:</span></p>
-        <p>{{gallery_link}}</p>
+        <p><span style="color: rgb(0, 0, 0);">You can access your private gallery to view all your images at:</span> {{gallery_link}}</p>
         <p><span style="color: rgb(0, 0, 0);">If you have any digital image and/or print credits to use, please be sure to log in with the email address to which this email was sent. When you share the gallery with friends and family, kindly ask them to log in with their unique email addresses to ensure only you have access to those credits.</span></p>
         <p><span style="color: rgb(0, 0, 0);">Your gallery will be available until {{gallery_expiration_date}}, so please ensure you make your selections before then.</span></p>
         <p><span style="color: rgb(0, 0, 0);">It's been a pleasure working with you, and I'm eagerly awaiting your thoughts!</span></p>
@@ -7125,8 +7037,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         <p><span style="color: rgb(0, 0, 0);">Hello {{client_first_name}},</span></p>
         <p><span style="color: rgb(0, 0, 0);">I'm thrilled to let you know that your proofs are now ready for your viewing pleasure! </span></p>
         <p><span style="color: rgb(0, 0, 0);">Please keep in mind that your photos are under password protection for your privacy. You can use the following password to access them: {{album_password}}.</span></p>
-        <p><span style="color: rgb(0, 0, 0);">You can access your proofing album by clicking on the following link:</span></p>
-        <p>{{album_link}}</p>
+        <p><span style="color: rgb(0, 0, 0);">You can access your proofing album by clicking on the following link:</span> {{album_link}}</p>
         <p><span style="color: rgb(0, 0, 0);">To use any digital image credits, please be sure to log in with the email address to which this email was sent. You can also select more for purchase as well! If you do share the gallery with someone else, please ask them to use their own email address when logging in to prevent any issues related to your credits.</span></p>
         <p><span style="color: rgb(0, 0, 0);">In order to select the photos you'd like to move forward with retouching, simply choose each image and complete the checkout process by selecting "Send to Photographer." </span></p>
         <p><span style="color: rgb(0, 0, 0);">﻿Once that's done, I'll proceed with the full editing and send them your way. If you have any questions, please let me know I am happy to help you! </span></p>
@@ -7149,8 +7060,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         <p><span style="color: rgb(0, 0, 0);">Hello {{client_first_name}},</span></p>
         <p><span style="color: rgb(0, 0, 0);">I'm delighted to share that your retouched images are now available! </span></p>
         <p><span style="color: rgb(0, 0, 0);">To maintain the privacy of your photos, they are protected by a password. Please use the following password to view them: {{album_password}}. </span></p>
-        <p><span style="color: rgb(0, 0, 0);">You can access your Finals album by clicking on the following link and you can easily download them all with a simple click. </span></p>
-        <p>{{album_link}}</p>
+        <p><span style="color: rgb(0, 0, 0);">You can access your Finals album by clicking on the following link and you can easily download them all with a simple click:</span> {{album_link}}</p>
         <p><span style="color: rgb(0, 0, 0);">If you have any questions, please let me know! </span></p>
         <p><span style="color: rgb(0, 0, 0);">I hope you love your images as much as I do!</span></p>
         <p><span style="color: rgb(0, 0, 0);">Warm regards, </span></p>
@@ -7169,8 +7079,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         body_template: """
         <p><span style="color: rgb(0, 0, 0);">Hello {{order_first_name}},</span></p>
         <p><span style="color: rgb(0, 0, 0);">I noticed that you still have items in your cart! I wanted to see if you had any questions, if you do - simply reply to this email and I can help you.</span></p>
-        <p><span style="color: rgb(0, 0, 0);">If life got busy, simply just click on the following link to complete your order.</span></p>
-        <p>{{client_gallery_order_page}}</p>
+        <p><span style="color: rgb(0, 0, 0);">If life got busy, simply just click on the following link to complete your order:</span> {{client_gallery_order_page}}</p>
         <p><span style="color: rgb(0, 0, 0);">Your order will be confirmed and sent to production as soon as you complete your purchase. </span></p>
         <p><span style="color: rgb(0, 0, 0);">Warm regards, </span></p>
         <p><span style="color: rgb(0, 0, 0);">{{email_signature}}</span></p>
@@ -7188,8 +7097,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         body_template: """
         <p><span style="color: rgb(0, 0, 0);">Hello {{order_first_name}},</span></p>
         <p><span style="color: rgb(0, 0, 0);">I wanted to remind you that your recent order from {{photography_company_s_name}} is still pending in your cart.</span></p>
-        <p><span style="color: rgb(0, 0, 0);">To finalize your order, please click on the following link:</span></p>
-        <p>{{client_gallery_order_page}}</p>
+        <p><span style="color: rgb(0, 0, 0);">To finalize your order, please click on the following link:</span> {{client_gallery_order_page}}</p>
         <p><span style="color: rgb(0, 0, 0);">Completing your purchase will confirm your order and initiate production.</span></p>
         <p><span style="color: rgb(0, 0, 0);">Should you have any questions or require assistance, please don't hesitate to reach out to me!</span></p>
         <p><span style="color: rgb(0, 0, 0);">Thanks!</span></p>
@@ -7209,8 +7117,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         body_template: """
         <p><span style="color: rgb(0, 0, 0);">Hello {{order_first_name}},</span></p>
         <p><span style="color: rgb(0, 0, 0);">Another friendly reminder that you still have an order from {{photography_company_s_name}} waiting in your cart.</span></p>
-        <p><span style="color: rgb(0, 0, 0);">Simply click on the following link to complete your order.</span></p>
-        <p>{{client_gallery_order_page}}</p>
+        <p><span style="color: rgb(0, 0, 0);">Simply click on the following link to complete your order:</span> {{client_gallery_order_page}}</p>
         <p><span style="color: rgb(0, 0, 0);">Your order will be confirmed and sent to production as soon as you complete your purchase.</span></p>
         <p><span style="color: rgb(0, 0, 0);">If you have any questions, please let me know! </span></p>
         <p><span style="color: rgb(0, 0, 0);">Warm regards, </span></p>
@@ -7231,8 +7138,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         <p><span style="color: rgb(0, 0, 0);">Hello {{client_first_name}},</span></p>
         <p><span style="color: rgb(0, 0, 0);">I hope this message finds you well. I wanted to remind you that your gallery is nearing its expiration date. To ensure you don't miss out, please take a moment to log into your gallery and make your selections before it expires on {{gallery_expiration_date}}.</span></p>
         <p><span style="color: rgb(0, 0, 0);">As a quick reminder, your photos are protected with a password, so you'll need to enter it to view them: <strong>{{password}}</strong> </span></p>
-        <p><span style="color: rgb(0, 0, 0);">You can access your private gallery containing all of your images by following this link:</span></p>
-        <p>{{gallery_link}}</p>
+        <p><span style="color: rgb(0, 0, 0);">You can access your private gallery containing all of your images by following this link:</span> {{gallery_link}}</p>
         <p><span style="color: rgb(0, 0, 0);">If you have any questions or need assistance with anything related to your gallery, please don't hesitate to reach out. I'm here to help! </span></p>
         <p><span style="color: rgb(0, 0, 0);">Best regards,</span></p>
         <p><span style="color: rgb(0, 0, 0);">{{email_signature}}</span></p>
@@ -7252,8 +7158,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         body_template: """
         <p><span style="color: rgb(0, 0, 0);">Hello {{client_first_name}},</span></p>
         <p><span style="color: rgb(0, 0, 0);">I'm following up with another reminder that the expiration date for your gallery is approaching. To ensure you have ample time to make your selections, please log in to your gallery and make your choices before it expires on {{gallery_expiration_date}}.</span></p>
-        <p><span style="color: rgb(0, 0, 0);">You can easily access your private gallery, where all your images are waiting for you, by clicking on this link:</span></p>
-        <p>{{gallery_link}}</p>
+        <p><span style="color: rgb(0, 0, 0);">You can easily access your private gallery, where all your images are waiting for you, by clicking on this link:</span> {{gallery_link}}</p>
         <p><span style="color: rgb(0, 0, 0);">Just a quick reminder, your photos are protected with a password for your privacy and security. To access your images, simply use the provided password: <strong>{{password}}</strong></span></p>
         <p><span style="color: rgb(0, 0, 0);">If you need help or have any questions, please let me know!</span></p>
         <p><span style="color: rgb(0, 0, 0);">Best regards,</span></p>
@@ -7274,8 +7179,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         <p><span style="color: rgb(0, 0, 0);">Hello {{client_first_name}},</span></p>
         <p><span style="color: rgb(0, 0, 0);">I wanted to send along one last reminder in case you forgot! Your gallery is going to expire tomorrow! Please log into your gallery and make your selections before the gallery expires on {{gallery_expiration_date}}</span></p>
         <p><span style="color: rgb(0, 0, 0);">A reminder your photos are password-protected, so you will need to use this password to view: <strong>{{password}}</strong></span></p>
-        <p><span style="color: rgb(0, 0, 0);">You can log into your private gallery to see all of your images here:</span></p>
-        <p>{{gallery_link}}</p>
+        <p><span style="color: rgb(0, 0, 0);">You can log into your private gallery to see all of your images here:</span> {{gallery_link}}</p>
         <p><span style="color: rgb(0, 0, 0);">Any questions, please let me know! </span></p>
         <p><span style="color: rgb(0, 0, 0);">{{email_signature}}</span></p>
         """
@@ -7354,8 +7258,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         body_template: """
         <p><span style="color: rgb(0, 0, 0);">Hello {{order_first_name}},</span></p>
         <p><span style="color: rgb(0, 0, 0);">Congratulations on successfully placing an order from your gallery! I'm truly excited for you to have these beautiful images in your hands!</span></p>
-        <p><span style="color: rgb(0, 0, 0);">Your order is now in the production phase and is being prepared with great care. You can easily track the order by visiting:</span></p>
-        <p>{{client_gallery_order_page}}</p>
+        <p><span style="color: rgb(0, 0, 0);">Your order is now in the production phase and is being prepared with great care. You can easily track the order by visiting:</span> {{client_gallery_order_page}}</p>
         <p><span style="color: rgb(0, 0, 0);">Should you have any questions or need further assistance regarding your order, please don't hesitate to reach out. </span></p>
         <p><span style="color: rgb(0, 0, 0);">Best regards,</span></p>
         <p><span style="color: rgb(0, 0, 0);">{{email_signature}}</span></p>
@@ -7376,8 +7279,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         <p><span style="color: rgb(0, 0, 0);">I'm thrilled to confirm your gallery order from {{photography_company_s_name}} has been successfully processed.</span></p>
         <p><span style="color: rgb(0, 0, 0);">- If you have ordered digital images, you can expect to receive a follow-up email with your images. Since these files can be quite large, it may take a little time to package them properly.</span></p>
         <p><span style="color: rgb(0, 0, 0);">-If you have ordered print products,  your order is now in production and is being prepared with great care.</span></p>
-        <p><span style="color: rgb(0, 0, 0);">You can easily track the progress of your order by visiting:</span></p>
-        <p>{{client_gallery_order_page}}</p>
+        <p><span style="color: rgb(0, 0, 0);">You can easily track the progress of your order by visiting:</span> {{client_gallery_order_page}}</p>
         <p><span style="color: rgb(0, 0, 0);">Should you have any questions or need further assistance regarding your order, please don't hesitate to reach out.</span></p>
         <p><span style="color: rgb(0, 0, 0);">Best regards,</span></p>
         <p><span style="color: rgb(0, 0, 0);">{{email_signature}}</span></p>
@@ -7921,8 +7823,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         <p><span style="color: rgb(0, 0, 0);">Hello {{client_first_name}},</span></p>
         <p><span style="color: rgb(0, 0, 0);">Great news – your gallery is now available!</span></p>
         <p><span style="color: rgb(0, 0, 0);">Please remember that your photos are password-protected, and you'll need this password to access them: <strong>{{password}}</strong> </span></p>
-        <p><span style="color: rgb(0, 0, 0);">You can access your private gallery to view all your images at:</span></p>
-        <p>{{gallery_link}}</p>
+        <p><span style="color: rgb(0, 0, 0);">You can access your private gallery to view all your images at:</span> {{gallery_link}}</p>
         <p><span style="color: rgb(0, 0, 0);">If you have any digital image and/or print credits to use, please be sure to log in with the email address to which this email was sent. When you share the gallery with friends and family, kindly ask them to log in with their unique email addresses to ensure only you have access to those credits.</span></p>
         <p><span style="color: rgb(0, 0, 0);">Your gallery will be available until {{gallery_expiration_date}}, so please ensure you make your selections before then.</span></p>
         <p><span style="color: rgb(0, 0, 0);">It's been a pleasure working with you, and I'm eagerly awaiting your thoughts!</span></p>
@@ -7944,8 +7845,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         <p><span style="color: rgb(0, 0, 0);">Hello {{client_first_name}},</span></p>
         <p><span style="color: rgb(0, 0, 0);">I'm thrilled to let you know that your proofs are now ready for your viewing pleasure! </span></p>
         <p><span style="color: rgb(0, 0, 0);">Please keep in mind that your photos are under password protection for your privacy. You can use the following password to access them: {{album_password}}.</span></p>
-        <p><span style="color: rgb(0, 0, 0);">You can access your proofing album by clicking on the following link:</span></p>
-        <p>{{album_link}}</p>
+        <p><span style="color: rgb(0, 0, 0);">You can access your proofing album by clicking on the following link:</span> {{album_link}}</p>
         <p><span style="color: rgb(0, 0, 0);">To use any digital image credits, please be sure to log in with the email address to which this email was sent. You can also select more for purchase as well! If you do share the gallery with someone else, please ask them to use their own email address when logging in to prevent any issues related to your credits.</span></p>
         <p><span style="color: rgb(0, 0, 0);">In order to select the photos you'd like to move forward with retouching, simply choose each image and complete the checkout process by selecting "Send to Photographer." </span></p>
         <p><span style="color: rgb(0, 0, 0);">﻿Once that's done, I'll proceed with the full editing and send them your way. If you have any questions, please let me know I am happy to help you! </span></p>
@@ -7968,8 +7868,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         <p><span style="color: rgb(0, 0, 0);">Hello {{client_first_name}},</span></p>
         <p><span style="color: rgb(0, 0, 0);">I'm delighted to share that your retouched images are now available! </span></p>
         <p><span style="color: rgb(0, 0, 0);">To maintain the privacy of your photos, they are protected by a password. Please use the following password to view them: {{album_password}}. </span></p>
-        <p><span style="color: rgb(0, 0, 0);">You can access your Finals album by clicking on the following link and you can easily download them all with a simple click. </span></p>
-        <p>{{album_link}}</p>
+        <p><span style="color: rgb(0, 0, 0);">You can access your Finals album by clicking on the following link and you can easily download them all with a simple click:</span> {{album_link}}</p>
         <p><span style="color: rgb(0, 0, 0);">If you have any questions, please let me know! </span></p>
         <p><span style="color: rgb(0, 0, 0);">I hope you love your images as much as I do!</span></p>
         <p><span style="color: rgb(0, 0, 0);">Warm regards, </span></p>
@@ -7988,8 +7887,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         body_template: """
         <p><span style="color: rgb(0, 0, 0);">Hello {{order_first_name}},</span></p>
         <p><span style="color: rgb(0, 0, 0);">I noticed that you still have items in your cart! I wanted to see if you had any questions, if you do - simply reply to this email and I can help you.</span></p>
-        <p><span style="color: rgb(0, 0, 0);">If life got busy, simply just click on the following link to complete your order.</span></p>
-        <p>{{client_gallery_order_page}}</p>
+        <p><span style="color: rgb(0, 0, 0);">If life got busy, simply just click on the following link to complete your order:</span> {{client_gallery_order_page}}</p>
         <p><span style="color: rgb(0, 0, 0);">Your order will be confirmed and sent to production as soon as you complete your purchase. </span></p>
         <p><span style="color: rgb(0, 0, 0);">Warm regards, </span></p>
         <p><span style="color: rgb(0, 0, 0);">{{email_signature}}</span></p>
@@ -8007,8 +7905,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         body_template: """
         <p><span style="color: rgb(0, 0, 0);">Hello {{order_first_name}},</span></p>
         <p><span style="color: rgb(0, 0, 0);">I wanted to remind you that your recent order from {{photography_company_s_name}} is still pending in your cart.</span></p>
-        <p><span style="color: rgb(0, 0, 0);">To finalize your order, please click on the following link:</span></p>
-        <p>{{client_gallery_order_page}}</p>
+        <p><span style="color: rgb(0, 0, 0);">To finalize your order, please click on the following link:</span> {{client_gallery_order_page}}</p>
         <p><span style="color: rgb(0, 0, 0);">Completing your purchase will confirm your order and initiate production.</span></p>
         <p><span style="color: rgb(0, 0, 0);">Should you have any questions or require assistance, please don't hesitate to reach out to me!</span></p>
         <p><span style="color: rgb(0, 0, 0);">Thanks!</span></p>
@@ -8028,8 +7925,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         body_template: """
         <p><span style="color: rgb(0, 0, 0);">Hello {{order_first_name}},</span></p>
         <p><span style="color: rgb(0, 0, 0);">Another friendly reminder that you still have an order from {{photography_company_s_name}} waiting in your cart.</span></p>
-        <p><span style="color: rgb(0, 0, 0);">Simply click on the following link to complete your order.</span></p>
-        <p>{{client_gallery_order_page}}</p>
+        <p><span style="color: rgb(0, 0, 0);">Simply click on the following link to complete your order:</span> {{client_gallery_order_page}}</p>
         <p><span style="color: rgb(0, 0, 0);">Your order will be confirmed and sent to production as soon as you complete your purchase.</span></p>
         <p><span style="color: rgb(0, 0, 0);">If you have any questions, please let me know! </span></p>
         <p><span style="color: rgb(0, 0, 0);">Warm regards, </span></p>
@@ -8050,8 +7946,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         <p><span style="color: rgb(0, 0, 0);">Hello {{client_first_name}},</span></p>
         <p><span style="color: rgb(0, 0, 0);">I hope this message finds you well. I wanted to remind you that your gallery is nearing its expiration date. To ensure you don't miss out, please take a moment to log into your gallery and make your selections before it expires on {{gallery_expiration_date}}.</span></p>
         <p><span style="color: rgb(0, 0, 0);">As a quick reminder, your photos are protected with a password, so you'll need to enter it to view them: <strong>{{password}}</strong> </span></p>
-        <p><span style="color: rgb(0, 0, 0);">You can access your private gallery containing all of your images by following this link:</span></p>
-        <p>{{gallery_link}}</p>
+        <p><span style="color: rgb(0, 0, 0);">You can access your private gallery containing all of your images by following this link:</span> {{gallery_link}}</p>
         <p><span style="color: rgb(0, 0, 0);">If you have any questions or need assistance with anything related to your gallery, please don't hesitate to reach out. I'm here to help! </span></p>
         <p><span style="color: rgb(0, 0, 0);">Best regards,</span></p>
         <p><span style="color: rgb(0, 0, 0);">{{email_signature}}</span></p>
@@ -8071,8 +7966,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         body_template: """
         <p><span style="color: rgb(0, 0, 0);">Hello {{client_first_name}},</span></p>
         <p><span style="color: rgb(0, 0, 0);">I'm following up with another reminder that the expiration date for your gallery is approaching. To ensure you have ample time to make your selections, please log in to your gallery and make your choices before it expires on {{gallery_expiration_date}}.</span></p>
-        <p><span style="color: rgb(0, 0, 0);">You can easily access your private gallery, where all your images are waiting for you, by clicking on this link:</span></p>
-        <p>{{gallery_link}}</p>
+        <p><span style="color: rgb(0, 0, 0);">You can easily access your private gallery, where all your images are waiting for you, by clicking on this link:</span> {{gallery_link}}</p>
         <p><span style="color: rgb(0, 0, 0);">Just a quick reminder, your photos are protected with a password for your privacy and security. To access your images, simply use the provided password: <strong>{{password}}</strong></span></p>
         <p><span style="color: rgb(0, 0, 0);">If you need help or have any questions, please let me know!</span></p>
         <p><span style="color: rgb(0, 0, 0);">Best regards,</span></p>
@@ -8093,8 +7987,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         <p><span style="color: rgb(0, 0, 0);">Hello {{client_first_name}},</span></p>
         <p><span style="color: rgb(0, 0, 0);">I wanted to send along one last reminder in case you forgot! Your gallery is going to expire tomorrow! Please log into your gallery and make your selections before the gallery expires on {{gallery_expiration_date}}</span></p>
         <p><span style="color: rgb(0, 0, 0);">A reminder your photos are password-protected, so you will need to use this password to view: <strong>{{password}}</strong></span></p>
-        <p><span style="color: rgb(0, 0, 0);">You can log into your private gallery to see all of your images here:</span></p>
-        <p>{{gallery_link}}</p>
+        <p><span style="color: rgb(0, 0, 0);">You can log into your private gallery to see all of your images here:</span> {{gallery_link}}</p>
         <p><span style="color: rgb(0, 0, 0);">Any questions, please let me know! </span></p>
         <p><span style="color: rgb(0, 0, 0);">{{email_signature}}</span></p>
         """
@@ -8173,8 +8066,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         body_template: """
         <p><span style="color: rgb(0, 0, 0);">Hello {{order_first_name}},</span></p>
         <p><span style="color: rgb(0, 0, 0);">Congratulations on successfully placing an order from your gallery! I'm truly excited for you to have these beautiful images in your hands!</span></p>
-        <p><span style="color: rgb(0, 0, 0);">Your order is now in the production phase and is being prepared with great care. You can easily track the order by visiting:</span></p>
-        <p>{{client_gallery_order_page}}</p>
+        <p><span style="color: rgb(0, 0, 0);">Your order is now in the production phase and is being prepared with great care. You can easily track the order by visiting:</span> {{client_gallery_order_page}}</p>
         <p><span style="color: rgb(0, 0, 0);">Should you have any questions or need further assistance regarding your order, please don't hesitate to reach out. </span></p>
         <p><span style="color: rgb(0, 0, 0);">Best regards,</span></p>
         <p><span style="color: rgb(0, 0, 0);">{{email_signature}}</span></p>
@@ -8195,8 +8087,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         <p><span style="color: rgb(0, 0, 0);">I'm thrilled to confirm your gallery order from {{photography_company_s_name}} has been successfully processed.</span></p>
         <p><span style="color: rgb(0, 0, 0);">- If you have ordered digital images, you can expect to receive a follow-up email with your images. Since these files can be quite large, it may take a little time to package them properly.</span></p>
         <p><span style="color: rgb(0, 0, 0);">-If you have ordered print products,  your order is now in production and is being prepared with great care.</span></p>
-        <p><span style="color: rgb(0, 0, 0);">You can easily track the progress of your order by visiting:</span></p>
-        <p>{{client_gallery_order_page}}</p>
+        <p><span style="color: rgb(0, 0, 0);">You can easily track the progress of your order by visiting:</span> {{client_gallery_order_page}}</p>
         <p><span style="color: rgb(0, 0, 0);">Should you have any questions or need further assistance regarding your order, please don't hesitate to reach out.</span></p>
         <p><span style="color: rgb(0, 0, 0);">Best regards,</span></p>
         <p><span style="color: rgb(0, 0, 0);">{{email_signature}}</span></p>
@@ -8343,7 +8234,27 @@ defmodule Mix.Tasks.ImportEmailPresets do
     email_presets =
       get_all_default_email_presets()
       |> Enum.map(fn map ->
-        Map.put(map, :organization_id, organization_id)
+        map
+        |> Map.from_struct()
+        |> Map.drop([
+          :id,
+          :immediately,
+          :is_global,
+          :count,
+          :calendar,
+          :sign,
+          :short_codes,
+          :template_id,
+          :email_automation_pipeline,
+          :organization,
+          :__meta__
+        ])
+        |> Map.replace(:state, Map.get(map, :state) |> Atom.to_string())
+        |> Map.replace(:status, Map.get(map, :status) |> Atom.to_string())
+        |> Map.replace(:type, Map.get(map, :type) |> Atom.to_string())
+        |> Map.replace(:inserted_at, DateTime.utc_now())
+        |> Map.replace(:updated_at, DateTime.utc_now())
+        |> Map.put(:organization_id, organization_id)
       end)
 
     Repo.insert_all("email_presets", email_presets)

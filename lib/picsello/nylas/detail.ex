@@ -9,7 +9,7 @@ defmodule Picsello.NylasDetail do
     field :oauth_token, :string
     field :previous_oauth_token, :string
     field :account_id, :string
-    field :event_status, Ecto.Enum, values: [:moved, :in_progress], default: :moved
+    field :event_status, Ecto.Enum, values: [:initial, :moved, :in_progress], default: :initial
     field :external_calendar_rw_id, :string
     field :external_calendar_read_list, {:array, :string}
 

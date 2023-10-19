@@ -2,7 +2,6 @@ defmodule PicselloWeb.EmailAutomationLive.Shared do
   @moduledoc false
   use Phoenix.Component
   import Phoenix.LiveView
-  import PicselloWeb.Gettext, only: [ngettext: 3]
 
   import PicselloWeb.LiveHelpers
   import PicselloWeb.PackageLive.Shared, only: [current: 1]
@@ -12,6 +11,7 @@ defmodule PicselloWeb.EmailAutomationLive.Shared do
   alias Picsello.{
     Marketing,
     PaymentSchedules,
+    PaymentSchedule,
     EmailPresets.EmailPreset,
     EmailAutomations,
     EmailAutomationSchedules,
@@ -256,7 +256,8 @@ defmodule PicselloWeb.EmailAutomationLive.Shared do
   defp get_email_schedule_name(_hours, 0, _state, name), do: name
 
   defp get_email_schedule_name(hours, _index, state, name) when state not in ["post_shoot"] do
-    %{calendar: calendar, count: count, sign: sign} = get_email_meta(hours)
+    %{calendar: calendar, count: count, sign: sign} =
+      EmailAutomations.get_email_meta(hours, PicselloWeb.Helpers)
 
     "#{name} - #{count} #{calendar} #{sign}"
   end
@@ -272,7 +273,9 @@ defmodule PicselloWeb.EmailAutomationLive.Shared do
   end
 
   def get_email_schedule_text(hours, state, emails, index, job_type, _organization_id) do
-    %{calendar: calendar, count: count, sign: sign} = get_email_meta(hours)
+    %{calendar: calendar, count: count, sign: sign} =
+      EmailAutomations.get_email_meta(hours, PicselloWeb.Helpers)
+
     email = get_preceding_email(emails, index)
 
     sub_text =
@@ -332,7 +335,7 @@ defmodule PicselloWeb.EmailAutomationLive.Shared do
             <%= if @email.total_hours == 0 do %>
               <%= get_email_schedule_text(0, @pipeline.state, nil, @index, nil, nil) %>
             <% else %>
-              <% %{calendar: calendar, count: count, sign: sign} = get_email_meta(@email.total_hours) %>
+              <% %{calendar: calendar, count: count, sign: sign} = EmailAutomations.get_email_meta(@email.total_hours, PicselloWeb.Helpers) %>
               <%= "Send email #{count} #{calendar} #{sign} #{String.downcase(@pipeline.name)}" %>
             <% end %>
           </p>
@@ -346,36 +349,7 @@ defmodule PicselloWeb.EmailAutomationLive.Shared do
     if email, do: email, else: List.last(emails)
   end
 
-  def get_email_meta(hours) do
-    %{calendar: calendar, count: count, sign: sign} = explode_hours(hours)
-    sign = if sign == "+", do: "after", else: "before"
-    calendar = calendar_text(calendar, count)
-
-    %{calendar: calendar, count: count, sign: sign}
-  end
-
-  defp calendar_text("Hour", count), do: ngettext("hour", "hours", count)
-  defp calendar_text("Day", count), do: ngettext("day", "days", count)
-  defp calendar_text("Month", count), do: ngettext("month", "months", count)
-  defp calendar_text("Year", count), do: ngettext("year", "years", count)
-
-  def explode_hours(hours) do
-    year = 365 * 24
-    month = 30 * 24
-    sign = if hours > 0, do: "+", else: "-"
-    hours = make_positive_number(hours)
-
-    cond do
-      rem(hours, year) == 0 -> %{count: trunc(hours / year), calendar: "Year", sign: sign}
-      rem(hours, month) == 0 -> %{count: trunc(hours / month), calendar: "Month", sign: sign}
-      rem(hours, 24) == 0 -> %{count: trunc(hours / 24), calendar: "Day", sign: sign}
-      true -> %{count: hours, calendar: "Hour", sign: sign}
-    end
-  end
-
   defp hours_to_days(hours), do: hours / 24
-
-  defp make_positive_number(no), do: if(no > 0, do: no, else: -1 * no)
 
   def is_state_manually_trigger(state) do
     String.starts_with?(to_string(state), "manual")
@@ -389,6 +363,7 @@ defmodule PicselloWeb.EmailAutomationLive.Shared do
     job = Repo.preload(job, [:booking_event])
     job_id = get_job_id(job)
     gallery_id = get_gallery_id(gallery, order)
+    order = if order, do: Repo.preload(order, [:digitals]), else: nil
     type = if job_id, do: :job, else: :gallery
 
     last_completed_email =
@@ -429,6 +404,7 @@ defmodule PicselloWeb.EmailAutomationLive.Shared do
   def fetch_date_for_state(:cart_abandoned, _email, last_completed_email, _job, gallery, _order) do
     card_abandoned? =
       Enum.any?(gallery.orders, fn order ->
+        order = Repo.preload(order, [:digitals])
         is_nil(order.placed_at) and is_nil(order.intent) and Enum.any?(order.digitals)
       end)
 
@@ -457,7 +433,7 @@ defmodule PicselloWeb.EmailAutomationLive.Shared do
     # send 7 days before expiration 7 <= 7
 
     days_to_compare = hours_to_days(email.total_hours)
-    %{sign: sign} = explode_hours(email.total_hours)
+    %{sign: sign} = EmailAutomations.explode_hours(email.total_hours)
     today = NaiveDateTime.utc_now() |> Timex.end_of_day()
 
     cond do
@@ -512,7 +488,7 @@ defmodule PicselloWeb.EmailAutomationLive.Shared do
 
     days_to_compare = hours_to_days(email.total_hours)
     today = NaiveDateTime.utc_now() |> Timex.end_of_day()
-    %{sign: sign} = explode_hours(email.total_hours)
+    %{sign: sign} = EmailAutomations.explode_hours(email.total_hours)
 
     cond do
       is_nil(gallery.gallery_send_at) ->
@@ -576,8 +552,13 @@ defmodule PicselloWeb.EmailAutomationLive.Shared do
       when state in [:pays_retainer, :thanks_booking] do
     payment_schedules = PaymentSchedules.payment_schedules(job)
 
-    if !PaymentSchedules.is_with_cash?(job) and Enum.count(payment_schedules) > 0 do
-      payment_date = payment_schedules |> List.first() |> Map.get(:paid_at)
+    online_pays =
+      payment_schedules
+      |> Enum.filter(&(!is_nil(&1.paid_at) and &1.type == "stripe"))
+      |> Enum.sort_by(& &1.paid_at, :asc)
+
+    if Enum.any?(online_pays) do
+      payment_date = online_pays |> List.first() |> Map.get(:paid_at)
       get_date_for_schedule(last_completed_email, payment_date)
     else
       nil
@@ -599,9 +580,19 @@ defmodule PicselloWeb.EmailAutomationLive.Shared do
         _order
       )
       when state in [:pays_retainer_offline, :thanks_booking] do
-    if PaymentSchedules.is_with_cash?(job) do
-      payment_offline =
-        PaymentSchedules.get_is_with_cash(job) |> List.first() |> Map.get(:inserted_at)
+    payment_schedules = PaymentSchedules.payment_schedules(job)
+
+    all_paid_payments =
+      payment_schedules
+      |> Enum.filter(&(!is_nil(&1.paid_at)))
+
+    offline_pays =
+      payment_schedules
+      |> Enum.filter(&(!is_nil(&1.paid_at) and &1.type != "stripe"))
+      |> Enum.sort_by(& &1.paid_at, :asc)
+
+    if Enum.any?(offline_pays) and Enum.count(all_paid_payments) == 1 do
+      payment_offline = offline_pays |> List.first() |> Map.get(:paid_at)
 
       get_date_for_schedule(last_completed_email, payment_offline)
     else
@@ -622,7 +613,7 @@ defmodule PicselloWeb.EmailAutomationLive.Shared do
     # send 7 days before shoot start 7<= 7 true
 
     today = NaiveDateTime.utc_now() |> Timex.end_of_day()
-    %{sign: sign} = explode_hours(email.total_hours)
+    %{sign: sign} = EmailAutomations.explode_hours(email.total_hours)
     days_to_compare = hours_to_days(email.total_hours)
 
     job.shoots
@@ -640,8 +631,12 @@ defmodule PicselloWeb.EmailAutomationLive.Shared do
     payment_schedules = PaymentSchedules.payment_schedules(job)
     invoiced_due_date = PaymentSchedules.remainder_due_on(job)
 
-    if is_nil(invoiced_due_date) or
-         (PaymentSchedules.free?(job) and Enum.empty?(payment_schedules)) do
+    online_dues =
+      payment_schedules
+      |> Enum.filter(&(is_nil(&1.paid_at) and &1.type == "stripe"))
+      |> Enum.sort_by(& &1.due_at, :asc)
+
+    if is_nil(invoiced_due_date) or Enum.empty?(online_dues) do
       nil
     else
       due_at =
@@ -661,7 +656,7 @@ defmodule PicselloWeb.EmailAutomationLive.Shared do
       |> Enum.filter(&(is_nil(&1.paid_at) and &1.type in ["cash", "check"]))
       |> Enum.sort_by(& &1.due_at, :asc)
 
-    if !is_nil(invoiced_due_date) and !Enum.empty?(offline_dues) do
+    if !is_nil(invoiced_due_date) and Enum.any?(offline_dues) do
       due_at = List.first(offline_dues) |> Map.get(:due_at)
 
       get_date_for_schedule(last_completed_email, due_at)
@@ -672,21 +667,29 @@ defmodule PicselloWeb.EmailAutomationLive.Shared do
 
   def fetch_date_for_state(:paid_full, _email, last_completed_email, job, _gallery, _order) do
     payment_schedules = PaymentSchedules.payment_schedules(job)
-
-    all_paid_online =
-      payment_schedules
-      |> Enum.all?(fn p -> not is_nil(p.paid_at) and p.type not in ["check", "cash"] end)
-
-    if all_paid_online and Enum.count(payment_schedules) > 0 do
-      paid_at =
-        payment_schedules
-        |> List.last()
-        |> Map.get(:paid_at)
-
+    # Trigger when all paid & last payment is paid by stripe
+    if Enum.any?(payment_schedules) and PaymentSchedules.all_paid?(job) do
+      payment_schedule = payment_schedules |> List.last()
+      paid_at = paid_online(payment_schedule)
       get_date_for_schedule(last_completed_email, paid_at)
     else
       nil
     end
+
+    # all_paid_online =
+    #   payment_schedules
+    #   |> Enum.all?(fn p -> not is_nil(p.paid_at) and p.type not in ["check", "cash"] end)
+
+    # if all_paid_online and Enum.any?(payment_schedules)do
+    #   paid_at =
+    #     payment_schedules
+    #     |> List.last()
+    #     |> Map.get(:paid_at)
+
+    #   get_date_for_schedule(last_completed_email, paid_at)
+    # else
+    #   nil
+    # end
   end
 
   def fetch_date_for_state(
@@ -698,21 +701,29 @@ defmodule PicselloWeb.EmailAutomationLive.Shared do
         _order
       ) do
     payment_schedules = PaymentSchedules.payment_schedules(job)
-
-    all_paid_offline =
-      payment_schedules
-      |> Enum.all?(fn p -> not is_nil(p.paid_at) and p.type in ["check", "cash"] end)
-
-    if all_paid_offline and Enum.count(payment_schedules) > 0 do
-      paid_at =
-        payment_schedules
-        |> List.last()
-        |> Map.get(:paid_at)
-
+    # Trigger when all paid & last payment is paid by cash/check
+    if Enum.any?(payment_schedules) and PaymentSchedules.all_paid?(job) do
+      payment_schedule = payment_schedules |> List.last()
+      paid_at = paid_offline(payment_schedule)
       get_date_for_schedule(last_completed_email, paid_at)
     else
       nil
     end
+
+    # all_paid_offline =
+    #   payment_schedules
+    #   |> Enum.all?(fn p -> not is_nil(p.paid_at) and p.type in ["check", "cash"] end)
+
+    # if all_paid_offline and Enum.any?(payment_schedules) do
+    #   paid_at =
+    #     payment_schedules
+    #     |> List.last()
+    #     |> Map.get(:paid_at)
+
+    #   get_date_for_schedule(last_completed_email, paid_at)
+    # else
+    #   nil
+    # end
   end
 
   def fetch_date_for_state(:shoot_thanks, email, _last_completed_email, job, _gallery, _order) do
@@ -731,7 +742,7 @@ defmodule PicselloWeb.EmailAutomationLive.Shared do
     # difference is 7 days
     # send 7 days after shoot 7 >= 7 true
     today = NaiveDateTime.utc_now() |> Timex.end_of_day()
-    %{sign: sign} = explode_hours(email.total_hours)
+    %{sign: sign} = EmailAutomations.explode_hours(email.total_hours)
     days_to_compare = hours_to_days(email.total_hours)
 
     job.shoots
@@ -762,7 +773,7 @@ defmodule PicselloWeb.EmailAutomationLive.Shared do
     # send 7 days after shoot 7 >= 7 true
 
     today = NaiveDateTime.utc_now() |> Timex.end_of_day()
-    %{sign: sign} = explode_hours(email.total_hours)
+    %{sign: sign} = EmailAutomations.explode_hours(email.total_hours)
     days_to_compare = hours_to_days(email.total_hours)
 
     filter_shoots_count =
@@ -869,4 +880,10 @@ defmodule PicselloWeb.EmailAutomationLive.Shared do
   defp get_gallery_id(gallery, _order) when is_map(gallery), do: gallery.id
   defp get_gallery_id(_gallery, order) when is_map(order), do: order.gallery.id
   defp get_gallery_id(_gallery, _order), do: nil
+
+  defp paid_online(%PaymentSchedule{type: "stripe", paid_at: paid_at}), do: paid_at
+  defp paid_online(%PaymentSchedule{type: _type}), do: nil
+
+  defp paid_offline(%PaymentSchedule{type: "stripe"}), do: nil
+  defp paid_offline(%PaymentSchedule{type: _type, paid_at: paid_at}), do: paid_at
 end

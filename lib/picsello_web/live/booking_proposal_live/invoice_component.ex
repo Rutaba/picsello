@@ -91,10 +91,7 @@ defmodule PicselloWeb.BookingProposalLive.InvoiceComponent do
         %{},
         %{assigns: %{job: job, proposal: proposal, organization: organization}} = socket
       ) do
-    insert_job_emails(job.type, organization.id, job.id, [:lead, :job], [
-      :client_contact,
-      :abandoned_emails
-    ])
+    insert_job_emails(job.type, organization.id, job.id, :job, [])
 
     handle_offline_checkout(socket, job, proposal)
   end

@@ -345,12 +345,13 @@ defmodule Picsello.PaymentSchedules do
         |> Oban.insert_all()
       end
 
+      # insert emails when paid by stripe
       EmailAutomationSchedules.insert_job_emails(
         proposal.job.type,
         organization.id,
         proposal.job.id,
-        [:lead, :job],
-        [:client_contact, :abandoned_emails]
+        :job,
+        []
       )
 
       {:ok, payment_schedule}

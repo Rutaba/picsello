@@ -6,7 +6,7 @@ defmodule PicselloWeb.EmailAutomationLive.EditTimeComponent do
   import PicselloWeb.PackageLive.Shared, only: [current: 1]
 
   alias Ecto.Changeset
-  alias Picsello.{Repo, EmailPresets.EmailPreset}
+  alias Picsello.{Repo, EmailPresets.EmailPreset, EmailAutomations}
   alias PicselloWeb.EmailAutomationLive.Shared
 
   @impl true
@@ -21,7 +21,7 @@ defmodule PicselloWeb.EmailAutomationLive.EditTimeComponent do
       if email.total_hours == 0 do
         email |> Map.put(:immediately, true)
       else
-        data = Shared.explode_hours(email.total_hours)
+        data = EmailAutomations.explode_hours(email.total_hours)
 
         Map.merge(email, data)
         |> Map.put(:immediately, false)

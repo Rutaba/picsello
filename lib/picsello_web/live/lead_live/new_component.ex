@@ -114,7 +114,7 @@ defmodule PicselloWeb.JobLive.NewComponent do
              job.type,
              current_user.organization_id,
              job_id,
-             [:lead, :job],
+             :lead,
              [
                :client_contact,
                :abandoned_emails

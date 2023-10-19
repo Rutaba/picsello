@@ -65,14 +65,24 @@ defmodule Picsello.EmailPresets.GalleryResolver do
     do: %{
       "client_first_name" => &(&1 |> client() |> Map.get(:name) |> String.split() |> hd),
       "password" => &(&1 |> gallery() |> Map.get(:password)),
-      "gallery_link" => fn resolver ->
-        """
-        <a style="border:1px solid #1F1C1E;display:inline-block;background:white;color:#1F1C1E;font-family:Montserrat, sans-serif;font-size:18px;font-weight:normal;line-height:120%;margin:0;text-decoration:none;text-transform:none;padding:10px 15px;mso-padding-alt:0px;border-radius:0px;"
-           target="_blank"
-           href="#{helpers(resolver).gallery_url(gallery(resolver).client_link_hash)}"> Gallery Link
-        </a>
-        """
-      end,
+      "gallery_link" =>
+        &with(
+          %Gallery{client_link_hash: "" <> client_link_hash} <- gallery(&1),
+          do: """
+          <a target="_blank" href="#{helpers(&1).gallery_url(client_link_hash)}">
+            Gallery Link
+          </a>
+          """
+        ),
+      "client_gallery_order_page" =>
+        &with(
+          %Gallery{client_link_hash: "" <> client_link_hash} <- gallery(&1),
+          do: """
+          <a target="_blank" href="#{helpers(&1).gallery_url(client_link_hash)}/cart">
+            Order Page Link
+          </a>
+          """
+        ),
       "photography_company_s_name" => &organization(&1).name,
       "photographer_first_name" => &(&1 |> photographer() |> Picsello.Accounts.User.first_name()),
       "gallery_name" => &(&1 |> gallery() |> Map.get(:name)),
@@ -80,9 +90,8 @@ defmodule Picsello.EmailPresets.GalleryResolver do
         &with(
           link <- download_photos_link(&1),
           do: """
-          <a style="border:1px solid #1F1C1E;display:inline-block;background:white;color:#1F1C1E;font-family:Montserrat, sans-serif;font-size:18px;font-weight:normal;line-height:120%;margin:0;text-decoration:none;text-transform:none;padding:10px 15px;mso-padding-alt:0px;border-radius:0px;"
-             target="_blank"
-             href="#{link}"> Download Photos Link
+          <a target="_blank" href="#{link}">
+            Download Photos Link
           </a>
           """
         ),
@@ -105,9 +114,8 @@ defmodule Picsello.EmailPresets.GalleryResolver do
         &with(
           %Album{client_link_hash: "" <> client_link_hash} <- album(&1),
           do: """
-          <a style="border:1px solid #1F1C1E;display:inline-block;background:white;color:#1F1C1E;font-family:Montserrat, sans-serif;font-size:18px;font-weight:normal;line-height:120%;margin:0;text-decoration:none;text-transform:none;padding:10px 15px;mso-padding-alt:0px;border-radius:0px;"
-             target="_blank"
-             href="#{helpers(&1).album_url(client_link_hash)}"> Download Photos Link
+          <a target="_blank" href="#{helpers(&1).album_url(client_link_hash)}">
+            Download Photos Link
           </a>
           """
         ),

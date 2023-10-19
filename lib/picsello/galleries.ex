@@ -187,6 +187,7 @@ defmodule Picsello.Galleries do
           | {:album_id, number()}
           | {:exclude_album, boolean()}
           | {:favorites_filter, boolean()}
+          | {:invalid_preview, boolean()}
   @doc """
   Gets paginated photos by gallery id
 
@@ -197,6 +198,7 @@ defmodule Picsello.Galleries do
     * :offset
     * :limit
     * :photographer_favorites_filter
+    * :invalid_preview
   """
   @spec get_gallery_photos(id :: integer, opts :: list(get_gallery_photos_option)) ::
           list(Photo)
@@ -227,6 +229,14 @@ defmodule Picsello.Galleries do
 
   @doc """
   Get list of photo ids from gallery.
+  Options:
+    * :favorites_filter. If set to `true`, then only liked photos will be returned. Defaults to `false`;
+    * :exclude_album. if set to `true`, then only unsorted photos(photos not associated with any album) will be returned. Defaluts to `false`;
+    * :album_id
+    * :offset
+    * :limit
+    * :photographer_favorites_filter
+    * :invalid_preview
   """
   @spec get_gallery_photo_ids(id :: integer, opts :: keyword) :: list(integer)
   def get_gallery_photo_ids(id, opts) do
@@ -257,6 +267,7 @@ defmodule Picsello.Galleries do
     |> Repo.aggregate(:count, [])
   end
 
+  @mseonds_to_consider_photos_invalid 20
   defp conditions(id, opts) do
     exclude_album = Keyword.get(opts, :exclude_album, false)
     album_id = Keyword.get(opts, :album_id, false)
@@ -275,6 +286,12 @@ defmodule Picsello.Galleries do
       {:exclude_album, true}, conditions ->
         dynamic([p], is_nil(p.album_id) and ^conditions)
 
+      {:invalid_preview, true}, conditions ->
+        %{watermark: watermark} = Repo.get!(Gallery, id) |> Repo.preload(:watermark)
+        datetime = DateTime.add(DateTime.utc_now(), -@mseonds_to_consider_photos_invalid, :second)
+
+        invalid_preview_conditions(watermark, datetime, conditions)
+
       _, conditions ->
         conditions
     end)
@@ -285,6 +302,21 @@ defmodule Picsello.Galleries do
       conditons ->
         conditons
     end)
+  end
+
+  defp invalid_preview_conditions(watermark, datetime, conditions) do
+    if watermark do
+      dynamic(
+        [p],
+        (is_nil(p.preview_url) or is_nil(p.watermarked_preview_url)) and
+          p.updated_at < ^datetime and ^conditions
+      )
+    else
+      dynamic(
+        [p],
+        is_nil(p.preview_url) and p.updated_at < ^datetime and ^conditions
+      )
+    end
   end
 
   @spec get_all_album_photos(
@@ -576,7 +608,7 @@ defmodule Picsello.Galleries do
       |> check_watermark(user)
     end)
     |> Multi.insert_all(:email_automation_job, EmailSchedule, fn %{gallery: gallery} ->
-      EmailAutomationSchedules.insert_job_emails_from_gallery(gallery, [:job])
+      EmailAutomationSchedules.insert_job_emails_from_gallery(gallery, :job)
     end)
     |> Multi.insert_all(:email_automation, EmailSchedule, fn %{gallery: gallery} ->
       EmailAutomationSchedules.gallery_order_emails(gallery, nil)

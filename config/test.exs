@@ -71,6 +71,13 @@ config :picsello, :whcc, adapter: Picsello.MockWHCCClient
 
 config :picsello, Oban, testing: :manual
 
+config :picsello, :packages,
+  calculator: [
+    sheet_id: "1o-jjICzCgevEyf4Kw5keOyTEu8IK5EgfOXfeV_lSMVI",
+    prices: "Sheet1!A1:H301",
+    cost_of_living: "Cost of Living Adjustments!A1:B51"
+  ]
+
 config :picsello,
        :feature_flags,
        ~w[sync_whcc_design_details show_pricing_tab automated_proposal_emails balance_due_emails]a

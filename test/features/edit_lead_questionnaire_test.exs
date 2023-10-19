@@ -49,8 +49,21 @@ defmodule Picsello.EditLeadQuestionnaireTest do
         user: user
       })
 
-    insert(:email_preset, job_type: wedding_lead.type, state: :booking_proposal)
-    insert(:email_preset, job_type: headshot_lead.type, state: :booking_proposal)
+    insert(:email_preset,
+      job_type: wedding_lead.type,
+      type: :lead,
+      state: :manual_booking_proposal_sent,
+      email_automation_pipeline_id: 3,
+      organization_id: user.organization.id
+    )
+
+    insert(:email_preset,
+      job_type: headshot_lead.type,
+      type: :lead,
+      state: :manual_booking_proposal_sent,
+      email_automation_pipeline_id: 3,
+      organization_id: user.organization.id
+    )
 
     [wedding_lead: wedding_lead, headshot_lead: headshot_lead]
   end

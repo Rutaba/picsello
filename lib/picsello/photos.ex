@@ -235,5 +235,12 @@ defmodule Picsello.Photos do
     "\"#{content}\""
   end
 
+  def update_invalid_preview_photos(invalid_preview_photos, opts \\ [active: false]) do
+    photo_ids = invalid_preview_photos |> Enum.map(& &1.id)
+
+    from(p in Photo, where: p.id in ^photo_ids, update: [set: ^opts])
+    |> Repo.update_all([])
+  end
+
   defdelegate path_to_url(path), to: PhotoStorage
 end

@@ -141,18 +141,13 @@ defmodule Picsello.EmailAutomationsTest do
     |> find(css("div[data-testid='inbox']"), fn div ->
       click(div, button("View all"))
     end)
-    |> find(css("div[testid='main-area']", count: 2, at: 0), fn div ->
+    |> find(css("div[testid='main-area']", count: 1, at: 0), fn div ->
       assert_has(div, css("div", text: "Leads", count: 2))
       assert_has(div, css("div", text: "Jobs", count: 0))
       assert_has(div, css("div", text: "Galleries", count: 0))
     end)
-    |> find(css("div[testid='main-area']", count: 2, at: 1), fn div ->
-      assert_has(div, css("div", text: "Leads", count: 0))
-      assert_has(div, css("div", text: "Jobs", count: 2))
-      assert_has(div, css("div", text: "Galleries", count: 0))
-    end)
     # should be 13 but one pipeline of lead is not visible in test, but in real.
-    |> assert_has(css("div[testid='pipeline-section']", count: 12))
+    |> assert_has(css("div[testid='pipeline-section']", count: 2))
   end
 
   feature "testing categories and pipelines related to a job", %{session: session} do
@@ -266,7 +261,7 @@ defmodule Picsello.EmailAutomationsTest do
     # one start sequence, other edit email
     |> assert_has(css("button[disabled]", count: 2))
     |> assert_has(css("button[disabled]", text: "Send now", count: 0))
-    |> assert_has(css("use[href='/images/icons.svg#flag']", count: 0))
+    |> assert_has(css("use[href='/images/icons.svg#paper-airplane']", count: 2))
     |> assert_has(css("use[href='/images/icons.svg#tick']", count: 2))
     |> assert_has(css("use[href='/images/icons.svg#envelope']", count: 5))
     |> click(css("button[testid='manual_thank_you_lead-stop_button-1']", count: 1))
@@ -308,7 +303,7 @@ defmodule Picsello.EmailAutomationsTest do
     end)
     |> click(css("span", text: "Inquiry and Follow Up Emails"))
     |> assert_has(button("Start Sequence"))
-    |> assert_has(css("use[href='/images/icons.svg#flag']", count: 1))
+    |> assert_has(css("use[href='/images/icons.svg#paper-airplane']", count: 3))
     |> assert_has(css("use[href='/images/icons.svg#tick']", count: 0))
     |> assert_has(css("use[href='/images/icons.svg#envelope']", count: 5))
     |> assert_has(css("button[disabled]", text: "Start Sequence", count: 0))
@@ -343,7 +338,7 @@ defmodule Picsello.EmailAutomationsTest do
     end)
     |> click(css("span", text: "Inquiry and Follow Up Emails"))
     |> assert_has(button("Start Sequence"))
-    |> assert_has(css("use[href='/images/icons.svg#flag']", count: 1))
+    |> assert_has(css("use[href='/images/icons.svg#paper-airplane']", count: 3))
     |> assert_has(css("use[href='/images/icons.svg#tick']", count: 0))
     |> assert_has(css("use[href='/images/icons.svg#envelope']", count: 5))
     |> assert_has(css("button[disabled]", text: "Start Sequence", count: 0))

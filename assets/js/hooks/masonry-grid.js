@@ -215,12 +215,35 @@ export default {
     return this.el.dataset.hasMorePhotos === 'true';
   },
 
+  /**
+ * Apply preview loader
+ */
+  applyPreviewLoader(evt) {
+    var mainDiv = document.getElementById(evt.id)
+    var img = mainDiv.querySelector(`img`);
+    var loader = mainDiv.querySelector(`#${evt.id}-inner`);
+
+    img.src = evt.url;
+    loader.classList.remove("hidden")
+    loader.id = `inner-${evt.photo_id}`
+  },
+
+  /**
+* Remove preview loader
+*/
+  removePreviewLoader(evt) {
+    var loader = document.getElementById(`inner-${evt.photo_id}`)
+    loader.classList.add("hidden")
+  },
+
   init_listeners() {
     this.handleEvent('remove_item', ({ id: id }) => this.remove_item(id));
-    this.handleEvent('reload_grid', ({}) => this.reload_masonry());
-    this.handleEvent('remove_loader', ({}) => this.remove_loader());
+    this.handleEvent('reload_grid', ({ }) => this.reload_masonry());
+    this.handleEvent('remove_loader', ({ }) => this.remove_loader());
     this.handleEvent('remove_items', ({ ids: ids }) => this.remove_items(ids));
     this.handleEvent('select_mode', ({ mode: mode }) => this.select_mode(mode));
+    this.handleEvent('apply_preview_loader', (evt) => this.applyPreviewLoader(evt));
+    this.handleEvent('remove_preview_loader', (evt) => this.removePreviewLoader(evt));
   },
 
   remove_loader() {

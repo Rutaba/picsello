@@ -60,11 +60,15 @@ defmodule Picsello.ClientAcceptsBookingProposalTest do
 
     insert(:payment_schedule, %{job: lead})
     insert(:package_payment_schedule, %{package: lead.package, price: Money.new(0)})
+
     insert(:email_preset, job_type: lead.type, state: :lead)
 
     insert(:email_preset,
       job_type: lead.type,
-      state: :booking_proposal,
+      type: :lead,
+      state: :manual_booking_proposal_sent,
+      email_automation_pipeline_id: 3,
+      organization_id: user.organization.id,
       subject_template: "here is what I propose",
       body_template: "let us party."
     )
@@ -396,6 +400,14 @@ defmodule Picsello.ClientAcceptsBookingProposalTest do
     |> click(@send_proposal_button)
     |> wait_for_enabled_submit_button()
     |> click(@send_email_button)
+
+    assert %{success: _, failure: 0} =
+             Oban.drain_queue(
+               queue: :default,
+               with_limit: 1,
+               with_recursion: true,
+               with_safety: false
+             )
 
     assert_receive {:delivered_email, email}
     url = email |> email_substitutions |> Map.get("button") |> Map.get(:url)
