@@ -102,13 +102,13 @@ defmodule Picsello.EmailPresets.GalleryResolver do
         ),
       "order_first_name" =>
         &with(
-          %Order{delivery_info: %{name: "" <> name}} <- order(&1),
-          do: name |> String.split() |> hd
+          %Order{delivery_info: delivery_info} <- order(&1),
+          do: delivery_info |> Map.get(:name) |> String.split() |> hd
         ),
       "order_full_name" =>
         &with(
-          %Order{delivery_info: %{name: "" <> name}} <- order(&1),
-          do: name
+          %Order{delivery_info: delivery_info} <- order(&1),
+          do: delivery_info |> Map.get(:name)
         ),
       "album_link" =>
         &with(
