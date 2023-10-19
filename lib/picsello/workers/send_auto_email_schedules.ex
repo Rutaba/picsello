@@ -32,6 +32,7 @@ defmodule Picsello.Workers.ScheduleAutomationEmail do
       end)
     end)
 
+    Logger.info("------------Email Automation Schedule Completed")
     :ok
   end
 
