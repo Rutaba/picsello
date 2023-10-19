@@ -216,7 +216,7 @@ defmodule PicselloWeb.InboxLive.Index do
                             <% end %>
                           </p>
                         <% else %>
-                          <p> C c: <%= message.cc %> </p>
+                          <p> Cc: <%= message.cc %> </p>
                           <p> Bcc: <%= message.bcc %> </p>
                         <% end %>
                       <% end %>
