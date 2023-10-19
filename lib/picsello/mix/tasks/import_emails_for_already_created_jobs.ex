@@ -60,7 +60,7 @@ defmodule Mix.Tasks.ImportEmailForAlreadyCreatedJobs do
 
   defp skip_job_states(job) do
     skip_booking_states =
-      if Enum.any?(job.payment_schedules),
+      if Enum.any?(job.payment_schedules, &(!is_nil(&1.paid_at))),
         do: [:pays_retainer, :thanks_booking, :pays_retainer_offline],
         else: []
 
