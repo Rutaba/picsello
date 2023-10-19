@@ -52,9 +52,9 @@ defmodule Mix.Tasks.ImportEmailForAlreadyCreatedJobs do
 
   defp jobs_emails_insert(jobs, org_id) do
     Enum.map(jobs, fn job ->
-        skip_states = skip_job_states(job)
-        insert_email_schedules_job(job.type, job.id, org_id, :job, skip_states)
-        galleries_emails(job.galleries)
+      skip_states = skip_job_states(job)
+      insert_email_schedules_job(job.type, job.id, org_id, :job, skip_states)
+      galleries_emails(job.galleries)
     end)
   end
 
