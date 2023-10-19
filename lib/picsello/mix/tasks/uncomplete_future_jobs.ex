@@ -26,7 +26,8 @@ defmodule Mix.Tasks.UncompleteFutureJobs do
 
       Enum.map(jobs, fn job ->
         if any_shoots_after_10_17_2023(job) do
-          job |> IO.inspect() |> Job.uncomplete_changeset() |> Repo.update()
+          Logger.info("Uncompleting job #{job.id} for organization #{org.id}")
+          job |> Job.uncomplete_changeset() |> Repo.update()
         end
       end)
     end)
