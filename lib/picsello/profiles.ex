@@ -12,7 +12,9 @@ defmodule Picsello.Profiles do
     ClientMessage,
     Client,
     Accounts.User,
-    Notifiers.UserNotifier
+    Notifiers.UserNotifier,
+    EmailAutomation.EmailSchedule,
+    EmailAutomationSchedules
   }
 
   require Logger
@@ -199,6 +201,19 @@ defmodule Picsello.Profiles do
             :lead,
             &Job.create_changeset(%{type: contact.job_type, client_id: &1.client.id})
           )
+          |> Ecto.Multi.insert_all(:email_automation_job, EmailSchedule, fn %{lead: job} ->
+            job = job |> Repo.preload(client: [organization: [:user]])
+
+            EmailAutomationSchedules.job_emails(
+              job.type,
+              job.client.organization.id,
+              job.id,
+              :lead,
+              [
+                :abandoned_emails
+              ]
+            )
+          end)
           |> Ecto.Multi.insert(
             :message,
             &ClientMessage.create_inbound_changeset(
@@ -459,17 +474,21 @@ defmodule Picsello.Profiles do
     end
   end
 
-  def enabled_job_types(organization_job_types) do
+  def get_active_organization_job_types(organization_job_types) do
     organization_job_types
     |> Enum.filter(fn job_type -> job_type.show_on_business? end)
+    |> Enum.sort_by(& &1.jobtype.position)
+  end
+
+  def enabled_job_types(organization_job_types) do
+    Repo.preload(organization_job_types, [:jobtype])
+    |> get_active_organization_job_types()
     |> Enum.map(& &1.job_type)
   end
 
   def public_job_types(organization_job_types) do
-    organization_job_types
-    |> Enum.filter(fn job_type ->
-      job_type.show_on_business? and job_type.show_on_profile?
-    end)
+    Repo.preload(organization_job_types, [:jobtype])
+    |> get_active_organization_job_types()
     |> Enum.map(& &1.job_type)
   end
 

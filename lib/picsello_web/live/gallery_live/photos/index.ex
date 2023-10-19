@@ -29,6 +29,7 @@ defmodule PicselloWeb.GalleryLive.Photos.Index do
   alias PicselloWeb.GalleryLive.Photos.FolderUpload
   alias PicselloWeb.GalleryLive.Photos.{Photo, PhotoPreview, PhotoView, UploadError}
   alias PicselloWeb.GalleryLive.Albums.{AlbumThumbnail, AlbumSettings}
+  alias PicselloWeb.GalleryLive.Photos.CloudError
   alias Ecto.Multi
 
   @per_page 500
@@ -260,6 +261,13 @@ defmodule PicselloWeb.GalleryLive.Photos.Index do
 
     socket
     |> open_modal(UploadError, socket.assigns)
+    |> noreply
+  end
+
+  @impl true
+  def handle_event("re-upload", _, %{assigns: assigns} = socket) do
+    socket
+    |> open_modal(CloudError, assigns)
     |> noreply
   end
 
@@ -758,7 +766,9 @@ defmodule PicselloWeb.GalleryLive.Photos.Index do
       socket |> assign(:photo_updates, photo_update)
     else
       socket
+      |> push_event("remove_preview_loader", %{photo_id: photo.id})
     end
+    |> assign_invalid_preview_images()
     |> noreply()
   end
 
@@ -933,6 +943,40 @@ defmodule PicselloWeb.GalleryLive.Photos.Index do
     |> process_favorites(@per_page)
   end
 
+  @re_call_time 5000
+  def handle_info(:invalid_preview, socket) do
+    Process.send_after(self(), :invalid_preview, @re_call_time)
+
+    socket
+    |> assign_invalid_preview_images
+    |> noreply()
+  end
+
+  def handle_info({:photo_insert, photo, entry}, socket) do
+    send(self(), {:process_photo_insert, photo, entry})
+
+    socket
+    |> assign(:update_mode, "ignore")
+    |> noreply()
+  end
+
+  def handle_info({:process_photo_insert, photo, entry}, socket) do
+    socket
+    |> push_event("apply_preview_loader", %{
+      id: "photo-loader-#{entry.uuid}",
+      url: Picsello.Photos.original_url(photo),
+      photo_id: photo.id
+    })
+    |> noreply
+  end
+
+  defp assign_invalid_preview_images(%{assigns: %{gallery: gallery}} = socket) do
+    invalid_preview_photos = Galleries.get_gallery_photos(gallery.id, invalid_preview: true)
+
+    socket
+    |> assign(invalid_preview_photos: invalid_preview_photos)
+  end
+
   defp assigns(socket, gallery_id, album \\ nil) do
     gallery = get_gallery!(gallery_id)
 
@@ -941,6 +985,10 @@ defmodule PicselloWeb.GalleryLive.Photos.Index do
       PubSub.subscribe(Picsello.PubSub, "clear_photos_error:#{gallery_id}")
       PubSub.subscribe(Picsello.PubSub, "photo_uploaded:#{gallery_id}")
       PubSub.subscribe(Picsello.PubSub, "uploading:#{gallery_id}")
+      PubSub.subscribe(Picsello.PubSub, "invalid_preview:#{gallery_id}")
+      PubSub.subscribe(Picsello.PubSub, "photo_insert:#{gallery_id}")
+
+      send(self(), :invalid_preview)
     end
 
     currency = Picsello.Currency.for_gallery(gallery)
@@ -952,7 +1000,8 @@ defmodule PicselloWeb.GalleryLive.Photos.Index do
       gallery: gallery,
       album: album,
       page_title: page_title(socket.assigns.live_action),
-      products: Galleries.products(gallery)
+      products: Galleries.products(gallery),
+      invalid_preview_photos: []
     )
     |> assign_photos(@per_page)
     |> then(&assign(&1, photo_ids: Enum.map(&1.assigns.photos, fn photo -> photo.id end)))
@@ -1026,6 +1075,7 @@ defmodule PicselloWeb.GalleryLive.Photos.Index do
         socket
         |> assign(:gallery, gallery)
         |> assign(:selected_photos, [])
+        |> assign_invalid_preview_images()
         |> push_event("remove_items", %{"ids" => selected_photos})
         |> push_event("select_mode", %{"mode" => "selected_none"})
         |> put_flash(
@@ -1121,10 +1171,16 @@ defmodule PicselloWeb.GalleryLive.Photos.Index do
 
   defp photo_loader(assigns) do
     ~H"""
-    <%= for {_, index} <- Enum.with_index(@inprogress_photos) do%>
-      <div id={"photo-loader-#{index}"} class="item h-[130px] photo-loader flex bg-gray-200">
+    <%= for entry <- @inprogress_photos do%>
+      <div id={"photo-loader-#{entry.uuid}"} class="item h-[130px] photo-loader flex bg-gray-200">
         <div class="relative cursor-pointer item-content preview">
           <div class="galleryLoader">
+            <div id={"photo-loader-#{entry.uuid}-inner"} class="PhotoLoader grid place-items-center text-white absolute z-10 top-0 left-0 h-full w-full bg-gray-600/30 backdrop-blur-[1px] hidden">
+                <div class="flex gap-2 justify-center p-1 bg-white rounded-full">
+                    <.icon class="animate-spin w-5 h-5 text-blue-planning-300" name="loader"/>
+                    <p class="text-blue-planning-300 text-xs font-bold text-center">Generating preview...</p>
+                </div>
+            </div>
             <img src={@url} class="relative" />
           </div>
         </div>

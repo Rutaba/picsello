@@ -8,6 +8,24 @@ defmodule Picsello.EmailPresets do
   alias Picsello.{Repo, Job, Shoot, EmailPresets.EmailPreset, Utils}
   alias Picsello.Galleries.Gallery
 
+  def email_automation_presets(type, job_type, pipeline_id) do
+    from(p in presets(type),
+      where:
+        p.job_type == ^job_type and is_nil(p.organization_id) and
+          p.email_automation_pipeline_id == ^pipeline_id
+    )
+    |> Repo.all()
+  end
+
+  def user_email_automation_presets(type, job_type, pipeline_id, org_id) do
+    from(p in presets(type),
+      where:
+        p.job_type == ^job_type and p.organization_id == ^org_id and
+          p.email_automation_pipeline_id == ^pipeline_id
+    )
+    |> Repo.all()
+  end
+
   def for(%Gallery{}, state) do
     from(preset in gallery_presets(), where: preset.state == ^state)
     |> Repo.all()
@@ -33,7 +51,7 @@ defmodule Picsello.EmailPresets do
          job_status: %{is_lead: true, current_status: current_status},
          id: job_id
        }) do
-    state = if current_status == :not_sent, do: :lead, else: :booking_proposal_sent
+    state = if current_status == :not_sent, do: :lead, else: :manual_booking_proposal_sent
 
     from(preset in query,
       join: job in Job,
@@ -61,7 +79,6 @@ defmodule Picsello.EmailPresets do
   end
 
   defp job_presets(), do: presets(:job)
-
   defp gallery_presets(), do: presets(:gallery)
 
   defp presets(type),
@@ -69,10 +86,9 @@ defmodule Picsello.EmailPresets do
 
   def resolve_variables(%EmailPreset{} = preset, schemas, helpers) do
     resolver_module =
-      case preset.type do
-        :job -> Picsello.EmailPresets.JobResolver
-        _ -> Picsello.EmailPresets.GalleryResolver
-      end
+      if preset.type in [:job, :lead],
+        do: Picsello.EmailPresets.JobResolver,
+        else: Picsello.EmailPresets.GalleryResolver
 
     resolver = schemas |> resolver_module.new(helpers)
 
@@ -83,8 +99,10 @@ defmodule Picsello.EmailPresets do
 
     %{
       preset
-      | body_template: Utils.render(preset.body_template, data),
-        subject_template: Utils.render(preset.subject_template, data)
+      | body_template:
+          Utils.render(preset.body_template, data) |> Utils.normalize_body_template(),
+        subject_template: Utils.render(preset.subject_template, data),
+        short_codes: data
     }
   end
 end

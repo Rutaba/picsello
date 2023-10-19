@@ -33,7 +33,7 @@
               <.icon name="up" class="hidden w-4 h-4 ml-auto mr-1 stroke-current stroke-3 text-blue-planning-300 close-icon" />
             </button>
             <ul class="flex-col bg-white border rounded-lg shadow-lg popover-content z-20 hidden">
-              <li phx-click="open-compose" phx-value-client_id={@job.client_id} class="flex items-center px-3 py-2 rounded-lg hover:bg-blue-planning-100 hover:font-bold cursor-pointer">
+              <li phx-click="open-compose" phx-value-client_id={@job.client_id} phx-value-is_thanks={"true"} class="flex items-center px-3 py-2 rounded-lg hover:bg-blue-planning-100 hover:font-bold cursor-pointer">
                 <.icon name="envelope" class="inline-block w-4 h-4 mx-2 fill-current text-blue-planning-300" />
                 <a>Send an email</a>
               </li>
@@ -84,7 +84,7 @@
     <.section id="details-communications" icon="envelope" title="Details & communications" collapsed_sections={@collapsed_sections}>
       <div class="flex flex-col md:flex-row md:items-start">
         <div class="flex-1 grid md:grid-cols-2 gap-5">
-          <.communications_card job={@job} inbox_count={@inbox_count} />
+          <.communications_card job={@job} inbox_count={@inbox_count} is_thanks={"true"}/>
           <.package_details_card package={@package} job={@job} proposal={@proposal} />
           <.private_notes_card job={@job} />
         </div>

@@ -92,6 +92,17 @@
               to resolve errors<%= if Enum.any?(@pending_photos), do: " before uploading more photos"%>.
             </div>
           </div>
+          <div class={classes("flex items-center lg:mt-4 lg:mb-0 mb-4 lg:mx-0 mx-10 rounded-lg shadow-lg bg-orange-inbox-400", %{"hidden" => @invalid_preview_photos == []})}>
+            <div class="flex justify-center pl-5">
+              <.icon name="warning-orange" class="w-4 h-4 stroke-2" />
+            </div>
+            <div class="flex-grow p-4 lg:text-base text-sm font-sans">
+              <%= Enum.count(@invalid_preview_photos) %>
+              <%= ngettext("photo", "photos", Enum.count(@invalid_preview_photos)) %> failed to generate preview or watermark  <%= ngettext("version", "versions", Enum.count(@invalid_preview_photos)) %>.
+              <button phx-click="re-upload" class="font-bold cursor-pointer primary text-blue-planning-300">Click here</button>
+              to fix them.
+            </div>
+          </div>
           <%= if Enum.any?(@photos) || Enum.any?(@orders) || @photographer_favorites_filter do %>
             <div class="pt-4 grid lg:grid-cols-2">
               <div class="flex flex-col text-sm justify-start md:flex-row">
@@ -183,17 +194,19 @@
         </div>
       </div>
       <div class={classes("lg:pt-16 pb-10 pl-10 pr-8", %{"pt-80" => @gallery.type == :finals, "pt-60" => @gallery.type != :finals})}>
-        <div class={classes(%{"hidden" => @photos != [] || @inprogress_photos != [] || @selection_filter || @favorites_filter})}>
-          <%= if !@photographer_favorites_filter do %>
-            <div class={classes("relative justify-between mt-48 mb-12 text-2xl font-bold font-sans text-center text-blue-planning-300", %{"mt-60" => @first_visit?})}>
-                <span class={classes("hidden lg:block", %{"text-gray-400" => disabled?(@gallery)})}>Oops, there's nothing here - upload photos now to get started!</span>
-                <span class={classes("lg:hidden", %{"text-gray-400" => disabled?(@gallery)})}>Oops, there's nothing here - upload photos from your desktop to get started!</span>
-            </div>
-            <div class="hidden lg:block relative overflow-hidden font-sans cursor-pointer dragDrop__wrapper h-96">
-              <%= live_render(@socket, PicselloWeb.GalleryLive.Photos.Upload, id: "drag-drop-#{@gallery.id}", session: %{"gallery_id" => @gallery.id, "album_id" => extract_album(@album, :id, nil), "view" => "drag_drop"}, sticky: true) %>
-            </div>
-          <% end %>
-        </div>
+        <%= if @photos == [] do %>
+          <div class={classes(%{"hidden" => @inprogress_photos != [] || @selection_filter || @favorites_filter})}>
+            <%= if !@photographer_favorites_filter do %>
+              <div class={classes("relative justify-between mt-48 mb-12 text-2xl font-bold font-sans text-center text-blue-planning-300", %{"mt-60" => @first_visit?})}>
+                  <span class={classes("hidden lg:block", %{"text-gray-400" => disabled?(@gallery)})}>Oops, there's nothing here - upload photos now to get started!</span>
+                  <span class={classes("lg:hidden", %{"text-gray-400" => disabled?(@gallery)})}>Oops, there's nothing here - upload photos from your desktop to get started!</span>
+              </div>
+              <div class="hidden lg:block relative overflow-hidden font-sans cursor-pointer dragDrop__wrapper h-96">
+                <%= live_render(@socket, PicselloWeb.GalleryLive.Photos.Upload, id: "drag-drop-#{@gallery.id}", session: %{"gallery_id" => @gallery.id, "album_id" => extract_album(@album, :id, nil), "view" => "drag_drop"}, sticky: true) %>
+              </div>
+            <% end %>
+          </div>
+        <% end %>
         <%= case @photos == [] && @inprogress_photos == [] && !@selection_filter do %>
           <% true when @photographer_favorites_filter -> %>
             <div class="relative justify-between mt-60 mb-12 text-2xl font-bold font-sans text-center text-blue-planning-300">
@@ -213,7 +226,7 @@
                 phx-hook="MasonryGrid"
                 phx-update={@update_mode}
                 id="photos"
-                class="mb-6 grid muuri"
+                class="mb-6 mt-10 grid muuri"
                 data-page={@page}
                 data-id="photos"
                 data-uploading={@total_progress}
@@ -243,9 +256,9 @@
                     show_products: @show_products
                   %>
                 <% end %>
-                <.photo_loader inprogress_photos={@inprogress_photos} url={@url} />
+                  <.photo_loader inprogress_photos={@inprogress_photos} url={@url} />
               </div>
-
+           
               <div class="hidden">
                 <div id="selected-mode" class={@select_mode}></div>
                 <div id="photo-update-listener" phx-hook="PhotoUpdate" data-photo-updates={@photo_updates}></div>

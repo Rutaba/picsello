@@ -190,6 +190,11 @@ defmodule PicselloWeb.LayoutView do
         heading: "Settings",
         items: [
           %{
+            title: "Automations (Beta)",
+            icon: "play-icon",
+            path: Routes.email_automations_index_path(socket, :index)
+          },
+          %{
             title: "Packages",
             icon: "package",
             path: Routes.package_templates_path(socket, :index)
@@ -252,6 +257,11 @@ defmodule PicselloWeb.LayoutView do
 
   def sub_nav_list(socket, :settings),
     do: [
+      %{
+        title: "Automations (Beta)",
+        icon: "play-icon",
+        path: Routes.email_automations_index_path(socket, :index)
+      },
       %{
         title: "Packages",
         icon: "package",
@@ -362,7 +372,7 @@ defmodule PicselloWeb.LayoutView do
 
   def sub_nav(assigns) do
     ~H"""
-      <div id={@id} class="relative cursor-pointer" phx-update="ignore" phx-hook="ToggleContent" data-icon="toggle-icon">
+      <div id={@id} class="relative cursor-pointer"  phx-update="ignore" phx-hook="ToggleContent" data-icon="toggle-icon">
         <div class="absolute left-0 z-10 flex flex-col items-start hidden cursor-default top-10 toggle-content">
           <nav class="flex flex-col bg-white rounded-lg shadow">
             <%= for %{title: title, icon: icon, path: path} <- @sub_nav_list, @current_user do %>

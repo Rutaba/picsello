@@ -369,6 +369,7 @@ defmodule Picsello.ClientUsesPrintCreditsTest do
       assert [%{errors: []}] = run_jobs()
 
       session
+      |> sleep(1000)
       |> assert_url_contains("orders")
       |> assert_text("Order details")
       |> assert_has(definition("Total", text: "$10.95"))
@@ -518,6 +519,7 @@ defmodule Picsello.ClientUsesPrintCreditsTest do
       |> assert_has(definition("Total", text: "$10.95"))
       |> assert_has(definition("Print credits used", text: "$2,020.00"))
       |> click(link("Home"))
+      |> assert_text("Camera User Group")
     end
   end
 

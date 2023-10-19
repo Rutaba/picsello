@@ -15,13 +15,17 @@
                         <%= if @photo.watermarked_preview_url || @photo.preview_url do %>
                             <.photo target={@component} preview={@photo.preview_url} photo_id={@photo.id} url={preview_url(@photo, proofing_client_view?: @is_proofing)}/>
                         <% else %>
-                            <div class="galleryLoader">
-                                <.photo target={@component} preview={@url} photo_id={@photo.id} url={@url}/>
+                            <div class="PhotoLoader grid place-items-center text-white absolute z-10 top-0 left-0 h-full w-full bg-gray-600/30 backdrop-blur-[1px]">
+                                <div class="flex gap-2 justify-center p-1 bg-white rounded-full">
+                                    <.icon class="animate-spin w-5 h-5 text-blue-planning-300" name="loader"/>
+                                    <p class="text-blue-planning-300 text-xs font-bold text-center">Generating preview...</p>
+                                </div>
                             </div>
+                            <.photo target={@component} photo_id={@photo.id} url={Picsello.Photos.original_url(@photo)}/>
                         <% end %>
                     </.photo_wrapper>
                 <% end %>
-                <%= if !@client_liked_album do %>
+                <%= if !@client_liked_album && (@photo.watermarked_preview_url || @photo.preview_url) do %>
                     <button
                         class="likeBtn"
                         phx-click={js_like_click(@id, @myself)}
@@ -60,6 +64,6 @@
         <div id="album_name" class="flex p-1.5 items-center font-sans md:w-full bg-base-100 cursor-pointer text-blue-planning-300" phx-click="go_to_original_album" phx-value-album={@photo.album_id} phx-target={@myself}>
             <.icon name="standard_album" class="w-4 h-4 stroke-2 fill-current text-blue-planning-300 mx-2 group-hover:!text-blue-planning-300"/>
             <span><%= album_name(assigns)%></span>
-        </div> 
+        </div>
     <% end %>
 </div>

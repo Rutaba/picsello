@@ -4,6 +4,8 @@ defmodule PicselloWeb.GalleryLive.Shared do
   use Phoenix.Component
   import Phoenix.LiveView
   import PicselloWeb.LiveHelpers
+  import Ecto.Query
+  import PicselloWeb.EmailAutomationLive.Shared, only: [sort_emails: 2]
 
   alias Picsello.{
     Job,
@@ -16,14 +18,24 @@ defmodule PicselloWeb.GalleryLive.Shared do
     Albums,
     Notifiers.ClientNotifier,
     GlobalSettings,
-    Utils
+    Utils,
+    EmailAutomations,
+    EmailAutomation.EmailSchedule,
+    EmailAutomationSchedules,
+    Galleries
   }
 
   alias Picsello.GlobalSettings.Gallery, as: GSGallery
   alias Cart.{Order, Digital}
-  alias Galleries.{GalleryProduct, Photo}
-  alias Picsello.Cart.Order
-  alias Galleries.{GalleryProduct, Photo, GalleryClient}
+
+  alias Galleries.{
+    GalleryProduct,
+    Photo,
+    GalleryClient,
+    PhotoProcessing.ProcessingManager,
+    Watermark
+  }
+
   alias PicselloWeb.Router.Helpers, as: Routes
 
   @card_blank "/images/card_gray.png"
@@ -36,16 +48,30 @@ defmodule PicselloWeb.GalleryLive.Shared do
     case prepare_gallery(gallery) do
       {:ok, _} ->
         gallery = gallery |> Galleries.set_gallery_hash() |> Repo.preload([:albums, job: :client])
-        preset_state = preset_state(type)
+        state = automation_state(type)
+        pipeline = EmailAutomations.get_pipeline_by_state(state)
+        email_by_state = get_gallery_email_by_pipeline(gallery.id, pipeline)
+
+        last_completed_email =
+          EmailAutomationSchedules.get_last_completed_email(
+            :gallery,
+            gallery.id,
+            nil,
+            pipeline.id,
+            state,
+            PicselloWeb.EmailAutomationLive.Shared
+          )
+          |> Repo.preload(email_automation_pipeline: [:email_automation_category])
+
+        %{toggle: manual_toggle, email: email} =
+          if is_manual_toggle?(email_by_state) and is_nil(last_completed_email),
+            do: %{toggle: true, email: email_by_state},
+            else: %{toggle: false, email: last_completed_email}
 
         %{body_template: body_html, subject_template: subject} =
-          with [preset | _] <- Picsello.EmailPresets.for(gallery, preset_state) do
-            Picsello.EmailPresets.resolve_variables(
-              preset,
-              schemas(gallery),
-              PicselloWeb.Helpers
-            )
-          end
+          get_email_body_subject(email, gallery, state)
+
+        body_html = Utils.normalize_body_template(body_html)
 
         socket
         |> assign(:job, gallery.job)
@@ -59,7 +85,9 @@ defmodule PicselloWeb.GalleryLive.Shared do
           enable_size: true,
           composed_event: composed_event(type),
           client: Job.client(gallery.job),
-          current_user: current_user
+          current_user: current_user,
+          manual_toggle: manual_toggle,
+          email_schedule: email_by_state
         })
         |> noreply()
 
@@ -83,12 +111,49 @@ defmodule PicselloWeb.GalleryLive.Shared do
     |> noreply()
   end
 
+  defp get_email_body_subject(nil, gallery, state) do
+    case Picsello.EmailPresets.for(gallery, state) do
+      [preset | _] ->
+        Picsello.EmailPresets.resolve_variables(
+          preset,
+          schemas(gallery),
+          PicselloWeb.Helpers
+        )
+
+      _ ->
+        %{body_template: "", subject_template: ""}
+    end
+  end
+
+  defp get_email_body_subject(email_by_state, gallery, _state) do
+    EmailAutomations.resolve_variables(
+      email_by_state,
+      schemas(gallery),
+      PicselloWeb.Helpers
+    )
+  end
+
+  defp get_gallery_email_by_pipeline(_gallery_id, nil), do: nil
+
+  defp get_gallery_email_by_pipeline(gallery_id, pipeline) do
+    EmailAutomationSchedules.query_get_email_schedule(:gallery, gallery_id, nil, pipeline.id)
+    |> where([es], is_nil(es.stopped_at))
+    |> Repo.all()
+    |> Repo.preload(email_automation_pipeline: [:email_automation_category])
+    |> sort_emails(pipeline.state)
+    |> List.first()
+  end
+
+  defp is_manual_toggle?(nil), do: false
+  defp is_manual_toggle?(%EmailSchedule{reminded_at: nil}), do: true
+  defp is_manual_toggle?(_email), do: false
+
   defp schemas(%{type: :standard} = gallery), do: {gallery}
   defp schemas(%{albums: [album]} = gallery), do: {gallery, album}
 
-  defp preset_state(:standard), do: :gallery_send_link
-  defp preset_state(:proofing), do: :proofs_send_link
-  defp preset_state(:finals), do: :album_send_link
+  defp automation_state(:standard), do: :manual_gallery_send_link
+  defp automation_state(:proofing), do: :manual_send_proofing_gallery
+  defp automation_state(:finals), do: :manual_send_proofing_gallery_finals
 
   defp modal_title(:standard), do: "Share gallery"
   defp modal_title(:proofing), do: "Share Proofing Album"
@@ -1110,6 +1175,18 @@ defmodule PicselloWeb.GalleryLive.Shared do
     end
   end
 
+  def truncate_name(name, max_length) do
+    name_length = String.length(name)
+
+    if name_length > max_length do
+      String.slice(name, 0..max_length) <>
+        "..." <>
+        String.slice(name, (name_length - 10)..name_length)
+    else
+      name
+    end
+  end
+
   def toggle_preview(assigns) do
     assigns = Enum.into(assigns, %{disabled: nil, product_id: nil})
 
@@ -1191,5 +1268,14 @@ defmodule PicselloWeb.GalleryLive.Shared do
       nil -> false
       _ -> true
     end
+  end
+
+  def start_photo_processing(%{album: %{is_proofing: true}} = photo, %{watermark: nil} = gallery) do
+    %{job: %{client: %{organization: %{name: name}}}} = Galleries.populate_organization(gallery)
+    ProcessingManager.start(photo, Watermark.build(name, gallery))
+  end
+
+  def start_photo_processing(photo, %{watermark: watermark}) do
+    ProcessingManager.start(photo, watermark)
   end
 end

@@ -1,0 +1,65 @@
+<div class="pt-6 px-6 py-2 center-container">
+  <div class="flex text-4xl items-center">
+    <.back_button to={Routes.job_path(@socket, @live_action, @job_id)} class="lg:hidden"/>
+    <.crumbs class="text-sm text-base-250">
+      <:crumb to={Routes.job_path(@socket, @live_action)}>
+        <%= action_name(@live_action, :plural) %>
+      </:crumb>
+      <:crumb to={Routes.job_path(@socket, @live_action, @job_id)}><%= Job.name @job %></:crumb>
+      <:crumb> Automations (Beta) </:crumb>
+    </.crumbs>
+  </div>
+
+  <hr class="mt-2 border-white" />
+
+  <div class="flex justify-between lg:mt-2 md:justify-start">
+    <div class="flex">
+      <div>
+        <.back_button to={Routes.job_path(@socket, :leads, @job_id)} class="hidden lg:flex mt-2"/>
+      </div>
+      <div>
+        <div class="flex items-center flex-wrap">
+          <h1 class="text-4xl font-bold">Automated Emails for: <%= Job.name @job %></h1>
+          <div class="bg-blue-planning-300 pt-0.5 pb-1 px-2 text-blue-planning-100 mt-1 sm:mt-0 sm:ml-2 uppercase font-bold text-xs rounded-md tracking-wider">Beta</div>
+        </div>
+        <div class="max-w-4xl mt-2 text-base-250">
+          <p>Email automation sequences are scheduled to send for Leads, Jobs and Galleries. View status, preview email content and, as needed, choose to stop the emails for this specific job. To make global changes <.live_link class="link" to={Routes.email_automations_index_path(@socket, :index)}>CLICK HERE</.live_link></p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+<div class="p-6 center-container">
+  <%= if show_intro?(@current_user, "intro_automations") === "true" do %>
+    <.empty_state_base wrapper_class="border rounded-lg p-4 mb-8" tour_embed="https://demo.arcade.software/tVoaPOy6CR6R9ed0LOt2?embed" headline="Meet Automations" eyebrow_text="" body="Here are the controls to communications that will make managing your clients and running your business - pre and post shoot so much easier! Adjust timing, start, stop, edit and version emails for the photography types you offer. That is right - email automation sequences can be customized for your specific business workflow and client needs!" third_party_padding="calc(67.79661016949152% + 41px)" close_event="intro-close-automations">
+    </.empty_state_base>
+  <% end %>
+</div>
+
+<%= Enum.map(@email_schedules, fn email_schedule -> %>
+  <div testid="main-area" class="px-6 pt-6 lg:px-40 2xl:px-64 center-container flex flex-col sm:flex-row">
+      <div class={"mb-3 sm:mb-0 pt-1 sm:pl-0.5 flex sm:justify-center #{email_schedule.category_name == "Leads" && "sm:relative sm:before:absolute sm:before:top-7 sm:before:border sm:before:left-1/2 sm:before:h-full sm:before:border-base-200 sm:before:z-[-1]"}"}>
+        <span class="flex flex-row w-8 h-8 rounded-full bg-base-200 items-center justify-center">
+          <.icon name="play-icon" class="w-5 h-5 text-blue-planning-300"/>
+        </span>
+        <span class="sm:hidden text-2xl font-bold ml-3"> <%= email_schedule.category_name %> </span>
+      </div>
+      <div class="w-full sm:pb-6 pl-3 flex flex-col">
+        <div class="text-2xl font-bold mb-3 hidden sm:block"> <%= email_schedule.category_name |> String.replace(":", ": ", global: false) %> </div>
+        <%= Enum.map(email_schedule.subcategories, fn subcategory -> %>
+          <div class="mb-3 flex text-base-250 uppercase font-bold tracking-[.3em] mr-4 md:mr-8 pr-3 cursor-pointer" phx-click="toggle-section" phx-value-section_id={subcategory.subcategory_name}> <%= subcategory.subcategory_name |> String.replace_suffix(":", "") %> 
+            <div class="ml-auto">
+              <%= if !Enum.member?(@collapsed_sections, subcategory.subcategory_name) do %>
+                <.icon name="down" class="w-5 h-5 stroke-2 text-blue-planning-300" />
+              <% else %>
+                <.icon name="up" class="w-5 h-5 stroke-2 text-blue-planning-300" />
+              <% end %>
+            </div>
+          </div>
+          <%= Enum.map(subcategory.pipelines, fn pipeline -> %>
+            <.pipeline_section id="pipepline-#{pipeline.id}" collapsed_sections={@collapsed_sections} pipeline={pipeline} category={email_schedule.category_id} job_id={email_schedule.job_id} category_type={email_schedule.category_type} gallery_id={email_schedule.gallery_id} type={@type} subcategory={subcategory.subcategory_name} subcategory_slug={subcategory.subcategory_slug} current_user={@current_user}/>
+          <% end) %>
+        <% end) %>
+      </div>
+  </div>
+<% end) %>

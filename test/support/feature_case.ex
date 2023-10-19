@@ -127,7 +127,7 @@ defmodule Picsello.FeatureCase do
       rescue
         _ ->
           session
-          |> sleep(1000)
+          |> sleep(1500)
           |> scroll_to_bottom()
           |> find(css("button:not(:disabled)[type='submit']", opts), & &1)
       end

@@ -71,6 +71,13 @@ config :picsello, :whcc, adapter: Picsello.MockWHCCClient
 
 config :picsello, Oban, testing: :manual
 
+config :picsello, :packages,
+  calculator: [
+    sheet_id: "1o-jjICzCgevEyf4Kw5keOyTEu8IK5EgfOXfeV_lSMVI",
+    prices: "Sheet1!A1:H301",
+    cost_of_living: "Cost of Living Adjustments!A1:B51"
+  ]
+
 config :picsello,
        :feature_flags,
        ~w[sync_whcc_design_details show_pricing_tab automated_proposal_emails balance_due_emails]a
@@ -80,7 +87,7 @@ config :tesla, adapter: Tesla.Mock
 config :picsello, :photo_output_subscription, {Broadway.DummyProducer, []}
 config :picsello, :photo_storage_service, Picsello.PhotoStorageMock
 config :picsello, show_arcade_tours: false
-
+config :picsello, :email_automation_notifier, Picsello.EmailAutomationNotifierMock
 config :sentry, environment_name: :test, included_environments: [:prod]
 
 config :picsello, :zapier,
