@@ -8234,7 +8234,27 @@ defmodule Mix.Tasks.ImportEmailPresets do
     email_presets =
       get_all_default_email_presets()
       |> Enum.map(fn map ->
-        Map.put(map, :organization_id, organization_id)
+        map
+        |> Map.from_struct()
+        |> Map.drop([
+          :id,
+          :immediately,
+          :is_global,
+          :count,
+          :calendar,
+          :sign,
+          :short_codes,
+          :template_id,
+          :email_automation_pipeline,
+          :organization,
+          :__meta__
+        ])
+        |> Map.replace(:state, Map.get(map, :state) |> Atom.to_string())
+        |> Map.replace(:status, Map.get(map, :status) |> Atom.to_string())
+        |> Map.replace(:type, Map.get(map, :type) |> Atom.to_string())
+        |> Map.replace(:inserted_at, DateTime.utc_now())
+        |> Map.replace(:updated_at, DateTime.utc_now())
+        |> Map.put(:organization_id, organization_id)
       end)
 
     Repo.insert_all("email_presets", email_presets)
