@@ -8,7 +8,7 @@ defmodule PicselloWeb.OnboardingLive.Index do
   require Logger
 
   alias Ecto.Multi
-  alias Picsello.{Repo, Onboardings, Onboardings.Onboarding, Subscriptions, UserCurrency}
+  alias Picsello.{Repo, Onboardings, Subscriptions, UserCurrency}
   alias Picsello.GlobalSettings.Gallery, as: GSGallery
 
   @impl true
@@ -158,6 +158,17 @@ defmodule PicselloWeb.OnboardingLive.Index do
     <hr class="mt-6 border-base-200" />
 
     <%= for onboarding <- inputs_for(@f, :onboarding) do %>
+      <.form_field
+        label="What are you most intrested in using Picsello for?"
+        error={:interested_in}
+        prefix="Select one"
+        f={onboarding}
+      >
+        <%= select(onboarding, :interested_in, [{"select one", nil}] ++ most_interested_select(),
+          class: "select #{@input_class}"
+        ) %>
+      </.form_field>
+      <hr class="mt-6 border-base-200" />
       <div class="grid sm:grid-cols-2 gap-4">
         <.form_field
           label="Are you a full-time or part-time photographer?"
@@ -185,33 +196,25 @@ defmodule PicselloWeb.OnboardingLive.Index do
       </div>
 
       <%= hidden_input(onboarding, :welcome_count, value: 0) %>
+      <% info = country_info(onboarding.params) %>
 
-      <.form_field label="Where’s your business based?" error={:state} f={onboarding}>
-        <%= select(onboarding, :state, [{"select one", nil}] ++ @states,
-          class: "select #{@input_class}"
-        ) %>
-      </.form_field>
-
-      <div class="grid sm:grid-cols-2 gap-4">
-        <.form_field label="Share your Instagram handle" class="py-1.5">
-          <em class="pb-3 text-base-250 text-xs">(optional)</em>
-          <%= input(onboarding, :social_handle,
-            phx_debounce: 500,
-            min: 0,
-            placeholder: "Let’s meet on the Gram",
-            class: @input_class
-          ) %>
-        </.form_field>
-
-        <.form_field label="How did you first hear about us?" class="py-1.5">
-          <em class="pb-3 text-base-250 text-xs">(optional)</em>
-          <%= select(
-            onboarding,
-            :online_source,
-            [{"select one", nil} | Onboarding.online_source_options()],
+      <div class={classes("grid gap-4", %{"sm:grid-cols-2" => Map.has_key?(info, :state_label)})}>
+        <.form_field label={info.country_label} error={:country} f={onboarding}>
+          <%= select(onboarding, :country, [{"United States", :US}] ++ countries(),
             class: "select #{@input_class}"
           ) %>
         </.form_field>
+
+        <%= if Map.has_key?(info, :state_label) do %>
+          <.form_field label={info.state_label} error={:state} f={onboarding}>
+            <%= select(
+              onboarding,
+              field_for(onboarding.params),
+              [{"select one", nil}] ++ states_or_province(onboarding.params),
+              class: "select #{@input_class}"
+            ) %>
+          </.form_field>
+        <% end %>
       </div>
     <% end %>
     """
@@ -288,6 +291,21 @@ defmodule PicselloWeb.OnboardingLive.Index do
     """
   end
 
+  defp most_interested_select() do
+    [
+      {"Booking Events", :booking_events},
+      {"All-in-one platform", :all_in_one_platform},
+      {"Business mastermind, education and community",
+       :business_mastermind_education_and_community},
+      {"Smart Profit Calculator™ and help with pricing",
+       :smart_profit_calculator_and_help_with_pricing},
+      {"Mobile-first design", :mobile_first_design},
+      {"Unlimited client photo galleries with self-serve digital image and print product orders",
+       :unlimited},
+      {"Other", :other}
+    ]
+  end
+
   defp assign_step(%{assigns: %{current_user: %{onboarding: onboarding}}} = socket) do
     if is_nil(onboarding.state) && is_nil(onboarding.photographer_years) &&
          is_nil(onboarding.schedule),
@@ -304,7 +322,6 @@ defmodule PicselloWeb.OnboardingLive.Index do
       subtitle: "",
       page_title: "Onboarding Step 2"
     )
-    |> assign_new(:states, &states/0)
   end
 
   defp assign_step(socket, 3) do
@@ -512,6 +529,76 @@ defmodule PicselloWeb.OnboardingLive.Index do
         socket |> assign(changeset: reason)
     end)
     |> noreply()
+  end
+
+  defp country_info(params) do
+    case params["country"] do
+      "CA" ->
+        %{
+          country_label: "What’s your country?",
+          state_label: "What’s your province?"
+        }
+
+      "US" ->
+        %{
+          country_label: "What’s your country?",
+          state_label: "What’s your state?"
+        }
+
+      nil ->
+        %{
+          country_label: "What’s your country?",
+          state_label: "What’s your state?"
+        }
+
+      _ ->
+        %{
+          country_label: "What’s your country?"
+        }
+    end
+  end
+
+  defp countries() do
+    Picsello.Country.all() |> Enum.reject(&(&1.code == "US")) |> Enum.map(&{&1.name, &1.code})
+  end
+
+  defp states_or_province(params) do
+    case params["country"] do
+      "CA" ->
+        canadian_provinces()
+
+      _ ->
+        states()
+    end
+  end
+
+  defp field_for(params) do
+    case params["country"] do
+      "CA" ->
+        :province
+
+      _ ->
+        :state
+    end
+  end
+
+  defp canadian_provinces() do
+    [
+      {"Alberta", :alberta},
+      {"Atlantic Canada", :atlantic_canada},
+      {"British Columbia", :british_columbia},
+      {"Manitoba", :manitoba},
+      {"New Brunswick", :new_brunswick},
+      {"Newfoundland and Labrador", :newfoundland_and_labrador},
+      {"Northwest Territories", :northwest_territories},
+      {"Nova Scotia", :nova_scotia},
+      {"Nunavut", :nunavut},
+      {"Ontario", :ontario},
+      {"Prince Edward Island", :prince_edward_island},
+      {"Quebec", :quebec},
+      {"Saskatchewan", :saskatchewan},
+      {"Yukon", :yukon}
+    ]
   end
 
   defp update_job_params(params) do

@@ -21,16 +21,6 @@ defmodule Picsello.Onboardings do
 
     use Ecto.Schema
 
-    @online_source_options [
-      :"Facebook Group",
-      :"Facebook Ad",
-      :Instagram,
-      :"Search Engine (Google, Bing, etc)",
-      :YouTube,
-      :"Quora/Reddit/Pinterest",
-      :Referral
-    ]
-
     defmodule IntroState do
       @moduledoc "Container for user specific introjs state. Embedded in onboarding embed."
       use Ecto.Schema
@@ -68,8 +58,9 @@ defmodule Picsello.Onboardings do
       field(:schedule, Ecto.Enum, values: [:full_time, :part_time])
       field(:completed_at, :utc_datetime)
       field(:state, :string)
-      field(:social_handle, :string)
-      field(:online_source, Ecto.Enum, values: @online_source_options)
+      field(:country, :string)
+      field(:province, :string)
+      field(:interested_in, :string)
       field(:welcome_count, :integer)
       field(:promotion_code, :string, default: nil)
       embeds_many(:intro_states, IntroState, on_replace: :delete)
@@ -81,8 +72,9 @@ defmodule Picsello.Onboardings do
               schedule: atom(),
               completed_at: DateTime.t(),
               state: String.t(),
-              social_handle: String.t(),
-              online_source: atom(),
+              country: String.t(),
+              province: String.t(),
+              interested_in: String.t(),
               welcome_count: integer(),
               promotion_code: String.t(),
               intro_states: [IntroState.t()]
@@ -97,12 +89,14 @@ defmodule Picsello.Onboardings do
         :photographer_years,
         :switching_from_softwares,
         :state,
-        :social_handle,
-        :online_source,
+        :country,
+        :province,
+        :interested_in,
         :welcome_count,
         :promotion_code
       ])
-      |> validate_required([:state, :photographer_years, :schedule])
+      |> validate_required([:country, :interested_in, :photographer_years, :schedule])
+      |> conditional_required_fields(attrs)
       |> validate_change(:promotion_code, &valid_promotion_codes/2)
     end
 
@@ -129,13 +123,24 @@ defmodule Picsello.Onboardings do
 
     def software_options(), do: @software_options
 
-    def online_source_options(), do: @online_source_options
-
     defp valid_promotion_codes(field, value) do
       if is_nil(Subscriptions.maybe_get_promotion_code?(value)) do
         [{field, "(code doesn't exist)"}]
       else
         []
+      end
+    end
+
+    defp conditional_required_fields(changeset, attrs) do
+      case attrs["country"] do
+        "US" ->
+          changeset |> validate_required([:state])
+
+        "CA" ->
+          changeset |> validate_required([:province])
+
+        _ ->
+          changeset
       end
     end
   end
