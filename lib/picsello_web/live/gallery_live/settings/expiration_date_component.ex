@@ -35,7 +35,7 @@ defmodule PicselloWeb.GalleryLive.Settings.ExpirationDateComponent do
         socket
       ) do
     socket
-    |> assign(day: day |> String.to_integer())
+    |> assign(day: day |> to_integer())
     |> react_form()
   end
 
@@ -46,7 +46,7 @@ defmodule PicselloWeb.GalleryLive.Settings.ExpirationDateComponent do
         socket
       ) do
     socket
-    |> assign(month: month |> String.to_integer())
+    |> assign(month: month |> to_integer())
     |> react_form()
   end
 
@@ -57,7 +57,7 @@ defmodule PicselloWeb.GalleryLive.Settings.ExpirationDateComponent do
         socket
       ) do
     socket
-    |> assign(year: year |> String.to_integer())
+    |> assign(year: year |> to_integer())
     |> react_form()
   end
 

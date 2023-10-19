@@ -79,6 +79,7 @@ defmodule Picsello.GalleryClientFavoritesTest do
       |> wait_for_enabled_submit_button()
       |> click(button("Create new album"))
       |> assert_has(css(".item", count: 1))
+      |> find(css("#album_name", text: "New Test Album"))
     end
 
     feature "Click on album name under photos will redirect to it's original album", %{

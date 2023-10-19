@@ -75,7 +75,7 @@ html {
 }
 
 .modal-container {
-  @apply overflow-hidden rounded-t-lg sm:rounded-b-lg self-end sm:self-auto;
+  @apply overflow-hidden rounded-lg self-center;
 }
 
 .modal {

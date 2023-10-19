@@ -20,6 +20,7 @@ defmodule Picsello.EmailPresets.JobResolver do
     do:
       Picsello.Repo.preload(job, [
         :booking_proposals,
+        :booking_event,
         :package,
         :shoots,
         client: [organization: :user]
@@ -53,6 +54,13 @@ defmodule Picsello.EmailPresets.JobResolver do
     end
   end
 
+  defp booking_event_name(job) do
+    booking_event = Map.get(job, :booking_event, nil)
+    if booking_event, do: booking_event.name, else: Picsello.Job.name(job)
+  end
+
+  defp booking_event_id(job), do: Map.get(job, :booking_event_id, nil)
+
   defp strftime(%__MODULE__{helpers: helpers} = resolver, date, format) do
     resolver |> photographer() |> Map.get(:time_zone) |> helpers.strftime(date, format)
   end
@@ -67,6 +75,7 @@ defmodule Picsello.EmailPresets.JobResolver do
     do: %{
       "brand_sentence" => &noop/1,
       "client_first_name" => &(&1 |> client() |> Map.get(:name) |> String.split() |> hd),
+      "client_full_name" => &(&1 |> client() |> Map.get(:name)),
       "delivery_expectations_sentence" => &noop/1,
       "delivery_time" =>
         &with(
@@ -94,10 +103,22 @@ defmodule Picsello.EmailPresets.JobResolver do
       "invoice_link" =>
         &with(
           %Picsello.BookingProposal{id: proposal_id} <- current_proposal(&1),
-          do: Picsello.BookingProposal.url(proposal_id)
+          do: """
+            <a target="_blank" href="#{Picsello.BookingProposal.url(proposal_id)}">
+              Invoice Link
+            </a>
+          """
         ),
       "job_name" => &Picsello.Job.name(&1.job),
+      "booking_event_name" => &booking_event_name(&1.job),
       "mini_session_link" => &noop/1,
+      "booking_event_client_link" => fn resolver ->
+        """
+          <a target="_blank" href="#{helpers(resolver).client_booking_event_url(organization(resolver).slug, booking_event_id(resolver.job))}">
+            Client URL
+          </a>
+        """
+      end,
       "payment_amount" =>
         &case &1.payment_schedule do
           %Picsello.PaymentSchedule{price: price} -> price
@@ -110,12 +131,20 @@ defmodule Picsello.EmailPresets.JobResolver do
         end,
       "photography_company_s_name" => &organization(&1).name,
       "pricing_guide_link" => fn resolver ->
-        helpers(resolver).profile_pricing_job_type_url(
-          organization(resolver).slug,
-          resolver.job.type
-        )
+        """
+          <a target="_blank" href="#{helpers(resolver).profile_pricing_job_type_url(organization(resolver).slug, resolver.job.type)}">
+            Guide Link
+          </a>
+        """
       end,
-      "remaining_amount" => &Picsello.PaymentSchedules.owed_price(&1.job),
+      "remaining_amount" =>
+        &case &1.job do
+          %Picsello.Job{package_id: nil} ->
+            nil
+
+          job ->
+            Picsello.PaymentSchedules.owed_price(job)
+        end,
       "review_link" => &noop/1,
       "session_date" =>
         &with(
@@ -142,6 +171,14 @@ defmodule Picsello.EmailPresets.JobResolver do
           """
         ),
       "wardrobe_guide_link" => &noop/1,
-      "wedding_questionnaire_2_link" => &noop/1
+      "wedding_questionnaire_2_link" => &noop/1,
+      "retainer_amount" => &noop/1,
+      "faq_page_link" => &noop/1,
+      "scheduling_page_link" => &noop/1,
+      "photographer_first_name" =>
+        &case photographer(&1) do
+          %Picsello.Accounts.User{name: name} -> name |> String.split() |> hd
+          _ -> nil
+        end
     }
 end

@@ -2,6 +2,7 @@ defmodule PicselloWeb.BookingProposalLive.InvoiceComponent do
   @moduledoc false
   use PicselloWeb, :live_component
   alias Picsello.{PaymentSchedules, BookingProposal}
+  import Picsello.EmailAutomationSchedules, only: [insert_job_emails: 5]
   import PicselloWeb.LiveModal, only: [close_x: 1, footer: 1]
 
   import PicselloWeb.BookingProposalLive.Shared,
@@ -85,7 +86,13 @@ defmodule PicselloWeb.BookingProposalLive.InvoiceComponent do
     handle_checkout(socket, job)
   end
 
-  def handle_event("pay_offline", %{}, %{assigns: %{job: job, proposal: proposal}} = socket) do
+  def handle_event(
+        "pay_offline",
+        %{},
+        %{assigns: %{job: job, proposal: proposal, organization: organization}} = socket
+      ) do
+    insert_job_emails(job.type, organization.id, job.id, :job, [])
+
     handle_offline_checkout(socket, job, proposal)
   end
 

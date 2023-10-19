@@ -11,7 +11,10 @@ defmodule PicselloWeb.LeadLive.Show do
     Notifiers.ClientNotifier,
     Questionnaire,
     Contracts,
-    Messages
+    Messages,
+    EmailAutomations,
+    EmailAutomationSchedules,
+    Utils
   }
 
   alias PicselloWeb.JobLive
@@ -21,6 +24,9 @@ defmodule PicselloWeb.LeadLive.Show do
 
   import PicselloWeb.JobLive.Shared,
     only: [
+      is_manual_toggle?: 1,
+      get_job_email_by_pipeline: 2,
+      get_email_body_subject: 5,
       assign_job: 2,
       assign_changeset: 2,
       assign_proposal: 1,
@@ -151,19 +157,32 @@ defmodule PicselloWeb.LeadLive.Show do
         %{},
         %{assigns: %{job: job, current_user: current_user}} = socket
       ) do
-    %{body_template: body_html, subject_template: subject} =
-      case Picsello.EmailPresets.for(job, :booking_proposal) do
-        [preset | _] ->
-          Picsello.EmailPresets.resolve_variables(
-            preset,
-            {job},
-            PicselloWeb.Helpers
-          )
+    pipeline = EmailAutomations.get_pipeline_by_state(:manual_booking_proposal_sent)
+    email_by_state = get_job_email_by_pipeline(job.id, pipeline)
 
-        _ ->
-          Logger.warning("No booking proposal email preset for #{job.type}")
-          %{body_template: "", subject_template: ""}
-      end
+    last_completed_email =
+      EmailAutomationSchedules.get_last_completed_email(
+        :lead,
+        nil,
+        job.id,
+        pipeline.id,
+        :manual_booking_proposal_sent,
+        PicselloWeb.EmailAutomationLive.Shared
+      )
+
+    manual_toggle =
+      if is_manual_toggle?(email_by_state) and is_nil(last_completed_email), do: true, else: false
+
+    %{body_template: body_html, subject_template: subject} =
+      get_email_body_subject(
+        email_by_state,
+        job,
+        :manual_booking_proposal_sent,
+        pipeline.id,
+        :lead
+      )
+
+    body_html = Utils.normalize_body_template(body_html)
 
     socket
     |> assign(:job, job)
@@ -175,7 +194,9 @@ defmodule PicselloWeb.LeadLive.Show do
       presets: [],
       body_html: body_html,
       subject: subject,
-      client: Job.client(job)
+      client: Job.client(job),
+      manual_toggle: manual_toggle,
+      email_schedule: email_by_state
     })
     |> noreply()
   end

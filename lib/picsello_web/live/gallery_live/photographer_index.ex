@@ -3,6 +3,7 @@ defmodule PicselloWeb.GalleryLive.PhotographerIndex do
   use PicselloWeb, live_view: [layout: "live_photographer"]
 
   import PicselloWeb.LiveHelpers
+
   import PicselloWeb.GalleryLive.Shared
   import PicselloWeb.Shared.StickyUpload, only: [sticky_upload: 1]
   import PicselloWeb.Live.Shared, only: [make_popup: 2, serialize: 1]
@@ -201,6 +202,7 @@ defmodule PicselloWeb.GalleryLive.PhotographerIndex do
         |> Repo.transaction()
 
       ClientNotifier.deliver_email(message, recipients)
+      Galleries.update_gallery(gallery, %{gallery_send_at: DateTime.utc_now()})
     end)
 
     socket

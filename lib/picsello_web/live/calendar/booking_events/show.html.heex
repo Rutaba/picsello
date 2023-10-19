@@ -13,7 +13,7 @@
           changeset={@changeset}
           back_path={Routes.calendar_booking_events_index_path(@socket, :index)}
         />
-        <div class="flex gap-2 ml-auto py-2">
+        <div class="flex gap-2 md:ml-auto py-2">
             <.actions id="header" main_button_class="h-12" archive_option={false} booking_event={@booking_event} button_actions={header_actions(@booking_event)} />
             <.icon_button icon="eye" color="blue-planning-300" class="text-black" disabled={BEShared.incomplete_status?(@booking_event)} href={@booking_event.url} target="_blank" rel="noopener noreferrer">Client preview</.icon_button>
              <button id={"copy-event-link-#{@booking_event.id}"} class={"btn-primary whitespace-nowrap"} data-clipboard-text={@booking_event.url} phx-hook="Clipboard" disabled={BEShared.incomplete_status?(@booking_event)}>
@@ -68,7 +68,7 @@
                         <.booking_slot_tabs_content booking_event_dates={@booking_event.dates} {assigns} />
 
                     <% end %>
-                    <div class={classes("mt-10 p-3 border-2 flex items-center rounded-lg border-base-200", %{"border-red-sales-300" => !@package})}>
+                    <div class={classes("mt-10 p-3 border-2 flex items-center rounded-lg", %{"border-base-200" => @package, "border-red-sales-300" => !@package})}>
                         <div class="flex flex-col w-full">
                             <div class="mr-2 flex items-center gap-3">
                                 <.icon name="package" class="inline-block w-5 h-5 text-blue-planning-300 mt-1" />
@@ -138,7 +138,7 @@
                         <% end %>
                     </div>
 
-                    <div class={classes("mt-10 p-3 flex border-2 items-center border-base-200 rounded-lg", %{"border-red-sales-300" => !@package})}>
+                    <div class={classes("mt-10 p-3 flex border-2 items-center rounded-lg", %{"border-base-200" => @package, "border-red-sales-300" => !@package})}>
                         <div class="flex flex-col w-full">
                             <div class="flex items-center">
                                 <div class="flex flex-col">

@@ -145,9 +145,12 @@ defmodule PicselloWeb.LiveHelpers do
     assigns = assigns |> Enum.into(%{class: "", disabled: false})
 
     ~H"""
-      <button class={"btn-primary whitespace-nowrap #{@class}"} disabled={@disabled}>
+    <button type="button" class={classes("flex items-center px-2 py-1 font-sans hover:opacity-75 #{@class}", %{"opacity-50 hover:opacity-30 hover:cursor-not-allowed" => @disabled})}} disabled={@disabled} {@rest}>
+      <.icon name={@icon} class={"fill-current text-#{@color} #{@icon_class}"} />
+      <%= if @inner_block do %>
         <%= render_slot(@inner_block) %>
-      </button>
+      <% end %>
+    </button>
     """
   end
 
@@ -278,7 +281,7 @@ defmodule PicselloWeb.LiveHelpers do
       )}>
         <input class="hidden" type={@type} name={@name} value={@job_type} checked={@checked} disabled={@disabled} />
 
-        <div class={classes(
+        <div testid={@job_type} class={classes(
           "flex items-center justify-center w-7 h-7 ml-1 mr-3 rounded-full flex-shrink-0",
           %{"#{@bg_dark} text-white" => @checked, "bg-base-200" => !@checked}
         )}>

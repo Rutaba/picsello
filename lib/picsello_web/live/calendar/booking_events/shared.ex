@@ -419,8 +419,8 @@ defmodule PicselloWeb.Calendar.BookingEvents.Shared do
             address: event_date.address,
             session_length: event_date.session_length,
             session_gap: event_date.session_gap,
-            time_blocks: to_map(event_date.time_blocks),
-            slots: to_map(event_date.slots)
+            time_blocks: BookingEvents.to_map(event_date.time_blocks),
+            slots: BookingEvents.to_map(event_date.slots)
           })
         end
       )
@@ -777,36 +777,6 @@ defmodule PicselloWeb.Calendar.BookingEvents.Shared do
       if s.status == :hidden, do: %{s | is_hide: true}, else: s
     end)
   end
-
-  @doc """
-  Converts a list of structs to a list of maps.
-
-  This function takes a list of structs and converts each struct into a map using the `Map.from_struct/1` function.
-  It returns a new list containing the converted maps. This can be useful when you need to work with data in map
-  format, such as when interacting with certain Elixir functions or libraries that expect map data.
-
-  ## Parameters
-
-  - `data` ([struct()]): A list of structs to be converted into maps.
-
-  ## Returns
-
-  A list of maps, where each map corresponds to a struct in the original list.
-
-  ## Example
-
-  ```elixir
-  # Convert a list of structs to a list of maps
-  iex> data = [%MyStruct{id: 1, name: "Alice"}, %MyStruct{id: 2, name: "Bob"}]
-  iex> to_map(data)
-  [%{id: 1, name: "Alice"}, %{id: 2, name: "Bob"}]
-
-  ## Notes
-
-  This function simplifies the process of converting structs to maps for various Elixir operations that work with maps.
-  """
-  @spec to_map(data :: [struct()]) :: [map()]
-  def to_map(data), do: Enum.map(data, &Map.from_struct(&1))
 
   def assign_events(
         %{assigns: %{booking_event: %{id: event_id}, current_user: %{organization: organization}}} =

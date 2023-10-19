@@ -1,0 +1,101 @@
+<div class="pt-6 px-6 py-2 center-container">
+  <div class="flex text-4xl items-center">
+    <.back_button to={Routes.home_path(@socket, :index)} class="lg:hidden"/>
+    <.crumbs class="text-sm text-base-250">
+      <:crumb to={Routes.home_path(@socket, :index)}>Home</:crumb>
+      <:crumb>Automations</:crumb>
+    </.crumbs>
+  </div>
+
+  <hr class="mt-2 border-white" />
+  <div class="flex justify-between lg:mt-2 md:justify-start">
+    <div class="flex">
+      <div>
+        <.back_button to={Routes.home_path(@socket, :index)} class="hidden lg:flex mt-2"/>
+      </div>
+      <div>
+        <div class="flex items-center flex-wrap">
+          <h1 class="text-4xl font-bold">Your Email Automations</h1>
+          <div class="bg-blue-planning-300 pt-0.5 pb-1 px-2 text-blue-planning-100 mt-1 sm:mt-0 sm:ml-2 uppercase font-bold text-xs rounded-md tracking-wider">Beta</div>
+        </div>
+        <div class="max-w-4xl mt-2 text-base-250">
+          <p>Email automation sequences scheduled to send globally for all your Leads, Jobs and Galleries. “Set and forget” these sequences globally here to increase your productivity and make sure communications to your client are sent when you want and need them to be.</p>
+        </div>
+    </div>
+  </div>
+</div>
+
+<hr class="mt-4 sm:mt-10" />
+
+<div class={classes("lg:mt-10", %{"hidden" => is_nil(@is_mobile)})}>
+  <div class="flex flex-col lg:flex-row lg:mt-8">
+    <div class={classes("lg:block", %{"hidden" => !@is_mobile})}>
+      <div class="h-auto">
+        <div id={"replace-"} phx-update="replace" class="w-full p-5 mt-auto sm:mt-0 sm:bottom-auto sm:static sm:items-start sm:w-auto grid grid-cols-1 bg-base-200 rounded-xl lg:w-80 gap-y-1">
+          <%= Enum.map(@job_types, fn type -> %>
+            <div class={classes("font-bold bg-base-250/10 rounded-lg cursor-pointer grid-item", %{"md:text-blue-planning-300" => @selected_job_type.job_type == type.job_type})}
+            phx-click="assign_templates_by_type" phx-value-id={type.id}>
+              <div class="flex items-center lg:h-11 pr-4 lg:pl-2 lg:py-4 pl-3 py-3 overflow-hidden text-sm transition duration-300 ease-in-out rounded-lg text-ellipsis" >
+                <a class="flex w-full">
+                  <div class="flex items-center justify-start">
+                    <div testid={type.job_type} class="justify-start ml-3">
+                      <span class={classes("capitalize hover:text-blue-planning-300", %{"text-blue-planning-300" => @selected_job_type.job_type == type.job_type})} ><%= type.job_type%> </span>
+                    </div>
+                  </div>
+                </a>
+              </div>
+              <%= if @selected_job_type.job_type == type.job_type do %>
+              <span class="arrow show lg:block hidden">
+                <.icon name="arrow-filled" class="text-base-200 float-right w-8 h-8 -mt-10 -mr-10" />
+              </span>
+              <% end %>
+            </div>
+          <% end) %>
+          </div>
+        </div>
+      </div>
+
+      <div testid="main-section-of-page" class={classes("md:px-6 py-2 center-container lg:block", %{"hidden" => @is_mobile})}>
+        <div class="flex items-center lg:mt-6 flex-row">
+          <div>
+            <div class="flex lg:hidden w-10 h-10 mr-4 items-center justify-center rounded-full bg-blue-planning-300" phx-click="back_to_navbar">
+                <.icon name="back" class="stroke-current items-center ml-auto mr-auto w-5 h-5 text-white" />
+            </div>
+          </div>
+          <div>
+            <div class="text-3xl font-bold">
+              <h2><%= @selected_job_type.job_type |> String.capitalize() %> Automations</h2>
+            </div>
+            <div class="text-gray-500"></div>
+          </div>
+        </div>
+        <%= Enum.map(@automation_pipelines, fn automation_pipeline -> %>
+          <div class="flex flex-row mb-3 mt-8 items-center">
+            <div class="text-2xl font-bold"> <%= automation_pipeline.category_name %></div>
+            <span class="ml-2 rounded-md bg-base-200 px-2 text-sm font-bold"><%= automation_pipeline.total_emails_count %> <%= ngettext("email", "emails", automation_pipeline.total_emails_count) %></span>
+          </div>
+          <%= Enum.map(automation_pipeline.subcategories, fn subcategory -> %>
+            <%= if subcategory.subcategory_slug != "order_status_emails" do %>
+              <div class="mb-3 flex text-base-250 uppercase font-bold tracking-[.3em] mr-5 mt-5 pr-3 cursor-pointer" phx-click="toggle-section" phx-value-section_id={subcategory.subcategory_name}> <%= subcategory.subcategory_name %> 
+                <div class="ml-auto">
+                  <%= if !Enum.member?(@collapsed_sections, subcategory.subcategory_name) do %>
+                    <.icon name="down" class="w-5 h-5 stroke-2 text-blue-planning-300" />
+                  <% else %>
+                    <.icon name="up" class="w-5 h-5 stroke-2 text-blue-planning-300" />
+                  <% end %>
+                </div>
+              </div>
+              <%= Enum.map(subcategory.pipelines, fn pipeline -> %>
+                <%= if pipeline.state not in ["gallery_password_changed", "order_confirmation_physical", "order_confirmation_digital"] do %>
+                  <%= if Enum.member?(@collapsed_sections, subcategory.subcategory_name) do %>
+                    <.pipeline_section id="pipepline-#{pipeline.id}" collapsed_sections={@collapsed_sections} pipeline={pipeline} category={automation_pipeline.category_id} subcategory={subcategory.subcategory_id} subcategory_slug={subcategory.subcategory_slug}/>
+                  <% end %>
+                <% end %>
+              <% end) %>
+            <% end %>
+          <% end) %>
+        <% end) %>
+      </div>
+    </div>
+  </div>
+</div>

@@ -15,6 +15,19 @@
     <h1 id="error"><%= @error %></h1>
   <% end %>
 
+  <%= if @disable_settings_buttons? do %>
+    <div class="py-2 px-6 text-orange-400 center-container"><b class="text-orange-600">Note:</b> 
+      <%= case @current_user.nylas_detail do %>
+        <% %{event_status: :in_progress} -> %>
+          We're importing your all external calendar events from previous account to this 
+          new account, so you can't disconnet and save untill it gets finished
+        <% %{event_status: :initial} -> %>  
+          We're copying your all internal calendar events from Picsello to
+          your external account, so you can't disconnet and save untill it gets finished    
+    <% end %>
+    </div>
+  <% end %>
+
   <%= if @has_token do %>
     <div class="border rounded-lg p-4" id="calendar_read">
       <h1 class="text-3xl font-bold mb-6">
@@ -83,13 +96,9 @@
             <button type="button" disabled={@disable_settings_buttons?} id="disconnect_button" class="btn-tertiary btn-warning" phx-click="disconnect_calendar">Disconnect</button>
           </div>
           <div class="grid-col order-first lg:order-last">
-          <.icon name="calendar-4" height="179" class="2xl:pl-16 w-11/12"/>
+            <.icon name="calendar-4" height="179" class="2xl:pl-16 w-11/12"/>
           </div>
         </div>
-        
-        <%= if @disable_settings_buttons? do %>
-          <div class="mt-2"><b>Note:</b> We're importing your all external calendar events from previous account to this <br> new account, so you can't disconnet and save untill it gets finished</div>
-        <% end %>
       </div>
     </div>
   <% else %>
@@ -97,11 +106,11 @@
       <h1 class="text-3xl font-bold mb-6">2-way Calendar Sync</h1>
       <div class="grid lg:grid-cols-2 grid-cols-1 gap-x-20">
         <div class="-">
-        <p class="text-base-250 text-xl">
-          Make double-booking between calendars a thing of the past with 2-way Calendar Sync. Setting this 
-          up enables the sharing of calendar booking events and reconciles your availability across both 
-          your Picsello and your external calendar.
-        </p>
+          <p class="text-base-250 text-xl">
+            Make double-booking between calendars a thing of the past with 2-way Calendar Sync. Setting this 
+            up enables the sharing of calendar booking events and reconciles your availability across both 
+            your Picsello and your external calendar.
+          </p>
           <button type="button" phx-click="toggle_connect_modal" class="btn-primary flex items-center mt-4 md:mr-3" id="button-connect">
             <.icon name="plus" class="inline-block w-5 h-5 mr-2 text-white" />
             <span id="connect">Connect Calendar</span>

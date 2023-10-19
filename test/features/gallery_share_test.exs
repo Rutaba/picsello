@@ -10,7 +10,10 @@ defmodule Picsello.GalleryShareTest do
   setup :authenticated_gallery
 
   setup %{gallery: gallery} do
-    Mox.stub(Picsello.PhotoStorageMock, :path_to_url, & &1)
+    Picsello.PhotoStorageMock
+    |> Mox.stub(:get, fn _ -> {:error, nil} end)
+    |> Mox.stub(:path_to_url, & &1)
+
     photo_ids = insert_photo(%{gallery: gallery, total_photos: 20})
 
     Mox.verify_on_exit!()
@@ -21,7 +24,7 @@ defmodule Picsello.GalleryShareTest do
       Process.whereis(Picsello.Galleries.PhotoProcessing.Waiter)
     )
 
-    insert(:email_preset, type: :gallery, state: :gallery_send_link)
+    insert(:email_preset, type: :gallery, state: :manual_gallery_send_link)
     gallery_digital_pricing = insert(:gallery_digital_pricing, gallery: gallery)
 
     insert(:client, %{

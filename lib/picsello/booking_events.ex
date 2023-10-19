@@ -1,9 +1,17 @@
 defmodule Picsello.BookingEvents do
   @moduledoc "context module for booking events"
-  alias Picsello.{Repo, BookingEvent, Job, Package, BookingEventDate, BookingEventDates}
+  alias Picsello.{
+    Repo,
+    BookingEvent,
+    Job,
+    Package,
+    BookingEventDate,
+    BookingEventDates,
+    EmailAutomationSchedules
+  }
+
   alias Ecto.{Multi, Changeset}
   alias Picsello.Workers.ExpireBooking
-  alias PicselloWeb.Calendar.BookingEvents.Shared, as: BEShared
   import Ecto.Query
 
   defmodule Booking do
@@ -71,8 +79,8 @@ defmodule Picsello.BookingEvents do
             address: event_date.address,
             session_length: event_date.session_length,
             session_gap: event_date.session_gap,
-            time_blocks: BEShared.to_map(event_date.time_blocks),
-            slots: BEShared.to_map(event_date.slots)
+            time_blocks: to_map(event_date.time_blocks),
+            slots: to_map(event_date.slots)
           })
         end
       )
@@ -734,6 +742,16 @@ defmodule Picsello.BookingEvents do
          } <-
            job |> Repo.preload([:payment_schedules, :job_status, client: :organization]),
          %Picsello.JobStatus{is_lead: true} <- job_status,
+         {:ok, _} <-
+           EmailAutomationSchedules.insert_job_emails(
+             job.type,
+             organization.id,
+             job.id,
+             :lead,
+             [
+               :client_contact
+             ]
+           ),
          {:ok, _} <- Picsello.Jobs.archive_job(job) do
       for %{stripe_session_id: "" <> session_id} <- payment_schedules,
           do:
@@ -860,6 +878,36 @@ defmodule Picsello.BookingEvents do
       []
     )
   end
+
+  @doc """
+  Converts a list of structs to a list of maps.
+
+  This function takes a list of structs and converts each struct into a map using the `Map.from_struct/1` function.
+  It returns a new list containing the converted maps. This can be useful when you need to work with data in map
+  format, such as when interacting with certain Elixir functions or libraries that expect map data.
+
+  ## Parameters
+
+  - `data` ([struct()]): A list of structs to be converted into maps.
+
+  ## Returns
+
+  A list of maps, where each map corresponds to a struct in the original list.
+
+  ## Example
+
+  ```elixir
+  # Convert a list of structs to a list of maps
+  iex> data = [%MyStruct{id: 1, name: "Alice"}, %MyStruct{id: 2, name: "Bob"}]
+  iex> to_map(data)
+  [%{id: 1, name: "Alice"}, %{id: 2, name: "Bob"}]
+
+  ## Notes
+
+  This function simplifies the process of converting structs to maps for various Elixir operations that work with maps.
+  """
+  @spec to_map(data :: [struct()]) :: [map()]
+  def to_map(data), do: Enum.map(data, &Map.from_struct(&1))
 
   # Compares two dates to check if date is less than stopped_date. some base-cases are added as well
   # to have a check on some inputs for the function i.e. if date and stopped-date are nil, then return false

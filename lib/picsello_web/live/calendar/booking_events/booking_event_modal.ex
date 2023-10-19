@@ -55,12 +55,12 @@ defmodule PicselloWeb.Live.Calendar.BookingEventModal do
         </div>
       </div>
       <.form :let={f} for={@changeset} phx-change="validate" phx-submit="submit" phx-target={@myself} >
-        <div class="grid grid-cols-11 gap-5 mt-8">
+        <div class="block md:grid md:grid-cols-5 lg:grid-cols-11 gap-5 mt-8">
           <div class="col-span-3">
             <%= labeled_input f, :date, type: :date_input, min: Date.utc_today(), class: "w-full", disabled: @has_booking? %>
           </div>
           <%= inputs_for f, :time_blocks, fn t -> %>
-            <div class="col-span-4 flex items-center pl-4">
+            <div class="col-span-4 flex items-center sm:mt-4 lg:mt-0 lg:pl-4">
               <div class="grow">
                 <%= labeled_input t, :start_time, type: :time_input, label: "Event Start", class: "w-11/12", disabled: @has_booking? %>
               </div>
@@ -97,8 +97,8 @@ defmodule PicselloWeb.Live.Calendar.BookingEventModal do
               <div class="md:col-span-3">
                 <div class="font-bold mb-1">Repeat every:</div>
                 <div class="flex gap-4 items-center w-full">
-                  <%= input f, :count_calendar, placeholder: 0, class: "w-24 bg-white p-3 focus:ring-0 focus:outline-none border-2 focus:border-blue-planning-300 text-lg sm:mt-0 font-normal text-center", phx_hook: "PriceMask"%>
-                  <%= select f, :calendar, ["week", "month", "year"], class: "w-28 select", phx_hook: "PriceMask"%>
+                  <%= input f, :count_calendar, placeholder: 0, class: "w-24 bg-white p-3 focus:ring-0 focus:outline-none border-2 focus:border-blue-planning-300 text-lg sm:mt-0 font-normal text-center"%>
+                  <%= select f, :calendar, ["week", "month", "year"], class: "w-28 select"%>
                 </div>
                 <div class="mt-5 font-bold mb-1">Repeat on:</div>
                 <div class="flex gap-6 font-bold">

@@ -756,9 +756,11 @@ defmodule Picsello.Factory do
       %Picsello.EmailPresets.EmailPreset{
         subject_template: "Subjectively speaking",
         body_template: "this is my body",
+        state: "client_contact",
         name: "use this email preset!",
         type: :job,
-        position: 0
+        position: 0,
+        status: :active
       }
       |> merge_attributes(attrs)
 
@@ -1007,6 +1009,47 @@ defmodule Picsello.Factory do
   def booking_event_date_factory() do
     %Picsello.BookingEventDate{
       session_length: 15
+    }
+  end
+
+  def email_automation_pipeline_factory() do
+    %Picsello.EmailAutomation.EmailAutomationPipeline{
+      state: :manual_booking_proposal_sent,
+      name: "Booking Proposals",
+      position: 0,
+      description: "Test Description"
+    }
+  end
+
+  def email_automation_category_factory() do
+    %Picsello.EmailAutomation.EmailAutomationCategory{
+      type: "lead",
+      name: "Leads",
+      position: 1.0
+    }
+  end
+
+  def email_automation_subcategory_factory() do
+    %Picsello.EmailAutomation.EmailAutomationSubCategory{
+      slug: "inquiry_emails",
+      name: "Inquiry emails",
+      position: 1.0
+    }
+  end
+
+  def email_schedule_factory() do
+    %Picsello.EmailAutomation.EmailSchedule{
+      email_automation_pipeline_id: 1,
+      subject_template: "Test Subject Template",
+      body_template: "Test Body Template",
+      type: :lead
+    }
+  end
+
+  def job_factory() do
+    %Picsello.Job{
+      type: "wedding",
+      client_id: 2
     }
   end
 

@@ -6,6 +6,7 @@ defmodule PicselloWeb.ConfirmationComponent do
   @default_assigns %{
     close_label: "Close",
     close_class: "btn-secondary",
+    modal_name: nil,
     confirm_event: nil,
     close_event: nil,
     confirm_label: "Yes",
@@ -46,7 +47,7 @@ defmodule PicselloWeb.ConfirmationComponent do
         </div>
       <% else %>
         <%= if @subtitle do %>
-          <p class="pt-4 whitespace-pre-wrap text-base-250"><%= @subtitle %></p>
+          <p class={classes("pt-4 whitespace-pre-wrap text-base-250", %{"text-black" => @modal_name == :automation_email_modal})}><%= raw @subtitle %></p>
         <% end %>
       <% end %>
 
@@ -110,6 +111,7 @@ defmodule PicselloWeb.ConfirmationComponent do
   end
 
   @spec open(Phoenix.LiveView.Socket.t(), %{
+          optional(:modal_name) => atom | nil,
           optional(:close_label) => binary,
           optional(:close_class) => binary,
           optional(:confirm_event) => any,

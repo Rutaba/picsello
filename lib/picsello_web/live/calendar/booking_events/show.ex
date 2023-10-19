@@ -5,7 +5,10 @@ defmodule PicselloWeb.Live.Calendar.BookingEvents.Show do
   import PicselloWeb.Live.Shared, only: [update_package_questionnaire: 1]
   import PicselloWeb.Shared.EditNameComponent, only: [edit_name_input: 1]
   import PicselloWeb.GalleryLive.Shared, only: [add_message_and_notify: 3]
-  import PicselloWeb.ClientBookingEventLive.Shared, only: [blurred_thumbnail: 1]
+
+  import PicselloWeb.ClientBookingEventLive.Shared,
+    only: [blurred_thumbnail: 1, formatted_date: 1]
+
   import PicselloWeb.BookingProposalLive.Shared, only: [package_description_length_long?: 1]
 
   alias Picsello.{
@@ -722,7 +725,7 @@ defmodule PicselloWeb.Live.Calendar.BookingEvents.Show do
               <%= Money.to_string(Package.price(@package)) %>
             </div>
             <div class="text-base-250 text-md">
-              <%= if @package.download_count < 1, do: "No digital", else: @package.download_count %> images included <%= if Enum.any?(@booking_event.dates), do: "| 15 min session" %>
+              <%= if @package.download_count < 1, do: "No digital", else: @package.download_count %> images included <%= if Enum.any?(@booking_event.dates), do: "| #{session_info(@booking_event)} min session" %>
             </div>
             <hr class="my-3">
           <% end %>
@@ -737,9 +740,7 @@ defmodule PicselloWeb.Live.Calendar.BookingEvents.Show do
               <%=
                 if Enum.any?(@booking_event.dates),
                 do:
-                  @booking_event.dates
-                  |> List.first()
-                  |> Map.get(:date),
+                  formatted_date(@booking_event),
                 else:
                   "Set event dates"
               %>
@@ -885,6 +886,15 @@ defmodule PicselloWeb.Live.Calendar.BookingEvents.Show do
 
   defp slot_time_formatter(slot),
     do: Time.to_string(slot.slot_start) <> " - " <> Time.to_string(slot.slot_end)
+
+  defp session_info(%{dates: dates}) do
+    session_list =
+      dates
+      |> Enum.map(& &1.session_length)
+      |> Enum.sort()
+
+    "#{List.first(session_list)} - #{List.last(session_list)}"
+  end
 
   defp slice_description(description) do
     if String.length(description) > 100 do

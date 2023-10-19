@@ -1,8 +1,9 @@
 defmodule Picsello.Shoots do
   @moduledoc false
 
-  alias Picsello.{Repo, Shoot, Job}
+  alias Picsello.{Repo, Shoot, Job, NylasCalendar}
   import Ecto.Query
+  require Logger
 
   def get_shoots(user, %{"start" => start_date, "end" => end_date}) do
     from([shoot, job, client, status] in get_by_user_query(user),
@@ -91,6 +92,28 @@ defmodule Picsello.Shoots do
 
   def subscribe_shoot_change(organization_id),
     do: Phoenix.PubSub.subscribe(Picsello.PubSub, topic_shoot_change(organization_id))
+
+  def create_event(shoot) do
+    {params, token} = map_event(shoot, :insert)
+
+    case NylasCalendar.create_event(params, token) do
+      {:ok, %{"id" => id}} ->
+        shoot
+        |> Shoot.update_changeset(%{external_event_id: id})
+        |> Repo.update!()
+
+        Logger.info("Event created for shoot_id: #{shoot.id}")
+
+      error ->
+        Logger.error("Error #{inspect(error)}")
+    end
+  end
+
+  def map_event(%{job: %{client: %{organization: %{user: user}}}} = shoot, action) do
+    nylas_detail = user.nylas_detail
+
+    {Shoot.map_event(shoot, nylas_detail, action), nylas_detail.oauth_token}
+  end
 
   defp topic_shoot_change(organization_id), do: "shoot_change:#{organization_id}"
 end
