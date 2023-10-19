@@ -158,6 +158,8 @@ defmodule Picsello.Workers.ScheduleAutomationEmail do
     before_after_send_time(sign, hours, abs(total_hours))
   end
 
+  defp before_after_send_time(_sign, hours, 0) when hours > 0, do: true
+
   defp before_after_send_time("+", hours, total_hours),
     do: if(hours >= total_hours, do: true, else: false)
 
