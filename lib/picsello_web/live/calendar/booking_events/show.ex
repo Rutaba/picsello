@@ -168,7 +168,6 @@ defmodule PicselloWeb.Live.Calendar.BookingEvents.Show do
   def handle_event("change-booking-slot-tab", %{"tab" => tab}, socket) do
     socket
     |> assign(:booking_slot_tab_active, tab)
-    # |> assign_tab_data(tab)
     |> noreply()
   end
 
@@ -251,7 +250,6 @@ defmodule PicselloWeb.Live.Calendar.BookingEvents.Show do
   def handle_event("change-booking-event-tab", %{"tab" => tab}, socket) do
     socket
     |> assign(:booking_event_tab_active, tab)
-    # |> assign_tab_data(tab)
     |> noreply()
   end
 
@@ -807,39 +805,6 @@ defmodule PicselloWeb.Live.Calendar.BookingEvents.Show do
       assigns: Enum.into(assigns, Map.take(socket.assigns, [:current_user, :booking_event]))
     })
   end
-
-  # def assign_booking_event(
-  #       %{assigns: %{current_user: %{organization: organization}, id: id}} = socket
-  #     ) do
-  #   booking_event =
-  #     organization.id
-  #     |> BookingEvents.get_booking_event!(id)
-  #     |> BookingEvents.preload_booking_event()
-  #     |> BEShared.put_url_booking_event(organization, socket)
-
-  #   calendar_date_event =
-  #     Map.get(booking_event, :dates, [])
-  #     |> case do
-  #       [] -> nil
-  #       event -> hd(event)
-  #     end
-
-  #   socket
-  #   |> assign(:booking_event, booking_event)
-  #   |> assign(:payments_description, payments_description(booking_event))
-  #   |> assign(:package, booking_event.package_template)
-  #   |> assign(:calendar_date_event, calendar_date_event)
-
-  # end
-
-  # TODO: commenting this function and its usage for now. We might need to use it later. Remove if not needed
-  # defp assign_tab_data(%{assigns: %{current_user: _current_user}} = socket, tab) do
-  #   case tab do
-  #     "list" -> socket
-  #     "overview" -> socket
-  #     _ -> socket
-  #   end
-  # end
 
   defp booking_slot_tabs() do
     [

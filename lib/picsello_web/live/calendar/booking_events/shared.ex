@@ -820,10 +820,9 @@ defmodule PicselloWeb.Calendar.BookingEvents.Shared do
       |> put_url_booking_event(organization, socket)
 
     calendar_date_event =
-      Map.get(booking_event, :dates, [])
-      |> case do
-        [] -> nil
-        event -> hd(event)
+      case booking_event do
+        %{dates: []} -> nil
+        %{dates: [date | _]} -> date
       end
 
     socket
