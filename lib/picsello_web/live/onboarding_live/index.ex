@@ -159,7 +159,7 @@ defmodule PicselloWeb.OnboardingLive.Index do
 
     <%= for onboarding <- inputs_for(@f, :onboarding) do %>
       <.form_field
-        label="What are you most intrested in using Picsello for?"
+        label="What are you most interested in using Picsello for?"
         error={:interested_in}
         prefix="Select one"
         f={onboarding}
@@ -196,10 +196,10 @@ defmodule PicselloWeb.OnboardingLive.Index do
       </div>
 
       <%= hidden_input(onboarding, :welcome_count, value: 0) %>
-      <% info = country_info(onboarding.params) %>
 
+      <% info = country_info(input_value(onboarding, :country)) %>
       <div class={classes("grid gap-4", %{"sm:grid-cols-2" => Map.has_key?(info, :state_label)})}>
-        <.form_field label={info.country_label} error={:country} f={onboarding}>
+        <.form_field label="What’s your country?" error={:country} f={onboarding}>
           <%= select(onboarding, :country, [{"United States", :US}] ++ countries(),
             class: "select #{@input_class}"
           ) %>
@@ -531,30 +531,25 @@ defmodule PicselloWeb.OnboardingLive.Index do
     |> noreply()
   end
 
-  defp country_info(params) do
-    case params["country"] do
+  defp country_info(country) do
+    case country do
       "CA" ->
         %{
-          country_label: "What’s your country?",
           state_label: "What’s your province?"
         }
 
       "US" ->
         %{
-          country_label: "What’s your country?",
           state_label: "What’s your state?"
         }
 
       nil ->
         %{
-          country_label: "What’s your country?",
           state_label: "What’s your state?"
         }
 
       _ ->
-        %{
-          country_label: "What’s your country?"
-        }
+        %{}
     end
   end
 
