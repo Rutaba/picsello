@@ -60,7 +60,7 @@ defmodule Picsello.Notifiers.EmailAutomationNotifier.Impl do
               subject: subject,
               body: body
             },
-            %{"to" => order.delivery_info.email},
+            %{"to" => email},
             order.gallery.job
           )
 
