@@ -381,14 +381,7 @@ defmodule PicselloWeb.BookingProposalLive.Shared do
     if PaymentSchedules.free?(job) do
       finish_booking(socket) |> noreply()
     else
-      job
-      |> PaymentSchedules.next_due_payment()
-      |> case do
-        nil -> raise("There is no unpaid payment schedule found against #{job.id}")
-        payment_schedule -> payment_schedule
-      end
-      |> Ecto.Changeset.change(%{is_with_cash: true, type: "cash"})
-      |> Repo.update!()
+      PaymentSchedules.pay_with_cash(job)
 
       # No need to call old emails as we have automation emails for blance due
       # Notifiers.ClientNotifier.deliver_payment_due(proposal)

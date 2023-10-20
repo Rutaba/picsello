@@ -443,6 +443,11 @@ defmodule Picsello.PaymentSchedules do
     end
   end
 
+  def pay_with_cash(job),
+    do:
+      from(ps in PaymentSchedule, where: ps.job_id == ^job.id)
+      |> Repo.update_all(set: [is_with_cash: true, type: "cash"])
+
   defp customer_id(%Client{stripe_customer_id: nil} = client) do
     params = %{name: client.name, email: client.email}
     %{organization: organization} = client |> Repo.preload(:organization)

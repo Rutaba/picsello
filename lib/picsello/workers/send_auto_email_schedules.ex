@@ -182,6 +182,12 @@ defmodule Picsello.Workers.ScheduleAutomationEmail do
 
     case send_email_task do
       {:ok, _result} ->
+        Phoenix.PubSub.broadcast(
+          Picsello.PubSub,
+          "emails_count:#{job.id}",
+          {:update_emails_count, %{job_id: job.id}}
+        )
+
         Logger.info(
           "Email #{schedule.name} sent at #{DateTime.truncate(DateTime.utc_now(), :second)}"
         )
