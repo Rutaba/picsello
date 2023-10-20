@@ -1,8 +1,20 @@
 defmodule PicselloWeb.JobLive.Shared.MarkPaidModal do
   @moduledoc false
   use PicselloWeb, :live_component
-  alias Picsello.{Repo, PaymentSchedule, PaymentSchedules, Job, Currency}
 
+  alias Picsello.{
+    Repo,
+    PaymentSchedule,
+    PaymentSchedules,
+    Job,
+    Currency,
+    EmailPresets,
+    EmailAutomations,
+    EmailAutomationSchedules,
+    Notifiers.EmailAutomationNotifier
+  }
+
+  import PicselloWeb.EmailAutomationLive.Shared, only: [sort_emails: 2]
   import Ecto.Query
   @impl true
   def update(assigns, socket) do
@@ -195,6 +207,7 @@ defmodule PicselloWeb.JobLive.Shared.MarkPaidModal do
         |> assign(:add_payment_show, !add_payment_show)
         |> assign_payments()
         |> assign_job()
+        |> send_offline_payment_email()
 
       {:error, _} ->
         socket
@@ -317,5 +330,63 @@ defmodule PicselloWeb.JobLive.Shared.MarkPaidModal do
         end
       end
     )
+  end
+
+  defp send_offline_payment_email(%{assigns: %{job: job, current_user: current_user}} = socket) do
+    if !PaymentSchedules.all_paid?(job) do
+      pipeline = EmailAutomations.get_pipeline_by_state(:offline_payment)
+      email_schedule = get_email_from_schedule(job.id, pipeline.id, :offline_payment)
+
+      email_preset =
+        EmailPresets.user_email_automation_presets(
+          :job,
+          job.type,
+          pipeline.id,
+          current_user.organization_id
+        )
+        |> List.first()
+
+      send_email_offline_payment(email_schedule, email_preset, job)
+    end
+
+    socket |> noreply()
+  end
+
+  defp send_email_offline_payment(nil, email_preset, job) do
+    EmailAutomationNotifier.Impl.deliver_automation_email_job(
+      email_preset,
+      job,
+      {job},
+      :offline_payment,
+      PicselloWeb.Helpers
+    )
+  end
+
+  defp send_email_offline_payment(email_schedule, _email_preset, job) do
+    EmailAutomationNotifier.Impl.deliver_automation_email_job(
+      email_schedule,
+      job,
+      {job},
+      :offline_payment,
+      PicselloWeb.Helpers
+    )
+
+    EmailAutomationSchedules.update_email_schedule(email_schedule.id, %{
+      reminded_at: DateTime.truncate(DateTime.utc_now(), :second)
+    })
+  end
+
+  defp get_email_from_schedule(job_id, pipeline_id, state) do
+    EmailAutomationSchedules.query_get_email_schedule(
+      :lead,
+      nil,
+      job_id,
+      pipeline_id
+    )
+    |> where([es], is_nil(es.reminded_at))
+    |> where([es], is_nil(es.stopped_at))
+    |> Repo.all()
+    |> sort_emails(state)
+    |> List.first()
   end
 end
