@@ -45,14 +45,9 @@ defmodule Picsello.Workers.ScheduleAutomationEmail do
       |> Map.get(:email_automation_category)
       |> Map.get(:type)
 
-    Logger.info("[email category] #{type}")
-
     if is_job_emails?(job) do
-      Logger.info("Email Subjects #{subjects}")
-
       # Each pipeline emails subjects resolve variables
       subjects_resolve = EmailAutomations.resolve_all_subjects(job, gallery, type, subjects)
-      Logger.info("Email Subjects Resolve [#{subjects_resolve}]")
 
       # Check client reply for any email of current pipeline
       is_reply =
@@ -61,10 +56,6 @@ defmodule Picsello.Workers.ScheduleAutomationEmail do
         else
           false
         end
-
-      Logger.info(
-        "Reply of any email from client for job #{job.id} and pipeline_id #{job_pipeline.pipeline_id}"
-      )
 
       # This condition only run when no reply recieve from any email for that job & pipeline
       if !is_reply do
@@ -122,17 +113,12 @@ defmodule Picsello.Workers.ScheduleAutomationEmail do
   defp send_email(state, pipeline_id, schedule, job, gallery, order) do
     type = schedule.email_automation_pipeline.email_automation_category.type
     type = if order, do: :order, else: type
-    Logger.info("state #{state} and type #{type}")
     state = if is_atom(state), do: state, else: String.to_atom(state)
 
     job_date_time =
       Shared.fetch_date_for_state_maybe_manual(state, schedule, pipeline_id, job, gallery, order)
 
-    Logger.info("Job date time for state #{state} #{job_date_time}")
-
     is_send_time = is_email_send_time(job_date_time, state, schedule.total_hours)
-
-    Logger.info("Time to send email #{is_send_time}")
 
     if is_send_time and is_nil(schedule.reminded_at) and is_nil(schedule.stopped_at) do
       send_email_task(type, state, schedule, job, gallery, order)
@@ -190,6 +176,11 @@ defmodule Picsello.Workers.ScheduleAutomationEmail do
 
     case send_email_task do
       {:ok, _result} ->
+        Logger.info(
+          "Email #{schedule.name} sent at #{DateTime.truncate(DateTime.utc_now(), :second)}"
+        )
+
+      result when result in ["ok", :ok] ->
         Logger.info(
           "Email #{schedule.name} sent at #{DateTime.truncate(DateTime.utc_now(), :second)}"
         )
