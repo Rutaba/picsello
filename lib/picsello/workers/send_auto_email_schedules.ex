@@ -133,7 +133,13 @@ defmodule Picsello.Workers.ScheduleAutomationEmail do
   defp is_email_send_time(nil, _state, _total_hours), do: false
 
   defp is_email_send_time(_submit_time, state, _total_hours)
-       when state in [:shoot_thanks, :post_shoot, :before_shoot, :gallery_expiration_soon],
+       when state in [
+              :shoot_thanks,
+              :post_shoot,
+              :before_shoot,
+              :gallery_expiration_soon,
+              :after_gallery_send_feedback
+            ],
        do: true
 
   defp is_email_send_time(submit_time, _state, total_hours) do

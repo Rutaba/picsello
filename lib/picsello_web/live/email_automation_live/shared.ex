@@ -360,7 +360,7 @@ defmodule PicselloWeb.EmailAutomationLive.Shared do
     else fetch_date_for_state to handle all other states
   """
   def fetch_date_for_state_maybe_manual(state, email, pipeline_id, job, gallery, order) do
-    job = Repo.preload(job, [:booking_event])
+    job = Repo.preload(job, [:booking_event, client: [organization: :user]])
     job_id = get_job_id(job)
     gallery_id = get_gallery_id(gallery, order)
     order = if order, do: Repo.preload(order, [:digitals]), else: nil
@@ -434,14 +434,13 @@ defmodule PicselloWeb.EmailAutomationLive.Shared do
 
     days_to_compare = hours_to_days(email.total_hours)
     %{sign: sign} = EmailAutomations.explode_hours(email.total_hours)
-    today = NaiveDateTime.utc_now() |> Timex.end_of_day()
+    today = DateTime.utc_now() |> Timex.end_of_day()
 
     cond do
       is_nil(gallery.expired_at) ->
         nil
 
-      not is_nil(gallery.expired_at) and
-          is_send_time?(Date.diff(gallery.expired_at, today), abs(days_to_compare), sign) ->
+      is_send_time?(Date.diff(gallery.expired_at, today), abs(days_to_compare), sign) ->
         gallery.expired_at
 
       true ->
@@ -487,7 +486,8 @@ defmodule PicselloWeb.EmailAutomationLive.Shared do
     # send 7 days after gallery send 7 >= 7
 
     days_to_compare = hours_to_days(email.total_hours)
-    today = NaiveDateTime.utc_now() |> Timex.end_of_day()
+    today = DateTime.utc_now() |> Timex.end_of_day()
+
     %{sign: sign} = EmailAutomations.explode_hours(email.total_hours)
 
     cond do
@@ -612,13 +612,16 @@ defmodule PicselloWeb.EmailAutomationLive.Shared do
     # difference is 7 days
     # send 7 days before shoot start 7<= 7 true
 
-    today = NaiveDateTime.utc_now() |> Timex.end_of_day()
+    timezone = job.client.organization.user.time_zone
+
+    today = DateTime.utc_now() |> Timex.end_of_day() |> convert_to_local_timezone(timezone)
     %{sign: sign} = EmailAutomations.explode_hours(email.total_hours)
     days_to_compare = hours_to_days(email.total_hours)
 
     job.shoots
     |> Enum.filter(fn item ->
-      is_send_time?(Date.diff(item.starts_at, today), abs(days_to_compare), sign)
+      starts_at = item.starts_at |> convert_to_local_timezone(timezone)
+      is_send_time?(Date.diff(starts_at, today), abs(days_to_compare), sign)
     end)
     |> (fn filtered_list ->
           if Enum.empty?(filtered_list),
@@ -741,13 +744,16 @@ defmodule PicselloWeb.EmailAutomationLive.Shared do
     # today is ~D[2023-10-27]
     # difference is 7 days
     # send 7 days after shoot 7 >= 7 true
-    today = NaiveDateTime.utc_now() |> Timex.end_of_day()
+    timezone = job.client.organization.user.time_zone
+    today = DateTime.utc_now() |> Timex.end_of_day() |> convert_to_local_timezone(timezone)
+
     %{sign: sign} = EmailAutomations.explode_hours(email.total_hours)
     days_to_compare = hours_to_days(email.total_hours)
 
     job.shoots
     |> Enum.filter(fn item ->
-      is_send_time?(Date.diff(today, item.starts_at), abs(days_to_compare), sign)
+      starts_at = item.starts_at |> convert_to_local_timezone(timezone)
+      is_send_time?(Date.diff(today, starts_at), abs(days_to_compare), sign)
     end)
     |> (fn filtered_list ->
           if Enum.empty?(filtered_list),
@@ -772,13 +778,16 @@ defmodule PicselloWeb.EmailAutomationLive.Shared do
     # difference is 7 days
     # send 7 days after shoot 7 >= 7 true
 
-    today = NaiveDateTime.utc_now() |> Timex.end_of_day()
+    timezone = job.client.organization.user.time_zone
+    today = DateTime.utc_now() |> Timex.end_of_day() |> convert_to_local_timezone(timezone)
+
     %{sign: sign} = EmailAutomations.explode_hours(email.total_hours)
     days_to_compare = hours_to_days(email.total_hours)
 
     filter_shoots_count =
       Enum.count(job.shoots, fn item ->
-        is_send_time?(Date.diff(today, item.starts_at), abs(days_to_compare), sign)
+        starts_at = item.starts_at |> convert_to_local_timezone(timezone)
+        is_send_time?(Date.diff(today, starts_at), abs(days_to_compare), sign)
       end)
 
     shoots_count = Enum.count(job.shoots)
@@ -791,6 +800,8 @@ defmodule PicselloWeb.EmailAutomationLive.Shared do
   end
 
   def fetch_date_for_state(_state, _email, _last_completed_email, _job, _gallery, _order), do: nil
+
+  defp convert_to_local_timezone(datetime, timezone), do: DateTime.shift_zone!(datetime, timezone)
 
   defp get_date_for_schedule(nil, date), do: date
   defp get_date_for_schedule(email, _date), do: email.reminded_at
