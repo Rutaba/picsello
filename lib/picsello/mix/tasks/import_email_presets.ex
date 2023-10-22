@@ -8285,7 +8285,8 @@ defmodule Mix.Tasks.ImportEmailPresets do
           ep.subject_template == ^attrs.subject_template and
           ep.name == ^attrs.name and
           ep.job_type == ^attrs.job_type and
-          ep.email_automation_pipeline_id == ^attrs.email_automation_pipeline_id
+          ep.email_automation_pipeline_id == ^attrs.email_automation_pipeline_id and
+          ep.total_hours == ^attrs.total_hours
     )
   end
 
