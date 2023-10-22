@@ -8218,6 +8218,14 @@ defmodule Mix.Tasks.ImportEmailPresets do
       if email_preset do
         Logger.warning("reached here")
         email_preset |> EmailPreset.default_presets_changeset(attrs) |> Repo.update!()
+
+        Enum.map(organizations, fn %{id: org_id} ->
+          Logger.warning("[record updated] #{org_id} for #{email_preset.job_type}")
+
+          Map.merge(email_preset, %{organization_id: org_id})
+          |> EmailPreset.default_presets_changeset(attrs)
+          |> Repo.update!()
+        end)
       else
         attrs |> EmailPreset.default_presets_changeset() |> Repo.insert!()
         Logger.warning("[for current org] #{Enum.count(organizations) + 1} for #{attrs.job_type}")
