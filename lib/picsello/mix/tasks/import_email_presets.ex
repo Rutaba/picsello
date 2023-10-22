@@ -8216,6 +8216,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         from(e in email_preset_query(attrs), where: is_nil(e.organization_id)) |> Repo.one()
 
       if email_preset do
+        Logger.warning("reached here")
         email_preset |> EmailPreset.default_presets_changeset(attrs) |> Repo.update!()
       else
         attrs |> EmailPreset.default_presets_changeset() |> Repo.insert!()
