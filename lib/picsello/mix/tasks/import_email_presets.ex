@@ -8216,14 +8216,14 @@ defmodule Mix.Tasks.ImportEmailPresets do
         from(e in email_preset_query(attrs), where: is_nil(e.organization_id)) |> Repo.one()
 
       if email_preset do
-        Logger.warning("reached here")
         email_preset |> EmailPreset.default_presets_changeset(attrs) |> Repo.update!()
 
         Enum.map(organizations, fn %{id: org_id} ->
           Logger.warning("[record updated] #{org_id} for #{email_preset.job_type}")
 
-          Map.merge(email_preset, %{organization_id: org_id})
-          |> EmailPreset.default_presets_changeset(attrs)
+          from(e in email_preset_query(attrs), where: e.organization_id == ^org_id)
+          |> Repo.one()
+          |> EmailPreset.default_presets_changeset(Map.merge(attrs, %{organization_id: org_id}))
           |> Repo.update!()
         end)
       else
