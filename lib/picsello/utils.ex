@@ -80,7 +80,8 @@ defmodule Picsello.Utils do
     @replacements
     |> Enum.reduce(body, fn {from, to}, acc ->
       String.replace(acc, from, to)
-    end
+    end)
+  end
 
   @doc """
   Validate phone value according to its country

@@ -16,7 +16,21 @@ defmodule PicselloWeb.BookingProposalLive.QuestionnaireComponent do
   end
 
   @impl true
-  def handle_event("validate", %{"answers" => params}, %{assigns: %{answer: answer}} = socket) do
+  def handle_event(
+        "validate",
+        %{"_target" => ["Phone", "value"]},
+       socket
+      ) do
+    socket |> noreply()
+  end
+
+  @impl true
+  def handle_event(
+        "validate",
+        params,
+        %{assigns: %{answer: answer}} = socket
+      ) do
+    params = extract_values(params)
     answer = %{answer | answers: update_answers(answer.answers, params)}
     socket |> assign_validation(params) |> assign(answer: answer) |> noreply()
   end
@@ -24,11 +38,11 @@ defmodule PicselloWeb.BookingProposalLive.QuestionnaireComponent do
   @impl true
   def handle_event(
         "submit",
-        %{"answers" => params},
+        _,
         %{assigns: %{answer: answer}} = socket
       ) do
     case answer
-         |> Answer.changeset(%{answers: update_answers(answer.answers, params)})
+         |> Answer.changeset(%{answers: answer.answers})
          |> Repo.insert() do
       {:ok, answer} ->
         send(self(), {:update, %{answer: answer, next_page: "invoice"}})
@@ -103,6 +117,23 @@ defmodule PicselloWeb.BookingProposalLive.QuestionnaireComponent do
   end
 
   defp reject_blanks(list), do: list |> Enum.reject(&(String.trim(&1) == ""))
+
+  defp extract_values(%{
+         "Phone" => %{"value" => phone},
+         "answers" => answer,
+         "question_index" => %{"value" => index}
+       }) do
+    %{"#{index}" => [phone]}
+    |> Map.merge(answer)
+  end
+
+  defp extract_values(%{"Phone" => %{"value" => phone}, "question_index" => %{"value" => index}}) do
+    %{"#{index}" => [phone]}
+  end
+
+  defp extract_values(%{"answers" => answer}) do
+    answer
+  end
 
   def open_modal_from_proposal(socket, proposal, read_only \\ true) do
     %{
