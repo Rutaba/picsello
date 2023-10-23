@@ -25,7 +25,7 @@ defmodule Picsello.Workers.ScheduleAutomationEmail do
         gallery = EmailAutomations.get_gallery(job_pipeline.gallery_id)
         job = EmailAutomations.get_job(job_pipeline.job_id)
 
-        job = if is_nil(job_pipeline.gallery_id), do: job, else: gallery.job
+        job = if is_nil(gallery), do: job, else: gallery.job
         send_email_by(job, gallery, job_pipeline)
       end)
     end)
