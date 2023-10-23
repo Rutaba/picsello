@@ -1,4 +1,8 @@
 defmodule Mix.Tasks.UncompleteFutureJobs do
+  @moduledoc """
+  Uncomplete jobs that have shoots after 2023-10-17
+  """
+
   use Mix.Task
   require Logger
   import Ecto.Query
