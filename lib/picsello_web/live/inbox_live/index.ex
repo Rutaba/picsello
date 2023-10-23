@@ -126,6 +126,16 @@ defmodule PicselloWeb.InboxLive.Index do
     """
   end
 
+  defp toggle_icon(assigns) do
+    ~H"""
+      <%= if @collapsed_sections do %>
+        <.icon name="down" class="w-4 h-4 stroke-current stroke-2" />
+      <% else %>
+        <.icon name="up" class="w-4 h-4 stroke-current stroke-2" />
+      <% end %>
+    """
+  end
+
   defp current_thread(assigns) do
     ~H"""
       <div class="flex flex-col w-full lg:overflow-y-auto lg:border rounded-lg ml-2">
@@ -180,18 +190,23 @@ defmodule PicselloWeb.InboxLive.Index do
                   </div>
                 </div>
 
-                <div class={classes("flex items-center font-bold text-xl px-4 py-2", %{"rounded-t-lg" => message.collapsed_sections, "rounded-lg" => !message.collapsed_sections, "bg-blue-planning-300 text-white" => message.outbound, "bg-gray-200" => !message.outbound})} phx-click="collapse-section" phx-value-id={message.id}>
-                  <%= message.subject %>
-                  <%= if message.unread do %>
-                      <span {testid("new-badge")} class="mx-4 px-2 py-0.5 text-xs rounded bg-orange-inbox-300 text-white">New</span>
-                  <% end %>
-                  <div class="flex gap-2 text-xs ml-auto">
+                <div class={classes("flex flex-col sm:flex-row items-center justify-between font-bold text-xl px-4 py-2", %{"rounded-t-lg" => message.collapsed_sections, "rounded-lg" => !message.collapsed_sections, "bg-blue-planning-300 text-white" => message.outbound, "bg-gray-200" => !message.outbound})} phx-click="collapse-section" phx-value-id={message.id}>
+                  <div class="flex justify-between items-center w-full sm:w-auto">
+                    <div>
+                      <%= message.subject %>
+                      <%= if message.unread do %>
+                          <span {testid("new-badge")} class="mx-4 px-2 py-0.5 text-xs rounded bg-orange-inbox-300 text-white">New</span>
+                      <% end %>
+                    </div>
+                    <div class="sm:hidden">
+                      <.toggle_icon collapsed_sections={message.collapsed_sections} />
+                    </div>
+                  </div>
+                  <div class="flex gap-2 text-xs w-1/3 justify-end ml-auto sm:ml-0">
                     <%= message.date %>
-                    <%= if message.collapsed_sections do %>
-                      <.icon name="down" class="w-4 h-4 stroke-current stroke-2" />
-                    <% else %>
-                      <.icon name="up" class="w-4 h-4 stroke-current stroke-2" />
-                    <% end %>
+                    <span class="hidden sm:block">
+                      <.toggle_icon collapsed_sections={message.collapsed_sections} />
+                    </span>
                   </div>
                 </div>
                 <%= if message.collapsed_sections do %>
