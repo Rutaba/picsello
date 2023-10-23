@@ -41,7 +41,7 @@ defmodule Picsello.Workers.ScheduleAutomationEmail do
       rescue
         error ->
           message = "Error sending email #{inspect(%{pipeline: job_pipeline, error: error})}"
-          Sentry.capture_message(message, stacktrace: __STACKTRACE__)
+          if Mix.env() == :prod, do: Sentry.capture_message(message, stacktrace: __STACKTRACE__)
           Logger.error(message)
       end
     end)

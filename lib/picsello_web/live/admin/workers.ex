@@ -32,7 +32,9 @@ defmodule PicselloWeb.Live.Admin.Workers do
     <div class="p-8">
       <ul class="my-4 flex grid gap-10 grid-cols-1 sm:grid-cols-4">
         <%= for {name, _} <- @workers do %>
-          <li><button phx-click="start" phx-value-name={name} class="border flex items-center justify-center rounded-lg p-8 font-bold text-blue-planning-300 w-full"><%= name %></button></li>
+          <%= if name not in ["Sync email presets"] do %>
+            <li><button phx-click="start" phx-value-name={name} class="border flex items-center justify-center rounded-lg p-8 font-bold text-blue-planning-300 w-full"><%= name %></button></li>
+          <% end %>
         <% end %>
       </ul>
 

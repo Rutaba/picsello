@@ -143,6 +143,9 @@ defmodule Picsello.EmailAutomations do
       |> String.split()
       |> Enum.map_join(" ", &String.capitalize/1)
 
+    total_time =
+      if total_time == "1 Day Before", do: "tomorrow", else: total_time
+
     data =
       for {key, func} <- resolver_module.vars(), into: %{} do
         {key, func.(resolver)}
