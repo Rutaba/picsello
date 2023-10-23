@@ -106,8 +106,12 @@ defmodule Picsello.EmailAutomations do
 
   def get_gallery(nil), do: nil
 
-  def get_gallery(id),
-    do: Galleries.get_gallery!(id) |> Repo.preload([:orders, :albums, job: :client])
+  def get_gallery(id) do
+    case Galleries.get_gallery(id) do
+      nil -> nil
+      result -> result |> Repo.preload([:orders, :albums, job: :client])
+    end
+  end
 
   def get_job(nil), do: nil
 
