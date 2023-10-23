@@ -396,7 +396,7 @@ defmodule PicselloWeb.EmailAutomationLive.Shared do
         gallery,
         _order
       ) do
-    if is_nil(gallery.gallery_send_at),
+    if is_nil(gallery) || is_nil(gallery.gallery_send_at),
       do: nil,
       else: get_date_for_schedule(last_completed_email, gallery.gallery_send_at)
   end
