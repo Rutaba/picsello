@@ -334,10 +334,10 @@ defmodule PicselloWeb.JobLive.Shared.MarkPaidModal do
 
   defp send_offline_payment_email(%{assigns: %{job: job, current_user: current_user}} = socket) do
     if !PaymentSchedules.all_paid?(job) do
-      pipeline = EmailAutomations.get_pipeline_by_state(:offline_payment)
+      pipeline = EmailAutomations.get_pipeline_by_state(:pays_retainer_offline)
 
       email_schedule =
-        get_email_from_schedule(job.id, pipeline.id, :offline_payment) |> preload_email()
+        get_email_from_schedule(job.id, pipeline.id, :pays_retainer_offline) |> preload_email()
 
       email_preset =
         EmailPresets.user_email_automation_presets(
@@ -360,7 +360,7 @@ defmodule PicselloWeb.JobLive.Shared.MarkPaidModal do
       email_preset,
       job,
       {job},
-      :offline_payment,
+      :pays_retainer_offline,
       PicselloWeb.Helpers
     )
   end
@@ -370,7 +370,7 @@ defmodule PicselloWeb.JobLive.Shared.MarkPaidModal do
       email_schedule,
       job,
       {job},
-      :offline_payment,
+      :pays_retainer_offline,
       PicselloWeb.Helpers
     )
 
