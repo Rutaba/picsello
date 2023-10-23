@@ -10,7 +10,9 @@ defmodule Picsello.WHCC.Design do
           api: %{}
         }
 
-  def from_map(%{"_id" => id, "name" => name, "product" => %{"_id" => product_id}} = design) do
+  def from_map(
+        %{"_id" => id, "displayName" => name, "product" => %{"_id" => product_id}} = design
+      ) do
     %__MODULE__{
       id: id,
       name: name,
