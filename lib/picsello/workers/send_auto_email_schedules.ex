@@ -250,6 +250,7 @@ defmodule Picsello.Workers.ScheduleAutomationEmail do
   defp is_job_emails?(%Job{archived_at: nil}), do: true
   defp is_job_emails?(_), do: false
 
+  defp is_gallery_active?(nil), do: true
   defp is_gallery_active?(%Gallery{status: :active}), do: true
   defp is_gallery_active?(_), do: false
 end
