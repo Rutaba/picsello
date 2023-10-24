@@ -1181,7 +1181,7 @@ defmodule PicselloWeb.GalleryLive.Photos.Index do
                     <p class="text-blue-planning-300 text-xs font-bold text-center">Generating preview...</p>
                 </div>
             </div>
-            <img src={@url} class="relative" />
+            <img src={@url} class="relative max-h-full" loading="lazy" />
           </div>
         </div>
       </div>
