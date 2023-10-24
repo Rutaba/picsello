@@ -50,6 +50,8 @@ defmodule PicselloWeb.LeadLive.Show do
     |> assign_job(job_id)
     |> assign(:request_from, assigns["request_from"])
     |> assign(:collapsed_sections, [])
+    |> assign_emails_count(job_id)
+    |> subscribe_emails_count(job_id)
     |> then(fn %{assigns: assigns} = socket ->
       job = Map.get(assigns, :job)
 
@@ -369,6 +371,13 @@ defmodule PicselloWeb.LeadLive.Show do
   end
 
   @impl true
+  def handle_info({:update_emails_count, %{job_id: job_id}}, socket) do
+    socket
+    |> assign_emails_count(job_id)
+    |> noreply()
+  end
+
+  @impl true
   defdelegate handle_info(message, socket), to: JobLive.Shared
 
   def next_reminder_on(nil), do: nil
@@ -441,5 +450,19 @@ defmodule PicselloWeb.LeadLive.Show do
       )
     end)
     |> Repo.transaction()
+  end
+
+  defp assign_emails_count(socket, job_id) do
+    socket
+    |> assign(:emails_count, EmailAutomationSchedules.get_active_email_schedule_count(job_id))
+  end
+
+  defp subscribe_emails_count(socket, job_id) do
+    Phoenix.PubSub.subscribe(
+      Picsello.PubSub,
+      "emails_count:#{job_id}"
+    )
+
+    socket
   end
 end

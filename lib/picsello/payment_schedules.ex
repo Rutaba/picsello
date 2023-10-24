@@ -16,6 +16,7 @@ defmodule Picsello.PaymentSchedules do
     Currency,
     UserCurrencies,
     Workers.CalendarEvent,
+    EmailAutomations,
     EmailAutomationSchedules
   }
 
@@ -311,7 +312,8 @@ defmodule Picsello.PaymentSchedules do
         helpers
       ) do
     with %BookingProposal{} = proposal <-
-           Repo.get(BookingProposal, proposal_id) |> Repo.preload(job: :job_status),
+           Repo.get(BookingProposal, proposal_id)
+           |> Repo.preload(job: [:job_status, client: :organization]),
          %PaymentSchedule{paid_at: nil} = payment_schedule <-
            Repo.get(PaymentSchedule, payment_schedule_id),
          {:ok, payment_schedule} <-
@@ -322,10 +324,17 @@ defmodule Picsello.PaymentSchedules do
         UserNotifier.deliver_lead_converted_to_job(proposal, helpers)
       end
 
-      ClientNotifier.deliver_payment_schedule_confirmation(
+      # This needs to be removed
+      # ClientNotifier.deliver_payment_schedule_confirmation(
+      #   proposal.job,
+      #   payment_schedule,
+      #   helpers
+      # )
+
+      EmailAutomations.send_pays_retainer(
         proposal.job,
-        payment_schedule,
-        helpers
+        :pays_retainer,
+        proposal.job.client.organization.id
       )
 
       %{
@@ -442,6 +451,11 @@ defmodule Picsello.PaymentSchedules do
       error -> error
     end
   end
+
+  def pay_with_cash(job),
+    do:
+      from(ps in PaymentSchedule, where: ps.job_id == ^job.id)
+      |> Repo.update_all(set: [is_with_cash: true, type: "cash"])
 
   defp customer_id(%Client{stripe_customer_id: nil} = client) do
     params = %{name: client.name, email: client.email}

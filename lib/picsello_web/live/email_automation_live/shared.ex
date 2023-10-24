@@ -537,10 +537,9 @@ defmodule PicselloWeb.EmailAutomationLive.Shared do
         _gallery,
         order
       ) do
-    if(Enum.any?(order.digitals) or not is_nil(order.whcc_order),
-      do: get_date_for_schedule(last_completed_email, order.placed_at),
-      else: nil
-    )
+    if is_nil(order.placed_at),
+      do: nil,
+      else: get_date_for_schedule(last_completed_email, order.placed_at)
   end
 
   def fetch_date_for_state(:client_contact, _email, last_completed_email, job, _gallery, _order) do
