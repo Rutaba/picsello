@@ -12,7 +12,9 @@ defmodule Picsello.EmailAutomations do
     Galleries,
     Orders,
     EmailAutomationSchedules,
-    Notifiers.EmailAutomationNotifier
+    Notifiers.EmailAutomationNotifier,
+    EmailPresets,
+    PaymentSchedules
   }
 
   alias Picsello.EmailAutomation.{
@@ -143,8 +145,7 @@ defmodule Picsello.EmailAutomations do
       |> String.split()
       |> Enum.map_join(" ", &String.capitalize/1)
 
-    total_time =
-      if total_time == "1 Day Before", do: "tomorrow", else: total_time
+    total_time = if total_time == "1 Day Before", do: "tomorrow", else: total_time
 
     data =
       for {key, func} <- resolver_module.vars(), into: %{} do
@@ -365,4 +366,72 @@ defmodule Picsello.EmailAutomations do
   end
 
   defp make_positive_number(no), do: if(no > 0, do: no, else: -1 * no)
+
+  def send_pays_retainer(job, state, organization_id) do
+    if !PaymentSchedules.all_paid?(job) do
+      pipeline = get_pipeline_by_state(state)
+
+      email_schedule =
+        get_email_from_schedule(
+          job.id,
+          pipeline.id,
+          state,
+          PicselloWeb.EmailAutomationLive.Shared
+        )
+        |> preload_email()
+
+      email_preset =
+        EmailPresets.user_email_automation_presets(
+          :job,
+          job.type,
+          pipeline.id,
+          organization_id
+        )
+        |> List.first()
+        |> preload_email()
+
+      send_payment_email(email_schedule, email_preset, job, state)
+    end
+  end
+
+  defp send_payment_email(nil, email_preset, job, state) do
+    EmailAutomationNotifier.Impl.deliver_automation_email_job(
+      email_preset,
+      job,
+      {job},
+      state,
+      PicselloWeb.Helpers
+    )
+  end
+
+  defp send_payment_email(email_schedule, _email_preset, job, state) do
+    EmailAutomationNotifier.Impl.deliver_automation_email_job(
+      email_schedule,
+      job,
+      {job},
+      state,
+      PicselloWeb.Helpers
+    )
+
+    EmailAutomationSchedules.update_email_schedule(email_schedule.id, %{
+      reminded_at: DateTime.truncate(DateTime.utc_now(), :second)
+    })
+  end
+
+  defp get_email_from_schedule(job_id, pipeline_id, state, helpers) do
+    EmailAutomationSchedules.query_get_email_schedule(
+      :job,
+      nil,
+      job_id,
+      pipeline_id
+    )
+    |> where([es], is_nil(es.reminded_at))
+    |> where([es], is_nil(es.stopped_at))
+    |> Repo.all()
+    |> helpers.sort_emails(state)
+    |> List.first()
+  end
+
+  defp preload_email(email),
+    do: email |> Repo.preload(email_automation_pipeline: [:email_automation_category])
 end

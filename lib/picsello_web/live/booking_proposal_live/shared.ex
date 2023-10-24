@@ -22,7 +22,7 @@ defmodule PicselloWeb.BookingProposalLive.Shared do
 
   import PicselloWeb.Gettext, only: [dyn_gettext: 1, ngettext: 3]
 
-  alias Picsello.{Repo, PaymentSchedules, Job, Package, Packages}
+  alias Picsello.{PaymentSchedules, Job, Package, Packages}
   alias PicselloWeb.Router.Helpers, as: Routes
 
   def banner(assigns) do

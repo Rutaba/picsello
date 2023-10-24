@@ -10,6 +10,7 @@ defmodule Picsello.Workers.ScheduleAutomationEmail do
     EmailAutomationSchedules,
     ClientMessage,
     Organization,
+    Galleries.Gallery,
     Job,
     Repo
   }
@@ -47,6 +48,25 @@ defmodule Picsello.Workers.ScheduleAutomationEmail do
     end)
   end
 
+  defp send_email_by(_job, nil, %{state: state})
+       when state in [
+              :order_arrived,
+              :order_delayed,
+              :order_shipped,
+              :digitals_ready_download,
+              :order_confirmation_digital_physical,
+              :order_confirmation_digital,
+              :order_confirmation_physical,
+              :after_gallery_send_feedback,
+              :gallery_password_changed,
+              :gallery_expiration_soon,
+              :cart_abandoned,
+              :manual_gallery_send_link,
+              :manual_send_proofing_gallery,
+              :manual_send_proofing_gallery_finals
+            ],
+       do: Logger.info("Gallery is not active")
+
   defp send_email_by(job, gallery, job_pipeline) do
     subjects = get_subjects_for_job_pipeline(job_pipeline.emails)
     state = job_pipeline.state
@@ -58,7 +78,7 @@ defmodule Picsello.Workers.ScheduleAutomationEmail do
       |> Map.get(:email_automation_category)
       |> Map.get(:type)
 
-    if is_job_emails?(job) do
+    if is_job_emails?(job) and is_gallery_active?(gallery) do
       # Each pipeline emails subjects resolve variables
       subjects_resolve = EmailAutomations.resolve_all_subjects(job, gallery, type, subjects)
 
@@ -229,4 +249,7 @@ defmodule Picsello.Workers.ScheduleAutomationEmail do
 
   defp is_job_emails?(%Job{archived_at: nil}), do: true
   defp is_job_emails?(_), do: false
+
+  defp is_gallery_active?(%Gallery{status: :active}), do: true
+  defp is_gallery_active?(_), do: false
 end

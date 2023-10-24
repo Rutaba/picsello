@@ -8,13 +8,9 @@ defmodule PicselloWeb.JobLive.Shared.MarkPaidModal do
     PaymentSchedules,
     Job,
     Currency,
-    EmailPresets,
-    EmailAutomations,
-    EmailAutomationSchedules,
-    Notifiers.EmailAutomationNotifier
+    EmailAutomations
   }
 
-  import PicselloWeb.EmailAutomationLive.Shared, only: [sort_emails: 2]
   import Ecto.Query
   @impl true
   def update(assigns, socket) do
@@ -332,67 +328,8 @@ defmodule PicselloWeb.JobLive.Shared.MarkPaidModal do
     )
   end
 
-  defp send_offline_payment_email(%{assigns: %{job: job, current_user: current_user}} = socket) do
-    if !PaymentSchedules.all_paid?(job) do
-      pipeline = EmailAutomations.get_pipeline_by_state(:pays_retainer_offline)
-
-      email_schedule =
-        get_email_from_schedule(job.id, pipeline.id, :pays_retainer_offline) |> preload_email()
-
-      email_preset =
-        EmailPresets.user_email_automation_presets(
-          :job,
-          job.type,
-          pipeline.id,
-          current_user.organization_id
-        )
-        |> List.first()
-        |> preload_email()
-
-      send_email_offline_payment(email_schedule, email_preset, job)
-    end
-
+  defp send_offline_payment_email(%{assigns: %{job: job, current_user: user}} = socket) do
+    EmailAutomations.send_pays_retainer(job, :pays_retainer_offline, user.organization_id)
     socket
   end
-
-  defp send_email_offline_payment(nil, email_preset, job) do
-    EmailAutomationNotifier.Impl.deliver_automation_email_job(
-      email_preset,
-      job,
-      {job},
-      :pays_retainer_offline,
-      PicselloWeb.Helpers
-    )
-  end
-
-  defp send_email_offline_payment(email_schedule, _email_preset, job) do
-    EmailAutomationNotifier.Impl.deliver_automation_email_job(
-      email_schedule,
-      job,
-      {job},
-      :pays_retainer_offline,
-      PicselloWeb.Helpers
-    )
-
-    EmailAutomationSchedules.update_email_schedule(email_schedule.id, %{
-      reminded_at: DateTime.truncate(DateTime.utc_now(), :second)
-    })
-  end
-
-  defp get_email_from_schedule(job_id, pipeline_id, state) do
-    EmailAutomationSchedules.query_get_email_schedule(
-      :lead,
-      nil,
-      job_id,
-      pipeline_id
-    )
-    |> where([es], is_nil(es.reminded_at))
-    |> where([es], is_nil(es.stopped_at))
-    |> Repo.all()
-    |> sort_emails(state)
-    |> List.first()
-  end
-
-  defp preload_email(email),
-    do: email |> Repo.preload(email_automation_pipeline: [:email_automation_category])
 end

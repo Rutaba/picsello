@@ -68,8 +68,7 @@ defmodule PicselloWeb.Shared.ShortCodeComponent do
       |> String.split()
       |> Enum.map_join(" ", &String.capitalize/1)
 
-    total_time =
-      if total_time == "1 Day Before", do: "tomorrow", else: total_time
+    total_time = if total_time == "1 Day Before", do: "tomorrow", else: total_time
 
     leads = [
       %{
