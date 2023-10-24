@@ -8221,37 +8221,19 @@ defmodule Mix.Tasks.ImportEmailPresets do
       email_preset =
         from(e in email_preset_query(attrs), where: is_nil(e.organization_id)) |> Repo.one()
 
-      upsert_email_presets(email_preset, attrs, organizations)
+      if email_preset do
+        email_preset |> EmailPreset.default_presets_changeset(attrs) |> Repo.update!()
+      else
+        attrs |> EmailPreset.default_presets_changeset() |> Repo.insert!()
+        Logger.warning("[for current org] #{Enum.count(organizations) + 1} for #{attrs.job_type}")
+
+        Enum.map(organizations, fn %{id: org_id} ->
+          Logger.warning("[record inserted] #{org_id} for #{attrs.job_type}")
+          Map.merge(attrs, %{organization_id: org_id})
+        end)
+        |> then(&Repo.insert_all("email_presets", &1))
+      end
     end)
-  end
-
-  defp upsert_email_presets(email_preset, attrs, organizations) do
-    if email_preset do
-      email_preset |> EmailPreset.default_presets_changeset(attrs) |> Repo.update!()
-
-      Enum.map(organizations, fn %{id: org_id} ->
-        Logger.warning("[record updated] #{org_id} for #{email_preset.job_type}")
-
-        email_preset =
-          from(e in email_preset_query(attrs), where: e.organization_id == ^org_id)
-          |> Repo.one()
-
-        if email_preset do
-          email_preset
-          |> EmailPreset.default_presets_changeset(Map.merge(attrs, %{organization_id: org_id}))
-          |> Repo.update!()
-        end
-      end)
-    else
-      attrs |> EmailPreset.default_presets_changeset() |> Repo.insert!()
-      Logger.warning("[for current org] #{Enum.count(organizations) + 1} for #{attrs.job_type}")
-
-      Enum.map(organizations, fn %{id: org_id} ->
-        Logger.warning("[record inserted] #{org_id} for #{attrs.job_type}")
-        Map.merge(attrs, %{organization_id: org_id})
-      end)
-      |> then(&Repo.insert_all("email_presets", &1))
-    end
   end
 
   def assign_default_presets_new_user(organization_id) do
@@ -8283,6 +8265,22 @@ defmodule Mix.Tasks.ImportEmailPresets do
 
     Repo.insert_all("email_presets", email_presets)
   end
+
+  # defp update_all_org_presets(organizations, attrs, email_preset) do
+  #   Enum.map(organizations, fn %{id: org_id} ->
+  #     Logger.warning("[record updated] #{org_id} for #{email_preset.job_type}")
+
+  #     email_preset =
+  #       from(e in email_preset_query(attrs), where: e.organization_id == ^org_id)
+  #       |> Repo.one()
+
+  #     if email_preset do
+  #       email_preset
+  #       |> EmailPreset.default_presets_changeset(Map.merge(attrs, %{organization_id: org_id}))
+  #       |> Repo.update!()
+  #     end
+  #   end)
+  # end
 
   defp get_all_default_email_presets() do
     from(ep in EmailPreset, where: is_nil(ep.organization_id)) |> Repo.all()
