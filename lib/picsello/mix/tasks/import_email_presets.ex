@@ -8224,19 +8224,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
       if email_preset do
         email_preset |> EmailPreset.default_presets_changeset(attrs) |> Repo.update!()
 
-        Enum.map(organizations, fn %{id: org_id} ->
-          Logger.warning("[record updated] #{org_id} for #{email_preset.job_type}")
-
-          email_preset =
-            from(e in email_preset_query(attrs), where: e.organization_id == ^org_id)
-            |> Repo.one()
-
-          if email_preset do
-            email_preset
-            |> EmailPreset.default_presets_changeset(Map.merge(attrs, %{organization_id: org_id}))
-            |> Repo.update!()
-          end
-        end)
+        update_all_org_presets(organizations, attrs, email_preset)
       else
         attrs |> EmailPreset.default_presets_changeset() |> Repo.insert!()
         Logger.warning("[for current org] #{Enum.count(organizations) + 1} for #{attrs.job_type}")
@@ -8278,6 +8266,22 @@ defmodule Mix.Tasks.ImportEmailPresets do
       end)
 
     Repo.insert_all("email_presets", email_presets)
+  end
+
+  defp update_all_org_presets(organizations, attrs, email_preset) do
+    Enum.map(organizations, fn %{id: org_id} ->
+      Logger.warning("[record updated] #{org_id} for #{email_preset.job_type}")
+
+      email_preset =
+        from(e in email_preset_query(attrs), where: e.organization_id == ^org_id)
+        |> Repo.one()
+
+      if email_preset do
+        email_preset
+        |> EmailPreset.default_presets_changeset(Map.merge(attrs, %{organization_id: org_id}))
+        |> Repo.update!()
+      end
+    end)
   end
 
   defp get_all_default_email_presets() do
