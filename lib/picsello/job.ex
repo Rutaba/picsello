@@ -12,7 +12,9 @@ defmodule Picsello.Job do
     BookingProposal,
     Repo,
     ClientMessage,
-    PaymentSchedule
+    PaymentSchedule,
+    EmailAutomation.EmailSchedule,
+    EmailAutomation.EmailScheduleHistory
   }
 
   alias Picsello.Galleries.Gallery
@@ -33,6 +35,8 @@ defmodule Picsello.Job do
     has_many(:shoots, Shoot)
     has_many(:booking_proposals, BookingProposal, preload_order: [desc: :inserted_at])
     has_many(:client_messages, ClientMessage)
+    has_many(:email_schedules, EmailSchedule)
+    has_many(:email_schedules_history, EmailScheduleHistory)
 
     embeds_many :documents, Documents, on_replace: :delete do
       field :name, :string

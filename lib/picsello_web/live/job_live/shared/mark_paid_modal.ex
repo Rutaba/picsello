@@ -1,7 +1,15 @@
 defmodule PicselloWeb.JobLive.Shared.MarkPaidModal do
   @moduledoc false
   use PicselloWeb, :live_component
-  alias Picsello.{Repo, PaymentSchedule, PaymentSchedules, Job, Currency}
+
+  alias Picsello.{
+    Repo,
+    PaymentSchedule,
+    PaymentSchedules,
+    Job,
+    Currency,
+    EmailAutomations
+  }
 
   import Ecto.Query
   @impl true
@@ -195,6 +203,7 @@ defmodule PicselloWeb.JobLive.Shared.MarkPaidModal do
         |> assign(:add_payment_show, !add_payment_show)
         |> assign_payments()
         |> assign_job()
+        |> send_offline_payment_email()
 
       {:error, _} ->
         socket
@@ -317,5 +326,10 @@ defmodule PicselloWeb.JobLive.Shared.MarkPaidModal do
         end
       end
     )
+  end
+
+  defp send_offline_payment_email(%{assigns: %{job: job, current_user: user}} = socket) do
+    EmailAutomations.send_pays_retainer(job, :pays_retainer_offline, user.organization_id)
+    socket
   end
 end

@@ -1,8 +1,17 @@
 defmodule Mix.Tasks.UncompleteFutureJobs do
   @moduledoc """
-  Uncomplete jobs that have shoots after 2023-10-17
-  """
+  Mix task to uncomplete jobs with dates greater than 2023-10-17.
 
+  This task sets the `completed_at` field to null for job records with dates
+  greater than 2023-10-17, helping to resolve issues related to automation cleanup.
+
+  ## Usage
+
+  Run this Mix task as follows:
+
+  ```elixir
+  mix uncomplete_future_jobs
+  """
   use Mix.Task
   require Logger
   import Ecto.Query

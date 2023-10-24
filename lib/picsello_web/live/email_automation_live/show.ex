@@ -197,8 +197,19 @@ defmodule PicselloWeb.Live.EmailAutomations.Show do
         )
     end
     |> case do
-      {:ok, _} -> socket |> put_flash(:success, "Email Sent Successfully")
-      _ -> socket |> put_flash(:error, "Error in Sending Email")
+      {:ok, _} ->
+        Phoenix.PubSub.broadcast(
+          Picsello.PubSub,
+          "emails_count:#{job_id}",
+          {:update_emails_count, %{job_id: job_id}}
+        )
+
+        socket
+        |> put_flash(:success, "Email Sent Successfully")
+
+      _ ->
+        socket
+        |> put_flash(:error, "Error in Sending Email")
     end
     |> close_modal()
     |> assign_email_schedules()

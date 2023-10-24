@@ -10,6 +10,7 @@ defmodule Picsello.Workers.ScheduleAutomationEmail do
     EmailAutomationSchedules,
     ClientMessage,
     Organization,
+    Galleries.Gallery,
     Job,
     Repo
   }
@@ -18,21 +19,53 @@ defmodule Picsello.Workers.ScheduleAutomationEmail do
   @impl Oban.Worker
   def perform(_) do
     get_all_organizations()
-    |> Enum.chunk_every(2)
-    |> Enum.each(fn organizations ->
-      get_all_emails(organizations)
-      |> Enum.map(fn job_pipeline ->
+    |> Enum.chunk_every(10)
+    |> Task.async_stream(&send_emails_by_organizations(&1),
+      max_concurrency: System.schedulers_online() * 3,
+      timeout: 20_000
+    )
+    |> Stream.run()
+
+    Logger.info("------------Email Automation Schedule Completed")
+    :ok
+  end
+
+  defp send_emails_by_organizations(ids) do
+    get_all_emails(ids)
+    |> Enum.map(fn job_pipeline ->
+      try do
         gallery = EmailAutomations.get_gallery(job_pipeline.gallery_id)
         job = EmailAutomations.get_job(job_pipeline.job_id)
 
         job = if is_nil(gallery), do: job, else: gallery.job
         send_email_by(job, gallery, job_pipeline)
-      end)
+      rescue
+        error ->
+          message = "Error sending email #{inspect(%{pipeline: job_pipeline, error: error})}"
+          if Mix.env() == :prod, do: Sentry.capture_message(message, stacktrace: __STACKTRACE__)
+          Logger.error(message)
+      end
     end)
-
-    Logger.info("------------Email Automation Schedule Completed")
-    :ok
   end
+
+  defp send_email_by(_job, nil, %{state: state})
+       when state in [
+              :order_arrived,
+              :order_delayed,
+              :order_shipped,
+              :digitals_ready_download,
+              :order_confirmation_digital_physical,
+              :order_confirmation_digital,
+              :order_confirmation_physical,
+              :after_gallery_send_feedback,
+              :gallery_password_changed,
+              :gallery_expiration_soon,
+              :cart_abandoned,
+              :manual_gallery_send_link,
+              :manual_send_proofing_gallery,
+              :manual_send_proofing_gallery_finals
+            ],
+       do: Logger.info("Gallery is not active")
 
   defp send_email_by(job, gallery, job_pipeline) do
     subjects = get_subjects_for_job_pipeline(job_pipeline.emails)
@@ -45,7 +78,7 @@ defmodule Picsello.Workers.ScheduleAutomationEmail do
       |> Map.get(:email_automation_category)
       |> Map.get(:type)
 
-    if is_job_emails?(job) do
+    if is_job_emails?(job) and is_gallery_active?(gallery) do
       # Each pipeline emails subjects resolve variables
       subjects_resolve = EmailAutomations.resolve_all_subjects(job, gallery, type, subjects)
 
@@ -182,6 +215,12 @@ defmodule Picsello.Workers.ScheduleAutomationEmail do
 
     case send_email_task do
       {:ok, _result} ->
+        Phoenix.PubSub.broadcast(
+          Picsello.PubSub,
+          "emails_count:#{job.id}",
+          {:update_emails_count, %{job_id: job.id}}
+        )
+
         Logger.info(
           "Email #{schedule.name} sent at #{DateTime.truncate(DateTime.utc_now(), :second)}"
         )
@@ -210,4 +249,8 @@ defmodule Picsello.Workers.ScheduleAutomationEmail do
 
   defp is_job_emails?(%Job{archived_at: nil}), do: true
   defp is_job_emails?(_), do: false
+
+  defp is_gallery_active?(nil), do: true
+  defp is_gallery_active?(%Gallery{status: :active}), do: true
+  defp is_gallery_active?(_), do: false
 end
