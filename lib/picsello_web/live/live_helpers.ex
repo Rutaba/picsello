@@ -517,4 +517,21 @@ defmodule PicselloWeb.LiveHelpers do
         "#{Timex.month_name(date.month)} #{date.day}, #{date.year}"
     end
   end
+
+  def format_datetime_via_type(%DateTime{} = datetime, type \\ "MM DD, YY") do
+    time = DateTime.to_time(datetime) |> Time.to_string() |> String.slice(0, 5)
+
+    case type do
+      "MM/DD/YY" ->
+        date =
+          [datetime.month, datetime.day, datetime.year]
+          |> Enum.map(&to_string/1)
+          |> Enum.map_join("/", &String.pad_leading(&1, 2, "0"))
+
+        date <> " @ #{time}"
+
+      _ ->
+        "#{Timex.month_name(datetime.month)} #{datetime.day}, #{datetime.year} @ #{time}"
+    end
+  end
 end

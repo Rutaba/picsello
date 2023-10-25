@@ -333,13 +333,7 @@ defmodule PicselloWeb.JobLive.Index do
     jobs =
       current_user
       |> Job.for_user()
-      |> then(fn query ->
-        case type.plural do
-          # |> Job.not_booking() #Remove this because on leads when job abondoned we have to show
-          "leads" -> query |> Job.leads()
-          "jobs" -> query |> Job.not_leads()
-        end
-      end)
+      |> process_query(type)
       |> Jobs.get_jobs_by_pagination(
         %{
           status: status,
@@ -364,6 +358,9 @@ defmodule PicselloWeb.JobLive.Index do
     })
   end
 
+  defp process_query(query, %{plural: "leads"}), do: query |> Job.leads()
+  defp process_query(query, %{plural: "jobs"}), do: query |> Job.not_leads()
+
   defp job_count(%{
          assigns: %{
            type: type,
@@ -377,12 +374,7 @@ defmodule PicselloWeb.JobLive.Index do
        }) do
     user
     |> Job.for_user()
-    |> then(fn query ->
-      case type.plural do
-        "leads" -> query |> Job.leads() |> Job.not_booking()
-        "jobs" -> query |> Job.not_leads()
-      end
-    end)
+    |> process_query(type)
     |> Jobs.get_jobs(%{
       status: status,
       type: job_type,
@@ -390,8 +382,7 @@ defmodule PicselloWeb.JobLive.Index do
       sort_direction: sort_direction,
       search_phrase: search_phrase
     })
-    |> Repo.all()
-    |> Enum.count()
+    |> Jobs.count()
   end
 
   defp assign_defaults(socket) do

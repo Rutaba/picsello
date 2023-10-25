@@ -40,6 +40,13 @@ defmodule Picsello.Jobs do
     |> Repo.all()
   end
 
+  def count(query) do
+    query
+    |> exclude(:group_by)
+    |> distinct([q], q.id)
+    |> Repo.aggregate(:count)
+  end
+
   def get_jobs(query, %{sort_by: sort_by, sort_direction: sort_direction} = opts) do
     from(j in query,
       as: :j,
