@@ -138,7 +138,7 @@ defmodule Picsello.BookingEventDate do
       :organization_id
     ])
     |> cast_embed(:time_blocks, required: true)
-    |> cast_embed(:slots, required: true, with: &SlotBlock.changeset/2)
+    |> cast_embed(:slots, required: true)
     |> cast_embed(:repeat_on)
     |> validate_required(@required_attrs)
     |> validate_length(:time_blocks, min: 1)
