@@ -8,7 +8,8 @@ defmodule Picsello.EmailAutomationSchedules do
     Repo,
     EmailAutomations,
     EmailAutomation.EmailSchedule,
-    EmailAutomation.EmailScheduleHistory
+    EmailAutomation.EmailScheduleHistory,
+    Galleries
   }
 
   def get_schedule_by_id(id) do
@@ -32,10 +33,26 @@ defmodule Picsello.EmailAutomationSchedules do
   end
 
   def get_active_email_schedule_count(job_id) do
-    from(es in EmailSchedule,
-      where: is_nil(es.stopped_at) and is_nil(es.reminded_at) and es.job_id == ^job_id
-    )
-    |> Repo.aggregate(:count)
+    job_count =
+      from(es in EmailSchedule,
+        where:
+          is_nil(es.stopped_at) and is_nil(es.reminded_at) and es.job_id == ^job_id and
+            is_nil(es.gallery_id)
+      )
+      |> Repo.aggregate(:count)
+
+    active_gallery_ids =
+      Galleries.get_galleries_by_job_id(job_id) |> Enum.map(fn gallery -> gallery.id end)
+
+    active_galleries_count =
+      from(es in EmailSchedule,
+        where:
+          is_nil(es.stopped_at) and is_nil(es.reminded_at) and es.job_id == ^job_id and
+            es.gallery_id in ^active_gallery_ids
+      )
+      |> Repo.aggregate(:count)
+
+    job_count + active_galleries_count
   end
 
   def get_email_schedules_by_ids(ids, type) do
