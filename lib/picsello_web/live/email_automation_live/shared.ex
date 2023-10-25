@@ -68,7 +68,7 @@ defmodule PicselloWeb.EmailAutomationLive.Shared do
         } = socket
       ) do
     user_currency = UserCurrencies.get_user_currency(current_user.organization_id).currency
-    total_hours = Ecto.Changeset.get_field(changeset, :total_hours)
+    total_hours = assigns.email.total_hours
 
     body_html =
       Ecto.Changeset.get_field(changeset, :body_template)
