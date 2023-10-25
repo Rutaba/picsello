@@ -90,10 +90,17 @@
             <p>-</p>
           <% end %>
         </div>
-        <div class="sm:col-span-2 flex flex-col sm:flex gap-2 sm:gap-0 hidden md:block">
-          <%= for shoot  <- job.shoots  do %>
+        <div class="sm:col-span-2 flex flex-col gap-2 sm:gap-0 hidden md:block">
+          <%= for shoot  <- job.shoots |> Enum.sort_by(& DateTime.to_date(&1.starts_at), Date), Enum.any?(@collapsed_shoots, & &1 == job.id) do %>
             <p><%= format_datetime_via_type shoot.starts_at %> </p>
           <% end %>
+          <%= for shoot  <- job.shoots |> Enum.sort_by(& DateTime.to_date(&1.starts_at), Date) |> Enum.take(3), !Enum.any?(@collapsed_shoots, & &1 == job.id) do %>
+            <p><%= format_datetime_via_type shoot.starts_at %> </p>
+          <% end %>
+          <div class={classes(%{"hidden" => Enum.count(job.shoots) < 4})} phx-click="toggle-shoots" phx-value-job_id={job.id}>
+            <.icon name="hellip" class={classes("w-4 h-4 text-blue-planning-300 mt-2 cursor-pointer", %{"hidden" => Enum.any?(@collapsed_shoots, & &1 == job.id)})} />
+            <span class={classes("text-blue-planning-300 underline cursor-pointer", %{"hidden" => !Enum.any?(@collapsed_shoots, & &1 == job.id)})}>Hide</span>
+          </div>
         </div>
         <.status_badge class="w-fit" job={job}/>
         <hr class="sm:hidden border-gray-100 my-2" />

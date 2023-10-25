@@ -22,9 +22,30 @@ defmodule PicselloWeb.JobLive.Index do
   @impl true
   def mount(_params, _session, socket) do
     socket
+    |> assign(collapsed_shoots: [])
     |> assign_defaults()
     |> assign_stripe_status()
     |> ok()
+  end
+
+  @impl true
+  def handle_event(
+        "toggle-shoots",
+        %{"job_id" => job_id},
+        %{assigns: %{collapsed_shoots: collapsed_shoots}} = socket
+      ) do
+
+    job_id = String.to_integer(job_id)
+    collapsed_shoots =
+      if Enum.member?(collapsed_shoots, job_id) do
+        Enum.filter(collapsed_shoots, &(&1 != job_id))
+      else
+        collapsed_shoots ++ [job_id]
+      end
+
+    socket
+    |> assign(:collapsed_shoots, collapsed_shoots)
+    |> noreply()
   end
 
   @impl true
