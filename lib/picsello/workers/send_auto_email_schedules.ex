@@ -22,7 +22,7 @@ defmodule Picsello.Workers.ScheduleAutomationEmail do
     |> Enum.chunk_every(10)
     |> Task.async_stream(&send_emails_by_organizations(&1),
       max_concurrency: System.schedulers_online() * 3,
-      timeout: 20_000
+      timeout: 360_000
     )
     |> Stream.run()
 
