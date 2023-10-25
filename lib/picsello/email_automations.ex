@@ -184,7 +184,7 @@ defmodule Picsello.EmailAutomations do
 
     schema_gallery = schemas(gallery)
 
-    EmailAutomationNotifier.Impl.deliver_automation_email_gallery(
+    EmailAutomationNotifier.deliver_automation_email_gallery(
       email,
       gallery,
       schema_gallery,
@@ -197,7 +197,7 @@ defmodule Picsello.EmailAutomations do
   def send_now_email(:order, email, order, state) do
     order = order |> Repo.preload(gallery: :job)
 
-    EmailAutomationNotifier.Impl.deliver_automation_email_order(
+    EmailAutomationNotifier.deliver_automation_email_order(
       email,
       order,
       {order, order.gallery},
@@ -223,7 +223,7 @@ defmodule Picsello.EmailAutomations do
           %PaymentSchedule{price: Money.new(0, currency)}
       end)
 
-    EmailAutomationNotifier.Impl.deliver_automation_email_job(
+    EmailAutomationNotifier.deliver_automation_email_job(
       email,
       job,
       {job, payment_schedule},
@@ -411,7 +411,7 @@ defmodule Picsello.EmailAutomations do
   end
 
   defp send_payment_email(nil, email_preset, job, state) do
-    EmailAutomationNotifier.Impl.deliver_automation_email_job(
+    EmailAutomationNotifier.deliver_automation_email_job(
       email_preset,
       job,
       {job},
@@ -421,7 +421,7 @@ defmodule Picsello.EmailAutomations do
   end
 
   defp send_payment_email(email_schedule, _email_preset, job, state) do
-    EmailAutomationNotifier.Impl.deliver_automation_email_job(
+    EmailAutomationNotifier.deliver_automation_email_job(
       email_schedule,
       job,
       {job},
