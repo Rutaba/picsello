@@ -450,4 +450,12 @@ defmodule Picsello.EmailAutomations do
 
   defp preload_email(email),
     do: email |> Repo.preload(email_automation_pipeline: [:email_automation_category])
+
+  def broadcast_count_of_emails(job_id) do
+    Phoenix.PubSub.broadcast(
+      Picsello.PubSub,
+      "emails_count:#{job_id}",
+      {:update_emails_count, %{job_id: job_id}}
+    )
+  end
 end

@@ -140,10 +140,21 @@ defmodule Picsello.EmailAutomationSchedules do
       ])
       |> Map.merge(params)
 
-    Ecto.Multi.new()
-    |> Ecto.Multi.insert(:email_schedule_history, EmailScheduleHistory.changeset(history_params))
-    |> Ecto.Multi.delete(:delete_email_schedule, schedule)
-    |> Repo.transaction()
+    multi_schedule =
+      Ecto.Multi.new()
+      |> Ecto.Multi.insert(
+        :email_schedule_history,
+        EmailScheduleHistory.changeset(history_params)
+      )
+      |> Ecto.Multi.delete(:delete_email_schedule, schedule)
+      |> Repo.transaction()
+
+    with {:ok, multi} <- multi_schedule,
+         _count <- EmailAutomations.broadcast_count_of_emails(schedule.job_id) do
+      {:ok, multi}
+    else
+      error -> error
+    end
   end
 
   def update_email_schedule(id, params) do

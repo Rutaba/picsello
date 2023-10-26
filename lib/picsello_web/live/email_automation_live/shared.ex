@@ -731,21 +731,6 @@ defmodule PicselloWeb.EmailAutomationLive.Shared do
     else
       nil
     end
-
-    # all_paid_offline =
-    #   payment_schedules
-    #   |> Enum.all?(fn p -> not is_nil(p.paid_at) and p.type in ["check", "cash"] end)
-
-    # if all_paid_offline and Enum.any?(payment_schedules) do
-    #   paid_at =
-    #     payment_schedules
-    #     |> List.last()
-    #     |> Map.get(:paid_at)
-
-    #   get_date_for_schedule(last_completed_email, paid_at)
-    # else
-    #   nil
-    # end
   end
 
   def fetch_date_for_state(:shoot_thanks, email, _last_completed_email, job, _gallery, _order) do
