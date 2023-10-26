@@ -42,7 +42,7 @@ defmodule PicselloWeb.JobLive.Shared do
 
   @string_length 15
 
-  def handle_event("copy-client-link", _, socket), do: socket |> noreply()
+  def handle_event("copy-or-view-client-link", _, socket), do: socket |> noreply()
 
   def handle_event(
         "toggle-section",
@@ -1339,8 +1339,13 @@ defmodule PicselloWeb.JobLive.Shared do
           </dl>
         </div>
         <%= unless @job.is_gallery_only do %>
-        <div class="flex justify-end items-center mt-8">
-          <.icon_button icon="anchor" color="blue-planning-300" class="flex-shrink-0 mx-4 transition-colors px-6 py-3" id="copy-client-link" data-clipboard-text={if @proposal, do: BookingProposal.url(@proposal.id)} phx-click="copy-client-link" phx-hook="Clipboard" disabled={@disabled_copy_link}>
+        <div class="lg:flex justify-end items-center mt-8">
+          <.icon_button icon="eye" color="blue-planning-300" class="flex-shrink-0 transition-colors px-6 py-3" id="client-preview" disabled={@disabled_copy_link} phx-click="copy-or-view-client-link" phx-value-action="view" phx-hook="ViewProposal">
+            <a href={if @proposal, do: BookingProposal.url(@proposal.id)}} target="_blank" rel="noopener noreferrer">
+              Client preview
+            </a>
+          </.icon_button>
+          <.icon_button icon="anchor" color="blue-planning-300" class="mt-2 lg:mt-0 flex-shrink-0 lg:mx-4 transition-colors px-6 py-3" id="copy-client-link" data-clipboard-text={if @proposal, do: BookingProposal.url(@proposal.id)} phx-click="copy-or-view-client-link" phx-value-action="copy" phx-hook="Clipboard" disabled={@disabled_copy_link}>
             <span>Copy client link</span>
             <div class="hidden p-1 text-sm rounded shadow" role="tooltip">
               Copied!
