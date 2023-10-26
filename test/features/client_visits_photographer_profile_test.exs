@@ -123,6 +123,7 @@ defmodule Picsello.ClientVisitsPhotographerProfileTest do
     |> visit(profile_url)
     |> assert_has(radio_button("Event", visible: false, checked: true))
   end
+
   @phone "2015551234"
   feature "contact", %{session: session, profile_url: profile_url, photographer: photographer} do
     session

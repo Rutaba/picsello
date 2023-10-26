@@ -99,7 +99,6 @@ defmodule Picsello.ClientsIndexTest do
     |> assert_text("Remaining to collect: $0.00")
   end
 
-
   @name "John"
   @email "john@example.com"
   feature "adds new client with international phone no and edits it ", %{session: session} do

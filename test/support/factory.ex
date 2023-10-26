@@ -315,7 +315,7 @@ defmodule Picsello.Factory do
 
   def answer_factory(attrs) do
     %Answer{
-      answers: [["1"], ["2"], ["3"], ["4"], ["5"], ["6"], ["7"]]
+      answers: [["1"], ["2"], ["3"], ["4"], ["5"], ["6"], ["+12015551234"]]
     }
     |> merge_attributes(attrs)
   end
