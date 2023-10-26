@@ -211,7 +211,7 @@ defmodule Picsello.EmailAutomations do
     payment_schedule =
       PaymentSchedule
       |> where([ps], ps.job_id == ^job.id and not is_nil(ps.paid_at))
-      |> order_by(desc: :inserted_at)
+      |> order_by(desc: :updated_at)
       |> limit(1)
       |> Repo.one()
       |> then(fn
