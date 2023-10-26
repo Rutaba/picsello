@@ -262,8 +262,8 @@ defmodule Picsello.PaymentSchedules do
   end
 
   def payment_schedules(job) do
-    Repo.preload(job, [:payment_schedules])
-    |> Map.get(:payment_schedules)
+    from(ps in PaymentSchedule, where: ps.job_id == ^job.id)
+    |> Repo.all()
     |> set_payment_schedules_order()
   end
 
@@ -324,12 +324,6 @@ defmodule Picsello.PaymentSchedules do
         UserNotifier.deliver_lead_converted_to_job(proposal, helpers)
       end
 
-      EmailAutomations.send_pays_retainer(
-        job,
-        :pays_retainer,
-        client.organization.id
-      )
-
       %{
         job: %{
           shoots: shoots,
@@ -347,13 +341,19 @@ defmodule Picsello.PaymentSchedules do
         |> Oban.insert_all()
       end
 
-      # insert emails when paid by stripe
+      # insert emails when client books a slot
       EmailAutomationSchedules.insert_job_emails(
         proposal.job.type,
         organization.id,
         proposal.job.id,
         :job,
         []
+      )
+
+      EmailAutomations.send_pays_retainer(
+        proposal.job,
+        :pays_retainer,
+        proposal.job.client.organization.id
       )
 
       {:ok, payment_schedule}

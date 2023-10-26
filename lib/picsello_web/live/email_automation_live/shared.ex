@@ -558,7 +558,7 @@ defmodule PicselloWeb.EmailAutomationLive.Shared do
       |> Enum.filter(&(!is_nil(&1.paid_at) and &1.type == "stripe"))
       |> Enum.sort_by(& &1.paid_at, :asc)
 
-    if Enum.any?(online_pays) do
+    if Enum.any?(online_pays) and !PaymentSchedules.all_paid?(job) do
       payment_date = online_pays |> List.first() |> Map.get(:paid_at)
       get_date_for_schedule(last_completed_email, payment_date)
     else
@@ -583,16 +583,12 @@ defmodule PicselloWeb.EmailAutomationLive.Shared do
       when state in [:pays_retainer_offline, :thanks_booking] do
     payment_schedules = PaymentSchedules.payment_schedules(job)
 
-    all_paid_payments =
-      payment_schedules
-      |> Enum.filter(&(!is_nil(&1.paid_at)))
-
     offline_pays =
       payment_schedules
       |> Enum.filter(&(!is_nil(&1.paid_at) and &1.type != "stripe"))
       |> Enum.sort_by(& &1.paid_at, :asc)
 
-    if Enum.any?(offline_pays) and Enum.count(all_paid_payments) == 1 do
+    if Enum.any?(offline_pays) and !PaymentSchedules.all_paid?(job) do
       payment_offline = offline_pays |> List.first() |> Map.get(:paid_at)
 
       get_date_for_schedule(last_completed_email, payment_offline)
@@ -688,30 +684,17 @@ defmodule PicselloWeb.EmailAutomationLive.Shared do
   end
 
   def fetch_date_for_state(:paid_full, _email, last_completed_email, job, _gallery, _order) do
-    payment_schedules = PaymentSchedules.payment_schedules(job)
+    payment_schedules =
+      PaymentSchedules.payment_schedules(job) |> Enum.sort_by(& &1.updated_at, :desc)
+
     # Trigger when all paid & last payment is paid by stripe
     if Enum.any?(payment_schedules) and PaymentSchedules.all_paid?(job) do
-      payment_schedule = payment_schedules |> List.last()
+      payment_schedule = payment_schedules |> List.first()
       paid_at = paid_online(payment_schedule)
       get_date_for_schedule(last_completed_email, paid_at)
     else
       nil
     end
-
-    # all_paid_online =
-    #   payment_schedules
-    #   |> Enum.all?(fn p -> not is_nil(p.paid_at) and p.type not in ["check", "cash"] end)
-
-    # if all_paid_online and Enum.any?(payment_schedules)do
-    #   paid_at =
-    #     payment_schedules
-    #     |> List.last()
-    #     |> Map.get(:paid_at)
-
-    #   get_date_for_schedule(last_completed_email, paid_at)
-    # else
-    #   nil
-    # end
   end
 
   def fetch_date_for_state(
@@ -722,10 +705,12 @@ defmodule PicselloWeb.EmailAutomationLive.Shared do
         _gallery,
         _order
       ) do
-    payment_schedules = PaymentSchedules.payment_schedules(job)
+    payment_schedules =
+      PaymentSchedules.payment_schedules(job) |> Enum.sort_by(& &1.updated_at, :desc)
+
     # Trigger when all paid & last payment is paid by cash/check
     if Enum.any?(payment_schedules) and PaymentSchedules.all_paid?(job) do
-      payment_schedule = payment_schedules |> List.last()
+      payment_schedule = payment_schedules |> List.first()
       paid_at = paid_offline(payment_schedule)
       get_date_for_schedule(last_completed_email, paid_at)
     else
