@@ -192,7 +192,7 @@ defmodule Picsello.CreateClientTest do
     |> assert_text("Add Client: General Details")
     |> assert_has(css("#client_name"))
     |> assert_has(css("#client_email"))
-    |> assert_has(css("#client_phone"))
+    |> assert_has(css("input[type=tel]"))
     |> assert_has(css("#client_address"))
     |> assert_has(css("#client_notes"))
     |> assert_has(css("#clear-notes"))

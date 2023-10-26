@@ -19,7 +19,7 @@ defmodule PicselloWeb.BookingProposalLive.QuestionnaireComponent do
   def handle_event(
         "validate",
         %{"_target" => ["Phone", "value"]},
-       socket
+        socket
       ) do
     socket |> noreply()
   end

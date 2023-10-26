@@ -10,7 +10,7 @@ defmodule Picsello.CreateLeadTest do
       user: user,
       name: "Elizabeth Taylor",
       email: "taylor@example.com",
-      phone: "(210) 111-1234"
+      phone: "+12015551234"
     )
 
     base_price = %Money{amount: 10_000, currency: :USD}
@@ -60,6 +60,8 @@ defmodule Picsello.CreateLeadTest do
     Mix.Tasks.ImportQuestionnaires.run(nil)
   end
 
+  @phone "2015551234"
+
   feature "user creates lead with existing client", %{session: session} do
     session
     |> click(button("Actions"))
@@ -74,7 +76,7 @@ defmodule Picsello.CreateLeadTest do
     |> assert_has(css("h1", text: "Elizabeth Taylor Wedding"))
     |> assert_has(testid("card-Communications", text: "Elizabeth Taylor"))
     |> assert_has(testid("card-Communications", text: "taylor@example.com"))
-    |> assert_has(testid("card-Communications", text: "(210) 111-1234"))
+    |> assert_has(testid("card-Communications", text: @phone))
     |> add_missing_shoot_details()
     |> click(link("Picsello"))
     |> click(button("Leads"))
@@ -90,7 +92,7 @@ defmodule Picsello.CreateLeadTest do
     |> click(button("Add a new client"))
     |> fill_in(text_field("Client Name"), with: "Elizabeth Taylor")
     |> fill_in(text_field("Client Email"), with: "taylor-test@example.com")
-    |> fill_in(text_field("Client Phone"), with: "(210) 111-1234")
+    |> fill_in(css("input[type=tel]"), with: @phone)
     |> scroll_into_view(css("label", text: "Event"))
     |> click(css("label", text: "Event"))
     |> find(css(".modal"), &wait_for_enabled_submit_button/1)
@@ -98,7 +100,7 @@ defmodule Picsello.CreateLeadTest do
     |> assert_has(css("h1", text: "Elizabeth Taylor Event"))
     |> assert_has(testid("card-Communications", text: "Elizabeth Taylor"))
     |> assert_has(testid("card-Communications", text: "taylor-test@example.com"))
-    |> assert_has(testid("card-Communications", text: "(210) 111-1234"))
+    |> assert_has(testid("card-Communications", text: @phone))
     |> add_missing_shoot_details()
     |> click(link("Picsello"))
     |> click(button("Leads"))
@@ -142,7 +144,7 @@ defmodule Picsello.CreateLeadTest do
     |> assert_has(css("h1", text: "Elizabeth Taylor Other"))
     |> assert_has(testid("card-Communications", text: "Elizabeth Taylor"))
     |> assert_has(testid("card-Communications", text: "taylor@example.com"))
-    |> assert_has(testid("card-Communications", text: "(210) 111-1234"))
+    |> assert_has(testid("card-Communications", text: @phone))
     |> add_missing_shoot_details()
     |> click(link("Picsello"))
     |> click(button("Leads"))

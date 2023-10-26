@@ -123,21 +123,21 @@ defmodule Picsello.ClientVisitsPhotographerProfileTest do
     |> visit(profile_url)
     |> assert_has(radio_button("Event", visible: false, checked: true))
   end
-
+  @phone "2015551234"
   feature "contact", %{session: session, profile_url: profile_url, photographer: photographer} do
     session
     |> visit(profile_url)
     |> assert_disabled_submit()
     |> fill_in(text_field("Name"), with: " ")
     |> fill_in(text_field("Email"), with: " ")
-    |> fill_in(text_field("Phone Number"), with: " ")
+    |> fill_in(css("input[type=tel]"), with: " ")
     |> fill_in(text_field("Your message"), with: " ")
     |> assert_text("Name can't be blank")
     |> assert_text("Email can't be blank")
     |> assert_text("Your message can't be blank")
     |> fill_in(text_field("Name"), with: "Chad Smith")
     |> fill_in(text_field("Email"), with: "chad@example.com")
-    |> fill_in(text_field("Phone Number"), with: "987 123 4567")
+    |> fill_in(css("input[type=tel]"), with: @phone)
     |> click(css("label", text: "Wedding"))
     |> fill_in(text_field("Your message"), with: "May you take some pictures of our family?")
     |> wait_for_enabled_submit_button()
@@ -149,13 +149,13 @@ defmodule Picsello.ClientVisitsPhotographerProfileTest do
              client: %{
                name: "Chad Smith",
                email: "chad@example.com",
-               phone: "987 123 4567",
+               phone: "+12015551234",
                id: client_id
              },
              client_messages: [
                %{
                  body_text:
-                   "  name: Chad Smith\n  email: chad@example.com\n  phone: 987 123 4567\n  job type: Wedding\n  message: May you take some pictures of our family?\n"
+                   "  name: Chad Smith\n  email: chad@example.com\n  phone: +12015551234\n  job type: Wedding\n  message: May you take some pictures of our family?\n"
                }
              ]
            } = photographer |> latest_job()
@@ -169,7 +169,7 @@ defmodule Picsello.ClientVisitsPhotographerProfileTest do
     |> visit(profile_url)
     |> fill_in(text_field("Email"), with: "chad@example.com")
     |> fill_in(text_field("Name"), with: "Not Chad")
-    |> fill_in(text_field("Phone Number"), with: "918 123 4567")
+    |> fill_in(css("input[type=tel]"), with: @phone)
     |> click(css("label", text: "Event"))
     |> fill_in(text_field("Your message"), with: "May you take some pictures of our party?")
     |> wait_for_enabled_submit_button()
@@ -181,13 +181,13 @@ defmodule Picsello.ClientVisitsPhotographerProfileTest do
              client: %{
                name: "Chad Smith",
                email: "chad@example.com",
-               phone: "987 123 4567",
+               phone: "+12015551234",
                id: ^client_id
              },
              client_messages: [
                %{
                  body_text:
-                   "  name: Not Chad\n  email: chad@example.com\n  phone: 918 123 4567\n  job type: Event\n  message: May you take some pictures of our party?\n"
+                   "  name: Not Chad\n  email: chad@example.com\n  phone: +12015551234\n  job type: Event\n  message: May you take some pictures of our party?\n"
                }
              ]
            } = photographer |> latest_job()

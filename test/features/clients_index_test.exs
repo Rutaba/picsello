@@ -13,21 +13,18 @@ defmodule Picsello.ClientsIndexTest do
       insert(:client,
         user: user,
         name: "Elizabeth Taylor",
-        email: "taylor@example.com",
-        phone: "(210) 111-1234"
+        email: "taylor@example.com"
       )
 
     insert(:client, %{
       organization: user.organization,
       name: "John Snow",
-      phone: "(241) 567-2352",
       email: "snow@example.com"
     })
 
     insert(:client, %{
       organization: user.organization,
       name: "Michael Stark",
-      phone: "(442) 567-2321",
       email: "stark@example.com"
     })
 
@@ -89,6 +86,7 @@ defmodule Picsello.ClientsIndexTest do
     |> assert_text("Remaining to collect: $800.00")
     |> find(testid("payment-1"), &fill_in(&1, text_field("Payment amount"), with: "$300"))
     |> click(css("#payment-0"))
+    |> sleep(300)
     |> fill_in(css(".numInput.cur-year"), with: "2030")
     |> find(css(".flatpickr-monthDropdown-months"), &click(&1, option("January")))
     |> click(css("[aria-label='January 1, 2030']"))
@@ -101,10 +99,10 @@ defmodule Picsello.ClientsIndexTest do
     |> assert_text("Remaining to collect: $0.00")
   end
 
+
   @name "John"
   @email "john@example.com"
-  @phone "(555) 123-1234"
-  feature "adds new client and edits it", %{session: session} do
+  feature "adds new client with international phone no and edits it ", %{session: session} do
     session
     |> visit("/clients")
     |> click(button("Add client"))
@@ -112,7 +110,9 @@ defmodule Picsello.ClientsIndexTest do
     |> assert_text("Email can't be blank")
     |> fill_in(text_field("Name"), with: @name)
     |> fill_in(text_field("Email"), with: @email)
-    |> fill_in(text_field("Phone"), with: @phone)
+    |> click(css("span", text: "+1"))
+    |> click(css("span", text: "+93"))
+    |> fill_in(css("input[type=tel]"), with: "234567892")
     |> wait_for_enabled_submit_button(text: "Save")
     |> click(button("Save"))
     |> click(link("All Clients"))
@@ -125,7 +125,7 @@ defmodule Picsello.ClientsIndexTest do
     |> assert_text("Edit Client: General Details")
     |> assert_value(text_field("Name"), @name)
     |> assert_value(text_field("Email"), @email)
-    |> assert_value(text_field("Phone"), @phone)
+    |> assert_value(css("input[type=tel]"), "23-456-7892")
     |> fill_in(text_field("Name"), with: "Josh")
     |> wait_for_enabled_submit_button(text: "Save")
     |> click(button("Save"))
@@ -170,7 +170,7 @@ defmodule Picsello.ClientsIndexTest do
     |> fill_in(text_field("Name"), with: " ")
     |> assert_text("Name can't be blank")
     |> fill_in(text_field("Name"), with: "Liza Taylor")
-    |> fill_in(text_field("Phone"), with: "")
+    |> fill_in(css("input[type=tel]"), with: "")
     |> wait_for_enabled_submit_button(text: "Save")
     |> click(button("Save"))
     |> assert_text("Client: Liza Taylor")
@@ -262,7 +262,7 @@ defmodule Picsello.ClientsIndexTest do
     assert %Client{
              email: "taylor@example.com",
              name: "Elizabeth Taylor",
-             phone: "(210) 111-1234"
+             phone: "+12015551234"
            } = job.client
   end
 

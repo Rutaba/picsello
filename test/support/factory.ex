@@ -246,7 +246,7 @@ defmodule Picsello.Factory do
     %Client{
       email: sequence(:email, &"client-#{&1}@example.com"),
       name: "Mary Jane",
-      phone: "(904) 555-5555",
+      phone: "+12015551234",
       organization: fn ->
         case attrs do
           %{user: user} -> user |> Repo.preload(:organization) |> Map.get(:organization)
@@ -305,7 +305,7 @@ defmodule Picsello.Factory do
         %Questionnaire.Question{
           type: "phone",
           prompt: "Phone",
-          optional: false
+          optional: true
         }
       ],
       job_type: "newborn"

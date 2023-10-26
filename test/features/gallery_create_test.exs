@@ -10,7 +10,6 @@ defmodule Picsello.GalleryCreateTest do
       user: user,
       name: "Elizabeth Taylor",
       email: "taylor@example.com",
-      phone: "(210) 111-1234"
     )
 
     [session: session]
