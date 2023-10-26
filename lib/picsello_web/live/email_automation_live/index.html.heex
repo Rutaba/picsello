@@ -102,7 +102,7 @@
               <%= Enum.map(subcategory.pipelines, fn pipeline -> %>
                 <%= if pipeline.state not in ["gallery_password_changed", "order_confirmation_physical", "order_confirmation_digital"] do %>
                   <%= if Enum.member?(@collapsed_sections, subcategory.subcategory_name) do %>
-                    <.pipeline_section id="pipepline-#{pipeline.id}" collapsed_sections={@collapsed_sections} pipeline={pipeline} category={automation_pipeline.category_id} subcategory={subcategory.subcategory_id} subcategory_slug={subcategory.subcategory_slug}/>
+                    <.pipeline_section id="pipepline-#{pipeline.id}" always_enabled_states={@always_enabled_states} collapsed_sections={@collapsed_sections} pipeline={pipeline} category={automation_pipeline.category_id} subcategory={subcategory.subcategory_id} subcategory_slug={subcategory.subcategory_slug}/>
                   <% end %>
                 <% end %>
               <% end) %>

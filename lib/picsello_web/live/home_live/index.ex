@@ -398,7 +398,6 @@ defmodule PicselloWeb.HomeLive.Index do
 
   @impl true
   def handle_event("open-thread", %{"id" => id, "type" => type}, socket) do
-
     socket
     |> push_redirect(to: Routes.inbox_path(socket, :show, "#{type}-#{id}"))
     |> noreply()
@@ -978,7 +977,7 @@ defmodule PicselloWeb.HomeLive.Index do
           subtitle: Job.name(message.job),
           message: message.body_text,
           date: strftime(current_user.time_zone, message.inserted_at, "%-m/%-d/%y"),
-          type: thread_type(message),
+          type: thread_type(message)
         }
       end)
 
