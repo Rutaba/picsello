@@ -436,7 +436,7 @@ defmodule PicselloWeb.EmailAutomationLive.Shared do
 
     days_to_compare = hours_to_days(email.total_hours)
     %{sign: sign} = EmailAutomations.explode_hours(email.total_hours)
-    today = DateTime.utc_now() |> Timex.end_of_day()
+    today = DateTime.utc_now()
 
     cond do
       is_nil(gallery.expired_at) ->
@@ -488,7 +488,7 @@ defmodule PicselloWeb.EmailAutomationLive.Shared do
     # send 7 days after gallery send 7 >= 7
 
     days_to_compare = hours_to_days(email.total_hours)
-    today = DateTime.utc_now() |> Timex.end_of_day()
+    today = DateTime.utc_now()
 
     %{sign: sign} = EmailAutomations.explode_hours(email.total_hours)
 
@@ -883,7 +883,7 @@ defmodule PicselloWeb.EmailAutomationLive.Shared do
   end
 
   defp today_timezone(timezone) do
-    DateTime.utc_now() |> DateTime.shift_zone!(timezone) |> Timex.end_of_day()
+    DateTime.utc_now() |> DateTime.shift_zone!(timezone)
   end
 
   defp get_date_for_schedule(nil, date), do: date
