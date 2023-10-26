@@ -13,8 +13,10 @@ defmodule PicselloWeb.JobLive.Index do
       pagination_index: 2
     ]
 
+  import PicselloWeb.Live.Shared, only: [save_filters: 3]
+
   alias Ecto.Changeset
-  alias Picsello.{Job, Jobs, Repo, Payments, Package}
+  alias Picsello.{Job, Jobs, Repo, Payments, Package, PreferredFilters}
   alias PicselloWeb.{JobLive}
 
   @default_pagination_limit 12
@@ -31,8 +33,17 @@ defmodule PicselloWeb.JobLive.Index do
   def handle_event(
         "apply-filter-status",
         %{"option" => status},
-        socket
+        %{assigns: %{live_action: live_action, current_user: %{organization_id: organization_id}}} =
+          socket
       ) do
+    case live_action do
+      :leads ->
+        save_filters(organization_id, "leads", %{job_status: status})
+
+      :jobs ->
+        save_filters(organization_id, "jobs", %{job_status: status})
+    end
+
     socket
     |> assign(:job_status, status)
     |> reassign_pagination_and_jobs()
@@ -42,8 +53,17 @@ defmodule PicselloWeb.JobLive.Index do
   def handle_event(
         "apply-filter-type",
         %{"option" => type},
-        socket
+        %{assigns: %{live_action: live_action, current_user: %{organization_id: organization_id}}} =
+          socket
       ) do
+    case live_action do
+      :leads ->
+        save_filters(organization_id, "leads", %{job_type: type})
+
+      :jobs ->
+        save_filters(organization_id, "jobs", %{job_type: type})
+    end
+
     socket
     |> assign(:job_type, type)
     |> reassign_pagination_and_jobs()
@@ -53,8 +73,17 @@ defmodule PicselloWeb.JobLive.Index do
   def handle_event(
         "apply-filter-sort_by",
         %{"option" => sort_by},
-        socket
+        %{assigns: %{live_action: live_action, current_user: %{organization_id: organization_id}}} =
+          socket
       ) do
+    case live_action do
+      :leads ->
+        save_filters(organization_id, "leads", %{sort_by: sort_by})
+
+      :jobs ->
+        save_filters(organization_id, "jobs", %{sort_by: sort_by})
+    end
+
     socket
     |> assign(:sort_by, sort_by)
     |> assign(
@@ -75,10 +104,26 @@ defmodule PicselloWeb.JobLive.Index do
   def handle_event(
         "toggle-sort-direction",
         _,
-        %{assigns: %{sort_direction: sort_direction}} = socket
+        %{
+          assigns: %{
+            sort_direction: sort_direction,
+            live_action: live_action,
+            current_user: %{organization_id: organization_id}
+          }
+        } = socket
       ) do
+    sort_direction = if(sort_direction == :asc, do: :desc, else: :asc)
+
+    case live_action do
+      :leads ->
+        save_filters(organization_id, "leads", %{sort_direction: to_string(sort_direction)})
+
+      :jobs ->
+        save_filters(organization_id, "jobs", %{sort_direction: to_string(sort_direction)})
+    end
+
     socket
-    |> assign(:sort_direction, if(sort_direction == :asc, do: :desc, else: :asc))
+    |> assign(:sort_direction, sort_direction)
     |> reassign_pagination_and_jobs()
   end
 
@@ -398,13 +443,71 @@ defmodule PicselloWeb.JobLive.Index do
     socket
     |> assign_search()
     |> assign_pagination(@default_pagination_limit)
-    |> assign(:job_status, "all")
-    |> assign(:job_type, "all")
     |> assign(current_focus: -1)
     |> assign(:job_types, Picsello.JobType.all())
     |> assign_new(:selected_job, fn -> nil end)
     |> assign_type_strings()
+    |> assign_filters()
     |> then(fn socket -> assign_jobs(socket) end)
+  end
+
+  defp assign_filters(
+         %{assigns: %{live_action: :jobs, current_user: %{organization_id: organization_id}}} =
+           socket
+       ) do
+    case PreferredFilters.load_preferred_filters(organization_id, "jobs") do
+      nil ->
+        default_filters(socket, "shoot_date")
+
+      %{
+        filters: %{
+          sort_by: sort_by,
+          job_type: job_type,
+          job_status: job_status,
+          sort_direction: sort_direction
+        }
+      } ->
+        loaded_filters(socket, sort_by, job_type, job_status, sort_direction, "shoot_date")
+    end
+  end
+
+  defp assign_filters(
+         %{assigns: %{live_action: :leads, current_user: %{organization_id: organization_id}}} =
+           socket
+       ) do
+    case PreferredFilters.load_preferred_filters(organization_id, "leads") do
+      nil ->
+        default_filters(socket, "newest_lead")
+
+      %{
+        filters: %{
+          sort_by: sort_by,
+          job_type: job_type,
+          job_status: job_status,
+          sort_direction: sort_direction
+        }
+      } ->
+        loaded_filters(socket, sort_by, job_type, job_status, sort_direction, "newest_lead")
+    end
+  end
+
+  defp loaded_filters(socket, sort_by, job_type, job_status, sort_direction, default_sort_by) do
+    socket
+    |> assign(:job_status, job_status || "all")
+    |> assign(:job_type, job_type || "all")
+    |> assign(:sort_by, sort_by || default_sort_by)
+    |> assign(
+      :sort_direction,
+      if(is_nil(sort_direction), do: :desc, else: String.to_atom(sort_direction))
+    )
+  end
+
+  defp default_filters(socket, sort_by) do
+    socket
+    |> assign(:job_status, "all")
+    |> assign(:job_type, "all")
+    |> assign(:sort_by, sort_by)
+    |> assign(:sort_direction, :desc)
   end
 
   defp assign_type_strings(%{assigns: %{live_action: live_action}} = socket) do
@@ -412,15 +515,11 @@ defmodule PicselloWeb.JobLive.Index do
       do:
         socket
         |> assign(:type, %{singular: "job", plural: "jobs"})
-        |> assign(:sort_by, "shoot_date")
-        |> assign(:sort_col, :starts_at)
-        |> assign(:sort_direction, :desc),
+        |> assign(:sort_col, :starts_at),
       else:
         socket
         |> assign(:type, %{singular: "lead", plural: "leads"})
-        |> assign(:sort_by, "newest_lead")
         |> assign(:sort_col, :inserted_at)
-        |> assign(:sort_direction, :desc)
   end
 
   defp assign_search(socket) do

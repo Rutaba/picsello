@@ -4,7 +4,8 @@ defmodule PicselloWeb.Live.Calendar.BookingEvents do
 
   import PicselloWeb.Live.Calendar.Shared, only: [back_button: 1]
   import PicselloWeb.ClientBookingEventLive.Shared, only: [blurred_thumbnail: 1]
-  alias Picsello.{Payments, BookingEvents}
+  import PicselloWeb.Live.Shared, only: [save_filters: 3]
+  alias Picsello.{Payments, BookingEvents, PreferredFilters}
 
   @impl true
   def mount(_params, _session, %{assigns: %{current_user: current_user}} = socket) do
@@ -18,14 +19,36 @@ defmodule PicselloWeb.Live.Calendar.BookingEvents do
 
   defp assign_events(socket) do
     socket
-    |> assign(:event_status, "all")
-    |> assign(:sort_by, "name")
+    |> assign_preferred_filters()
     |> assign(:sort_col, "name")
-    |> assign(:sort_direction, "asc")
     |> assign(:search_phrase, nil)
     |> assign(:new_event, false)
     |> assign(current_focus: -1)
     |> assign_new(:selected_event, fn -> nil end)
+  end
+
+  defp assign_preferred_filters(
+         %{assigns: %{current_user: %{organization_id: organization_id}}} = socket
+       ) do
+    case PreferredFilters.load_preferred_filters(organization_id, "booking_events") do
+      nil ->
+        socket
+        |> assign(:event_status, "all")
+        |> assign(:sort_by, "name")
+        |> assign(:sort_direction, "asc")
+
+      %{
+        filters: %{
+          event_status: event_status,
+          sort_by: sort_by,
+          sort_direction: sort_direction
+        }
+      } ->
+        socket
+        |> assign(:event_status, event_status || "all")
+        |> assign(:sort_by, sort_by || "name")
+        |> assign(:sort_direction, sort_direction || "asc")
+    end
   end
 
   @impl true
@@ -331,8 +354,18 @@ defmodule PicselloWeb.Live.Calendar.BookingEvents do
   end
 
   @impl true
-  def handle_event("switch_sort", _, %{assigns: %{sort_direction: sort_direction}} = socket) do
+  def handle_event(
+        "switch_sort",
+        _,
+        %{
+          assigns: %{
+            sort_direction: sort_direction,
+            current_user: %{organization_id: organization_id}
+          }
+        } = socket
+      ) do
     direction = if sort_direction == "asc", do: "desc", else: "asc"
+    save_filters(organization_id, "booking_events", %{sort_direction: direction})
 
     socket
     |> assign(:sort_direction, direction)
@@ -349,8 +382,10 @@ defmodule PicselloWeb.Live.Calendar.BookingEvents do
   def handle_event(
         "apply-filter-sort-by",
         %{"option" => sort_by},
-        socket
+        %{assigns: %{current_user: %{organization_id: organization_id}}} = socket
       ) do
+    save_filters(organization_id, "booking_events", %{sort_by: sort_by})
+
     socket
     |> assign(:sort_by, sort_by)
     |> assign(:sort_col, Enum.find(sort_options(), fn op -> op.id == sort_by end).column)
@@ -362,8 +397,10 @@ defmodule PicselloWeb.Live.Calendar.BookingEvents do
   def handle_event(
         "apply-filter-status",
         %{"option" => status},
-        socket
+        %{assigns: %{current_user: %{organization_id: organization_id}}} = socket
       ) do
+    save_filters(organization_id, "booking_events", %{event_status: status})
+
     socket
     |> assign(:event_status, status)
     |> assign_booking_events()
