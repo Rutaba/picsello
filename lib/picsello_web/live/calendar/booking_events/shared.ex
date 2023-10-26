@@ -168,8 +168,8 @@ defmodule PicselloWeb.Calendar.BookingEvents.Shared do
   def handle_event(
         "confirm-cancel-session",
         %{
-          "booking_event_date_id" => booking_event_date_id,
-          "slot_index" => slot_index
+          "booking-event-date-id" => booking_event_date_id,
+          "slot-index" => slot_index
         },
         socket
       ) do
@@ -194,9 +194,9 @@ defmodule PicselloWeb.Calendar.BookingEvents.Shared do
   def handle_event(
         "confirm-reschedule",
         %{
-          "booking_event_date_id" => booking_event_date_id,
-          "slot_client_id" => slot_client_id,
-          "slot_index" => slot_index
+          "booking-event-date-id" => booking_event_date_id,
+          "slot-client-id" => slot_client_id,
+          "slot-index" => slot_index
         },
         %{assigns: %{current_user: current_user, booking_event: booking_event}} = socket
       ) do
@@ -236,7 +236,7 @@ defmodule PicselloWeb.Calendar.BookingEvents.Shared do
 
   def handle_event(
         "confirm-mark-hide",
-        %{"booking_event_date_id" => booking_event_date_id, "slot_index" => slot_index},
+        %{"booking-event-date-id" => booking_event_date_id, "slot-index" => slot_index},
         socket
       ) do
     socket
@@ -250,8 +250,8 @@ defmodule PicselloWeb.Calendar.BookingEvents.Shared do
       close_label: "Cancel",
       icon: nil,
       payload: %{
-        booking_event_date_id: String.to_integer(booking_event_date_id),
-        slot_index: String.to_integer(slot_index),
+        booking_event_date_id: to_integer(booking_event_date_id),
+        slot_index: to_integer(slot_index),
         slot_update_args: %{status: :hidden}
       }
     })
@@ -260,7 +260,7 @@ defmodule PicselloWeb.Calendar.BookingEvents.Shared do
 
   def handle_event(
         "confirm-mark-open",
-        %{"booking_event_date_id" => booking_event_date_id, "slot_index" => slot_index},
+        %{"booking-event-date-id" => booking_event_date_id, "slot-index" => slot_index},
         socket
       ) do
     socket
@@ -317,7 +317,7 @@ defmodule PicselloWeb.Calendar.BookingEvents.Shared do
 
   def handle_event(
         "confirm-reserve",
-        %{"booking_event_date_id" => booking_event_date_id, "slot_index" => slot_index},
+        %{"booking-event-date-id" => booking_event_date_id, "slot-index" => slot_index},
         %{assigns: %{current_user: current_user, booking_event: booking_event}} = socket
       ) do
     [booking_event_date_id, slot_index] = to_integer([booking_event_date_id, slot_index])

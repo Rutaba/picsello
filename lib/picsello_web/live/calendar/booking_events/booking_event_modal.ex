@@ -157,11 +157,13 @@ defmodule PicselloWeb.Live.Calendar.BookingEventModal do
               <%= input s, :is_hide, type: :checkbox, disabled: (s |> current |> Map.get(:status) == :booked), checked: hidden_time?(s |> current |> Map.get(:status)), class: "checkbox w-6 h-6"%>
               <div class={classes("ml-2", %{"text-gray-300" => s |> current |> Map.get(:status) == :booked})}> Show block as booked (break)</div>
             </div>
+            <%= hidden_input s, :client_id, value: s |> current |> Map.get(:client_id) %>
+            <%= hidden_input s, :job_id, value: s |> current |> Map.get(:job_id) %>
             <%= hidden_input s, :status, value: s |> current |> Map.get(:status) %>
           </div>
         <% end %>
         <.footer>
-          <button class="btn-primary" title="Save" type="submit" disabled={!@changeset.valid?} phx-disable-with="Save">
+          <button class="btn-primary" title="Save" type="submit" disabled={!@changeset.valid? || Enum.empty?(@changeset.changes)} phx-disable-with="Save">
               Save
           </button>
           <button class="btn-secondary" title="cancel" type="button" phx-click="modal" phx-value-action="close">
@@ -210,15 +212,8 @@ defmodule PicselloWeb.Live.Calendar.BookingEventModal do
   end
 
   @impl true
-  def handle_event("submit", %{"booking_event_date" => params}, socket) do
-    %{
-      assigns: %{
-        changeset: changeset,
-        booking_date: booking_date,
-        current_user: %{organization_id: _organization_id}
-      }
-    } = socket = assign_changeset(socket, params)
-
+  def handle_event("submit", %{"booking_event_date" => _params}, %{assigns: %{changeset: changeset, booking_date: booking_date}} = socket) do
+     changeset = changeset |> Map.replace(:action, nil)
     %{dates: repeat_dates, params: repeat_dates_rows} =
       if get_field(changeset, :is_repeat) do
         repeat_dates = get_repeat_dates(changeset)
