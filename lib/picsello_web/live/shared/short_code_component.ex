@@ -86,7 +86,7 @@ defmodule PicselloWeb.Shared.ShortCodeComponent do
             name: "booking_event_client_link",
             sample: """
             <a target="_blank" href="https://bookingeventclientlinkhere.com">
-              Client Event Link
+              Client Url
             </a>
             """,
             description: "Link to the client booking-event"
@@ -235,12 +235,6 @@ defmodule PicselloWeb.Shared.ShortCodeComponent do
           },
           %{
             id: 2,
-            name: "email_signature",
-            sample: name,
-            description: "Included on every email sent from your Picsello account"
-          },
-          %{
-            id: 3,
             name: "photographer_cell",
             sample: "(123) 456-7891",
             description:
@@ -326,7 +320,7 @@ defmodule PicselloWeb.Shared.ShortCodeComponent do
   end
 
   defp get_photopgrapher_data(user) do
-    Map.get(user.organization, :name, "John lee") |> String.capitalize()
+    Map.get(user.organization, :name, "John lee")
   end
 
   defp get_client_data(nil), do: nil
