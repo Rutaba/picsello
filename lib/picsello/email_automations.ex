@@ -14,7 +14,8 @@ defmodule Picsello.EmailAutomations do
     EmailAutomationSchedules,
     Notifiers.EmailAutomationNotifier,
     EmailPresets,
-    PaymentSchedule
+    PaymentSchedule,
+    PaymentSchedules
   }
 
   alias Picsello.EmailAutomation.{
