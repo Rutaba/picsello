@@ -14,7 +14,7 @@ defmodule Picsello.EmailAutomations do
     EmailAutomationSchedules,
     Notifiers.EmailAutomationNotifier,
     EmailPresets,
-    PaymentSchedules
+    PaymentSchedule
   }
 
   alias Picsello.EmailAutomation.{
@@ -207,10 +207,25 @@ defmodule Picsello.EmailAutomations do
   end
 
   def send_now_email(type, email, job, state) when type in [:lead, :job] do
+    payment_schedule =
+      PaymentSchedule
+      |> where([ps], ps.job_id == ^job.id and not is_nil(ps.paid_at))
+      |> order_by(desc: :inserted_at)
+      |> limit(1)
+      |> Repo.one()
+      |> then(fn
+        %PaymentSchedule{} = ps ->
+          ps
+
+        nil ->
+          currency = Picsello.Currency.for_job(job)
+          %PaymentSchedule{price: Money.new(0, currency)}
+      end)
+
     EmailAutomationNotifier.Impl.deliver_automation_email_job(
       email,
       job,
-      {job},
+      {job, payment_schedule},
       state,
       PicselloWeb.Helpers
     )

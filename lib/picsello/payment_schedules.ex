@@ -311,7 +311,7 @@ defmodule Picsello.PaymentSchedules do
         },
         helpers
       ) do
-    with %BookingProposal{} = proposal <-
+    with %BookingProposal{job: %{client: client, job_status: job_status} = job} = proposal <-
            Repo.get(BookingProposal, proposal_id)
            |> Repo.preload(job: [:job_status, client: :organization]),
          %PaymentSchedule{paid_at: nil} = payment_schedule <-
@@ -320,21 +320,14 @@ defmodule Picsello.PaymentSchedules do
            payment_schedule
            |> PaymentSchedule.paid_changeset()
            |> Repo.update() do
-      if proposal.job.job_status.is_lead do
+      if job_status.is_lead do
         UserNotifier.deliver_lead_converted_to_job(proposal, helpers)
       end
 
-      # This needs to be removed
-      # ClientNotifier.deliver_payment_schedule_confirmation(
-      #   proposal.job,
-      #   payment_schedule,
-      #   helpers
-      # )
-
       EmailAutomations.send_pays_retainer(
-        proposal.job,
+        job,
         :pays_retainer,
-        proposal.job.client.organization.id
+        client.organization.id
       )
 
       %{
