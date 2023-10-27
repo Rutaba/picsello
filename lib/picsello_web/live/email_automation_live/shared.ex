@@ -624,6 +624,12 @@ defmodule PicselloWeb.EmailAutomationLive.Shared do
 
     today = DateTime.utc_now() |> Timex.end_of_day() |> DateTime.shift_zone!(timezone)
 
+    today_offset_before =
+      DateTime.utc_now() |> DateTime.shift_zone!(timezone) |> Timex.end_of_day()
+
+    Logger.info("-- before_shoot today: #{today}")
+    Logger.info("-- before_shoot today_offset_before: #{today_offset_before}")
+
     %{sign: sign} = EmailAutomations.explode_hours(email.total_hours)
     days_to_compare = hours_to_days(email.total_hours)
 
@@ -631,7 +637,6 @@ defmodule PicselloWeb.EmailAutomationLive.Shared do
     |> Enum.filter(fn item ->
       starts_at = item.starts_at |> DateTime.shift_zone!(timezone)
 
-      Logger.info("-- before_shoot today: #{today}")
       Logger.info("-- before_shoot starts_at: #{starts_at}")
       Logger.info("-- before_shoot date_diff: #{Date.diff(starts_at, today)}")
 
