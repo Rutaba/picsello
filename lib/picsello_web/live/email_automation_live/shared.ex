@@ -1,5 +1,7 @@
 defmodule PicselloWeb.EmailAutomationLive.Shared do
   @moduledoc false
+  require Logger
+
   use Phoenix.Component
   import Phoenix.LiveView
 
@@ -611,15 +613,33 @@ defmodule PicselloWeb.EmailAutomationLive.Shared do
     # difference is 7 days
     # send 7 days before shoot start 7<= 7 true
 
+    # shoot.start_at is ~D[2023-10-20]
+    # today is ~D[2023-10-21]
+    # difference is 1 days
+    # send 1 days before shoot start 1<= 1 true
+
     timezone = job.client.organization.user.time_zone
 
+    Logger.info("-- before_shoot timezone: #{timezone}")
+
     today = DateTime.utc_now() |> Timex.end_of_day() |> DateTime.shift_zone!(timezone)
+
+    today_offset_before =
+      DateTime.utc_now() |> DateTime.shift_zone!(timezone) |> Timex.end_of_day()
+
+    Logger.info("-- before_shoot today: #{today}")
+    Logger.info("-- before_shoot today_offset_before: #{today_offset_before}")
+
     %{sign: sign} = EmailAutomations.explode_hours(email.total_hours)
     days_to_compare = hours_to_days(email.total_hours)
 
     job.shoots
     |> Enum.filter(fn item ->
       starts_at = item.starts_at |> DateTime.shift_zone!(timezone)
+
+      Logger.info("-- before_shoot starts_at: #{starts_at}")
+      Logger.info("-- before_shoot date_diff: #{Date.diff(starts_at, today)}")
+
       is_send_time?(Date.diff(starts_at, today), abs(days_to_compare), sign)
     end)
     |> (fn filtered_list ->
