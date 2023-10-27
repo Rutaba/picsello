@@ -262,8 +262,8 @@ defmodule Picsello.PaymentSchedules do
   end
 
   def payment_schedules(job) do
-    from(ps in PaymentSchedule, where: ps.job_id == ^job.id)
-    |> Repo.all()
+    Repo.preload(job, [:payment_schedules], force: true)
+    |> Map.get(:payment_schedules)
     |> set_payment_schedules_order()
   end
 
@@ -311,7 +311,7 @@ defmodule Picsello.PaymentSchedules do
         },
         helpers
       ) do
-    with %BookingProposal{job: %{client: client, job_status: job_status} = job} = proposal <-
+    with %BookingProposal{job: %{client: _client, job_status: job_status} = _job} = proposal <-
            Repo.get(BookingProposal, proposal_id)
            |> Repo.preload(job: [:job_status, client: :organization]),
          %PaymentSchedule{paid_at: nil} = payment_schedule <-

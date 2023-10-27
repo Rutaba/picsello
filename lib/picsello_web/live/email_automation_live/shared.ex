@@ -549,8 +549,29 @@ defmodule PicselloWeb.EmailAutomationLive.Shared do
     get_date_for_schedule(last_completed_email, lead_date)
   end
 
-  def fetch_date_for_state(state, _email, last_completed_email, job, _gallery, _order)
-      when state in [:pays_retainer, :thanks_booking] do
+  def fetch_date_for_state(:thanks_booking, _email, last_completed_email, job, _gallery, _order) do
+    payment_schedules = PaymentSchedules.payment_schedules(job)
+    any_with_cash? = PaymentSchedules.is_with_cash?(job)
+
+    paid_at =
+      payment_schedules
+      |> Enum.filter(&(!is_nil(&1.paid_at)))
+
+    cond do
+      Enum.any?(paid_at) ->
+        payment_date = paid_at |> List.first() |> Map.get(:paid_at)
+        get_date_for_schedule(last_completed_email, payment_date)
+
+      any_with_cash? ->
+        payment_date = payment_schedules |> List.first() |> Map.get(:inserted_at)
+        get_date_for_schedule(last_completed_email, payment_date)
+
+      true ->
+        nil
+    end
+  end
+
+  def fetch_date_for_state(:pays_retainer, _email, last_completed_email, job, _gallery, _order) do
     payment_schedules = PaymentSchedules.payment_schedules(job)
 
     online_pays =
@@ -573,14 +594,13 @@ defmodule PicselloWeb.EmailAutomationLive.Shared do
   end
 
   def fetch_date_for_state(
-        state,
+        :pays_retainer_offline,
         _email,
         last_completed_email,
         job,
         _gallery,
         _order
-      )
-      when state in [:pays_retainer_offline, :thanks_booking] do
+      ) do
     payment_schedules = PaymentSchedules.payment_schedules(job)
 
     offline_pays =
