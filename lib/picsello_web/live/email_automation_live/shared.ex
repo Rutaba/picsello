@@ -622,13 +622,13 @@ defmodule PicselloWeb.EmailAutomationLive.Shared do
 
     Logger.info("-- before_shoot timezone: #{timezone}")
 
-    today = DateTime.utc_now() |> Timex.end_of_day() |> DateTime.shift_zone!(timezone)
+    today = today_timezone(timezone)
 
-    today_offset_before =
-      DateTime.utc_now() |> DateTime.shift_zone!(timezone) |> Timex.end_of_day()
+    today_offset_original =
+      DateTime.utc_now() |> Timex.end_of_day() |> DateTime.shift_zone!(timezone)
 
     Logger.info("-- before_shoot today: #{today}")
-    Logger.info("-- before_shoot today_offset_before: #{today_offset_before}")
+    Logger.info("-- before_shoot today_offset_original: #{today_offset_original}")
 
     %{sign: sign} = EmailAutomations.explode_hours(email.total_hours)
     days_to_compare = hours_to_days(email.total_hours)
@@ -764,7 +764,7 @@ defmodule PicselloWeb.EmailAutomationLive.Shared do
     # difference is 7 days
     # send 7 days after shoot 7 >= 7 true
     timezone = job.client.organization.user.time_zone
-    today = DateTime.utc_now() |> Timex.end_of_day() |> DateTime.shift_zone!(timezone)
+    today = today_timezone(timezone)
 
     %{sign: sign} = EmailAutomations.explode_hours(email.total_hours)
     days_to_compare = hours_to_days(email.total_hours)
@@ -798,7 +798,7 @@ defmodule PicselloWeb.EmailAutomationLive.Shared do
     # send 7 days after shoot 7 >= 7 true
 
     timezone = job.client.organization.user.time_zone
-    today = DateTime.utc_now() |> Timex.end_of_day() |> DateTime.shift_zone!(timezone)
+    today = today_timezone(timezone)
 
     %{sign: sign} = EmailAutomations.explode_hours(email.total_hours)
     days_to_compare = hours_to_days(email.total_hours)
@@ -895,6 +895,10 @@ defmodule PicselloWeb.EmailAutomationLive.Shared do
   """
   def next_step(%{step: step, steps: steps}) do
     Enum.at(steps, Enum.find_index(steps, &(&1 == step)) + 1)
+  end
+
+  defp today_timezone(timezone) do
+    DateTime.utc_now() |> DateTime.shift_zone!(timezone) |> Timex.end_of_day()
   end
 
   defp get_date_for_schedule(nil, date), do: date
