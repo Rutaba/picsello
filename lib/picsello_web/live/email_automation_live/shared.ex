@@ -632,7 +632,7 @@ defmodule PicselloWeb.EmailAutomationLive.Shared do
       starts_at = item.starts_at |> DateTime.shift_zone!(timezone)
 
       Logger.info("-- before_shoot today: #{today}")
-      Logger.info("-- before_shoot starts_at: #{today}")
+      Logger.info("-- before_shoot starts_at: #{starts_at}")
       Logger.info("-- before_shoot date_diff: #{Date.diff(starts_at, today)}")
 
       is_send_time?(Date.diff(starts_at, today), abs(days_to_compare), sign)
