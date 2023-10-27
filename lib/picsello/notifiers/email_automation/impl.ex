@@ -1,5 +1,6 @@
 defmodule Picsello.Notifiers.EmailAutomationNotifier.Impl do
   @moduledoc false
+  require Logger
 
   import Notifiers.Shared
   alias Picsello.{Notifiers.EmailAutomationNotifier, Repo}
@@ -52,14 +53,20 @@ defmodule Picsello.Notifiers.EmailAutomationNotifier.Impl do
              {order.gallery, order},
              helpers
            ) do
-      deliver_transactional_email(
-        %{
-          subject: subject,
-          body: body
-        },
-        %{"to" => order.delivery_info.email},
-        order.gallery.job
-      )
+      case order.delivery_info do
+        %{email: email} ->
+          deliver_transactional_email(
+            %{
+              subject: subject,
+              body: body
+            },
+            %{"to" => email},
+            order.gallery.job
+          )
+
+        _ ->
+          Logger.info("No delivery info email address for order #{order.id}")
+      end
     end
   end
 end

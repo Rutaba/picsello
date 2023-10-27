@@ -1058,22 +1058,27 @@ defmodule PicselloWeb.JobLive.Shared do
               <div class="bg-blue-planning-300 pt-0.5 pb-1 px-2 text-blue-planning-100 mt-1 sm:mt-0 sm:ml-2 uppercase font-bold text-xs rounded-md tracking-wider">Beta</div>
             </div>
           </div>
+          <% is_view_all? = Enum.any?(@job.email_schedules) or Enum.any?(@job.email_schedules_history) %>
           <% emails_count = EmailAutomationSchedules.get_active_email_schedule_count(@job.id) %>
           <div class="flex">
-            <span class={classes("w-7 h-7 flex items-center justify-center text-lg font-bold text-white rounded-full mr-2 pb-1", %{"bg-orange-inbox-300" => emails_count > 0,"bg-base-250" => emails_count <= 0})}>
-              <%= emails_count %>
-            </span>
+            <%= if is_view_all? do %>
+              <span class={classes("w-7 h-7 flex items-center justify-center text-lg font-bold text-white rounded-full mr-2 pb-1", %{"bg-orange-inbox-300" => emails_count > 0,"bg-base-250" => emails_count <= 0})}>
+                <%= @emails_count %>
+              </span>
+            <% end %>
             <span class="text-base-250">
-              <%= ngettext "automations", "automations", emails_count %>
+              <%= if is_view_all?, do: ngettext("automations", "automations", @emails_count), else: "No automations" %>
             </span>
           </div>
 
-          <button class="h-8 mt-auto ml-auto flex content-center items-center px-2 py-1 btn-tertiary text-blue-planning-300  hover:border-blue-planning-300 mr-2 whitespace-nowrap" phx-click="email-automation">
-            <span class="flex w-8 h-8 justify-center items-center">
-            <.icon name="eye" class="text-blue-planning-300 mr-2 w-6 h-6" />
-            </span>
-            View all
-          </button>
+          <%= if is_view_all? do %>
+            <button class="h-8 mt-auto ml-auto flex content-center items-center px-2 py-1 btn-tertiary text-blue-planning-300  hover:border-blue-planning-300 mr-2 whitespace-nowrap" phx-click="email-automation">
+              <span class="flex w-8 h-8 justify-center items-center">
+              <.icon name="eye" class="text-blue-planning-300 mr-2 w-6 h-6" />
+              </span>
+              View all
+            </button>
+          <% end %>
         </div>
 
         <div class="flex-1 flex flex-col border border-base-200 rounded-lg p-3">
@@ -1605,7 +1610,7 @@ defmodule PicselloWeb.JobLive.Shared do
       current_user
       |> Job.for_user()
       |> Job.not_leads()
-      |> Ecto.Query.preload([:client])
+      |> Ecto.Query.preload([:client, :email_schedules, :email_schedules_history])
       |> Repo.get!(job_id)
 
     socket
@@ -1621,6 +1626,8 @@ defmodule PicselloWeb.JobLive.Shared do
       |> Job.for_user()
       |> Ecto.Query.preload([
         :client,
+        :email_schedules,
+        :email_schedules_history,
         :job_status,
         package: [:contract, :questionnaire_template]
       ])
@@ -1644,6 +1651,8 @@ defmodule PicselloWeb.JobLive.Shared do
       |> Ecto.Query.preload([
         :client,
         :job_status,
+        :email_schedules,
+        :email_schedules_history,
         :payment_schedules,
         package: [:contract, :questionnaire_template]
       ])
@@ -1656,6 +1665,7 @@ defmodule PicselloWeb.JobLive.Shared do
     job =
       current_user
       |> Job.for_user()
+      |> Ecto.Query.preload([:email_schedules, :email_schedules_history])
       |> Repo.get!(job_id)
 
     socket |> do_assign_job(job)

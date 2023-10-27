@@ -53,7 +53,7 @@ defmodule Notifiers.Shared do
     :client_transactional_template
     |> sendgrid_template(params)
     |> put_header("reply-to", "#{from_display} <#{reply_to}>")
-    |> from({from_display, "noreply@picsello.com"})
+    |> from({from_display, noreply_address()})
     |> to(map_recipients(Map.get(recipients, "to")))
     |> cc(map_recipients(Map.get(recipients, "cc")))
     |> bcc(map_recipients(Map.get(recipients, "bcc")))
@@ -65,7 +65,7 @@ defmodule Notifiers.Shared do
     |> to(map_recipients(Map.get(recipients, "to")))
     |> cc(map_recipients(Map.get(recipients, "cc")))
     |> bcc(map_recipients(Map.get(recipients, "bcc")))
-    |> from("noreply@picsello.com")
+    |> from(noreply_address())
     |> deliver_later()
   end
 

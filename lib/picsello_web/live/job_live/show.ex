@@ -2,8 +2,15 @@ defmodule PicselloWeb.JobLive.Show do
   @moduledoc false
   use PicselloWeb, :live_view
 
-  alias Picsello.{Job, Repo, PaymentSchedules}
-  alias Picsello.{Galleries, Galleries.Gallery}
+  alias Picsello.{
+    Job,
+    Repo,
+    PaymentSchedules,
+    EmailAutomationSchedules,
+    Galleries,
+    Galleries.Gallery
+  }
+
   alias PicselloWeb.JobLive.GalleryTypeComponent
 
   import PicselloWeb.JobLive.Shared,
@@ -50,6 +57,8 @@ defmodule PicselloWeb.JobLive.Show do
     |> assign(:collapsed_sections, [])
     |> assign(:new_gallery, nil)
     |> is_mobile(params)
+    |> assign_emails_count(job_id)
+    |> subscribe_emails_count(job_id)
     |> then(fn %{assigns: %{job: job}} = socket ->
       payment_schedules = job |> Repo.preload(:payment_schedules) |> Map.get(:payment_schedules)
 
@@ -202,6 +211,13 @@ defmodule PicselloWeb.JobLive.Show do
   @impl true
   def handle_info({:redirect_to_gallery, gallery}, socket) do
     PicselloWeb.Live.Shared.handle_info({:redirect_to_gallery, gallery}, socket)
+  end
+
+  @impl true
+  def handle_info({:update_emails_count, %{job_id: job_id}}, socket) do
+    socket
+    |> assign_emails_count(job_id)
+    |> noreply()
   end
 
   @impl true
@@ -437,4 +453,18 @@ defmodule PicselloWeb.JobLive.Show do
 
   defp split({type, parent_id}), do: {type, parent_id}
   defp split(type), do: {type, nil}
+
+  defp assign_emails_count(socket, job_id) do
+    socket
+    |> assign(:emails_count, EmailAutomationSchedules.get_active_email_schedule_count(job_id))
+  end
+
+  defp subscribe_emails_count(socket, job_id) do
+    Phoenix.PubSub.subscribe(
+      Picsello.PubSub,
+      "emails_count:#{job_id}"
+    )
+
+    socket
+  end
 end

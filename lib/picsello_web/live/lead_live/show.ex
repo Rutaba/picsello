@@ -55,6 +55,8 @@ defmodule PicselloWeb.LeadLive.Show do
     |> assign_changeset(%{})
     |> assign(:request_from, assigns["request_from"])
     |> assign(:collapsed_sections, [])
+    |> assign_emails_count(job_id)
+    |> subscribe_emails_count(job_id)
     |> then(fn %{assigns: assigns} = socket ->
       job = Map.get(assigns, :job)
 
@@ -345,6 +347,13 @@ defmodule PicselloWeb.LeadLive.Show do
   end
 
   @impl true
+  def handle_info({:update_emails_count, %{job_id: job_id}}, socket) do
+    socket
+    |> assign_emails_count(job_id)
+    |> noreply()
+  end
+
+  @impl true
   defdelegate handle_info(message, socket), to: JobLive.Shared
 
   def next_reminder_on(nil), do: nil
@@ -392,5 +401,48 @@ defmodule PicselloWeb.LeadLive.Show do
 
   defp assign_stripe_status(%{assigns: %{current_user: current_user}} = socket) do
     socket |> assign(stripe_status: Payments.status(current_user))
+  end
+
+  defp open_questionnaire_modal(socket, current_user, questionnaire) do
+    socket
+    |> PicselloWeb.QuestionnaireFormComponent.open(%{
+      state: :edit_lead,
+      current_user: current_user,
+      questionnaire: questionnaire
+    })
+  end
+
+  defp maybe_insert_questionnaire(template, current_user, %{id: package_id} = package) do
+    Ecto.Multi.new()
+    |> Ecto.Multi.insert(:questionnaire_insert, fn _ ->
+      Questionnaire.clean_questionnaire_for_changeset(
+        template,
+        current_user.organization_id,
+        package_id
+      )
+      |> Questionnaire.changeset()
+    end)
+    |> Ecto.Multi.update(:package_update, fn %{questionnaire_insert: questionnaire} ->
+      package
+      |> Picsello.Package.changeset(
+        %{questionnaire_template_id: questionnaire.id},
+        step: :details
+      )
+    end)
+    |> Repo.transaction()
+  end
+
+  defp assign_emails_count(socket, job_id) do
+    socket
+    |> assign(:emails_count, EmailAutomationSchedules.get_active_email_schedule_count(job_id))
+  end
+
+  defp subscribe_emails_count(socket, job_id) do
+    Phoenix.PubSub.subscribe(
+      Picsello.PubSub,
+      "emails_count:#{job_id}"
+    )
+
+    socket
   end
 end

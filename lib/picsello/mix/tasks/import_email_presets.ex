@@ -30,7 +30,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
       %{
         email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "client_contact"),
         total_hours: 0,
-        status: "active",
+        status: "disabled",
         job_type: "wedding",
         type: "lead",
         state: "client_contact",
@@ -293,7 +293,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
       %{
         email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "thanks_booking"),
         total_hours: 0,
-        status: "active",
+        status: "disabled",
         job_type: "wedding",
         type: "job",
         position: 0,
@@ -310,7 +310,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
       %{
         email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "before_shoot"),
         total_hours: EmailPreset.calculate_total_hours(7, %{calendar: "Day", sign: "-"}),
-        status: "active",
+        status: "disabled",
         job_type: "wedding",
         type: "job",
         position: 0,
@@ -330,15 +330,15 @@ defmodule Mix.Tasks.ImportEmailPresets do
       %{
         email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "before_shoot"),
         total_hours: EmailPreset.calculate_total_hours(1, %{calendar: "Day", sign: "-"}),
-        status: "active",
+        status: "disabled",
         job_type: "wedding",
         type: "job",
         position: 0,
         name: "Pre-Shoot",
-        subject_template: "The Big Day Tomorrow | {{photography_company_s_name}}",
+        subject_template: "The Big Day {{total_time}} | {{photography_company_s_name}}",
         body_template: """
         <p><span style="color: rgb(0, 0, 0);">Hello {{client_first_name}}, </span></p>
-        <p><span style="color: rgb(0, 0, 0);">I'm excited for tomorrow! I hope everything is going smoothly. </span></p>
+        <p><span style="color: rgb(0, 0, 0);">I'm excited for {{total_time}}! I hope everything is going smoothly. </span></p>
         <p><span style="color: rgb(0, 0, 0);">I will be meeting you at {{session_time}} at {{session_location}}.</span></p>
         <p><span style="color: rgb(0, 0, 0);">A reminder to please have any items you would like photographed (rings, invitations, shoes, dress, other jewelry) set aside so I can begin photographing those items as soon as I arrive.</span></p>
         <p><span style="color: rgb(0, 0, 0);">If we haven't already confirmed who will be the liaison, please let me know who will meet me on arrival and help me to identify people and moments on your list of desired photographs. Please understand that if no one is available to assist in identifying people or moments on the list they might be missed! </span></p>
@@ -352,7 +352,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
       %{
         email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "balance_due"),
         total_hours: 0,
-        status: "active",
+        status: "disabled",
         job_type: "wedding",
         type: "job",
         position: 0,
@@ -374,7 +374,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
       %{
         email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "offline_payment"),
         total_hours: 0,
-        status: "active",
+        status: "disabled",
         job_type: "wedding",
         type: "job",
         position: 0,
@@ -396,7 +396,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
       %{
         email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "shoot_thanks"),
         total_hours: EmailPreset.calculate_total_hours(1, %{calendar: "Day", sign: "+"}),
-        status: "active",
+        status: "disabled",
         job_type: "wedding",
         type: "job",
         position: 0,
@@ -414,7 +414,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
       %{
         email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "post_shoot"),
         total_hours: EmailPreset.calculate_total_hours(3, %{calendar: "Month", sign: "+"}),
-        status: "active",
+        status: "disabled",
         job_type: "wedding",
         type: "job",
         position: 0,
@@ -432,7 +432,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
       %{
         email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "post_shoot"),
         total_hours: EmailPreset.calculate_total_hours(9, %{calendar: "Month", sign: "+"}),
-        status: "active",
+        status: "disabled",
         job_type: "wedding",
         type: "job",
         position: 0,
@@ -515,7 +515,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
       %{
         email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "cart_abandoned"),
         total_hours: EmailPreset.calculate_total_hours(1, %{calendar: "Hour", sign: "+"}),
-        status: "active",
+        status: "disabled",
         job_type: "wedding",
         type: "gallery",
         position: 0,
@@ -533,7 +533,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
       %{
         email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "cart_abandoned"),
         total_hours: EmailPreset.calculate_total_hours(1, %{calendar: "Day", sign: "+"}),
-        status: "active",
+        status: "disabled",
         job_type: "wedding",
         type: "gallery",
         position: 0,
@@ -553,7 +553,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
       %{
         email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "cart_abandoned"),
         total_hours: EmailPreset.calculate_total_hours(2, %{calendar: "Day", sign: "+"}),
-        status: "active",
+        status: "disabled",
         job_type: "wedding",
         type: "gallery",
         position: 0,
@@ -573,7 +573,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         email_automation_pipeline_id:
           get_pipeline_id_by_state(pipelines, "gallery_expiration_soon"),
         total_hours: EmailPreset.calculate_total_hours(7, %{calendar: "Day", sign: "-"}),
-        status: "active",
+        status: "disabled",
         job_type: "wedding",
         type: "gallery",
         position: 0,
@@ -593,7 +593,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         email_automation_pipeline_id:
           get_pipeline_id_by_state(pipelines, "gallery_expiration_soon"),
         total_hours: EmailPreset.calculate_total_hours(3, %{calendar: "Day", sign: "-"}),
-        status: "active",
+        status: "disabled",
         job_type: "wedding",
         type: "gallery",
         position: 0,
@@ -614,7 +614,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         email_automation_pipeline_id:
           get_pipeline_id_by_state(pipelines, "gallery_expiration_soon"),
         total_hours: EmailPreset.calculate_total_hours(1, %{calendar: "Day", sign: "-"}),
-        status: "active",
+        status: "disabled",
         job_type: "wedding",
         type: "gallery",
         position: 0,
@@ -622,7 +622,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         subject_template: "Last Day to get your photos and products!",
         body_template: """
         <p><span style="color: rgb(0, 0, 0);">Hello {{client_first_name}},</span></p>
-        <p><span style="color: rgb(0, 0, 0);">I wanted to send along one last reminder in case you forgot! Your gallery is going to expire tomorrow! Please log into your gallery and make your selections before the gallery expires on {{gallery_expiration_date}}</span></p>
+        <p><span style="color: rgb(0, 0, 0);">I wanted to send along one last reminder in case you forgot! Your gallery is going to expire {{total_time}}! Please log into your gallery and make your selections before the gallery expires on {{gallery_expiration_date}}</span></p>
         <p><span style="color: rgb(0, 0, 0);">A reminder your photos are password-protected, so you will need to use this password to view: <strong>{{password}}</strong></span></p>
         <p><span style="color: rgb(0, 0, 0);">You can log into your private gallery to see all of your images here:</span> {{gallery_link}}</p>
         <p><span style="color: rgb(0, 0, 0);">Any questions, please let me know! </span></p>
@@ -633,7 +633,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         email_automation_pipeline_id:
           get_pipeline_id_by_state(pipelines, "gallery_password_changed"),
         total_hours: 0,
-        status: "active",
+        status: "disabled",
         job_type: "wedding",
         type: "gallery",
         position: 0,
@@ -651,7 +651,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         email_automation_pipeline_id:
           get_pipeline_id_by_state(pipelines, "after_gallery_send_feedback"),
         total_hours: EmailPreset.calculate_total_hours(7, %{calendar: "Day", sign: "+"}),
-        status: "active",
+        status: "disabled",
         job_type: "wedding",
         type: "gallery",
         position: 0,
@@ -776,7 +776,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
       %{
         email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "order_shipped"),
         total_hours: 0,
-        status: "active",
+        status: "disabled",
         job_type: "wedding",
         type: "gallery",
         position: 0,
@@ -794,7 +794,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
       %{
         email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "order_delayed"),
         total_hours: 0,
-        status: "active",
+        status: "disabled",
         job_type: "wedding",
         type: "gallery",
         position: 0,
@@ -810,7 +810,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
       %{
         email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "order_arrived"),
         total_hours: 0,
-        status: "active",
+        status: "disabled",
         job_type: "wedding",
         type: "gallery",
         position: 0,
@@ -828,7 +828,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
       %{
         email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "abandoned_emails"),
         total_hours: 0,
-        status: "active",
+        status: "disabled",
         job_type: "wedding",
         type: "lead",
         position: 0,
@@ -847,7 +847,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
       %{
         email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "client_contact"),
         total_hours: 0,
-        status: "active",
+        status: "disabled",
         job_type: "newborn",
         type: "lead",
         position: 0,
@@ -1108,7 +1108,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
       %{
         email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "thanks_booking"),
         total_hours: 0,
-        status: "active",
+        status: "disabled",
         job_type: "newborn",
         type: "job",
         position: 0,
@@ -1125,7 +1125,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
       %{
         email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "before_shoot"),
         total_hours: EmailPreset.calculate_total_hours(7, %{calendar: "Day", sign: "-"}),
-        status: "active",
+        status: "disabled",
         job_type: "newborn",
         type: "job",
         position: 0,
@@ -1152,15 +1152,15 @@ defmodule Mix.Tasks.ImportEmailPresets do
       %{
         email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "before_shoot"),
         total_hours: EmailPreset.calculate_total_hours(1, %{calendar: "Day", sign: "-"}),
-        status: "active",
+        status: "disabled",
         job_type: "newborn",
         type: "job",
         position: 0,
         name: "Pre-Shoot",
-        subject_template: "Our Shoot Tomorrow|{{photography_company_s_name}}",
+        subject_template: "Our Shoot {{total_time}}|{{photography_company_s_name}}",
         body_template: """
         <p><span style="color: rgb(0, 0, 0);">Hello {{client_first_name}}, </span></p>
-        <p><span style="color: rgb(0, 0, 0);">I can’t wait for your photo shoot tomorrow at {{session_location}} at {{session_time}}.</span></p>
+        <p><span style="color: rgb(0, 0, 0);">I can’t wait for your photo shoot {{total_time}} at {{session_location}} at {{session_time}}.</span></p>
         <p><span style="color: rgb(0, 0, 0);">Here are some last-minute tips to make your session (and your photos) amazing:</span></p>
         <p><span style="color: rgb(0, 0, 0);"><strong>Prep for the baby</strong></span></p>
         <p><span style="color: rgb(0, 0, 0);">1. I highly recommend giving the baby a bath the morning of the shoot. Tires them out so they are dreams on the shoot</span></p>
@@ -1175,7 +1175,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         <p><span style="color: rgb(0, 0, 0);">5. When we start the shoot - try not to have them holding any item that you won't want in the photos. For example, If they have a lovey, a pacifier, or a sippy cup, please don't have them holding it when they get to the shoot or I may not be able to get it out of their hands, which means it’ll end up in your photos.</span></p>
         <p><span style="color: rgb(0, 0, 0);">6. Act excited–kids feed off any negativity so if any adult or older kid in the group isn't into getting their photo taken please just have them fake it for the shoot!</span></p>
         <p><span style="color: rgb(0, 0, 0);">Relax! Have fun! We will have a blast and I'll capture those special moments for you!</span></p>
-        <p><span style="color: rgb(0, 0, 0);">In general, email is the best way to get a hold of me, however, If you have any issues tomorrow or an emergency, you can call or text me on the shoot day at {{photographer_cell}}.</span></p>
+        <p><span style="color: rgb(0, 0, 0);">In general, email is the best way to get a hold of me, however, If you have any issues {{total_time}} or an emergency, you can call or text me on the shoot day at {{photographer_cell}}.</span></p>
         <p><span style="color: rgb(0, 0, 0);">Can't wait!</span></p>
         <p><span style="color: rgb(0, 0, 0);">{{email_signature}}</span></p>
         """
@@ -1183,7 +1183,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
       %{
         email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "balance_due"),
         total_hours: 0,
-        status: "active",
+        status: "disabled",
         job_type: "newborn",
         type: "job",
         position: 0,
@@ -1205,7 +1205,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
       %{
         email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "offline_payment"),
         total_hours: 0,
-        status: "active",
+        status: "disabled",
         job_type: "newborn",
         type: "job",
         position: 0,
@@ -1227,7 +1227,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
       %{
         email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "shoot_thanks"),
         total_hours: EmailPreset.calculate_total_hours(1, %{calendar: "Day", sign: "+"}),
-        status: "active",
+        status: "disabled",
         job_type: "newborn",
         type: "job",
         position: 0,
@@ -1245,7 +1245,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
       %{
         email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "post_shoot"),
         total_hours: EmailPreset.calculate_total_hours(3, %{calendar: "Month", sign: "+"}),
-        status: "active",
+        status: "disabled",
         job_type: "newborn",
         type: "job",
         position: 0,
@@ -1266,7 +1266,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
       %{
         email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "post_shoot"),
         total_hours: EmailPreset.calculate_total_hours(9, %{calendar: "Month", sign: "+"}),
-        status: "active",
+        status: "disabled",
         job_type: "newborn",
         type: "job",
         position: 0,
@@ -1351,7 +1351,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
       %{
         email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "cart_abandoned"),
         total_hours: EmailPreset.calculate_total_hours(1, %{calendar: "Hour", sign: "+"}),
-        status: "active",
+        status: "disabled",
         job_type: "newborn",
         type: "gallery",
         position: 0,
@@ -1369,7 +1369,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
       %{
         email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "cart_abandoned"),
         total_hours: EmailPreset.calculate_total_hours(1, %{calendar: "Day", sign: "+"}),
-        status: "active",
+        status: "disabled",
         job_type: "newborn",
         type: "gallery",
         position: 0,
@@ -1389,7 +1389,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
       %{
         email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "cart_abandoned"),
         total_hours: EmailPreset.calculate_total_hours(2, %{calendar: "Day", sign: "+"}),
-        status: "active",
+        status: "disabled",
         job_type: "newborn",
         type: "gallery",
         position: 0,
@@ -1409,7 +1409,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         email_automation_pipeline_id:
           get_pipeline_id_by_state(pipelines, "gallery_expiration_soon"),
         total_hours: EmailPreset.calculate_total_hours(7, %{calendar: "Day", sign: "-"}),
-        status: "active",
+        status: "disabled",
         job_type: "newborn",
         type: "gallery",
         position: 0,
@@ -1429,7 +1429,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         email_automation_pipeline_id:
           get_pipeline_id_by_state(pipelines, "gallery_expiration_soon"),
         total_hours: EmailPreset.calculate_total_hours(3, %{calendar: "Day", sign: "-"}),
-        status: "active",
+        status: "disabled",
         job_type: "newborn",
         type: "gallery",
         position: 0,
@@ -1449,7 +1449,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         email_automation_pipeline_id:
           get_pipeline_id_by_state(pipelines, "gallery_expiration_soon"),
         total_hours: EmailPreset.calculate_total_hours(1, %{calendar: "Day", sign: "-"}),
-        status: "active",
+        status: "disabled",
         job_type: "newborn",
         type: "gallery",
         position: 0,
@@ -1457,7 +1457,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         subject_template: "Last Day to get your photos and products!",
         body_template: """
         <p><span style="color: rgb(0, 0, 0);">Hello {{client_first_name}},</span></p>
-        <p><span style="color: rgb(0, 0, 0);">I wanted to send along one last reminder in case you forgot! Your gallery is going to expire tomorrow! Please log into your gallery and make your selections before the gallery expires on {{gallery_expiration_date}}</span></p>
+        <p><span style="color: rgb(0, 0, 0);">I wanted to send along one last reminder in case you forgot! Your gallery is going to expire {{total_time}}! Please log into your gallery and make your selections before the gallery expires on {{gallery_expiration_date}}</span></p>
         <p><span style="color: rgb(0, 0, 0);">A reminder your photos are password-protected, so you will need to use this password to view: <strong>{{password}}</strong></span></p>
         <p><span style="color: rgb(0, 0, 0);">You can log into your private gallery to see all of your images here:</span> {{gallery_link}}</p>
         <p><span style="color: rgb(0, 0, 0);">Any questions, please let me know! </span></p>
@@ -1468,7 +1468,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         email_automation_pipeline_id:
           get_pipeline_id_by_state(pipelines, "gallery_password_changed"),
         total_hours: 0,
-        status: "active",
+        status: "disabled",
         job_type: "newborn",
         type: "gallery",
         position: 0,
@@ -1486,7 +1486,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         email_automation_pipeline_id:
           get_pipeline_id_by_state(pipelines, "after_gallery_send_feedback"),
         total_hours: EmailPreset.calculate_total_hours(7, %{calendar: "Day", sign: "+"}),
-        status: "active",
+        status: "disabled",
         job_type: "newborn",
         type: "gallery",
         position: 0,
@@ -1611,7 +1611,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
       %{
         email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "order_shipped"),
         total_hours: 0,
-        status: "active",
+        status: "disabled",
         job_type: "newborn",
         type: "gallery",
         position: 0,
@@ -1629,7 +1629,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
       %{
         email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "order_delayed"),
         total_hours: 0,
-        status: "active",
+        status: "disabled",
         job_type: "newborn",
         type: "gallery",
         position: 0,
@@ -1645,7 +1645,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
       %{
         email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "order_arrived"),
         total_hours: 0,
-        status: "active",
+        status: "disabled",
         job_type: "newborn",
         type: "gallery",
         position: 0,
@@ -1663,7 +1663,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
       %{
         email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "abandoned_emails"),
         total_hours: 0,
-        status: "active",
+        status: "disabled",
         job_type: "newborn",
         type: "lead",
         position: 0,
@@ -1682,7 +1682,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
       %{
         email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "client_contact"),
         total_hours: 0,
-        status: "active",
+        status: "disabled",
         job_type: "family",
         type: "lead",
         position: 0,
@@ -1943,7 +1943,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
       %{
         email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "thanks_booking"),
         total_hours: 0,
-        status: "active",
+        status: "disabled",
         job_type: "family",
         type: "job",
         position: 0,
@@ -1960,7 +1960,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
       %{
         email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "before_shoot"),
         total_hours: EmailPreset.calculate_total_hours(7, %{calendar: "Day", sign: "-"}),
-        status: "active",
+        status: "disabled",
         job_type: "family",
         type: "job",
         position: 0,
@@ -1987,15 +1987,15 @@ defmodule Mix.Tasks.ImportEmailPresets do
       %{
         email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "before_shoot"),
         total_hours: EmailPreset.calculate_total_hours(1, %{calendar: "Day", sign: "-"}),
-        status: "active",
+        status: "disabled",
         job_type: "family",
         type: "job",
         position: 0,
         name: "Pre-Shoot",
-        subject_template: "The Big Day Tomorrow | {{photography_company_s_name}}",
+        subject_template: "The Big Day {{total_time}} | {{photography_company_s_name}}",
         body_template: """
         <p><span style="color: rgb(0, 0, 0);">Hello {{client_first_name}}, </span></p>
-        <p><span style="color: rgb(0, 0, 0);">I can’t wait for your photo shoot tomorrow at {{session_location}} at {{session_time}}.</span></p>
+        <p><span style="color: rgb(0, 0, 0);">I can’t wait for your photo shoot {{total_time}} at {{session_location}} at {{session_time}}.</span></p>
         <p><span style="color: rgb(0, 0, 0);">Here are some last-minute tips to make your session (and your photos) amazing:</span></p>
         <p><span style="color: rgb(0, 0, 0);">1. Be on time or early. Our session commences precisely at the scheduled start time. I don’t want you to miss out on any of the time you booked.</span></p>
         <p><span style="color: rgb(0, 0, 0);">2. Show them photos of the last family photo shoot we did or other family photos you have so they can understand what is happening. Children don’t easily connect the experience of being in front of a camera with the images you show them later. If you can help them realize what they’re doing, they’re much more likely to participate willingly. Tell them how happy the photos made you and remind them what fun they had taking those photos.</span></p>
@@ -2005,7 +2005,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         <p><span style="color: rgb(0, 0, 0);">6. When we start the shoot - try not to have them holding any item that you won't want in the photos. For example, If they have a lovey, a pacifier, or a sippy cup, please don't have them holding it when we get to the shoot or I may not be able to get it out of their hands, which means it’ll end up in your photos.</span></p>
         <p><span style="color: rgb(0, 0, 0);">7. Act excited–kids feed off any negativity so if any adult or older kid in the group isn't into getting their photo taken please just have them fake it for the shoot!</span></p>
         <p><span style="color: rgb(0, 0, 0);">8. Relax! Have fun! We will have a blast and I'll capture those special moments for you!</span></p>
-        <p><span style="color: rgb(0, 0, 0);">In general, email is the best way to get a hold of me, however, If you have any issues finding me or the location tomorrow, or an emergency, you can call or text me on the shoot day at {{photographer_cell}}.</span></p>
+        <p><span style="color: rgb(0, 0, 0);">In general, email is the best way to get a hold of me, however, If you have any issues finding me or the location {{total_time}}, or an emergency, you can call or text me on the shoot day at {{photographer_cell}}.</span></p>
         <p><span style="color: rgb(0, 0, 0);">Can't wait!</span></p>
         <p><span style="color: rgb(0, 0, 0);">{{email_signature}}</span></p>
         """
@@ -2013,7 +2013,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
       %{
         email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "balance_due"),
         total_hours: 0,
-        status: "active",
+        status: "disabled",
         job_type: "family",
         type: "job",
         position: 0,
@@ -2035,7 +2035,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
       %{
         email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "offline_payment"),
         total_hours: 0,
-        status: "active",
+        status: "disabled",
         job_type: "family",
         type: "job",
         position: 0,
@@ -2057,7 +2057,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
       %{
         email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "shoot_thanks"),
         total_hours: EmailPreset.calculate_total_hours(1, %{calendar: "Day", sign: "+"}),
-        status: "active",
+        status: "disabled",
         job_type: "family",
         type: "job",
         position: 0,
@@ -2075,7 +2075,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
       %{
         email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "post_shoot"),
         total_hours: EmailPreset.calculate_total_hours(3, %{calendar: "Month", sign: "+"}),
-        status: "active",
+        status: "disabled",
         job_type: "family",
         type: "job",
         position: 0,
@@ -2093,7 +2093,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
       %{
         email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "post_shoot"),
         total_hours: EmailPreset.calculate_total_hours(9, %{calendar: "Month", sign: "+"}),
-        status: "active",
+        status: "disabled",
         job_type: "family",
         type: "job",
         position: 0,
@@ -2177,7 +2177,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
       %{
         email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "cart_abandoned"),
         total_hours: EmailPreset.calculate_total_hours(1, %{calendar: "Hour", sign: "+"}),
-        status: "active",
+        status: "disabled",
         job_type: "family",
         type: "gallery",
         position: 0,
@@ -2195,7 +2195,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
       %{
         email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "cart_abandoned"),
         total_hours: EmailPreset.calculate_total_hours(1, %{calendar: "Day", sign: "+"}),
-        status: "active",
+        status: "disabled",
         job_type: "family",
         type: "gallery",
         position: 0,
@@ -2215,7 +2215,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
       %{
         email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "cart_abandoned"),
         total_hours: EmailPreset.calculate_total_hours(2, %{calendar: "Day", sign: "+"}),
-        status: "active",
+        status: "disabled",
         job_type: "family",
         type: "gallery",
         position: 0,
@@ -2235,7 +2235,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         email_automation_pipeline_id:
           get_pipeline_id_by_state(pipelines, "gallery_expiration_soon"),
         total_hours: EmailPreset.calculate_total_hours(7, %{calendar: "Day", sign: "-"}),
-        status: "active",
+        status: "disabled",
         job_type: "family",
         type: "gallery",
         position: 0,
@@ -2255,7 +2255,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         email_automation_pipeline_id:
           get_pipeline_id_by_state(pipelines, "gallery_expiration_soon"),
         total_hours: EmailPreset.calculate_total_hours(3, %{calendar: "Day", sign: "-"}),
-        status: "active",
+        status: "disabled",
         job_type: "family",
         type: "gallery",
         position: 0,
@@ -2276,7 +2276,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         email_automation_pipeline_id:
           get_pipeline_id_by_state(pipelines, "gallery_expiration_soon"),
         total_hours: EmailPreset.calculate_total_hours(1, %{calendar: "Day", sign: "-"}),
-        status: "active",
+        status: "disabled",
         job_type: "family",
         type: "gallery",
         position: 0,
@@ -2284,7 +2284,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         subject_template: "Last Day to get your photos and products!",
         body_template: """
         <p><span style="color: rgb(0, 0, 0);">Hello {{client_first_name}},</span></p>
-        <p><span style="color: rgb(0, 0, 0);">I wanted to send along one last reminder in case you forgot! Your gallery is going to expire tomorrow! Please log into your gallery and make your selections before the gallery expires on {{gallery_expiration_date}}</span></p>
+        <p><span style="color: rgb(0, 0, 0);">I wanted to send along one last reminder in case you forgot! Your gallery is going to expire {{total_time}}! Please log into your gallery and make your selections before the gallery expires on {{gallery_expiration_date}}</span></p>
         <p><span style="color: rgb(0, 0, 0);">A reminder your photos are password-protected, so you will need to use this password to view: <strong>{{password}}</strong></span></p>
         <p><span style="color: rgb(0, 0, 0);">You can log into your private gallery to see all of your images here:</span> {{gallery_link}}</p>
         <p><span style="color: rgb(0, 0, 0);">Any questions, please let me know! </span></p>
@@ -2295,7 +2295,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         email_automation_pipeline_id:
           get_pipeline_id_by_state(pipelines, "gallery_password_changed"),
         total_hours: 0,
-        status: "active",
+        status: "disabled",
         job_type: "family",
         type: "gallery",
         position: 0,
@@ -2313,7 +2313,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         email_automation_pipeline_id:
           get_pipeline_id_by_state(pipelines, "after_gallery_send_feedback"),
         total_hours: EmailPreset.calculate_total_hours(7, %{calendar: "Day", sign: "+"}),
-        status: "active",
+        status: "disabled",
         job_type: "family",
         type: "gallery",
         position: 0,
@@ -2438,7 +2438,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
       %{
         email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "order_shipped"),
         total_hours: 0,
-        status: "active",
+        status: "disabled",
         job_type: "family",
         type: "gallery",
         position: 0,
@@ -2456,7 +2456,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
       %{
         email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "order_delayed"),
         total_hours: 0,
-        status: "active",
+        status: "disabled",
         job_type: "family",
         type: "gallery",
         position: 0,
@@ -2472,7 +2472,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
       %{
         email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "order_arrived"),
         total_hours: 0,
-        status: "active",
+        status: "disabled",
         job_type: "family",
         type: "gallery",
         position: 0,
@@ -2490,7 +2490,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
       %{
         email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "abandoned_emails"),
         total_hours: 0,
-        status: "active",
+        status: "disabled",
         job_type: "family",
         type: "lead",
         position: 0,
@@ -2509,7 +2509,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
       %{
         email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "client_contact"),
         total_hours: 0,
-        status: "active",
+        status: "disabled",
         job_type: "mini",
         type: "lead",
         position: 0,
@@ -2770,7 +2770,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
       %{
         email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "thanks_booking"),
         total_hours: 0,
-        status: "active",
+        status: "disabled",
         job_type: "mini",
         type: "job",
         position: 0,
@@ -2787,7 +2787,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
       %{
         email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "before_shoot"),
         total_hours: EmailPreset.calculate_total_hours(7, %{calendar: "Day", sign: "-"}),
-        status: "active",
+        status: "disabled",
         job_type: "mini",
         type: "job",
         position: 0,
@@ -2814,15 +2814,15 @@ defmodule Mix.Tasks.ImportEmailPresets do
       %{
         email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "before_shoot"),
         total_hours: EmailPreset.calculate_total_hours(1, %{calendar: "Day", sign: "-"}),
-        status: "active",
+        status: "disabled",
         job_type: "mini",
         type: "job",
         position: 0,
         name: "Pre-Shoot",
-        subject_template: "The Big Day Tomorrow | {{photography_company_s_name}}",
+        subject_template: "The Big Day {{total_time}} | {{photography_company_s_name}}",
         body_template: """
         <p><span style="color: rgb(0, 0, 0);">Hello {{client_first_name}}, </span></p>
-        <p><span style="color: rgb(0, 0, 0);">I can’t wait for your photo shoot tomorrow at {{session_location}} at {{session_time}}.</span></p>
+        <p><span style="color: rgb(0, 0, 0);">I can’t wait for your photo shoot {{total_time}} at {{session_location}} at {{session_time}}.</span></p>
         <p><span style="color: rgb(0, 0, 0);">Here are some last-minute tips to make your session (and your photos) amazing:</span></p>
         <p><span style="color: rgb(0, 0, 0);">1. Be on time or early. Our session commences precisely at the scheduled start time. I don’t want you to miss out on any of the time you booked.</span></p>
         <p><span style="color: rgb(0, 0, 0);">2. Show children photos of the last family photo shoot we did or other family photos you have so they can understand what is happening. They don’t easily connect the experience of being in front of a camera with the images you show them later. If you can help them realize what they’re doing, they’re much more likely to participate willingly. Tell them how happy the photos made you and remind them what fun they had taking those photos.</span></p>
@@ -2832,7 +2832,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         <p><span style="color: rgb(0, 0, 0);">6. When we start the shoot - try not to have them holding any item that you won't want in the photos. For example, If they have a lovey, a pacifier, or a sippy cup, please don't have them holding it when we get to the shoot or I may not be able to get it out of their hands, which means it’ll end up in your photos.</span></p>
         <p><span style="color: rgb(0, 0, 0);">7. Act excited–kids feed off any negativity so if any adult or older kid in the group isn't into getting their photo taken please just have them fake it for the shoot!</span></p>
         <p><span style="color: rgb(0, 0, 0);">8. Relax! Have fun! We will have a blast and I'll capture those special moments for you!</span></p>
-        <p><span style="color: rgb(0, 0, 0);">In general, email is the best way to get a hold of me, however, If you have any issues finding me or the location tomorrow, or an emergency, you can call or text me on the shoot day at {{photographer_cell}}.</span></p>
+        <p><span style="color: rgb(0, 0, 0);">In general, email is the best way to get a hold of me, however, If you have any issues finding me or the location {{total_time}}, or an emergency, you can call or text me on the shoot day at {{photographer_cell}}.</span></p>
         <p><span style="color: rgb(0, 0, 0);">Can't wait!</span></p>
         <p><span style="color: rgb(0, 0, 0);">{{email_signature}}</span></p>
         """
@@ -2840,7 +2840,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
       %{
         email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "balance_due"),
         total_hours: 0,
-        status: "active",
+        status: "disabled",
         job_type: "mini",
         type: "job",
         position: 0,
@@ -2862,7 +2862,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
       %{
         email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "offline_payment"),
         total_hours: 0,
-        status: "active",
+        status: "disabled",
         job_type: "mini",
         type: "job",
         position: 0,
@@ -2884,7 +2884,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
       %{
         email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "shoot_thanks"),
         total_hours: EmailPreset.calculate_total_hours(1, %{calendar: "Day", sign: "+"}),
-        status: "active",
+        status: "disabled",
         job_type: "mini",
         type: "job",
         position: 0,
@@ -2902,7 +2902,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
       %{
         email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "post_shoot"),
         total_hours: EmailPreset.calculate_total_hours(3, %{calendar: "Month", sign: "+"}),
-        status: "active",
+        status: "disabled",
         job_type: "mini",
         type: "job",
         position: 0,
@@ -2920,7 +2920,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
       %{
         email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "post_shoot"),
         total_hours: EmailPreset.calculate_total_hours(9, %{calendar: "Month", sign: "+"}),
-        status: "active",
+        status: "disabled",
         job_type: "mini",
         type: "job",
         position: 0,
@@ -3004,7 +3004,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
       %{
         email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "cart_abandoned"),
         total_hours: EmailPreset.calculate_total_hours(1, %{calendar: "Hour", sign: "+"}),
-        status: "active",
+        status: "disabled",
         job_type: "mini",
         type: "gallery",
         position: 0,
@@ -3022,7 +3022,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
       %{
         email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "cart_abandoned"),
         total_hours: EmailPreset.calculate_total_hours(1, %{calendar: "Day", sign: "+"}),
-        status: "active",
+        status: "disabled",
         job_type: "mini",
         type: "gallery",
         position: 0,
@@ -3042,7 +3042,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
       %{
         email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "cart_abandoned"),
         total_hours: EmailPreset.calculate_total_hours(2, %{calendar: "Day", sign: "+"}),
-        status: "active",
+        status: "disabled",
         job_type: "mini",
         type: "gallery",
         position: 0,
@@ -3062,7 +3062,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         email_automation_pipeline_id:
           get_pipeline_id_by_state(pipelines, "gallery_expiration_soon"),
         total_hours: EmailPreset.calculate_total_hours(7, %{calendar: "Day", sign: "-"}),
-        status: "active",
+        status: "disabled",
         job_type: "mini",
         type: "gallery",
         position: 0,
@@ -3082,7 +3082,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         email_automation_pipeline_id:
           get_pipeline_id_by_state(pipelines, "gallery_expiration_soon"),
         total_hours: EmailPreset.calculate_total_hours(3, %{calendar: "Day", sign: "-"}),
-        status: "active",
+        status: "disabled",
         job_type: "mini",
         type: "gallery",
         position: 0,
@@ -3103,7 +3103,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         email_automation_pipeline_id:
           get_pipeline_id_by_state(pipelines, "gallery_expiration_soon"),
         total_hours: EmailPreset.calculate_total_hours(1, %{calendar: "Day", sign: "-"}),
-        status: "active",
+        status: "disabled",
         job_type: "mini",
         type: "gallery",
         position: 0,
@@ -3111,7 +3111,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         subject_template: "Last Day to get your photos and products!",
         body_template: """
         <p><span style="color: rgb(0, 0, 0);">Hello {{client_first_name}},</span></p>
-        <p><span style="color: rgb(0, 0, 0);">I wanted to send along one last reminder in case you forgot! Your gallery is going to expire tomorrow! Please log into your gallery and make your selections before the gallery expires on {{gallery_expiration_date}}</span></p>
+        <p><span style="color: rgb(0, 0, 0);">I wanted to send along one last reminder in case you forgot! Your gallery is going to expire {{total_time}}! Please log into your gallery and make your selections before the gallery expires on {{gallery_expiration_date}}</span></p>
         <p><span style="color: rgb(0, 0, 0);">A reminder your photos are password-protected, so you will need to use this password to view: <strong>{{password}}</strong></span></p>
         <p><span style="color: rgb(0, 0, 0);">You can log into your private gallery to see all of your images here:</span> {{gallery_link}}</p>
         <p><span style="color: rgb(0, 0, 0);">Any questions, please let me know! </span></p>
@@ -3122,7 +3122,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         email_automation_pipeline_id:
           get_pipeline_id_by_state(pipelines, "gallery_password_changed"),
         total_hours: 0,
-        status: "active",
+        status: "disabled",
         job_type: "mini",
         type: "gallery",
         position: 0,
@@ -3140,7 +3140,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         email_automation_pipeline_id:
           get_pipeline_id_by_state(pipelines, "after_gallery_send_feedback"),
         total_hours: EmailPreset.calculate_total_hours(7, %{calendar: "Day", sign: "+"}),
-        status: "active",
+        status: "disabled",
         job_type: "mini",
         type: "gallery",
         position: 0,
@@ -3265,7 +3265,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
       %{
         email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "order_shipped"),
         total_hours: 0,
-        status: "active",
+        status: "disabled",
         job_type: "mini",
         type: "gallery",
         position: 0,
@@ -3283,7 +3283,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
       %{
         email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "order_delayed"),
         total_hours: 0,
-        status: "active",
+        status: "disabled",
         job_type: "mini",
         type: "gallery",
         position: 0,
@@ -3299,7 +3299,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
       %{
         email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "order_arrived"),
         total_hours: 0,
-        status: "active",
+        status: "disabled",
         job_type: "mini",
         type: "gallery",
         position: 0,
@@ -3317,7 +3317,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
       %{
         email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "abandoned_emails"),
         total_hours: 0,
-        status: "active",
+        status: "disabled",
         job_type: "mini",
         type: "lead",
         position: 0,
@@ -3336,7 +3336,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
       %{
         email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "client_contact"),
         total_hours: 0,
-        status: "active",
+        status: "disabled",
         job_type: "headshot",
         type: "lead",
         position: 0,
@@ -3366,9 +3366,10 @@ defmodule Mix.Tasks.ImportEmailPresets do
         <p><span style="color: rgb(0, 0, 0);">If you have any lingering questions or if there's anything more I can do to help you, please don't hesitate to reach out. </span></p>
         <p><span style="color: rgb(0, 0, 0);">I'm looking forward to your response and the possibility of working with you.</span></p>
         <p><span style="color: rgb(0, 0, 0);">Warm regards,</span></p>
-        <p><span style="color: rgb(0, 0, 0);">{{email_signature}}</span></p>        \"""
-        },
-        %{
+        <p><span style="color: rgb(0, 0, 0);">{{email_signature}}</span></p>
+        """
+      },
+      %{
         email_automation_pipeline_id:
           get_pipeline_id_by_state(pipelines, "manual_thank_you_lead"),
         total_hours: EmailPreset.calculate_total_hours(4, %{calendar: "Day", sign: "+"}),
@@ -3378,7 +3379,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         position: 0,
         name: "Lead - Initial Inquiry",
         subject_template: "Checking in! | {{photography_company_s_name}}",
-        body_template: \"""
+        body_template: """
         <p><span style="color: rgb(0, 0, 0);">Hello {{client_first_name}},</span></p>
         <p><span style="color: rgb(0, 0, 0);">I hope this message finds you well. I understand that life can get busy, and the to-do list never seems to end. I'm just following up on your recent inquiry with me, and I'm excited about working with you. Please hit the reply button to this email and let me know how I can assist you.</span></p>
         <p><span style="color: rgb(0, 0, 0);">I'm here to ensure that your photography experience is nothing short of memorable!</span></p>
@@ -3596,7 +3597,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
       %{
         email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "thanks_booking"),
         total_hours: 0,
-        status: "active",
+        status: "disabled",
         job_type: "headshot",
         type: "job",
         position: 0,
@@ -3613,7 +3614,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
       %{
         email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "before_shoot"),
         total_hours: EmailPreset.calculate_total_hours(7, %{calendar: "Day", sign: "-"}),
-        status: "active",
+        status: "disabled",
         job_type: "headshot",
         type: "job",
         position: 0,
@@ -3633,15 +3634,15 @@ defmodule Mix.Tasks.ImportEmailPresets do
       %{
         email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "before_shoot"),
         total_hours: EmailPreset.calculate_total_hours(1, %{calendar: "Day", sign: "-"}),
-        status: "active",
+        status: "disabled",
         job_type: "headshot",
         type: "job",
         position: 0,
         name: "Pre-Shoot",
-        subject_template: "The Big Day Tomorrow | {{photography_company_s_name}}",
+        subject_template: "The Big Day {{total_time}} | {{photography_company_s_name}}",
         body_template: """
         <p><span style="color: rgb(0, 0, 0);">Hello {{client_first_name}}, </span></p>
-        <p><span style="color: rgb(0, 0, 0);">I am looking forward to your photoshoot tomorrow at {{session_time}} at {{session_location}}.</span></p>
+        <p><span style="color: rgb(0, 0, 0);">I am looking forward to your photoshoot {{total_time}} at {{session_time}} at {{session_location}}.</span></p>
         <p><span style="color: rgb(0, 0, 0);">I wanted to send along a few last minute tips to ensure we have a great shoot:</span></p>
         <p><span style="color: rgb(0, 0, 0);">1. Please arrive at your shoot on time or a few minutes early to be sure you give yourself a little time to get settled and finalize your look before we start!</span></p>
         <p><span style="color: rgb(0, 0, 0);">2. Be sure to drink lots of water, get good sleep tonight and eat well before your session.</span></p>
@@ -3654,7 +3655,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
       %{
         email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "balance_due"),
         total_hours: 0,
-        status: "active",
+        status: "disabled",
         job_type: "headshot",
         type: "job",
         position: 0,
@@ -3676,7 +3677,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
       %{
         email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "offline_payment"),
         total_hours: 0,
-        status: "active",
+        status: "disabled",
         job_type: "headshot",
         type: "job",
         position: 0,
@@ -3698,7 +3699,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
       %{
         email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "shoot_thanks"),
         total_hours: EmailPreset.calculate_total_hours(1, %{calendar: "Day", sign: "+"}),
-        status: "active",
+        status: "disabled",
         job_type: "headshot",
         type: "job",
         position: 0,
@@ -3716,7 +3717,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
       %{
         email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "post_shoot"),
         total_hours: EmailPreset.calculate_total_hours(3, %{calendar: "Month", sign: "+"}),
-        status: "active",
+        status: "disabled",
         job_type: "headshot",
         type: "job",
         position: 0,
@@ -3734,7 +3735,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
       %{
         email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "post_shoot"),
         total_hours: EmailPreset.calculate_total_hours(9, %{calendar: "Month", sign: "+"}),
-        status: "active",
+        status: "disabled",
         job_type: "headshot",
         type: "job",
         position: 0,
@@ -3818,7 +3819,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
       %{
         email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "cart_abandoned"),
         total_hours: EmailPreset.calculate_total_hours(1, %{calendar: "Hour", sign: "+"}),
-        status: "active",
+        status: "disabled",
         job_type: "headshot",
         type: "gallery",
         position: 0,
@@ -3836,7 +3837,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
       %{
         email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "cart_abandoned"),
         total_hours: EmailPreset.calculate_total_hours(1, %{calendar: "Day", sign: "+"}),
-        status: "active",
+        status: "disabled",
         job_type: "headshot",
         type: "gallery",
         position: 0,
@@ -3856,7 +3857,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
       %{
         email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "cart_abandoned"),
         total_hours: EmailPreset.calculate_total_hours(2, %{calendar: "Day", sign: "+"}),
-        status: "active",
+        status: "disabled",
         job_type: "headshot",
         type: "gallery",
         position: 0,
@@ -3876,7 +3877,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         email_automation_pipeline_id:
           get_pipeline_id_by_state(pipelines, "gallery_expiration_soon"),
         total_hours: EmailPreset.calculate_total_hours(7, %{calendar: "Day", sign: "-"}),
-        status: "active",
+        status: "disabled",
         job_type: "headshot",
         type: "gallery",
         position: 0,
@@ -3896,7 +3897,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         email_automation_pipeline_id:
           get_pipeline_id_by_state(pipelines, "gallery_expiration_soon"),
         total_hours: EmailPreset.calculate_total_hours(3, %{calendar: "Day", sign: "-"}),
-        status: "active",
+        status: "disabled",
         job_type: "headshot",
         type: "gallery",
         position: 0,
@@ -3917,7 +3918,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         email_automation_pipeline_id:
           get_pipeline_id_by_state(pipelines, "gallery_expiration_soon"),
         total_hours: EmailPreset.calculate_total_hours(1, %{calendar: "Day", sign: "-"}),
-        status: "active",
+        status: "disabled",
         job_type: "headshot",
         type: "gallery",
         position: 0,
@@ -3925,7 +3926,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         subject_template: "Last Day to get your photos and products!",
         body_template: """
         <p><span style="color: rgb(0, 0, 0);">Hello {{client_first_name}},</span></p>
-        <p><span style="color: rgb(0, 0, 0);">I wanted to send along one last reminder in case you forgot! Your gallery is going to expire tomorrow! Please log into your gallery and make your selections before the gallery expires on {{gallery_expiration_date}}</span></p>
+        <p><span style="color: rgb(0, 0, 0);">I wanted to send along one last reminder in case you forgot! Your gallery is going to expire {{total_time}}! Please log into your gallery and make your selections before the gallery expires on {{gallery_expiration_date}}</span></p>
         <p><span style="color: rgb(0, 0, 0);">A reminder your photos are password-protected, so you will need to use this password to view: <strong>{{password}}</strong></span></p>
         <p><span style="color: rgb(0, 0, 0);">You can log into your private gallery to see all of your images here:</span> {{gallery_link}}</p>
         <p><span style="color: rgb(0, 0, 0);">Any questions, please let me know! </span></p>
@@ -3936,7 +3937,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         email_automation_pipeline_id:
           get_pipeline_id_by_state(pipelines, "gallery_password_changed"),
         total_hours: 0,
-        status: "active",
+        status: "disabled",
         job_type: "headshot",
         type: "gallery",
         position: 0,
@@ -3954,7 +3955,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         email_automation_pipeline_id:
           get_pipeline_id_by_state(pipelines, "after_gallery_send_feedback"),
         total_hours: EmailPreset.calculate_total_hours(7, %{calendar: "Day", sign: "+"}),
-        status: "active",
+        status: "disabled",
         job_type: "headshot",
         type: "gallery",
         position: 0,
@@ -4079,7 +4080,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
       %{
         email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "order_shipped"),
         total_hours: 0,
-        status: "active",
+        status: "disabled",
         job_type: "headshot",
         type: "gallery",
         position: 0,
@@ -4097,7 +4098,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
       %{
         email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "order_delayed"),
         total_hours: 0,
-        status: "active",
+        status: "disabled",
         job_type: "headshot",
         type: "gallery",
         position: 0,
@@ -4113,7 +4114,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
       %{
         email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "order_arrived"),
         total_hours: 0,
-        status: "active",
+        status: "disabled",
         job_type: "headshot",
         type: "gallery",
         position: 0,
@@ -4131,7 +4132,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
       %{
         email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "abandoned_emails"),
         total_hours: 0,
-        status: "active",
+        status: "disabled",
         job_type: "headshot",
         type: "lead",
         position: 0,
@@ -4150,7 +4151,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
       %{
         email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "client_contact"),
         total_hours: 0,
-        status: "active",
+        status: "disabled",
         job_type: "portrait",
         type: "lead",
         position: 0,
@@ -4180,9 +4181,10 @@ defmodule Mix.Tasks.ImportEmailPresets do
         <p><span style="color: rgb(0, 0, 0);">If you have any lingering questions or if there's anything more I can do to help you, please don't hesitate to reach out. </span></p>
         <p><span style="color: rgb(0, 0, 0);">I'm looking forward to your response and the possibility of working with you.</span></p>
         <p><span style="color: rgb(0, 0, 0);">Warm regards,</span></p>
-        <p><span style="color: rgb(0, 0, 0);">{{email_signature}}</span></p>        \"""
-        },
-        %{
+        <p><span style="color: rgb(0, 0, 0);">{{email_signature}}</span></p>
+        """
+      },
+      %{
         email_automation_pipeline_id:
           get_pipeline_id_by_state(pipelines, "manual_thank_you_lead"),
         total_hours: EmailPreset.calculate_total_hours(4, %{calendar: "Day", sign: "+"}),
@@ -4192,7 +4194,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         position: 0,
         name: "Lead - Initial Inquiry",
         subject_template: "Checking in! | {{photography_company_s_name}}",
-        body_template: \"""
+        body_template: """
         <p><span style="color: rgb(0, 0, 0);">Hello {{client_first_name}},</span></p>
         <p><span style="color: rgb(0, 0, 0);">I hope this message finds you well. I understand that life can get busy, and the to-do list never seems to end. I'm just following up on your recent inquiry with me, and I'm excited about working with you. Please hit the reply button to this email and let me know how I can assist you.</span></p>
         <p><span style="color: rgb(0, 0, 0);">I'm here to ensure that your photography experience is nothing short of memorable!</span></p>
@@ -4410,7 +4412,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
       %{
         email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "thanks_booking"),
         total_hours: 0,
-        status: "active",
+        status: "disabled",
         job_type: "portrait",
         type: "job",
         position: 0,
@@ -4427,7 +4429,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
       %{
         email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "before_shoot"),
         total_hours: EmailPreset.calculate_total_hours(7, %{calendar: "Day", sign: "-"}),
-        status: "active",
+        status: "disabled",
         job_type: "portrait",
         type: "job",
         position: 0,
@@ -4447,15 +4449,15 @@ defmodule Mix.Tasks.ImportEmailPresets do
       %{
         email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "before_shoot"),
         total_hours: EmailPreset.calculate_total_hours(1, %{calendar: "Day", sign: "-"}),
-        status: "active",
+        status: "disabled",
         job_type: "portrait",
         type: "job",
         position: 0,
         name: "Pre-Shoot",
-        subject_template: "The Big Day Tomorrow | {{photography_company_s_name}}",
+        subject_template: "The Big Day {{total_time}} | {{photography_company_s_name}}",
         body_template: """
         <p><span style="color: rgb(0, 0, 0);">Hello {{client_first_name}}, </span></p>
-        <p><span style="color: rgb(0, 0, 0);">I am looking forward to your photoshoot tomorrow at {{session_time}} at {{session_location}}.</span></p>
+        <p><span style="color: rgb(0, 0, 0);">I am looking forward to your photoshoot {{total_time}} at {{session_time}} at {{session_location}}.</span></p>
         <p><span style="color: rgb(0, 0, 0);">A few last minute tips so we can have the best shoot possible:</span></p>
         <p><span style="color: rgb(0, 0, 0);">1. Please arrive at your shoot on time or a few minutes early to be sure you give yourself a little time to get settled and finalize your look before we start!</span></p>
         <p><span style="color: rgb(0, 0, 0);">2. Be sure to drink lots of water, get good sleep tonight and eat well before your session.</span></p>
@@ -4468,7 +4470,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
       %{
         email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "balance_due"),
         total_hours: 0,
-        status: "active",
+        status: "disabled",
         job_type: "portrait",
         type: "job",
         position: 0,
@@ -4490,7 +4492,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
       %{
         email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "offline_payment"),
         total_hours: 0,
-        status: "active",
+        status: "disabled",
         job_type: "portrait",
         type: "job",
         position: 0,
@@ -4512,7 +4514,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
       %{
         email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "shoot_thanks"),
         total_hours: EmailPreset.calculate_total_hours(1, %{calendar: "Day", sign: "+"}),
-        status: "active",
+        status: "disabled",
         job_type: "portrait",
         type: "job",
         position: 0,
@@ -4530,7 +4532,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
       %{
         email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "post_shoot"),
         total_hours: EmailPreset.calculate_total_hours(3, %{calendar: "Month", sign: "+"}),
-        status: "active",
+        status: "disabled",
         job_type: "portrait",
         type: "job",
         position: 0,
@@ -4548,7 +4550,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
       %{
         email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "post_shoot"),
         total_hours: EmailPreset.calculate_total_hours(9, %{calendar: "Month", sign: "+"}),
-        status: "active",
+        status: "disabled",
         job_type: "portrait",
         type: "job",
         position: 0,
@@ -4632,7 +4634,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
       %{
         email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "cart_abandoned"),
         total_hours: EmailPreset.calculate_total_hours(1, %{calendar: "Hour", sign: "+"}),
-        status: "active",
+        status: "disabled",
         job_type: "portrait",
         type: "gallery",
         position: 0,
@@ -4650,7 +4652,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
       %{
         email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "cart_abandoned"),
         total_hours: EmailPreset.calculate_total_hours(1, %{calendar: "Day", sign: "+"}),
-        status: "active",
+        status: "disabled",
         job_type: "portrait",
         type: "gallery",
         position: 0,
@@ -4670,7 +4672,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
       %{
         email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "cart_abandoned"),
         total_hours: EmailPreset.calculate_total_hours(2, %{calendar: "Day", sign: "+"}),
-        status: "active",
+        status: "disabled",
         job_type: "portrait",
         type: "gallery",
         position: 0,
@@ -4690,7 +4692,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         email_automation_pipeline_id:
           get_pipeline_id_by_state(pipelines, "gallery_expiration_soon"),
         total_hours: EmailPreset.calculate_total_hours(7, %{calendar: "Day", sign: "-"}),
-        status: "active",
+        status: "disabled",
         job_type: "portrait",
         type: "gallery",
         position: 0,
@@ -4710,7 +4712,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         email_automation_pipeline_id:
           get_pipeline_id_by_state(pipelines, "gallery_expiration_soon"),
         total_hours: EmailPreset.calculate_total_hours(3, %{calendar: "Day", sign: "-"}),
-        status: "active",
+        status: "disabled",
         job_type: "portrait",
         type: "gallery",
         position: 0,
@@ -4731,7 +4733,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         email_automation_pipeline_id:
           get_pipeline_id_by_state(pipelines, "gallery_expiration_soon"),
         total_hours: EmailPreset.calculate_total_hours(1, %{calendar: "Day", sign: "-"}),
-        status: "active",
+        status: "disabled",
         job_type: "portrait",
         type: "gallery",
         position: 0,
@@ -4739,7 +4741,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         subject_template: "Last Day to get your photos and products!",
         body_template: """
         <p><span style="color: rgb(0, 0, 0);">Hello {{client_first_name}},</span></p>
-        <p><span style="color: rgb(0, 0, 0);">I wanted to send along one last reminder in case you forgot! Your gallery is going to expire tomorrow! Please log into your gallery and make your selections before the gallery expires on {{gallery_expiration_date}}</span></p>
+        <p><span style="color: rgb(0, 0, 0);">I wanted to send along one last reminder in case you forgot! Your gallery is going to expire {{total_time}}! Please log into your gallery and make your selections before the gallery expires on {{gallery_expiration_date}}</span></p>
         <p><span style="color: rgb(0, 0, 0);">A reminder your photos are password-protected, so you will need to use this password to view: <strong>{{password}}</strong></span></p>
         <p><span style="color: rgb(0, 0, 0);">You can log into your private gallery to see all of your images here:</span> {{gallery_link}}</p>
         <p><span style="color: rgb(0, 0, 0);">Any questions, please let me know! </span></p>
@@ -4750,7 +4752,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         email_automation_pipeline_id:
           get_pipeline_id_by_state(pipelines, "gallery_password_changed"),
         total_hours: 0,
-        status: "active",
+        status: "disabled",
         job_type: "portrait",
         type: "gallery",
         position: 0,
@@ -4768,7 +4770,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         email_automation_pipeline_id:
           get_pipeline_id_by_state(pipelines, "after_gallery_send_feedback"),
         total_hours: EmailPreset.calculate_total_hours(7, %{calendar: "Day", sign: "+"}),
-        status: "active",
+        status: "disabled",
         job_type: "portrait",
         type: "gallery",
         position: 0,
@@ -4893,7 +4895,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
       %{
         email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "order_shipped"),
         total_hours: 0,
-        status: "active",
+        status: "disabled",
         job_type: "portrait",
         type: "gallery",
         position: 0,
@@ -4911,7 +4913,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
       %{
         email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "order_delayed"),
         total_hours: 0,
-        status: "active",
+        status: "disabled",
         job_type: "portrait",
         type: "gallery",
         position: 0,
@@ -4927,7 +4929,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
       %{
         email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "order_arrived"),
         total_hours: 0,
-        status: "active",
+        status: "disabled",
         job_type: "portrait",
         type: "gallery",
         position: 0,
@@ -4945,7 +4947,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
       %{
         email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "abandoned_emails"),
         total_hours: 0,
-        status: "active",
+        status: "disabled",
         job_type: "portrait",
         type: "lead",
         position: 0,
@@ -4964,7 +4966,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
       %{
         email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "client_contact"),
         total_hours: 0,
-        status: "active",
+        status: "disabled",
         job_type: "boudoir",
         type: "lead",
         position: 0,
@@ -4994,9 +4996,10 @@ defmodule Mix.Tasks.ImportEmailPresets do
         <p><span style="color: rgb(0, 0, 0);">If you have any lingering questions or if there's anything more I can do to help you, please don't hesitate to reach out. </span></p>
         <p><span style="color: rgb(0, 0, 0);">I'm looking forward to your response and the possibility of working with you.</span></p>
         <p><span style="color: rgb(0, 0, 0);">Warm regards,</span></p>
-        <p><span style="color: rgb(0, 0, 0);">{{email_signature}}</span></p>        \"""
-        },
-        %{
+        <p><span style="color: rgb(0, 0, 0);">{{email_signature}}</span></p>
+        """
+      },
+      %{
         email_automation_pipeline_id:
           get_pipeline_id_by_state(pipelines, "manual_thank_you_lead"),
         total_hours: EmailPreset.calculate_total_hours(4, %{calendar: "Day", sign: "+"}),
@@ -5006,7 +5009,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         position: 0,
         name: "Lead - Initial Inquiry",
         subject_template: "Checking in! | {{photography_company_s_name}}",
-        body_template: \"""
+        body_template: """
         <p><span style="color: rgb(0, 0, 0);">Hello {{client_first_name}},</span></p>
         <p><span style="color: rgb(0, 0, 0);">I hope this message finds you well. I understand that life can get busy, and the to-do list never seems to end. I'm just following up on your recent inquiry with me, and I'm excited about working with you. Please hit the reply button to this email and let me know how I can assist you.</span></p>
         <p><span style="color: rgb(0, 0, 0);">I'm here to ensure that your photography experience is nothing short of memorable!</span></p>
@@ -5223,7 +5226,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
       %{
         email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "thanks_booking"),
         total_hours: 0,
-        status: "active",
+        status: "disabled",
         job_type: "boudoir",
         type: "job",
         position: 0,
@@ -5240,7 +5243,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
       %{
         email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "before_shoot"),
         total_hours: EmailPreset.calculate_total_hours(7, %{calendar: "Day", sign: "-"}),
-        status: "active",
+        status: "disabled",
         job_type: "boudoir",
         type: "job",
         position: 0,
@@ -5260,15 +5263,15 @@ defmodule Mix.Tasks.ImportEmailPresets do
       %{
         email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "before_shoot"),
         total_hours: EmailPreset.calculate_total_hours(1, %{calendar: "Day", sign: "-"}),
-        status: "active",
+        status: "disabled",
         job_type: "boudoir",
         type: "job",
         position: 0,
         name: "Pre-Shoot",
-        subject_template: "The Big Day Tomorrow | {{photography_company_s_name}}",
+        subject_template: "The Big Day {{total_time}} | {{photography_company_s_name}}",
         body_template: """
         <p><span style="color: rgb(0, 0, 0);">Hello {{client_first_name}}, </span></p>
-        <p><span style="color: rgb(0, 0, 0);">I am looking forward to your photoshoot tomorrow at {{session_time}} at {{session_location}}.</span></p>
+        <p><span style="color: rgb(0, 0, 0);">I am looking forward to your photoshoot {{total_time}} at {{session_time}} at {{session_location}}.</span></p>
         <p><span style="color: rgb(0, 0, 0);">A few last minute tips so we can have the best shoot possible:</span></p>
         <p><span style="color: rgb(0, 0, 0);">1. Please arrive at your shoot on time or a few minutes early to give yourself a little time to get settled and finalize your look before we start!</span></p>
         <p><span style="color: rgb(0, 0, 0);">2. Be sure to drink lots of water, get good sleep tonight and eat well before your session.</span></p>
@@ -5281,7 +5284,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
       %{
         email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "balance_due"),
         total_hours: 0,
-        status: "active",
+        status: "disabled",
         job_type: "boudoir",
         type: "job",
         position: 0,
@@ -5303,7 +5306,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
       %{
         email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "offline_payment"),
         total_hours: 0,
-        status: "active",
+        status: "disabled",
         job_type: "boudoir",
         type: "job",
         position: 0,
@@ -5325,7 +5328,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
       %{
         email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "shoot_thanks"),
         total_hours: EmailPreset.calculate_total_hours(1, %{calendar: "Day", sign: "+"}),
-        status: "active",
+        status: "disabled",
         job_type: "boudoir",
         type: "job",
         position: 0,
@@ -5343,7 +5346,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
       %{
         email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "post_shoot"),
         total_hours: EmailPreset.calculate_total_hours(3, %{calendar: "Month", sign: "+"}),
-        status: "active",
+        status: "disabled",
         job_type: "boudoir",
         type: "job",
         position: 0,
@@ -5361,7 +5364,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
       %{
         email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "post_shoot"),
         total_hours: EmailPreset.calculate_total_hours(9, %{calendar: "Month", sign: "+"}),
-        status: "active",
+        status: "disabled",
         job_type: "boudoir",
         type: "job",
         position: 0,
@@ -5445,7 +5448,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
       %{
         email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "cart_abandoned"),
         total_hours: EmailPreset.calculate_total_hours(1, %{calendar: "Hour", sign: "+"}),
-        status: "active",
+        status: "disabled",
         job_type: "boudoir",
         type: "gallery",
         position: 0,
@@ -5463,7 +5466,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
       %{
         email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "cart_abandoned"),
         total_hours: EmailPreset.calculate_total_hours(1, %{calendar: "Day", sign: "+"}),
-        status: "active",
+        status: "disabled",
         job_type: "boudoir",
         type: "gallery",
         position: 0,
@@ -5483,7 +5486,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
       %{
         email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "cart_abandoned"),
         total_hours: EmailPreset.calculate_total_hours(2, %{calendar: "Day", sign: "+"}),
-        status: "active",
+        status: "disabled",
         job_type: "boudoir",
         type: "gallery",
         position: 0,
@@ -5503,7 +5506,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         email_automation_pipeline_id:
           get_pipeline_id_by_state(pipelines, "gallery_expiration_soon"),
         total_hours: EmailPreset.calculate_total_hours(7, %{calendar: "Day", sign: "-"}),
-        status: "active",
+        status: "disabled",
         job_type: "boudoir",
         type: "gallery",
         position: 0,
@@ -5523,7 +5526,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         email_automation_pipeline_id:
           get_pipeline_id_by_state(pipelines, "gallery_expiration_soon"),
         total_hours: EmailPreset.calculate_total_hours(3, %{calendar: "Day", sign: "-"}),
-        status: "active",
+        status: "disabled",
         job_type: "boudoir",
         type: "gallery",
         position: 0,
@@ -5544,7 +5547,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         email_automation_pipeline_id:
           get_pipeline_id_by_state(pipelines, "gallery_expiration_soon"),
         total_hours: EmailPreset.calculate_total_hours(1, %{calendar: "Day", sign: "-"}),
-        status: "active",
+        status: "disabled",
         job_type: "boudoir",
         type: "gallery",
         position: 0,
@@ -5552,7 +5555,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         subject_template: "Last Day to get your photos and products!",
         body_template: """
         <p><span style="color: rgb(0, 0, 0);">Hello {{client_first_name}},</span></p>
-        <p><span style="color: rgb(0, 0, 0);">I wanted to send along one last reminder in case you forgot! Your gallery is going to expire tomorrow! Please log into your gallery and make your selections before the gallery expires on {{gallery_expiration_date}}</span></p>
+        <p><span style="color: rgb(0, 0, 0);">I wanted to send along one last reminder in case you forgot! Your gallery is going to expire {{total_time}}! Please log into your gallery and make your selections before the gallery expires on {{gallery_expiration_date}}</span></p>
         <p><span style="color: rgb(0, 0, 0);">A reminder your photos are password-protected, so you will need to use this password to view: <strong>{{password}}</strong></span></p>
         <p><span style="color: rgb(0, 0, 0);">You can log into your private gallery to see all of your images here:</span> {{gallery_link}}</p>
         <p><span style="color: rgb(0, 0, 0);">Any questions, please let me know! </span></p>
@@ -5563,7 +5566,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         email_automation_pipeline_id:
           get_pipeline_id_by_state(pipelines, "gallery_password_changed"),
         total_hours: 0,
-        status: "active",
+        status: "disabled",
         job_type: "boudoir",
         type: "gallery",
         position: 0,
@@ -5581,7 +5584,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         email_automation_pipeline_id:
           get_pipeline_id_by_state(pipelines, "after_gallery_send_feedback"),
         total_hours: EmailPreset.calculate_total_hours(7, %{calendar: "Day", sign: "+"}),
-        status: "active",
+        status: "disabled",
         job_type: "boudoir",
         type: "gallery",
         position: 0,
@@ -5706,7 +5709,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
       %{
         email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "order_shipped"),
         total_hours: 0,
-        status: "active",
+        status: "disabled",
         job_type: "boudoir",
         type: "gallery",
         position: 0,
@@ -5724,7 +5727,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
       %{
         email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "order_delayed"),
         total_hours: 0,
-        status: "active",
+        status: "disabled",
         job_type: "boudoir",
         type: "gallery",
         position: 0,
@@ -5740,7 +5743,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
       %{
         email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "order_arrived"),
         total_hours: 0,
-        status: "active",
+        status: "disabled",
         job_type: "boudoir",
         type: "gallery",
         position: 0,
@@ -5758,7 +5761,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
       %{
         email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "abandoned_emails"),
         total_hours: 0,
-        status: "active",
+        status: "disabled",
         job_type: "boudoir",
         type: "lead",
         position: 0,
@@ -5777,7 +5780,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
       %{
         email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "client_contact"),
         total_hours: 0,
-        status: "active",
+        status: "disabled",
         job_type: "other",
         type: "lead",
         position: 0,
@@ -5807,9 +5810,10 @@ defmodule Mix.Tasks.ImportEmailPresets do
         <p><span style="color: rgb(0, 0, 0);">If you have any lingering questions or if there's anything more I can do to help you, please don't hesitate to reach out. </span></p>
         <p><span style="color: rgb(0, 0, 0);">I'm looking forward to your response and the possibility of working with you.</span></p>
         <p><span style="color: rgb(0, 0, 0);">Warm regards,</span></p>
-        <p><span style="color: rgb(0, 0, 0);">{{email_signature}}</span></p>        \"""
-        },
-        %{
+        <p><span style="color: rgb(0, 0, 0);">{{email_signature}}</span></p>
+        """
+      },
+      %{
         email_automation_pipeline_id:
           get_pipeline_id_by_state(pipelines, "manual_thank_you_lead"),
         total_hours: EmailPreset.calculate_total_hours(4, %{calendar: "Day", sign: "+"}),
@@ -5819,7 +5823,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         position: 0,
         name: "Lead - Initial Inquiry",
         subject_template: "Checking in! | {{photography_company_s_name}}",
-        body_template: \"""
+        body_template: """
         <p><span style="color: rgb(0, 0, 0);">Hello {{client_first_name}},</span></p>
         <p><span style="color: rgb(0, 0, 0);">I hope this message finds you well. I understand that life can get busy, and the to-do list never seems to end. I'm just following up on your recent inquiry with me, and I'm excited about working with you. Please hit the reply button to this email and let me know how I can assist you.</span></p>
         <p><span style="color: rgb(0, 0, 0);">I'm here to ensure that your photography experience is nothing short of memorable!</span></p>
@@ -6038,7 +6042,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
       %{
         email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "thanks_booking"),
         total_hours: 0,
-        status: "active",
+        status: "disabled",
         job_type: "other",
         type: "job",
         position: 0,
@@ -6055,7 +6059,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
       %{
         email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "before_shoot"),
         total_hours: EmailPreset.calculate_total_hours(7, %{calendar: "Day", sign: "-"}),
-        status: "active",
+        status: "disabled",
         job_type: "other",
         type: "job",
         position: 0,
@@ -6075,16 +6079,16 @@ defmodule Mix.Tasks.ImportEmailPresets do
       %{
         email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "before_shoot"),
         total_hours: EmailPreset.calculate_total_hours(1, %{calendar: "Day", sign: "-"}),
-        status: "active",
+        status: "disabled",
         job_type: "other",
         type: "job",
         position: 0,
         name: "Pre-Shoot",
-        subject_template: "The Big Day Tomorrow | {{photography_company_s_name}}",
+        subject_template: "The Big Day {{total_time}} | {{photography_company_s_name}}",
         body_template: """
         <p><span style="color: rgb(0, 0, 0);">Hello {{client_first_name}}, </span></p>
-        <p><span style="color: rgb(0, 0, 0);">I am looking forward to your photoshoot tomorrow at {{session_time}} at {{session_location}}.</span></p>
-        <p><span style="color: rgb(0, 0, 0);">In general, email is the best way to get a hold of me, however, If you have any issues finding me or the photoshoot location tomorrow, or there is an emergency, you can call or text me on the shoot day at {{photographer_cell}}.</span></p>
+        <p><span style="color: rgb(0, 0, 0);">I am looking forward to your photoshoot {{total_time}} at {{session_time}} at {{session_location}}.</span></p>
+        <p><span style="color: rgb(0, 0, 0);">In general, email is the best way to get a hold of me, however, If you have any issues finding me or the photoshoot location {{total_time}}, or there is an emergency, you can call or text me on the shoot day at {{photographer_cell}}.</span></p>
         <p><span style="color: rgb(0, 0, 0);">I am looking forward to working with you!</span></p>
         <p><span style="color: rgb(0, 0, 0);">{{email_signature}}</span></p>
         """
@@ -6092,7 +6096,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
       %{
         email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "balance_due"),
         total_hours: 0,
-        status: "active",
+        status: "disabled",
         job_type: "other",
         type: "job",
         position: 0,
@@ -6114,7 +6118,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
       %{
         email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "offline_payment"),
         total_hours: 0,
-        status: "active",
+        status: "disabled",
         job_type: "other",
         type: "job",
         position: 0,
@@ -6136,7 +6140,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
       %{
         email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "shoot_thanks"),
         total_hours: EmailPreset.calculate_total_hours(1, %{calendar: "Day", sign: "+"}),
-        status: "active",
+        status: "disabled",
         job_type: "other",
         type: "job",
         position: 0,
@@ -6154,7 +6158,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
       %{
         email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "post_shoot"),
         total_hours: EmailPreset.calculate_total_hours(3, %{calendar: "Month", sign: "+"}),
-        status: "active",
+        status: "disabled",
         job_type: "other",
         type: "job",
         position: 0,
@@ -6173,7 +6177,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
       %{
         email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "post_shoot"),
         total_hours: EmailPreset.calculate_total_hours(9, %{calendar: "Month", sign: "+"}),
-        status: "active",
+        status: "disabled",
         job_type: "other",
         type: "job",
         position: 0,
@@ -6257,7 +6261,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
       %{
         email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "cart_abandoned"),
         total_hours: EmailPreset.calculate_total_hours(1, %{calendar: "Hour", sign: "+"}),
-        status: "active",
+        status: "disabled",
         job_type: "other",
         type: "gallery",
         position: 0,
@@ -6275,7 +6279,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
       %{
         email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "cart_abandoned"),
         total_hours: EmailPreset.calculate_total_hours(1, %{calendar: "Day", sign: "+"}),
-        status: "active",
+        status: "disabled",
         job_type: "other",
         type: "gallery",
         position: 0,
@@ -6295,7 +6299,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
       %{
         email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "cart_abandoned"),
         total_hours: EmailPreset.calculate_total_hours(2, %{calendar: "Day", sign: "+"}),
-        status: "active",
+        status: "disabled",
         job_type: "other",
         type: "gallery",
         position: 0,
@@ -6315,7 +6319,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         email_automation_pipeline_id:
           get_pipeline_id_by_state(pipelines, "gallery_expiration_soon"),
         total_hours: EmailPreset.calculate_total_hours(7, %{calendar: "Day", sign: "-"}),
-        status: "active",
+        status: "disabled",
         job_type: "other",
         type: "gallery",
         position: 0,
@@ -6335,7 +6339,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         email_automation_pipeline_id:
           get_pipeline_id_by_state(pipelines, "gallery_expiration_soon"),
         total_hours: EmailPreset.calculate_total_hours(3, %{calendar: "Day", sign: "-"}),
-        status: "active",
+        status: "disabled",
         job_type: "other",
         type: "gallery",
         position: 0,
@@ -6356,7 +6360,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         email_automation_pipeline_id:
           get_pipeline_id_by_state(pipelines, "gallery_expiration_soon"),
         total_hours: EmailPreset.calculate_total_hours(1, %{calendar: "Day", sign: "-"}),
-        status: "active",
+        status: "disabled",
         job_type: "other",
         type: "gallery",
         position: 0,
@@ -6364,7 +6368,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         subject_template: "Last Day to get your photos and products!",
         body_template: """
         <p><span style="color: rgb(0, 0, 0);">Hello {{client_first_name}},</span></p>
-        <p><span style="color: rgb(0, 0, 0);">I wanted to send along one last reminder in case you forgot! Your gallery is going to expire tomorrow! Please log into your gallery and make your selections before the gallery expires on {{gallery_expiration_date}}</span></p>
+        <p><span style="color: rgb(0, 0, 0);">I wanted to send along one last reminder in case you forgot! Your gallery is going to expire {{total_time}}! Please log into your gallery and make your selections before the gallery expires on {{gallery_expiration_date}}</span></p>
         <p><span style="color: rgb(0, 0, 0);">A reminder your photos are password-protected, so you will need to use this password to view: <strong>{{password}}</strong></span></p>
         <p><span style="color: rgb(0, 0, 0);">You can log into your private gallery to see all of your images here:</span> {{gallery_link}}</p>
         <p><span style="color: rgb(0, 0, 0);">Any questions, please let me know! </span></p>
@@ -6375,7 +6379,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         email_automation_pipeline_id:
           get_pipeline_id_by_state(pipelines, "gallery_password_changed"),
         total_hours: 0,
-        status: "active",
+        status: "disabled",
         job_type: "other",
         type: "gallery",
         position: 0,
@@ -6393,7 +6397,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         email_automation_pipeline_id:
           get_pipeline_id_by_state(pipelines, "after_gallery_send_feedback"),
         total_hours: EmailPreset.calculate_total_hours(7, %{calendar: "Day", sign: "+"}),
-        status: "active",
+        status: "disabled",
         job_type: "other",
         type: "gallery",
         position: 0,
@@ -6518,7 +6522,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
       %{
         email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "order_shipped"),
         total_hours: 0,
-        status: "active",
+        status: "disabled",
         job_type: "other",
         type: "gallery",
         position: 0,
@@ -6536,7 +6540,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
       %{
         email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "order_delayed"),
         total_hours: 0,
-        status: "active",
+        status: "disabled",
         job_type: "other",
         type: "gallery",
         position: 0,
@@ -6552,7 +6556,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
       %{
         email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "order_arrived"),
         total_hours: 0,
-        status: "active",
+        status: "disabled",
         job_type: "other",
         type: "gallery",
         position: 0,
@@ -6570,7 +6574,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
       %{
         email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "abandoned_emails"),
         total_hours: 0,
-        status: "active",
+        status: "disabled",
         job_type: "other",
         type: "lead",
         position: 0,
@@ -6589,7 +6593,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
       %{
         email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "client_contact"),
         total_hours: 0,
-        status: "active",
+        status: "disabled",
         job_type: "maternity",
         type: "lead",
         position: 0,
@@ -6619,9 +6623,10 @@ defmodule Mix.Tasks.ImportEmailPresets do
         <p><span style="color: rgb(0, 0, 0);">If you have any lingering questions or if there's anything more I can do to help you, please don't hesitate to reach out. </span></p>
         <p><span style="color: rgb(0, 0, 0);">I'm looking forward to your response and the possibility of working with you.</span></p>
         <p><span style="color: rgb(0, 0, 0);">Warm regards,</span></p>
-        <p><span style="color: rgb(0, 0, 0);">{{email_signature}}</span></p>        \"""
-        },
-        %{
+        <p><span style="color: rgb(0, 0, 0);">{{email_signature}}</span></p>
+        """
+      },
+      %{
         email_automation_pipeline_id:
           get_pipeline_id_by_state(pipelines, "manual_thank_you_lead"),
         total_hours: EmailPreset.calculate_total_hours(4, %{calendar: "Day", sign: "+"}),
@@ -6631,7 +6636,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         position: 0,
         name: "Lead - Initial Inquiry",
         subject_template: "Checking in! | {{photography_company_s_name}}",
-        body_template: \"""
+        body_template: """
         <p><span style="color: rgb(0, 0, 0);">Hello {{client_first_name}},</span></p>
         <p><span style="color: rgb(0, 0, 0);">I hope this message finds you well. I understand that life can get busy, and the to-do list never seems to end. I'm just following up on your recent inquiry with me, and I'm excited about working with you. Please hit the reply button to this email and let me know how I can assist you.</span></p>
         <p><span style="color: rgb(0, 0, 0);">I'm here to ensure that your photography experience is nothing short of memorable!</span></p>
@@ -6849,7 +6854,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
       %{
         email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "thanks_booking"),
         total_hours: 0,
-        status: "active",
+        status: "disabled",
         job_type: "maternity",
         type: "job",
         position: 0,
@@ -6866,7 +6871,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
       %{
         email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "before_shoot"),
         total_hours: EmailPreset.calculate_total_hours(7, %{calendar: "Day", sign: "-"}),
-        status: "active",
+        status: "disabled",
         job_type: "maternity",
         type: "job",
         position: 0,
@@ -6886,15 +6891,15 @@ defmodule Mix.Tasks.ImportEmailPresets do
       %{
         email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "before_shoot"),
         total_hours: EmailPreset.calculate_total_hours(1, %{calendar: "Day", sign: "-"}),
-        status: "active",
+        status: "disabled",
         job_type: "maternity",
         type: "job",
         position: 0,
         name: "Pre-Shoot",
-        subject_template: "The Big Day Tomorrow | {{photography_company_s_name}}",
+        subject_template: "The Big Day {{total_time}} | {{photography_company_s_name}}",
         body_template: """
         <p><span style="color: rgb(0, 0, 0);">Hello {{client_first_name}}, </span></p>
-        <p><span style="color: rgb(0, 0, 0);">I am looking forward to your photoshoot tomorrow at {{session_time}} at {{session_location}}.</span></p>
+        <p><span style="color: rgb(0, 0, 0);">I am looking forward to your photoshoot {{total_time}} at {{session_time}} at {{session_location}}.</span></p>
         <p><span style="color: rgb(0, 0, 0);">I wanted to send along some last-minute tips to ensure we have a great shoot!</span></p>
         <p><span style="color: rgb(0, 0, 0);">1. Please arrive at your shoot on time or a few minutes early to be sure you give yourself a little time to get settled and finalize your look before we start!</span></p>
         <p><span style="color: rgb(0, 0, 0);">2. Be sure to drink lots of water, get good sleep tonight and eat well before your session.</span></p>
@@ -6906,7 +6911,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
       %{
         email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "balance_due"),
         total_hours: 0,
-        status: "active",
+        status: "disabled",
         job_type: "maternity",
         type: "job",
         position: 0,
@@ -6928,7 +6933,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
       %{
         email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "offline_payment"),
         total_hours: 0,
-        status: "active",
+        status: "disabled",
         job_type: "maternity",
         type: "job",
         position: 0,
@@ -6950,7 +6955,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
       %{
         email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "shoot_thanks"),
         total_hours: EmailPreset.calculate_total_hours(1, %{calendar: "Day", sign: "+"}),
-        status: "active",
+        status: "disabled",
         job_type: "maternity",
         type: "job",
         position: 0,
@@ -6968,7 +6973,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
       %{
         email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "post_shoot"),
         total_hours: EmailPreset.calculate_total_hours(3, %{calendar: "Month", sign: "+"}),
-        status: "active",
+        status: "disabled",
         job_type: "maternity",
         type: "job",
         position: 0,
@@ -6986,7 +6991,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
       %{
         email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "post_shoot"),
         total_hours: EmailPreset.calculate_total_hours(9, %{calendar: "Month", sign: "+"}),
-        status: "active",
+        status: "disabled",
         job_type: "maternity",
         type: "job",
         position: 0,
@@ -7070,7 +7075,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
       %{
         email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "cart_abandoned"),
         total_hours: EmailPreset.calculate_total_hours(1, %{calendar: "Hour", sign: "+"}),
-        status: "active",
+        status: "disabled",
         job_type: "maternity",
         type: "gallery",
         position: 0,
@@ -7088,7 +7093,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
       %{
         email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "cart_abandoned"),
         total_hours: EmailPreset.calculate_total_hours(1, %{calendar: "Day", sign: "+"}),
-        status: "active",
+        status: "disabled",
         job_type: "maternity",
         type: "gallery",
         position: 0,
@@ -7108,7 +7113,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
       %{
         email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "cart_abandoned"),
         total_hours: EmailPreset.calculate_total_hours(2, %{calendar: "Day", sign: "+"}),
-        status: "active",
+        status: "disabled",
         job_type: "maternity",
         type: "gallery",
         position: 0,
@@ -7128,7 +7133,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         email_automation_pipeline_id:
           get_pipeline_id_by_state(pipelines, "gallery_expiration_soon"),
         total_hours: EmailPreset.calculate_total_hours(7, %{calendar: "Day", sign: "-"}),
-        status: "active",
+        status: "disabled",
         job_type: "maternity",
         type: "gallery",
         position: 0,
@@ -7148,7 +7153,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         email_automation_pipeline_id:
           get_pipeline_id_by_state(pipelines, "gallery_expiration_soon"),
         total_hours: EmailPreset.calculate_total_hours(3, %{calendar: "Day", sign: "-"}),
-        status: "active",
+        status: "disabled",
         job_type: "maternity",
         type: "gallery",
         position: 0,
@@ -7169,7 +7174,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         email_automation_pipeline_id:
           get_pipeline_id_by_state(pipelines, "gallery_expiration_soon"),
         total_hours: EmailPreset.calculate_total_hours(1, %{calendar: "Day", sign: "-"}),
-        status: "active",
+        status: "disabled",
         job_type: "maternity",
         type: "gallery",
         position: 0,
@@ -7177,7 +7182,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         subject_template: "Last Day to get your photos and products!",
         body_template: """
         <p><span style="color: rgb(0, 0, 0);">Hello {{client_first_name}},</span></p>
-        <p><span style="color: rgb(0, 0, 0);">I wanted to send along one last reminder in case you forgot! Your gallery is going to expire tomorrow! Please log into your gallery and make your selections before the gallery expires on {{gallery_expiration_date}}</span></p>
+        <p><span style="color: rgb(0, 0, 0);">I wanted to send along one last reminder in case you forgot! Your gallery is going to expire {{total_time}}! Please log into your gallery and make your selections before the gallery expires on {{gallery_expiration_date}}</span></p>
         <p><span style="color: rgb(0, 0, 0);">A reminder your photos are password-protected, so you will need to use this password to view: <strong>{{password}}</strong></span></p>
         <p><span style="color: rgb(0, 0, 0);">You can log into your private gallery to see all of your images here:</span> {{gallery_link}}</p>
         <p><span style="color: rgb(0, 0, 0);">Any questions, please let me know! </span></p>
@@ -7188,7 +7193,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         email_automation_pipeline_id:
           get_pipeline_id_by_state(pipelines, "gallery_password_changed"),
         total_hours: 0,
-        status: "active",
+        status: "disabled",
         job_type: "maternity",
         type: "gallery",
         position: 0,
@@ -7206,7 +7211,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         email_automation_pipeline_id:
           get_pipeline_id_by_state(pipelines, "after_gallery_send_feedback"),
         total_hours: EmailPreset.calculate_total_hours(7, %{calendar: "Day", sign: "+"}),
-        status: "active",
+        status: "disabled",
         job_type: "maternity",
         type: "gallery",
         position: 0,
@@ -7331,7 +7336,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
       %{
         email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "order_shipped"),
         total_hours: 0,
-        status: "active",
+        status: "disabled",
         job_type: "maternity",
         type: "gallery",
         position: 0,
@@ -7349,7 +7354,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
       %{
         email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "order_delayed"),
         total_hours: 0,
-        status: "active",
+        status: "disabled",
         job_type: "maternity",
         type: "gallery",
         position: 0,
@@ -7365,7 +7370,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
       %{
         email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "order_arrived"),
         total_hours: 0,
-        status: "active",
+        status: "disabled",
         job_type: "maternity",
         type: "gallery",
         position: 0,
@@ -7383,7 +7388,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
       %{
         email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "abandoned_emails"),
         total_hours: 0,
-        status: "active",
+        status: "disabled",
         job_type: "maternity",
         type: "lead",
         position: 0,
@@ -7402,7 +7407,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
       %{
         email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "client_contact"),
         total_hours: 0,
-        status: "active",
+        status: "disabled",
         job_type: "event",
         type: "lead",
         position: 0,
@@ -7432,9 +7437,10 @@ defmodule Mix.Tasks.ImportEmailPresets do
         <p><span style="color: rgb(0, 0, 0);">If you have any lingering questions or if there's anything more I can do to help you, please don't hesitate to reach out. </span></p>
         <p><span style="color: rgb(0, 0, 0);">I'm looking forward to your response and the possibility of working with you.</span></p>
         <p><span style="color: rgb(0, 0, 0);">Warm regards,</span></p>
-        <p><span style="color: rgb(0, 0, 0);">{{email_signature}}</span></p>        \"""
-        },
-        %{
+        <p><span style="color: rgb(0, 0, 0);">{{email_signature}}</span></p>
+        """
+      },
+      %{
         email_automation_pipeline_id:
           get_pipeline_id_by_state(pipelines, "manual_thank_you_lead"),
         total_hours: EmailPreset.calculate_total_hours(4, %{calendar: "Day", sign: "+"}),
@@ -7444,7 +7450,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         position: 0,
         name: "Lead - Initial Inquiry",
         subject_template: "Checking in! | {{photography_company_s_name}}",
-        body_template: \"""
+        body_template: """
         <p><span style="color: rgb(0, 0, 0);">Hello {{client_first_name}},</span></p>
         <p><span style="color: rgb(0, 0, 0);">I hope this message finds you well. I understand that life can get busy, and the to-do list never seems to end. I'm just following up on your recent inquiry with me, and I'm excited about working with you. Please hit the reply button to this email and let me know how I can assist you.</span></p>
         <p><span style="color: rgb(0, 0, 0);">I'm here to ensure that your photography experience is nothing short of memorable!</span></p>
@@ -7662,7 +7668,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
       %{
         email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "thanks_booking"),
         total_hours: 0,
-        status: "active",
+        status: "disabled",
         job_type: "event",
         type: "job",
         position: 0,
@@ -7679,7 +7685,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
       %{
         email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "before_shoot"),
         total_hours: EmailPreset.calculate_total_hours(7, %{calendar: "Day", sign: "-"}),
-        status: "active",
+        status: "disabled",
         job_type: "event",
         type: "job",
         position: 0,
@@ -7696,17 +7702,17 @@ defmodule Mix.Tasks.ImportEmailPresets do
       %{
         email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "before_shoot"),
         total_hours: EmailPreset.calculate_total_hours(1, %{calendar: "Day", sign: "-"}),
-        status: "active",
+        status: "disabled",
         job_type: "event",
         type: "job",
         position: 0,
         name: "Pre-Shoot",
-        subject_template: "The Big Day Tomorrow | {{photography_company_s_name}}",
+        subject_template: "The Big Day {{total_time}} | {{photography_company_s_name}}",
         body_template: """
         <p><span style="color: rgb(0, 0, 0);">Hello {{client_first_name}}, </span></p>
-        <p><span style="color: rgb(0, 0, 0);">I am looking forward to your photoshoot tomorrow  at {{session_time}} at {{session_location}}.</span></p>
+        <p><span style="color: rgb(0, 0, 0);">I am looking forward to your photoshoot {{total_time}}  at {{session_time}} at {{session_location}}.</span></p>
         <p><span style="color: rgb(0, 0, 0);">If you haven't confirmed who will be the liaison, please let me know who will meet me on arrival!</span></p>
-        <p><span style="color: rgb(0, 0, 0);">In general, email is the best way to get ahold of me, however, If you have any issues finding me tomorrow, or an emergency, you can call or text me on the shoot day at {{photographer_cell}}.</span></p>
+        <p><span style="color: rgb(0, 0, 0);">In general, email is the best way to get ahold of me, however, If you have any issues finding me {{total_time}}, or an emergency, you can call or text me on the shoot day at {{photographer_cell}}.</span></p>
         <p><span style="color: rgb(0, 0, 0);">I am looking forward to working with you!</span></p>
         <p><span style="color: rgb(0, 0, 0);">{{email_signature}}</span></p>
         """
@@ -7714,7 +7720,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
       %{
         email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "balance_due"),
         total_hours: 0,
-        status: "active",
+        status: "disabled",
         job_type: "event",
         type: "job",
         position: 0,
@@ -7736,7 +7742,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
       %{
         email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "offline_payment"),
         total_hours: 0,
-        status: "active",
+        status: "disabled",
         job_type: "event",
         type: "job",
         position: 0,
@@ -7758,7 +7764,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
       %{
         email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "shoot_thanks"),
         total_hours: EmailPreset.calculate_total_hours(1, %{calendar: "Day", sign: "+"}),
-        status: "active",
+        status: "disabled",
         job_type: "event",
         type: "job",
         position: 0,
@@ -7776,7 +7782,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
       %{
         email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "post_shoot"),
         total_hours: EmailPreset.calculate_total_hours(3, %{calendar: "Month", sign: "+"}),
-        status: "active",
+        status: "disabled",
         job_type: "event",
         type: "job",
         position: 0,
@@ -7794,7 +7800,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
       %{
         email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "post_shoot"),
         total_hours: EmailPreset.calculate_total_hours(9, %{calendar: "Month", sign: "+"}),
-        status: "active",
+        status: "disabled",
         job_type: "event",
         type: "job",
         position: 0,
@@ -7878,7 +7884,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
       %{
         email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "cart_abandoned"),
         total_hours: EmailPreset.calculate_total_hours(1, %{calendar: "Hour", sign: "+"}),
-        status: "active",
+        status: "disabled",
         job_type: "event",
         type: "gallery",
         position: 0,
@@ -7896,7 +7902,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
       %{
         email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "cart_abandoned"),
         total_hours: EmailPreset.calculate_total_hours(1, %{calendar: "Day", sign: "+"}),
-        status: "active",
+        status: "disabled",
         job_type: "event",
         type: "gallery",
         position: 0,
@@ -7916,7 +7922,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
       %{
         email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "cart_abandoned"),
         total_hours: EmailPreset.calculate_total_hours(2, %{calendar: "Day", sign: "+"}),
-        status: "active",
+        status: "disabled",
         job_type: "event",
         type: "gallery",
         position: 0,
@@ -7936,7 +7942,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         email_automation_pipeline_id:
           get_pipeline_id_by_state(pipelines, "gallery_expiration_soon"),
         total_hours: EmailPreset.calculate_total_hours(7, %{calendar: "Day", sign: "-"}),
-        status: "active",
+        status: "disabled",
         job_type: "event",
         type: "gallery",
         position: 0,
@@ -7956,7 +7962,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         email_automation_pipeline_id:
           get_pipeline_id_by_state(pipelines, "gallery_expiration_soon"),
         total_hours: EmailPreset.calculate_total_hours(3, %{calendar: "Day", sign: "-"}),
-        status: "active",
+        status: "disabled",
         job_type: "event",
         type: "gallery",
         position: 0,
@@ -7977,7 +7983,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         email_automation_pipeline_id:
           get_pipeline_id_by_state(pipelines, "gallery_expiration_soon"),
         total_hours: EmailPreset.calculate_total_hours(1, %{calendar: "Day", sign: "-"}),
-        status: "active",
+        status: "disabled",
         job_type: "event",
         type: "gallery",
         position: 0,
@@ -7985,7 +7991,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         subject_template: "Last Day to get your photos and products!",
         body_template: """
         <p><span style="color: rgb(0, 0, 0);">Hello {{client_first_name}},</span></p>
-        <p><span style="color: rgb(0, 0, 0);">I wanted to send along one last reminder in case you forgot! Your gallery is going to expire tomorrow! Please log into your gallery and make your selections before the gallery expires on {{gallery_expiration_date}}</span></p>
+        <p><span style="color: rgb(0, 0, 0);">I wanted to send along one last reminder in case you forgot! Your gallery is going to expire {{total_time}}! Please log into your gallery and make your selections before the gallery expires on {{gallery_expiration_date}}</span></p>
         <p><span style="color: rgb(0, 0, 0);">A reminder your photos are password-protected, so you will need to use this password to view: <strong>{{password}}</strong></span></p>
         <p><span style="color: rgb(0, 0, 0);">You can log into your private gallery to see all of your images here:</span> {{gallery_link}}</p>
         <p><span style="color: rgb(0, 0, 0);">Any questions, please let me know! </span></p>
@@ -7996,7 +8002,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         email_automation_pipeline_id:
           get_pipeline_id_by_state(pipelines, "gallery_password_changed"),
         total_hours: 0,
-        status: "active",
+        status: "disabled",
         job_type: "event",
         type: "gallery",
         position: 0,
@@ -8014,7 +8020,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         email_automation_pipeline_id:
           get_pipeline_id_by_state(pipelines, "after_gallery_send_feedback"),
         total_hours: EmailPreset.calculate_total_hours(7, %{calendar: "Day", sign: "+"}),
-        status: "active",
+        status: "disabled",
         job_type: "event",
         type: "gallery",
         position: 0,
@@ -8139,7 +8145,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
       %{
         email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "order_shipped"),
         total_hours: 0,
-        status: "active",
+        status: "disabled",
         job_type: "event",
         type: "gallery",
         position: 0,
@@ -8157,7 +8163,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
       %{
         email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "order_delayed"),
         total_hours: 0,
-        status: "active",
+        status: "disabled",
         job_type: "event",
         type: "gallery",
         position: 0,
@@ -8173,7 +8179,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
       %{
         email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "order_arrived"),
         total_hours: 0,
-        status: "active",
+        status: "disabled",
         job_type: "event",
         type: "gallery",
         position: 0,
@@ -8191,7 +8197,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
       %{
         email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "abandoned_emails"),
         total_hours: 0,
-        status: "active",
+        status: "disabled",
         job_type: "event",
         type: "lead",
         position: 0,
@@ -8260,6 +8266,22 @@ defmodule Mix.Tasks.ImportEmailPresets do
     Repo.insert_all("email_presets", email_presets)
   end
 
+  # defp update_all_org_presets(organizations, attrs, email_preset) do
+  #   Enum.map(organizations, fn %{id: org_id} ->
+  #     Logger.warning("[record updated] #{org_id} for #{email_preset.job_type}")
+
+  #     email_preset =
+  #       from(e in email_preset_query(attrs), where: e.organization_id == ^org_id)
+  #       |> Repo.one()
+
+  #     if email_preset do
+  #       email_preset
+  #       |> EmailPreset.default_presets_changeset(Map.merge(attrs, %{organization_id: org_id}))
+  #       |> Repo.update!()
+  #     end
+  #   end)
+  # end
+
   defp get_all_default_email_presets() do
     from(ep in EmailPreset, where: is_nil(ep.organization_id)) |> Repo.all()
   end
@@ -8271,7 +8293,8 @@ defmodule Mix.Tasks.ImportEmailPresets do
           ep.subject_template == ^attrs.subject_template and
           ep.name == ^attrs.name and
           ep.job_type == ^attrs.job_type and
-          ep.email_automation_pipeline_id == ^attrs.email_automation_pipeline_id
+          ep.email_automation_pipeline_id == ^attrs.email_automation_pipeline_id and
+          ep.total_hours == ^attrs.total_hours
     )
   end
 

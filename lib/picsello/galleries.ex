@@ -139,6 +139,24 @@ defmodule Picsello.Galleries do
   end
 
   @doc """
+  Gets a single gallery.
+  ## Examples
+
+      iex> get_gallery(123)
+      %Gallery{}
+
+      iex> get_gallery(456)
+      nil
+
+  """
+  def get_gallery(id) do
+    from(gallery in active_disabled_galleries(),
+      where: gallery.id == ^id
+    )
+    |> Repo.one()
+  end
+
+  @doc """
   List galleries against job_id
 
   ## Examples

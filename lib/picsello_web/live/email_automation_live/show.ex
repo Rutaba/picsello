@@ -197,8 +197,19 @@ defmodule PicselloWeb.Live.EmailAutomations.Show do
         )
     end
     |> case do
-      {:ok, _} -> socket |> put_flash(:success, "Email Sent Successfully")
-      _ -> socket |> put_flash(:error, "Error in Sending Email")
+      {:ok, _} ->
+        Phoenix.PubSub.broadcast(
+          Picsello.PubSub,
+          "emails_count:#{job_id}",
+          {:update_emails_count, %{job_id: job_id}}
+        )
+
+        socket
+        |> put_flash(:success, "Email Sent Successfully")
+
+      _ ->
+        socket
+        |> put_flash(:error, "Error in Sending Email")
     end
     |> close_modal()
     |> assign_email_schedules()
@@ -238,7 +249,7 @@ defmodule PicselloWeb.Live.EmailAutomations.Show do
       <div testid="pipeline-section" class="mb-3 md:mr-4 border border-base-200 rounded-lg">
         <% next_email = get_next_email_schdule_date(@category_type, @gallery_id, @job_id, @pipeline.id, @pipeline.state, @subcategory_slug) %>
         <div class={classes("flex justify-between p-2", %{"opacity-60" => next_email.is_completed})}>
-          <span class="pl-1 text-blue-planning-300 font-bold"> <%= next_email.text <> " " <> next_email.date %>
+          <span class="pl-1 text-blue-planning-300 font-bold"> <%= next_email.text %>
           </span>
         <%= if not is_nil(next_email.email_preview_id) do %>
           <span class="text-blue-planning-300 pr-4 underline hover:cursor-pointer" phx-click="email-preview" phx-value-email_preview_id={next_email.email_preview_id} >Preview</span>
@@ -392,18 +403,26 @@ defmodule PicselloWeb.Live.EmailAutomations.Show do
       |> sort_emails(state)
       |> List.first()
 
-    case email_schedule do
-      nil ->
-        last_completed_email =
-          EmailAutomationSchedules.get_last_completed_email(
-            category_type,
-            gallery_id,
-            job_id,
-            pipeline_id,
-            state,
-            PicselloWeb.EmailAutomationLive.Shared
-          )
+    last_completed_email =
+      EmailAutomationSchedules.get_last_completed_email(
+        category_type,
+        gallery_id,
+        job_id,
+        pipeline_id,
+        state,
+        PicselloWeb.EmailAutomationLive.Shared
+      )
 
+    case {email_schedule, last_completed_email} do
+      {nil, nil} ->
+        %{
+          text: "",
+          date: "",
+          email_preview_id: nil,
+          is_completed: false
+        }
+
+      {nil, _} ->
         %{
           text: "Completed",
           date: last_completed_email.reminded_at |> Calendar.strftime("%m/%d/%Y"),
