@@ -165,7 +165,7 @@ defmodule PicselloWeb.OnboardingLive.Index do
         f={onboarding}
       >
         <%= select(onboarding, :interested_in, [{"select one", nil}] ++ most_interested_select(),
-          class: "select #{@input_class}"
+          class: "select #{@input_class} truncate pr-8"
         ) %>
       </.form_field>
       <hr class="mt-6 border-base-200" />
@@ -209,8 +209,8 @@ defmodule PicselloWeb.OnboardingLive.Index do
           <.form_field label={info.state_label} error={:state} f={onboarding}>
             <%= select(
               onboarding,
-              field_for(onboarding.params),
-              [{"select one", nil}] ++ states_or_province(onboarding.params),
+              field_for(input_value(onboarding, :country)),
+              [{"select one", nil}] ++ states_or_province(input_value(onboarding, :country)),
               class: "select #{@input_class}"
             ) %>
           </.form_field>
@@ -531,51 +531,20 @@ defmodule PicselloWeb.OnboardingLive.Index do
     |> noreply()
   end
 
-  defp country_info(country) do
-    case country do
-      "CA" ->
-        %{
-          state_label: "What’s your province?"
-        }
-
-      "US" ->
-        %{
-          state_label: "What’s your state?"
-        }
-
-      nil ->
-        %{
-          state_label: "What’s your state?"
-        }
-
-      _ ->
-        %{}
-    end
-  end
+  defp country_info("US"), do: %{state_label: "What’s your state?"}
+  defp country_info("CA"), do: %{state_label: "What’s your province?"}
+  defp country_info(nil), do: %{state_label: "What's your state?"}
+  defp country_info(_), do: %{}
 
   defp countries() do
     Picsello.Country.all() |> Enum.reject(&(&1.code == "US")) |> Enum.map(&{&1.name, &1.code})
   end
 
-  defp states_or_province(params) do
-    case params["country"] do
-      "CA" ->
-        canadian_provinces()
+  defp states_or_province("CA"), do: canadian_provinces()
+  defp states_or_province(_), do: states()
 
-      _ ->
-        states()
-    end
-  end
-
-  defp field_for(params) do
-    case params["country"] do
-      "CA" ->
-        :province
-
-      _ ->
-        :state
-    end
-  end
+  defp field_for("CA"), do: :province
+  defp field_for(_), do: :state
 
   defp canadian_provinces() do
     [
