@@ -18,8 +18,18 @@ defmodule PicselloWeb.Live.Calendar.BookingEventModal do
     |> assign(assigns)
     |> assign(:open_slots, 0)
     |> case do
-      %{assigns: %{booking_date: %BookingEventDate{id: nil, session_length: nil}, booking_event: booking_event}} = socket ->
-        socket |> assign_changeset(%{"time_blocks" => [%{}], "slots" => [], "is_repeat" => booking_event.is_repeating})
+      %{
+        assigns: %{
+          booking_date: %BookingEventDate{id: nil, session_length: nil},
+          booking_event: booking_event
+        }
+      } = socket ->
+        socket
+        |> assign_changeset(%{
+          "time_blocks" => [%{}],
+          "slots" => [],
+          "is_repeat" => booking_event.is_repeating
+        })
 
       %{assigns: %{booking_event: booking_event}} = socket ->
         socket |> assign_changeset(%{"is_repeat" => booking_event.is_repeating})
@@ -87,8 +97,7 @@ defmodule PicselloWeb.Live.Calendar.BookingEventModal do
           <%= input f, :is_repeat, type: :checkbox, class: "checkbox border-blue-planning-300 w-6 h-6" %>
           <div class="ml-2"> Repeat dates?</div>
         </div>
-        <% is_repeat = @changeset |> current |> Map.get(:is_repeat) %>
-        <%= if is_repeat do %>
+        <%= if @changeset |> current |> Map.get(:is_repeat) do %>
           <div class="lg:w-2/3 border-2 border-base-200 rounded-lg mt-4">
             <div class="font-bold p-4 bg-base-200 text-md">
               Repeat settings
@@ -276,7 +285,11 @@ defmodule PicselloWeb.Live.Calendar.BookingEventModal do
     )
   end
 
-  defp assign_changeset(%{assigns: %{booking_date: booking_date, booking_event: booking_event}} = socket, params, action \\ nil) do
+  defp assign_changeset(
+         %{assigns: %{booking_date: booking_date}} = socket,
+         params,
+         action \\ nil
+       ) do
     changeset =
       booking_date
       |> BookingEventDate.changeset(params)

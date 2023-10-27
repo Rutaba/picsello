@@ -267,10 +267,11 @@ defmodule PicselloWeb.Live.Calendar.BookingEvents.Index do
   def handle_info(
         {:confirm_event, event},
         %{assigns: %{current_user: %{organization_id: organization_id}}} = socket
-      ) when event in ["create-repeating-event", "create-single-event"] do
+      )
+      when event in ["create-repeating-event", "create-single-event"] do
     case BE.create_booking_event(%{
            organization_id: organization_id,
-           is_repeating: (if event == "create-repeating-event", do: true, else: false),
+           is_repeating: event == "create-repeating-event",
            name: "New event"
          }) do
       {:ok, booking_event} ->

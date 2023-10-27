@@ -32,7 +32,6 @@ defmodule PicselloWeb.Live.Calendar.BookingEvents.Show do
     |> ok()
   end
 
-  # TODO: remove client key assigned
   @impl true
   def handle_params(
         %{"id" => event_id},
@@ -47,7 +46,10 @@ defmodule PicselloWeb.Live.Calendar.BookingEvents.Show do
     |> assign_changeset(%{})
     |> then(fn %{assigns: %{booking_event: booking_event}} = socket ->
       socket
-      |> assign(:booking_slot_tab_active, (if booking_event.is_repeating, do: "calendar", else: "list"))
+      |> assign(
+        :booking_slot_tab_active,
+        if(booking_event.is_repeating, do: "calendar", else: "list")
+      )
     end)
     |> assign(:booking_slot_tabs, booking_slot_tabs())
     |> noreply()
@@ -90,7 +92,11 @@ defmodule PicselloWeb.Live.Calendar.BookingEvents.Show do
     }
 
     socket
-    |> open_wizard(%{booking_date: booking_date, title: "Add Date", is_repeating: booking_event.is_repeating})
+    |> open_wizard(%{
+      booking_date: booking_date,
+      title: "Add Date",
+      is_repeating: booking_event.is_repeating
+    })
     |> noreply()
   end
 
@@ -548,14 +554,6 @@ defmodule PicselloWeb.Live.Calendar.BookingEvents.Show do
         </div>
       <% end %>
     </div>
-    """
-  end
-
-  defp render_slots(assigns) do
-    ~H"""
-      <%= Enum.with_index(@booking_event_date.slots, fn slot, slot_index -> %>
-        <.slots_description current_user={@current_user} client={@client} slot_index={slot_index} booking_event_date={@booking_event_date} booking_event={@booking_event} booking_slot_tab_active={@booking_slot_tab_active} slot={slot} button_actions={slot_actions(slot.status)} />
-      <% end) %>
     """
   end
 
