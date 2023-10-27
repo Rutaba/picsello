@@ -379,7 +379,7 @@ defmodule PicselloWeb.Live.Calendar.BookingEvents.BookingEventWizard do
             <.icon_button class="py-1 lg:px-4 px-2 w-full sm:w-auto justify-center" title="Add block" phx-click="add-time-block" phx-value-index={@f.index}  phx-value-break={"false"} phx-target={@myself} color="blue-planning-300" icon="plus">
               Add block
             </.icon_button>
-            <.icon_button class="py-1 lg:px-4 px-2 sm:ml-4 ml-0 mt-2 lg:mt-0 w-full sm:w-auto justify-center" title="Add Break block" phx-click="add-time-block" phx-value-index={@f.index}  phx-value-break={"true"} phx-target={@myself} color="blue-planning-300" icon="plus">
+            <.icon_button class="py-1 lg:px-4 px-2 sm:ml-4 ml-0 mt-2 lg:mt-0 w-full sm:w-auto justify-center" title="Add Break block" phx-click="add-time-block" phx-value-index={@f.index} phx-value-break={"true"} phx-target={@myself} color="blue-planning-300" icon="plus">
               Add break block
             </.icon_button>
           </div>

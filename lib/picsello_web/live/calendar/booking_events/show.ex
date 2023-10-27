@@ -45,8 +45,10 @@ defmodule PicselloWeb.Live.Calendar.BookingEvents.Show do
     |> assign(:booking_event, BookingEvents.get_booking_event!(organization_id, event_id))
     |> BEShared.assign_events()
     |> assign_changeset(%{})
-    |> assign(:client, %{id: 1, name: "hammad"})
-    |> assign(:booking_slot_tab_active, "calendar")
+    |> then(fn %{assigns: %{booking_event: booking_event}} = socket ->
+      socket
+      |> assign(:booking_slot_tab_active, (if booking_event.is_repeating, do: "calendar", else: "list"))
+    end)
     |> assign(:booking_slot_tabs, booking_slot_tabs())
     |> noreply()
   end
@@ -88,7 +90,7 @@ defmodule PicselloWeb.Live.Calendar.BookingEvents.Show do
     }
 
     socket
-    |> open_wizard(%{booking_date: booking_date, title: "Add Date"})
+    |> open_wizard(%{booking_date: booking_date, title: "Add Date", is_repeating: booking_event.is_repeating})
     |> noreply()
   end
 
@@ -532,8 +534,10 @@ defmodule PicselloWeb.Live.Calendar.BookingEvents.Show do
                 <p class="text-blue-planning-300 mr-4"><b><%= BEShared.count_available_slots(@calendar_date_event.slots) %></b> available</p>
                 <p class="text-blue-planning-300"><b><%= BEShared.count_hidden_slots(@calendar_date_event.slots) %></b> hidden</p>
               </div>
-              <div class="xl:overflow-y-scroll flex flex-col gap-2">
-                <.render_slots booking_event_date={@calendar_date_event} {assigns} />
+              <div class="xl:overflow-y-scroll flex flex-col gap-1.5">
+              <%= Enum.with_index(@calendar_date_event.slots, fn slot, slot_index -> %>
+                <.slots_description client={slot.client} slot_index={slot_index} booking_event_date={@calendar_date_event} booking_event={@booking_event} booking_slot_tab_active={@booking_slot_tab_active} slot={slot} button_actions={slot_actions(slot.status)} />
+              <% end) %>
               </div>
             <% else %>
               <div class="p-3 border-2 border-base-200 rounded-lg">

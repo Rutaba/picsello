@@ -102,7 +102,8 @@ defmodule PicselloWeb.Live.Calendar.EditMarketingEvent do
   end
 
   @spec open(Phoenix.LiveView.Socket.t(), %{
-          event_id: any
+          event_id: any,
+          current_user: any
         }) :: Phoenix.LiveView.Socket.t()
   def open(socket, assigns) do
     socket
