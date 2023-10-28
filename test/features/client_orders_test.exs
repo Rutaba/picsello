@@ -348,6 +348,7 @@ defmodule Picsello.ClientOrdersTest do
     |> assert_text(gallery.name)
     |> click(css("a", text: "View Gallery"))
     |> assert_has(css("*[data-testid='products'] li", count: 7))
+    |> scroll_into_view(css("#img-#{List.first(photo_ids)}"))
     |> click(css("#img-#{List.first(photo_ids)}"))
     |> assert_text("Select an option")
     |> find(css("*[data-testid^='product_option']", count: :any), fn options ->

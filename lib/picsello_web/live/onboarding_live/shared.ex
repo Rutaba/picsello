@@ -193,6 +193,15 @@ defmodule PicselloWeb.OnboardingLive.Shared do
       on_conflict: :nothing
     )
     |> maybe_insert_subscription(socket, onboarding_type)
+    |> Multi.run(:user_automations, fn _repo, %{user: %{organization: organization}} ->
+      case Mix.Tasks.ImportEmailPresets.assign_default_presets_new_user(organization.id) do
+        {_, nil} ->
+          {:ok, nil}
+
+        {:error, _} ->
+          {:error, "Couldn't assign default email presets"}
+      end
+    end)
     |> Multi.run(:user_final, fn _repo, %{user: user} ->
       with _ <- Onboardings.complete!(user) do
         {:ok, nil}

@@ -84,7 +84,7 @@
     <.section id="details-communications" icon="envelope" title="Details & communications" collapsed_sections={@collapsed_sections}>
       <div class="flex flex-col md:flex-row md:items-start">
         <div class="flex-1 grid md:grid-cols-2 gap-5">
-          <.communications_card job={@job} inbox_count={@inbox_count} />
+          <.communications_card job={@job} emails_count={@emails_count} inbox_count={@inbox_count} is_thanks={"true"}/>
           <.package_details_card package={@package} job={@job} proposal={@proposal} />
           <.private_notes_card job={@job} />
         </div>

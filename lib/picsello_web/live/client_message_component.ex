@@ -276,6 +276,9 @@ defmodule PicselloWeb.ClientMessageComponent do
     socket |> noreply()
   end
 
+  def handle_event("email-preview", params, socket),
+    do: PicselloWeb.Live.EmailAutomations.Show.handle_event("email-preview", params, socket)
+
   defdelegate handle_event(event, params, socket), to: PicselloWeb.JobLive.Shared
 
   @spec open(Phoenix.LiveView.Socket.t(), %{
@@ -406,8 +409,16 @@ defmodule PicselloWeb.ClientMessageComponent do
     value = String.to_integer(value)
 
     error =
-      length(email_list) > value &&
-        "Limit reached, #{ngettext("1 email", "%{count} emails", value)} allowed, Contact support to increase limit"
+      cond do
+        length(email_list) > value ->
+          "Limit reached, #{ngettext("1 email", "%{count} emails", value)} allowed, Contact support to increase limit"
+
+        Enum.empty?(email_list) ->
+          @error_3
+
+        true ->
+          nil
+      end
 
     error = if error, do: error, else: do_validate_emails(email_list, type, user)
 
@@ -570,30 +581,25 @@ defmodule PicselloWeb.ClientMessageComponent do
           </div>
         </div>
         <div class="flex flex-row ml-12">
-          <.form :let={_} for={%{}} as={:toggle} phx-target={@myself} phx-click="toggle"  phx-value-active={@toggle_value |> to_string}>
-          <label class="flex">
-            <input id="pipeline-toggle" type="checkbox" class="peer hidden" checked={@toggle_value}/>
-            <div class="hidden peer-checked:flex cursor-pointer">
-              <div class="rounded-full bg-blue-planning-300 border border-base-100 w-16 h-8 p-1 flex items-center justify-end mr-4">
-                <div class="rounded-full h-5 w-5 bg-base-100"></div>
+          <.form for={%{}} class="flex">
+            <label class="flex">
+              <input id="pipeline-toggle" phx-target={@myself} phx-click="toggle"  phx-value-active={@toggle_value |> to_string} type="checkbox" class="peer hidden" checked={@toggle_value}/>
+              <div class="hidden peer-checked:flex">
+                <div class="rounded-full bg-blue-planning-300 border border-base-100 w-16 h-8 p-1 flex items-center justify-end mr-4 hover:cursor-pointer">
+                  <div class="rounded-full h-5 w-5 bg-base-100"></div>
+                </div>
               </div>
-              <div>
-                <p class="font-bold">Allow automation to send sequence</p>
-                <p>(Disable to send a one-off)</p>
-                <p class="text-blue-planning-300 underline"><a>Review emails</a></p>
+              <div class="flex peer-checked:hidden">
+                <div class="rounded-full w-16 h-8 p-1 flex items-center mr-4 border border-blue-planning-300 hover:cursor-pointer">
+                  <div class="rounded-full h-5 w-5 bg-blue-planning-300"></div>
+                </div>
               </div>
+            </label>
+            <div>
+              <p class="font-bold">Allow automation to send sequence</p>
+              <p>(Disable to send a one-off)</p>
+              <p class="text-blue-planning-300 underline hover:cursor-pointer" phx-target={@myself} phx-click="email-preview" phx-value-email_preview_id={@email_schedule.id}><a>Preview email</a></p>
             </div>
-            <div class="flex peer-checked:hidden cursor-pointer">
-              <div class="rounded-full w-16 h-8 p-1 flex items-center mr-4 border border-blue-planning-300">
-                <div class="rounded-full h-5 w-5 bg-blue-planning-300"></div>
-              </div>
-              <div>
-                <p class="font-bold">Allow automation to send sequence</p>
-                <p>(Disable to send a one-off)</p>
-                <p class="text-blue-planning-300 underline"><a>Review emails</a></p>
-              </div>
-            </div>
-          </label>
           </.form>
         </div>
       </div>

@@ -157,7 +157,7 @@
       "shapes": ["no", "a2", "a3", "c13", "d3", "a15", "e16"],
       "hasFoils": true
     },
-    "name": "warm joyful wishes",
+    "displayName": "warm joyful wishes",
     "occasion": { "_id": "2xSNk4YaKPtzPpCur", "name": "holiday" },
     "product": { "_id": "nq4XtJMZMW4d3bfjM", "name": "5x7 Flat Card Vertical" },
     "published": { "on": "2021-11-15T22:54:22.862Z" },
@@ -368,7 +368,7 @@
       "shapes": ["no", "a2", "b2", "c13", "d3", "e16"],
       "hasFoils": true
     },
-    "name": "5x7 flat card vertical",
+    "displayName": "5x7 flat card vertical",
     "occasion": { "_id": "2xSNk4YaKPtzPpCur", "name": "holiday" },
     "product": { "_id": "nq4XtJMZMW4d3bfjM", "name": "5x7 Flat Card Vertical" },
     "published": { "on": "2021-11-08T15:09:03.027Z" },
@@ -582,7 +582,7 @@
       "shapes": ["no", "a2", "b2", "e16"],
       "hasFoils": false
     },
-    "name": "5x7 flat card vertical",
+    "displayName": "5x7 flat card vertical",
     "occasion": { "_id": "2xSNk4YaKPtzPpCur", "name": "holiday" },
     "product": { "_id": "nq4XtJMZMW4d3bfjM", "name": "5x7 Flat Card Vertical" },
     "published": { "on": "2021-11-08T15:52:37.582Z" },
@@ -812,7 +812,7 @@
       "shapes": ["no", "a2", "b2", "c13", "d3", "a15", "a15_hole", "e16"],
       "hasFoils": true
     },
-    "name": "5x7 flat card horizontal",
+    "displayName": "5x7 flat card horizontal",
     "occasion": { "_id": "2xSNk4YaKPtzPpCur", "name": "holiday" },
     "product": {
       "_id": "benT9erT8BwHrn6Ws",
@@ -954,7 +954,7 @@
       "shapes": ["no", "a2", "b2", "c13", "d3", "e16"],
       "hasFoils": true
     },
-    "name": "5x7 flat card vertical",
+    "displayName": "5x7 flat card vertical",
     "occasion": { "_id": "2xSNk4YaKPtzPpCur", "name": "holiday" },
     "product": { "_id": "nq4XtJMZMW4d3bfjM", "name": "5x7 Flat Card Vertical" },
     "published": { "on": "2021-11-05T21:59:43.840Z" },

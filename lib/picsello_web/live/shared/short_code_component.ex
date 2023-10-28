@@ -3,7 +3,8 @@ defmodule PicselloWeb.Shared.ShortCodeComponent do
     Helper functions to use the Short Codes
   """
   use PicselloWeb, :live_component
-  alias PicselloWeb.EmailAutomationLive.Shared
+  alias Picsello.EmailAutomations
+
   @impl true
   def render(assigns) do
     job = Map.get(assigns, :job, nil)
@@ -59,12 +60,15 @@ defmodule PicselloWeb.Shared.ShortCodeComponent do
   end
 
   def variables_codes(job_type, current_user, job, user_currency, total_hours) do
-    %{calendar: calendar, count: count, sign: sign} = Shared.get_email_meta(total_hours)
+    %{calendar: calendar, count: count, sign: sign} =
+      EmailAutomations.get_email_meta(total_hours, PicselloWeb.Helpers)
 
     total_time =
       "#{count} #{calendar} #{sign}"
       |> String.split()
       |> Enum.map_join(" ", &String.capitalize/1)
+
+    total_time = if total_time == "1 Day Before", do: "tomorrow", else: total_time
 
     leads = [
       %{
@@ -81,10 +85,7 @@ defmodule PicselloWeb.Shared.ShortCodeComponent do
             id: 2,
             name: "booking_event_client_link",
             sample: """
-            <a
-              style="border:1px solid #1F1C1E;display:inline-block;background:white;color:#1F1C1E;font-family:Montserrat, sans-serif;font-size:18px;font-weight:normal;line-height:120%;margin:0;text-decoration:none;text-transform:none;padding:10px 15px;mso-padding-alt:0px;border-radius:0px;"
-              target="_blank"
-              href="https://bookingeventclientlinkhere.com">
+            <a target="_blank" href="https://bookingeventclientlinkhere.com">
               Client Event Link
             </a>
             """,
@@ -131,10 +132,7 @@ defmodule PicselloWeb.Shared.ShortCodeComponent do
             id: 3,
             name: "gallery_link",
             sample: """
-            <a
-              style="border:1px solid #1F1C1E;display:inline-block;background:white;color:#1F1C1E;font-family:Montserrat, sans-serif;font-size:18px;font-weight:normal;line-height:120%;margin:0;text-decoration:none;text-transform:none;padding:10px 15px;mso-padding-alt:0px;border-radius:0px;"
-              target="_blank"
-              href="https://gallerylinkhere.com">
+            <a target="_blank" href="https://gallerylinkhere.com">
               Gallery Link
             </a>
             """,
@@ -156,10 +154,7 @@ defmodule PicselloWeb.Shared.ShortCodeComponent do
             id: 6,
             name: "download_photos",
             sample: """
-            <a
-              style="border:1px solid #1F1C1E;display:inline-block;background:white;color:#1F1C1E;font-family:Montserrat, sans-serif;font-size:18px;font-weight:normal;line-height:120%;margin:0;text-decoration:none;text-transform:none;padding:10px 15px;mso-padding-alt:0px;border-radius:0px;"
-              target="_blank"
-              href="https://gallerydownloadshere.com">
+            <a target="_blank" href="https://gallerydownloadshere.com">
               Download Photos Link
             </a>
             """,
@@ -175,10 +170,7 @@ defmodule PicselloWeb.Shared.ShortCodeComponent do
             id: 8,
             name: "album_link",
             sample: """
-            <a
-              style="border:1px solid #1F1C1E;display:inline-block;background:white;color:#1F1C1E;font-family:Montserrat, sans-serif;font-size:18px;font-weight:normal;line-height:120%;margin:0;text-decoration:none;text-transform:none;padding:10px 15px;mso-padding-alt:0px;border-radius:0px;"
-              target="_blank"
-              href="https://albumlinkhere.com">
+            <a target="_blank" href="https://albumlinkhere.com">
               Album Link
             </a>
             """,
@@ -188,10 +180,7 @@ defmodule PicselloWeb.Shared.ShortCodeComponent do
             id: 9,
             name: "client_gallery_order_page",
             sample: """
-            <a
-              style="border:1px solid #1F1C1E;display:inline-block;background:white;color:#1F1C1E;font-family:Montserrat, sans-serif;font-size:18px;font-weight:normal;line-height:120%;margin:0;text-decoration:none;text-transform:none;padding:10px 15px;mso-padding-alt:0px;border-radius:0px;"
-              target="_blank"
-              href="https://clientgalleryorderpage.com">
+            <a target="_blank" href="https://clientgalleryorderpage.com">
               Order Page Link
             </a>
             """,

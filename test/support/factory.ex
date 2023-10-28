@@ -1021,6 +1021,15 @@ defmodule Picsello.Factory do
     }
   end
 
+  def email_automation_pipeline_factory() do
+    %Picsello.EmailAutomation.EmailAutomationPipeline{
+      state: :manual_booking_proposal_sent,
+      name: "Booking Proposals",
+      position: 0,
+      description: "Test Description"
+    }
+  end
+
   def email_automation_category_factory() do
     %Picsello.EmailAutomation.EmailAutomationCategory{
       type: "lead",
@@ -1041,7 +1050,8 @@ defmodule Picsello.Factory do
     %Picsello.EmailAutomation.EmailSchedule{
       email_automation_pipeline_id: 1,
       subject_template: "Test Subject Template",
-      body_template: "Test Body Template"
+      body_template: "Test Body Template",
+      type: :lead
     }
   end
 

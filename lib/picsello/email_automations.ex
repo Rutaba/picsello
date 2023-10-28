@@ -10,17 +10,20 @@ defmodule Picsello.EmailAutomations do
     Utils,
     Jobs,
     Galleries,
+    Orders,
     EmailAutomationSchedules,
-    Notifiers.EmailAutomationNotifier
+    Notifiers.EmailAutomationNotifier,
+    EmailPresets,
+    PaymentSchedule,
+    PaymentSchedules
   }
 
   alias Picsello.EmailAutomation.{
     EmailAutomationPipeline,
-    EmailAutomationSubCategory,
-    EmailSchedule
+    EmailAutomationSubCategory
   }
 
-  def get_emails_for_schedule(organization_id, job_type, types, skip_sub_categories \\ [""]) do
+  def get_emails_for_schedule(organization_id, job_type, type, skip_sub_categories \\ [""]) do
     from(
       ep in EmailPreset,
       # distinct: ep.name,
@@ -33,7 +36,7 @@ defmodule Picsello.EmailAutomations do
         ep.organization_id == ^organization_id and
           ep.job_type == ^job_type and
           ep.status == :active and
-          eac.type in ^types and
+          eac.type == ^type and
           eas.slug not in ^skip_sub_categories
     )
     |> preload(:email_automation_pipeline)
@@ -97,6 +100,22 @@ defmodule Picsello.EmailAutomations do
     |> group_by_sub_category()
   end
 
+  def get_order(nil), do: nil
+
+  def get_order(id),
+    do:
+      Orders.get_order(id)
+      |> Repo.preload([:digitals, gallery: :job])
+
+  def get_gallery(nil), do: nil
+
+  def get_gallery(id) do
+    case Galleries.get_gallery(id) do
+      nil -> nil
+      result -> result |> Repo.preload([:orders, :albums, job: :client])
+    end
+  end
+
   def get_job(nil), do: nil
 
   def get_job(id),
@@ -111,7 +130,7 @@ defmodule Picsello.EmailAutomations do
         client: :organization
       ])
 
-  def resolve_variables(%EmailSchedule{} = preset, schemas, helpers) do
+  def resolve_variables(preset, schemas, helpers) do
     resolver_module =
       case preset.email_automation_pipeline.email_automation_category.type do
         :gallery -> Picsello.EmailPresets.GalleryResolver
@@ -120,15 +139,25 @@ defmodule Picsello.EmailAutomations do
 
     resolver = schemas |> resolver_module.new(helpers)
 
+    %{calendar: calendar, count: count, sign: sign} = get_email_meta(preset.total_hours, helpers)
+
+    total_time =
+      "#{count} #{calendar} #{sign}"
+      |> String.split()
+      |> Enum.map_join(" ", &String.capitalize/1)
+
+    total_time = if total_time == "1 Day Before", do: "tomorrow", else: total_time
+
     data =
       for {key, func} <- resolver_module.vars(), into: %{} do
         {key, func.(resolver)}
       end
-      |> Map.put("total_time", preset.total_hours)
+      |> Map.put("total_time", total_time)
 
     %{
       preset
-      | body_template: Utils.render(preset.body_template, data),
+      | body_template:
+          Utils.render(preset.body_template, data) |> Utils.normalize_body_template(),
         subject_template: Utils.render(preset.subject_template, data)
     }
   end
@@ -165,17 +194,6 @@ defmodule Picsello.EmailAutomations do
     |> update_schedule(email.id)
   end
 
-  def send_now_email(type, email, job, state) when type in [:lead, :job] do
-    EmailAutomationNotifier.Impl.deliver_automation_email_job(
-      email,
-      job,
-      {job},
-      state,
-      PicselloWeb.Helpers
-    )
-    |> update_schedule(email.id)
-  end
-
   def send_now_email(:order, email, order, state) do
     order = order |> Repo.preload(gallery: :job)
 
@@ -183,6 +201,32 @@ defmodule Picsello.EmailAutomations do
       email,
       order,
       {order, order.gallery},
+      state,
+      PicselloWeb.Helpers
+    )
+    |> update_schedule(email.id)
+  end
+
+  def send_now_email(type, email, job, state) when type in [:lead, :job] do
+    payment_schedule =
+      PaymentSchedule
+      |> where([ps], ps.job_id == ^job.id and not is_nil(ps.paid_at))
+      |> order_by(desc: :updated_at)
+      |> limit(1)
+      |> Repo.one()
+      |> then(fn
+        %PaymentSchedule{} = ps ->
+          ps
+
+        nil ->
+          currency = Picsello.Currency.for_job(job)
+          %PaymentSchedule{price: Money.new(0, currency)}
+      end)
+
+    EmailAutomationNotifier.Impl.deliver_automation_email_job(
+      email,
+      job,
+      {job, payment_schedule},
       state,
       PicselloWeb.Helpers
     )
@@ -309,4 +353,101 @@ defmodule Picsello.EmailAutomations do
 
   defp schemas(%{type: :standard} = gallery), do: {gallery}
   defp schemas(%{albums: [album]} = gallery), do: {gallery, album}
+
+  def get_email_meta(hours, helpers) do
+    %{calendar: calendar, count: count, sign: sign} = explode_hours(hours)
+    sign = if sign == "+", do: "after", else: "before"
+    calendar = calendar_text(calendar, count, helpers)
+
+    %{calendar: calendar, count: count, sign: sign}
+  end
+
+  defp calendar_text("Hour", count, helpers), do: helpers.ngettext("hour", "hours", count)
+  defp calendar_text("Day", count, helpers), do: helpers.ngettext("day", "days", count)
+  defp calendar_text("Month", count, helpers), do: helpers.ngettext("month", "months", count)
+  defp calendar_text("Year", count, helpers), do: helpers.ngettext("year", "years", count)
+
+  def explode_hours(hours) do
+    year = 365 * 24
+    month = 30 * 24
+    sign = if hours > 0, do: "+", else: "-"
+    hours = make_positive_number(hours)
+
+    cond do
+      rem(hours, year) == 0 -> %{count: trunc(hours / year), calendar: "Year", sign: sign}
+      rem(hours, month) == 0 -> %{count: trunc(hours / month), calendar: "Month", sign: sign}
+      rem(hours, 24) == 0 -> %{count: trunc(hours / 24), calendar: "Day", sign: sign}
+      true -> %{count: hours, calendar: "Hour", sign: sign}
+    end
+  end
+
+  defp make_positive_number(no), do: if(no > 0, do: no, else: -1 * no)
+
+  def send_pays_retainer(job, state, organization_id) do
+    if !PaymentSchedules.all_paid?(job) do
+      pipeline = get_pipeline_by_state(state)
+
+      email_schedule =
+        get_email_from_schedule(
+          job.id,
+          pipeline.id,
+          state,
+          PicselloWeb.EmailAutomationLive.Shared
+        )
+        |> preload_email()
+
+      email_preset =
+        EmailPresets.user_email_automation_presets(
+          :job,
+          job.type,
+          pipeline.id,
+          organization_id
+        )
+        |> List.first()
+        |> preload_email()
+
+      send_payment_email(email_schedule, email_preset, job, state)
+    end
+  end
+
+  defp send_payment_email(nil, email_preset, job, state) do
+    EmailAutomationNotifier.Impl.deliver_automation_email_job(
+      email_preset,
+      job,
+      {job},
+      state,
+      PicselloWeb.Helpers
+    )
+  end
+
+  defp send_payment_email(email_schedule, _email_preset, job, state) do
+    EmailAutomationNotifier.Impl.deliver_automation_email_job(
+      email_schedule,
+      job,
+      {job},
+      state,
+      PicselloWeb.Helpers
+    )
+
+    EmailAutomationSchedules.update_email_schedule(email_schedule.id, %{
+      reminded_at: DateTime.truncate(DateTime.utc_now(), :second)
+    })
+  end
+
+  defp get_email_from_schedule(job_id, pipeline_id, state, helpers) do
+    EmailAutomationSchedules.query_get_email_schedule(
+      :job,
+      nil,
+      job_id,
+      pipeline_id
+    )
+    |> where([es], is_nil(es.reminded_at))
+    |> where([es], is_nil(es.stopped_at))
+    |> Repo.all()
+    |> helpers.sort_emails(state)
+    |> List.first()
+  end
+
+  defp preload_email(email),
+    do: email |> Repo.preload(email_automation_pipeline: [:email_automation_category])
 end

@@ -42,18 +42,6 @@ defmodule PicselloWeb.LeadContactIframeView do
             <em class="text-base-250 font-normal pt-1 text-xs">optional</em>
         </div>
 
-        <div class="flex flex-col mt-3">
-            <%= labeled_select f, :referred_by, referred_by_options(), label: "How did you hear about #{@organization.name}?", prompt: "select one...", phx_debounce: 300, phx_update: "ignore" %>
-            <em class="text-base-250 font-normal pt-1 text-xs">optional</em>
-        </div>
-
-        <div id="referralNameDiv" class="flex flex-col mt-3 hidden">
-            <%= label_for f, :referral_name, label: "Would you mind sharing their name?", class: "py-2" %>
-
-            <%= input f, :referral_name, placeholder: "Type name...", phx_debounce: 300 %>
-            <em class="text-base-250 font-normal pt-1 text-xs">optional</em>
-        </div>
-
         <%= if Enum.any?(@job_types) do %>
           <div class="mt-4">
             <%= label_for f, :job_type, label: "What type of session are you looking for?", class: "font-light" %>

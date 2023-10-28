@@ -1,8 +1,9 @@
 defmodule Picsello.Notifiers.EmailAutomationNotifier.Impl do
   @moduledoc false
+  require Logger
 
   import Notifiers.Shared
-  alias Picsello.{Notifiers.EmailAutomationNotifier, Repo, Utils}
+  alias Picsello.{Notifiers.EmailAutomationNotifier, Repo}
 
   @behaviour EmailAutomationNotifier
 
@@ -13,8 +14,6 @@ defmodule Picsello.Notifiers.EmailAutomationNotifier.Impl do
     with client <- job |> Repo.preload(:client) |> Map.get(:client),
          %{body_template: body, subject_template: subject} <-
            Picsello.EmailAutomations.resolve_variables(email_preset, schema, helpers) do
-      body = Utils.normalize_body_template(body)
-
       deliver_transactional_email(
         %{subject: subject, headline: subject, body: body},
         %{"to" => client.email},
@@ -34,14 +33,13 @@ defmodule Picsello.Notifiers.EmailAutomationNotifier.Impl do
         helpers
       )
 
-    body = Utils.normalize_body_template(body)
-
     deliver_transactional_email(
       %{
         subject: subject,
         body: body
       },
-      %{"to" => gallery.job.client.email}
+      %{"to" => gallery.job.client.email},
+      gallery.job
     )
   end
 
@@ -55,16 +53,20 @@ defmodule Picsello.Notifiers.EmailAutomationNotifier.Impl do
              {order.gallery, order},
              helpers
            ) do
-      body = Utils.normalize_body_template(body)
+      case order.delivery_info do
+        %{email: email} ->
+          deliver_transactional_email(
+            %{
+              subject: subject,
+              body: body
+            },
+            %{"to" => email},
+            order.gallery.job
+          )
 
-      deliver_transactional_email(
-        %{
-          subject: subject,
-          body: body
-        },
-        %{"to" => order.delivery_info.email},
-        order.gallery.job
-      )
+        _ ->
+          Logger.info("No delivery info email address for order #{order.id}")
+      end
     end
   end
 end

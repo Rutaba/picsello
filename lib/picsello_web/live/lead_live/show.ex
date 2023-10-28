@@ -13,7 +13,8 @@ defmodule PicselloWeb.LeadLive.Show do
     Contracts,
     Messages,
     EmailAutomations,
-    EmailAutomationSchedules
+    EmailAutomationSchedules,
+    Utils
   }
 
   alias PicselloWeb.JobLive
@@ -22,7 +23,7 @@ defmodule PicselloWeb.LeadLive.Show do
     only: [
       is_manual_toggle?: 1,
       get_job_email_by_pipeline: 2,
-      get_email_body_subject: 3,
+      get_email_body_subject: 5,
       assign_job: 2,
       assign_proposal: 1,
       assign_disabled_copy_link: 1,
@@ -49,6 +50,8 @@ defmodule PicselloWeb.LeadLive.Show do
     |> assign_job(job_id)
     |> assign(:request_from, assigns["request_from"])
     |> assign(:collapsed_sections, [])
+    |> assign_emails_count(job_id)
+    |> subscribe_emails_count(job_id)
     |> then(fn %{assigns: assigns} = socket ->
       job = Map.get(assigns, :job)
 
@@ -168,7 +171,15 @@ defmodule PicselloWeb.LeadLive.Show do
       if is_manual_toggle?(email_by_state) and is_nil(last_completed_email), do: true, else: false
 
     %{body_template: body_html, subject_template: subject} =
-      get_email_body_subject(email_by_state, job, :booking_proposal)
+      get_email_body_subject(
+        email_by_state,
+        job,
+        :manual_booking_proposal_sent,
+        pipeline.id,
+        :lead
+      )
+
+    body_html = Utils.normalize_body_template(body_html)
 
     socket
     |> assign(:job, job)
@@ -360,6 +371,13 @@ defmodule PicselloWeb.LeadLive.Show do
   end
 
   @impl true
+  def handle_info({:update_emails_count, %{job_id: job_id}}, socket) do
+    socket
+    |> assign_emails_count(job_id)
+    |> noreply()
+  end
+
+  @impl true
   defdelegate handle_info(message, socket), to: JobLive.Shared
 
   def next_reminder_on(nil), do: nil
@@ -432,5 +450,19 @@ defmodule PicselloWeb.LeadLive.Show do
       )
     end)
     |> Repo.transaction()
+  end
+
+  defp assign_emails_count(socket, job_id) do
+    socket
+    |> assign(:emails_count, EmailAutomationSchedules.get_active_email_schedule_count(job_id))
+  end
+
+  defp subscribe_emails_count(socket, job_id) do
+    Phoenix.PubSub.subscribe(
+      Picsello.PubSub,
+      "emails_count:#{job_id}"
+    )
+
+    socket
   end
 end

@@ -16,6 +16,7 @@ defmodule Picsello.PaymentSchedules do
     Currency,
     UserCurrencies,
     Workers.CalendarEvent,
+    EmailAutomations,
     EmailAutomationSchedules
   }
 
@@ -310,22 +311,23 @@ defmodule Picsello.PaymentSchedules do
         },
         helpers
       ) do
-    with %BookingProposal{} = proposal <-
-           Repo.get(BookingProposal, proposal_id) |> Repo.preload(job: :job_status),
+    with %BookingProposal{job: %{client: client, job_status: job_status} = job} = proposal <-
+           Repo.get(BookingProposal, proposal_id)
+           |> Repo.preload(job: [:job_status, client: :organization]),
          %PaymentSchedule{paid_at: nil} = payment_schedule <-
            Repo.get(PaymentSchedule, payment_schedule_id),
          {:ok, payment_schedule} <-
            payment_schedule
            |> PaymentSchedule.paid_changeset()
            |> Repo.update() do
-      if proposal.job.job_status.is_lead do
+      if job_status.is_lead do
         UserNotifier.deliver_lead_converted_to_job(proposal, helpers)
       end
 
-      ClientNotifier.deliver_payment_schedule_confirmation(
-        proposal.job,
-        payment_schedule,
-        helpers
+      EmailAutomations.send_pays_retainer(
+        job,
+        :pays_retainer,
+        client.organization.id
       )
 
       %{
@@ -345,12 +347,13 @@ defmodule Picsello.PaymentSchedules do
         |> Oban.insert_all()
       end
 
+      # insert emails when paid by stripe
       EmailAutomationSchedules.insert_job_emails(
         proposal.job.type,
         organization.id,
         proposal.job.id,
-        [:lead, :job],
-        [:client_contact, :abandoned_emails]
+        :job,
+        []
       )
 
       {:ok, payment_schedule}
@@ -441,6 +444,11 @@ defmodule Picsello.PaymentSchedules do
       error -> error
     end
   end
+
+  def pay_with_cash(job),
+    do:
+      from(ps in PaymentSchedule, where: ps.job_id == ^job.id)
+      |> Repo.update_all(set: [is_with_cash: true, type: "cash"])
 
   defp customer_id(%Client{stripe_customer_id: nil} = client) do
     params = %{name: client.name, email: client.email}

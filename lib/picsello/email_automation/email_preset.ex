@@ -47,9 +47,11 @@ defmodule Picsello.EmailPresets.EmailPreset do
     email_preset
     |> cast(
       attrs,
-      ~w[email_automation_pipeline_id total_hours state count calendar sign template_id private_name type job_type name position subject_template body_template]a
+      ~w[status email_automation_pipeline_id total_hours state count calendar sign template_id private_name type job_type name position subject_template body_template]a
     )
-    |> validate_required(~w[state status type name position subject_template body_template]a)
+    |> validate_required(
+      ~w[status state status type name position subject_template body_template]a
+    )
   end
 
   def changeset(email_preset \\ %__MODULE__{}, attrs) do

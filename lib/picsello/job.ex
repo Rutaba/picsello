@@ -12,7 +12,9 @@ defmodule Picsello.Job do
     BookingProposal,
     Repo,
     ClientMessage,
-    PaymentSchedule
+    PaymentSchedule,
+    EmailAutomation.EmailSchedule,
+    EmailAutomation.EmailScheduleHistory
   }
 
   alias Picsello.Galleries.Gallery
@@ -33,6 +35,8 @@ defmodule Picsello.Job do
     has_many(:shoots, Shoot)
     has_many(:booking_proposals, BookingProposal, preload_order: [desc: :inserted_at])
     has_many(:client_messages, ClientMessage)
+    has_many(:email_schedules, EmailSchedule)
+    has_many(:email_schedules_history, EmailScheduleHistory)
 
     embeds_many :documents, Documents, on_replace: :delete do
       field :name, :string
@@ -83,6 +87,7 @@ defmodule Picsello.Job do
   def archive_changeset(job), do: job |> timestamp_changeset(:archived_at)
   def unarchive_changeset(job), do: job |> Ecto.Changeset.change(%{archived_at: nil})
   def complete_changeset(job), do: job |> timestamp_changeset(:completed_at)
+  def uncomplete_changeset(job), do: job |> Ecto.Changeset.change(%{completed_at: nil})
 
   def add_package_changeset(job \\ %__MODULE__{}, attrs) do
     job
