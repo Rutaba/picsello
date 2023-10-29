@@ -61,6 +61,9 @@ defmodule PicselloWeb.HomeLive.Index do
 
   @impl true
   def mount(params, _session, socket) do
+    %{value: black_friday_code} =
+      Picsello.AdminGlobalSettings.get_settings_by_slug("black_friday_code")
+
     socket
     |> assign(:main_class, "bg-gray-100")
     |> assign_stripe_status()
@@ -76,6 +79,13 @@ defmodule PicselloWeb.HomeLive.Index do
     |> subscribe_inbound_messages()
     |> assign_inbox_threads()
     |> maybe_show_success_subscription(params)
+    |> assign(
+      :promotion_code,
+      if(Subscriptions.maybe_return_promotion_code_id?(black_friday_code),
+        do: black_friday_code,
+        else: nil
+      )
+    )
     |> ok()
   end
 
@@ -261,6 +271,23 @@ defmodule PicselloWeb.HomeLive.Index do
       end
 
     build_subscription_link(socket, interval, promotion_code_id)
+  end
+
+  @impl true
+  def handle_event(
+        "subscription-prepurchase",
+        _,
+        socket
+      ) do
+    # TODO: pull promotion code from global settings
+    # TODO: create check with invoice
+    # TODO: on return, check if user has pre-purchased
+
+    build_invoice_link(socket)
+
+    # build_subscription_link(socket, interval, promotion_code_id)
+
+    # socket |> noreply()
   end
 
   @impl true
@@ -1765,6 +1792,65 @@ defmodule PicselloWeb.HomeLive.Index do
       :promotion_code_changeset,
       build_promotion_code_changeset(socket, params, :validate)
     )
+  end
+
+  defp build_invoice_link(
+         %{
+           assigns: %{
+             current_user: current_user,
+             promotion_code_changeset: promotion_code_changeset,
+             promotion_code: promotion_code
+           }
+         } = socket,
+         opts \\ []
+       ) do
+    discounts_data =
+      if promotion_code,
+        do: %{
+          discounts: [
+            %{
+              coupon: Subscriptions.maybe_return_promotion_code_id?(promotion_code)
+            }
+          ]
+        },
+        else: %{}
+
+    stripe_params =
+      %{
+        client_reference_id: "blackfriday_2023",
+        cancel_url: Routes.home_url(socket, :index),
+        success_url: "#{Routes.home_url(socket, :index)}?session_id={CHECKOUT_SESSION_ID}",
+        billing_address_collection: "auto",
+        customer: Subscriptions.user_customer_id(current_user),
+        line_items: [
+          %{
+            price_data: %{
+              currency: "USD",
+              unit_amount: 35000,
+              product_data: %{
+                name: "Black Friday 2023",
+                description: "Pre purchase your next year of Picsello!"
+              },
+              tax_behavior: "exclusive"
+            },
+            quantity: 1
+          }
+        ]
+      }
+      |> Map.merge(discounts_data)
+
+    case Payments.create_session(stripe_params, []) do
+      {:ok, %{url: url}} ->
+        # promotion_code_changeset
+        # |> Map.put(:action, :update)
+        # |> Repo.update!()
+
+        socket |> redirect(external: url) |> noreply()
+
+      {:error, error} ->
+        Logger.warning("Error redirecting to Stripe: #{inspect(error)}")
+        socket |> put_flash(:error, "Couldn't redirect to Stripe. Please try again") |> noreply()
+    end
   end
 
   defdelegate get_all_proofing_album_orders(organization_id), to: Orders

@@ -21,7 +21,35 @@
           </div>
         </div>
       </div>
+
       <.tabs_nav tab_active={@tab_active} tabs={@tabs} socket={@socket} />
+
+      <%!-- TODO: Close on click --%>
+      <%!-- TODO: Hide if purchased already --%>
+      <%!-- TODO: Hide if onboarded by mastermind flow --%>
+      <%= if true do %>
+        <div class="bg-blue-planning-300 py-3 mb-8 rounded-lg">
+          <div class="center-container px-6">
+            <div class="flex justify-between items-center gap-2">
+              <details class="cursor-pointer text-base-250 group">
+                <summary class="flex items-center font-bold text-black">
+                  <.icon name="confetti" class="w-5 h-5 mr-2 text-blue-planning-300"/>
+                  Get the black friday deal
+                  <.icon name="down" class="w-4 h-4 stroke-current stroke-2 text-blue-planning-300 ml-2 group-open:rotate-180" />
+                </summary>
+                Lorem ipsum dolor sit amet
+              </details>
+              <div class="flex gap-2">
+                <button type="button" phx-click="subscription-prepurchase" class="flex text-xs items-center px-2 py-1 btn-tertiary bg-blue-planning-300 text-white hover:bg-blue-planning-300/75">
+                  <.icon name="settings" class="inline-block w-4 h-4 fill-current text-white mr-1" />
+                  Buy now
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      <% end %>
+
       <.tabs_content tab_active={@tab_active} assigns={assigns} socket={@socket} stripe_status={@stripe_status} />
     </div>
   </div>
