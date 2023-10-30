@@ -198,12 +198,6 @@ defmodule PicselloWeb.Live.EmailAutomations.Show do
     end
     |> case do
       {:ok, _} ->
-        Phoenix.PubSub.broadcast(
-          Picsello.PubSub,
-          "emails_count:#{job_id}",
-          {:update_emails_count, %{job_id: job_id}}
-        )
-
         socket
         |> put_flash(:success, "Email Sent Successfully")
 

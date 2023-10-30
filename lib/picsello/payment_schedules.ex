@@ -262,7 +262,7 @@ defmodule Picsello.PaymentSchedules do
   end
 
   def payment_schedules(job) do
-    Repo.preload(job, [:payment_schedules])
+    Repo.preload(job, [:payment_schedules], force: true)
     |> Map.get(:payment_schedules)
     |> set_payment_schedules_order()
   end
@@ -311,7 +311,7 @@ defmodule Picsello.PaymentSchedules do
         },
         helpers
       ) do
-    with %BookingProposal{job: %{client: client, job_status: job_status} = job} = proposal <-
+    with %BookingProposal{job: %{client: _client, job_status: job_status} = _job} = proposal <-
            Repo.get(BookingProposal, proposal_id)
            |> Repo.preload(job: [:job_status, client: :organization]),
          %PaymentSchedule{paid_at: nil} = payment_schedule <-
@@ -323,12 +323,6 @@ defmodule Picsello.PaymentSchedules do
       if job_status.is_lead do
         UserNotifier.deliver_lead_converted_to_job(proposal, helpers)
       end
-
-      EmailAutomations.send_pays_retainer(
-        job,
-        :pays_retainer,
-        client.organization.id
-      )
 
       %{
         job: %{
@@ -347,13 +341,19 @@ defmodule Picsello.PaymentSchedules do
         |> Oban.insert_all()
       end
 
-      # insert emails when paid by stripe
+      # insert emails when client books a slot
       EmailAutomationSchedules.insert_job_emails(
         proposal.job.type,
         organization.id,
         proposal.job.id,
         :job,
         []
+      )
+
+      EmailAutomations.send_pays_retainer(
+        proposal.job,
+        :pays_retainer,
+        proposal.job.client.organization.id
       )
 
       {:ok, payment_schedule}
