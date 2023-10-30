@@ -241,7 +241,7 @@ defmodule PicselloWeb.Live.EmailAutomations.Show do
     <%= if Enum.member?(@collapsed_sections, @subcategory) do %>
       <% sorted_emails = sort_emails(@pipeline.emails, @pipeline.state) %>
       <div testid="pipeline-section" class="mb-3 md:mr-4 border border-base-200 rounded-lg">
-        <% next_email = get_next_email_schdule_date(@category_type, @gallery_id, @job_id, @pipeline.id, @pipeline.state, @subcategory_slug) %>
+        <% next_email = get_next_email_schdule_date(@category_type, sorted_emails, @pipeline.state, @subcategory_slug) %>
         <div class={classes("flex justify-between p-2", %{"opacity-60" => next_email.is_completed})}>
           <span class="pl-1 text-blue-planning-300 font-bold"> <%= next_email.text %>
           </span>
@@ -376,19 +376,17 @@ defmodule PicselloWeb.Live.EmailAutomations.Show do
     |> assign(email_schedules: email_schedules)
   end
 
-  defp get_next_email_schdule_date(
-         category_type,
-         gallery_id,
-         job_id,
-         pipeline_id,
-         state,
-         subcategory
-       ) do
+  defp get_next_email_schdule_date(category_type, emails, state, subcategory) do
+    email = emails |> List.first()
+    pipeline_id = email.email_automation_pipeline_id
+    category_type = if email.shoot_id, do: :shoot, else: category_type
+
     email_schedule =
       EmailAutomationSchedules.query_get_email_schedule(
         category_type,
-        gallery_id,
-        job_id,
+        email.gallery_id,
+        email.shoot_id,
+        email.job_id,
         pipeline_id
       )
       |> where([es], is_nil(es.reminded_at))
@@ -400,8 +398,9 @@ defmodule PicselloWeb.Live.EmailAutomations.Show do
     last_completed_email =
       EmailAutomationSchedules.get_last_completed_email(
         category_type,
-        gallery_id,
-        job_id,
+        email.gallery_id,
+        email.shoot_id,
+        email.job_id,
         pipeline_id,
         state,
         PicselloWeb.EmailAutomationLive.Shared
@@ -426,8 +425,13 @@ defmodule PicselloWeb.Live.EmailAutomations.Show do
 
       _ ->
         %{sign: sign} = EmailAutomations.explode_hours(email_schedule.total_hours)
-        job = EmailAutomations.get_job(job_id)
-        gallery = if is_nil(gallery_id), do: nil, else: EmailAutomations.get_gallery(gallery_id)
+        job = EmailAutomations.get_job(email.job_id)
+
+        gallery =
+          if is_nil(email.gallery_id),
+            do: nil,
+            else: EmailAutomations.get_gallery(email.gallery_id)
+
         state = if is_atom(state), do: state, else: String.to_atom(state)
         date = get_conditional_date(state, email_schedule, pipeline_id, job, gallery)
 

@@ -81,6 +81,14 @@ defmodule Mix.Tasks.ImportEmailAutomationPipelines do
         7.0
       )
 
+    {:ok, automation_post_job} =
+      maybe_insert_email_automation_slug(
+        sub_categories,
+        "Post Job emails",
+        "post_job_emails",
+        7.5
+      )
+
     {:ok, automation_notification} =
       maybe_insert_email_automation_slug(
         sub_categories,
@@ -230,7 +238,7 @@ defmodule Mix.Tasks.ImportEmailAutomationPipelines do
         name: "Post Shoot Follow Up",
         state: "post_shoot",
         description: "Starts when client completes a booking event",
-        email_automation_sub_category_id: automation_post.id,
+        email_automation_sub_category_id: automation_post_job.id,
         email_automation_category_id: email_automation_job.id,
         position: 14.0
       },

@@ -311,7 +311,7 @@ defmodule Picsello.PaymentSchedules do
         },
         helpers
       ) do
-    with %BookingProposal{job: %{client: _client, job_status: job_status} = _job} = proposal <-
+    with %BookingProposal{job: %{client: client, job_status: job_status}} = proposal <-
            Repo.get(BookingProposal, proposal_id)
            |> Repo.preload(job: [:job_status, client: :organization]),
          %PaymentSchedule{paid_at: nil} = payment_schedule <-
@@ -350,10 +350,13 @@ defmodule Picsello.PaymentSchedules do
         []
       )
 
+      # insert job shoots
+      shoots |> Enum.map(&EmailAutomationSchedules.insert_shoot_emails(proposal.job, &1.shoot))
+
       EmailAutomations.send_pays_retainer(
         proposal.job,
         :pays_retainer,
-        proposal.job.client.organization.id
+        client.organization.id
       )
 
       {:ok, payment_schedule}

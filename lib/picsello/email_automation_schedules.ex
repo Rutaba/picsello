@@ -32,6 +32,11 @@ defmodule Picsello.EmailAutomationSchedules do
     |> Repo.all()
   end
 
+  def get_emails_by_shoot(table, shoot_id, type) do
+    from(es in table, where: es.shoot_id == ^shoot_id and es.type == ^type)
+    |> Repo.all()
+  end
+
   def get_active_email_schedule_count(job_id) do
     job_count =
       from(es in EmailSchedule,
@@ -100,7 +105,7 @@ defmodule Picsello.EmailAutomationSchedules do
           pipeline.state,
           pipeline.description,
           fragment(
-            "to_jsonb(json_build_object('id', ?, 'name', ?, 'total_hours', ?, 'condition', ?, 'body_template', ?, 'subject_template', ?, 'private_name', ?, 'stopped_at', ?, 'reminded_at', ?, 'order_id', ?, 'gallery_id', ?, 'job_id', ?))",
+            "to_jsonb(json_build_object('id', ?, 'name', ?, 'total_hours', ?, 'condition', ?, 'body_template', ?, 'subject_template', ?, 'private_name', ?, 'stopped_at', ?, 'reminded_at', ?, 'shoot_id', ?, 'order_id', ?, 'gallery_id', ?, 'job_id', ?))",
             email.id,
             email.name,
             email.total_hours,
@@ -110,6 +115,7 @@ defmodule Picsello.EmailAutomationSchedules do
             email.private_name,
             email.stopped_at,
             email.reminded_at,
+            email.shoot_id,
             email.order_id,
             email.gallery_id,
             email.job_id
@@ -172,6 +178,7 @@ defmodule Picsello.EmailAutomationSchedules do
       category_name: fragment("concat(?, ':', ?)", c.name, gallery.name),
       gallery_id: gallery.id,
       order_id: es.order_id,
+      shoot_id: nil,
       order_number: order.number,
       subcategory_name: fragment("concat(?, ':', ?)", s.name, order.number)
     })
@@ -195,24 +202,43 @@ defmodule Picsello.EmailAutomationSchedules do
     query
     |> where([es, _, _, _], es.job_id == ^job_id)
     |> where([es, _, _, _], is_nil(es.gallery_id))
-    |> select_merge([_, _, c, s], %{
+    |> join(:left, [es, _, _, _], shoot in assoc(es, :shoot))
+    |> select_merge([_, _, c, s, shoot], %{
       category_name: c.name,
-      subcategory_name: s.name,
+      subcategory_name:
+        fragment(
+          "CASE WHEN ? IS NOT NULL THEN concat(?, ':', ?) ELSE ? END",
+          shoot.name,
+          s.name,
+          shoot.name,
+          s.name
+        ),
+      shoot_id: shoot.id,
       gallery_id: nil,
       order_id: nil,
       order_number: ""
     })
-    |> group_by([es, p, c, s], [c.name, c.type, c.id, p.id, es.id, s.id, s.slug, s.name])
+    |> group_by([es, p, c, s, shoot], [
+      c.name,
+      c.type,
+      c.id,
+      p.id,
+      es.id,
+      s.id,
+      s.slug,
+      s.name,
+      shoot.id
+    ])
   end
 
   defp email_schedules_group_by_categories(emails_schedules) do
     emails_schedules
     |> Enum.group_by(
       &{&1.subcategory_slug, &1.subcategory_name, &1.subcategory_id, &1.subcategory_position,
-       &1.gallery_id, &1.job_id, &1.order_id, &1.order_number}
+       &1.gallery_id, &1.job_id, &1.order_id, &1.shoot_id, &1.order_number}
     )
-    |> Enum.map(fn {{slug, name, id, position, gallery_id, job_id, order_id, order_number},
-                    automation_pipelines} ->
+    |> Enum.map(fn {{slug, name, id, position, gallery_id, job_id, order_id, shoot_id,
+                     order_number}, automation_pipelines} ->
       pipelines =
         automation_pipelines
         |> Enum.group_by(& &1.pipeline["id"])
@@ -236,6 +262,7 @@ defmodule Picsello.EmailAutomationSchedules do
         subcategory_name: name,
         subcategory_id: id,
         subcategory_position: position,
+        shoot_id: shoot_id,
         gallery_id: gallery_id,
         job_id: job_id,
         order_id: order_id,
@@ -267,6 +294,7 @@ defmodule Picsello.EmailAutomationSchedules do
   def query_get_email_schedule(
         category_type,
         gallery_id,
+        shoot_id,
         job_id,
         piepline_id,
         table \\ EmailSchedule
@@ -275,12 +303,28 @@ defmodule Picsello.EmailAutomationSchedules do
 
     case category_type do
       :gallery -> query |> where([es], es.gallery_id == ^gallery_id)
+      :shoot -> query |> where([es], es.shoot_id == ^shoot_id)
       _ -> query |> where([es], es.job_id == ^job_id)
     end
   end
 
-  def get_last_completed_email(category_type, gallery_id, job_id, pipeline_id, state, helpers) do
-    query_get_email_schedule(category_type, gallery_id, job_id, pipeline_id, EmailScheduleHistory)
+  def get_last_completed_email(
+        category_type,
+        gallery_id,
+        shoot_id,
+        job_id,
+        pipeline_id,
+        state,
+        helpers
+      ) do
+    query_get_email_schedule(
+      category_type,
+      gallery_id,
+      shoot_id,
+      job_id,
+      pipeline_id,
+      EmailScheduleHistory
+    )
     |> where([es], not is_nil(es.reminded_at))
     |> Repo.all()
     |> helpers.sort_emails(state)
@@ -291,6 +335,8 @@ defmodule Picsello.EmailAutomationSchedules do
     Insert all emails templates for jobs & leads in email schedules
   """
   def job_emails(type, organization_id, job_id, category_type, skip_states \\ []) do
+    shoot_skip_states = [:before_shoot, :shoot_thanks]
+    all_skip_states = skip_states ++ shoot_skip_states
     now = DateTime.utc_now() |> DateTime.truncate(:second)
 
     emails =
@@ -298,9 +344,10 @@ defmodule Picsello.EmailAutomationSchedules do
       |> Enum.map(fn email_data ->
         state = Map.get(email_data, :email_automation_pipeline) |> Map.get(:state)
 
-        if state not in skip_states do
+        if state not in all_skip_states do
           [
             job_id: job_id,
+            shoot_id: nil,
             type: category_type,
             total_hours: email_data.total_hours,
             condition: email_data.condition,
@@ -325,6 +372,71 @@ defmodule Picsello.EmailAutomationSchedules do
       emails
     else
       []
+    end
+  end
+
+  def shoot_emails(job, shoot) do
+    job = job |> Repo.preload(client: [organization: [:user]])
+    category_type = :shoot
+
+    skip_sub_categories = [
+      "post_job_emails",
+      "payment_reminder_emails",
+      "booking_response_emails"
+    ]
+
+    organization_id = job.client.organization.id
+    now = DateTime.utc_now() |> DateTime.truncate(:second)
+
+    emails =
+      EmailAutomations.get_emails_for_schedule(
+        job.client.organization.id,
+        job.type,
+        :job,
+        skip_sub_categories
+      )
+      |> Enum.map(fn email_data ->
+        state = Map.get(email_data, :email_automation_pipeline) |> Map.get(:state)
+
+        if state not in [:post_shoot] do
+          [
+            shoot_id: shoot.id,
+            gallery_id: nil,
+            type: category_type,
+            order_id: nil,
+            job_id: job.id,
+            total_hours: email_data.total_hours,
+            condition: email_data.condition,
+            body_template: email_data.body_template,
+            name: email_data.name,
+            subject_template: email_data.subject_template,
+            private_name: email_data.private_name,
+            email_automation_pipeline_id: email_data.email_automation_pipeline_id,
+            organization_id: organization_id,
+            inserted_at: now,
+            updated_at: now
+          ]
+        end
+      end)
+      |> Enum.filter(&(&1 != nil))
+
+    previous_emails_schedules = get_emails_by_shoot(EmailSchedule, shoot.id, category_type)
+
+    previous_emails_history = get_emails_by_shoot(EmailScheduleHistory, shoot.id, category_type)
+
+    if Enum.empty?(previous_emails_schedules) and Enum.empty?(previous_emails_history) do
+      emails
+    else
+      []
+    end
+  end
+
+  def insert_shoot_emails(job, shoot) do
+    emails = shoot_emails(job, shoot)
+
+    case Repo.insert_all(EmailSchedule, emails) do
+      {count, nil} -> {:ok, count}
+      _ -> {:error, "error insertion"}
     end
   end
 

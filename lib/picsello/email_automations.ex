@@ -438,6 +438,7 @@ defmodule Picsello.EmailAutomations do
     EmailAutomationSchedules.query_get_email_schedule(
       :job,
       nil,
+      nil,
       job_id,
       pipeline_id
     )

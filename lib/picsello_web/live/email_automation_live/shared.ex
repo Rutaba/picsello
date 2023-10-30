@@ -12,6 +12,7 @@ defmodule PicselloWeb.EmailAutomationLive.Shared do
 
   alias Picsello.{
     Marketing,
+    Shoots,
     PaymentSchedules,
     PaymentSchedule,
     EmailPresets.EmailPreset,
@@ -372,6 +373,7 @@ defmodule PicselloWeb.EmailAutomationLive.Shared do
       EmailAutomationSchedules.get_last_completed_email(
         type,
         gallery_id,
+        nil,
         job_id,
         pipeline_id,
         state,
@@ -649,20 +651,11 @@ defmodule PicselloWeb.EmailAutomationLive.Shared do
     %{sign: sign} = EmailAutomations.explode_hours(email.total_hours)
     days_to_compare = hours_to_days(email.total_hours)
 
-    job.shoots
-    |> Enum.filter(fn item ->
-      starts_at = item.starts_at |> DateTime.shift_zone!(timezone)
+    shoot = Shoots.get_shoot(email.shoot_id)
+    starts_at = shoot.starts_at |> DateTime.shift_zone!(timezone)
 
-      Logger.info("-- before_shoot starts_at: #{starts_at}")
-      Logger.info("-- before_shoot date_diff: #{Date.diff(starts_at, today)}")
-
-      is_send_time?(Date.diff(starts_at, today), abs(days_to_compare), sign)
-    end)
-    |> (fn filtered_list ->
-          if Enum.empty?(filtered_list),
-            do: nil,
-            else: List.first(filtered_list) |> Map.get(:starts_at)
-        end).()
+    send_time? = is_send_time?(Date.diff(starts_at, today), abs(days_to_compare), sign)
+    if send_time?, do: shoot.start_at, else: nil
   end
 
   def fetch_date_for_state(:balance_due, _email, last_completed_email, job, _gallery, _order) do
@@ -759,16 +752,11 @@ defmodule PicselloWeb.EmailAutomationLive.Shared do
     %{sign: sign} = EmailAutomations.explode_hours(email.total_hours)
     days_to_compare = hours_to_days(email.total_hours)
 
-    job.shoots
-    |> Enum.filter(fn item ->
-      starts_at = item.starts_at |> DateTime.shift_zone!(timezone)
-      is_send_time?(Date.diff(today, starts_at), abs(days_to_compare), sign)
-    end)
-    |> (fn filtered_list ->
-          if Enum.empty?(filtered_list),
-            do: nil,
-            else: List.first(filtered_list) |> Map.get(:starts_at)
-        end).()
+    shoot = Shoots.get_shoot(email.shoot_id)
+    starts_at = shoot.starts_at |> DateTime.shift_zone!(timezone)
+
+    send_time? = is_send_time?(Date.diff(today, starts_at), abs(days_to_compare), sign)
+    if send_time?, do: shoot.start_at, else: nil
   end
 
   def fetch_date_for_state(:post_shoot, email, _last_completed_email, job, _gallery, _order) do

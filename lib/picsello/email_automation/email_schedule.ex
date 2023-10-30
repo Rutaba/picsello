@@ -7,8 +7,8 @@ defmodule Picsello.EmailAutomation.EmailSchedule do
     EmailAutomationPipeline
   }
 
-  @types ~w(lead job gallery order)a
-  alias Picsello.{Job, Galleries.Gallery, Cart.Order, Organization}
+  @types ~w(lead job shoot gallery order)a
+  alias Picsello.{Job, Shoot, Galleries.Gallery, Cart.Order, Organization}
 
   schema "email_schedules" do
     field :total_hours, :integer, default: 0
@@ -24,6 +24,7 @@ defmodule Picsello.EmailAutomation.EmailSchedule do
 
     belongs_to(:email_automation_pipeline, EmailAutomationPipeline)
     belongs_to(:job, Job)
+    belongs_to(:shoot, Shoot)
     belongs_to(:gallery, Gallery)
     belongs_to(:order, Order)
     belongs_to(:organization, Organization)
@@ -35,7 +36,7 @@ defmodule Picsello.EmailAutomation.EmailSchedule do
     email_preset
     |> cast(
       attrs,
-      ~w[email_automation_pipeline_id name type private_name subject_template body_template total_hours condition stopped_at reminded_at job_id gallery_id order_id organization_id]a
+      ~w[email_automation_pipeline_id name type private_name subject_template body_template total_hours condition stopped_at reminded_at job_id gallery_id shoot_id order_id organization_id]a
     )
     |> validate_required(~w[email_automation_pipeline_id type subject_template body_template]a)
   end
