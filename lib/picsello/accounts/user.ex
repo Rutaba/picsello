@@ -9,7 +9,8 @@ defmodule Picsello.Accounts.User do
     Subscription,
     SubscriptionEvent,
     Organization,
-    NylasDetail
+    NylasDetail,
+    Accounts.User.Promotions
   }
 
   @email_regex ~r/^[^\s]+@[^\s]+\.[^\s]+$/
@@ -31,6 +32,7 @@ defmodule Picsello.Accounts.User do
     has_one(:subscription, Subscription)
     has_one(:subscription_event, SubscriptionEvent)
     has_one(:nylas_detail, NylasDetail)
+    has_many(:user_promotions, Promotions)
     belongs_to(:organization, Organization)
 
     timestamps()

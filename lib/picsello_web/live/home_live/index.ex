@@ -9,6 +9,7 @@ defmodule PicselloWeb.HomeLive.Index do
     Payments,
     Repo,
     Accounts,
+    Accounts.User.Promotions,
     Shoot,
     Shoots,
     Accounts.User,
@@ -60,7 +61,7 @@ defmodule PicselloWeb.HomeLive.Index do
   ]
 
   @impl true
-  def mount(params, _session, socket) do
+  def mount(params, _session, %{assigns: %{current_user: current_user}} = socket) do
     %{value: black_friday_code} =
       Picsello.AdminGlobalSettings.get_settings_by_slug("black_friday_code")
 
@@ -71,6 +72,10 @@ defmodule PicselloWeb.HomeLive.Index do
     |> assign(:stripe_subscription_status, nil)
     |> assign_counts()
     |> assign(:promotion_code_open, false)
+    |> assign(
+      :current_sale,
+      Promotions.get_user_promotion_by_slug(current_user, black_friday_code)
+    )
     |> assign_attention_items()
     |> assign(:tabs, tabs_list(socket))
     |> assign(:tab_active, "todo")
@@ -284,10 +289,47 @@ defmodule PicselloWeb.HomeLive.Index do
     # TODO: on return, check if user has pre-purchased
 
     build_invoice_link(socket)
+  end
 
-    # build_subscription_link(socket, interval, promotion_code_id)
+  @impl true
+  def handle_event(
+        "subscription-billing",
+        _params,
+        %{assigns: %{current_user: current_user}} = socket
+      ) do
+    {:ok, url} =
+      Subscriptions.billing_portal_link(
+        current_user,
+        Routes.home_url(socket, :index)
+      )
 
-    # socket |> noreply()
+    socket |> redirect(external: url) |> noreply()
+  end
+
+  @impl true
+  def handle_event(
+        "subscription-prepurchase-dismiss",
+        _,
+        %{assigns: %{current_user: current_user, promotion_code: promotion_code}} = socket
+      ) do
+    case Promotions.insert_or_update_promotion(current_user, %{
+           slug: promotion_code,
+           name: "Black Friday",
+           state: :dismissed
+         }) do
+      {:ok, promotion_code} ->
+        socket
+        |> assign(
+          :current_sale,
+          promotion_code
+        )
+        |> put_flash(:success, "Deal hidden successfully")
+
+      {:error, _} ->
+        socket
+        |> put_flash(:error, "Failed to dismiss promotion")
+    end
+    |> noreply()
   end
 
   @impl true

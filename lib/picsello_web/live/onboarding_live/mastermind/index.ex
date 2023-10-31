@@ -6,7 +6,8 @@ defmodule PicselloWeb.OnboardingLive.Mastermind.Index do
     Onboardings.Onboarding,
     Subscriptions,
     Subscriptions,
-    Payments
+    Payments,
+    Accounts.User.Promotions
   }
 
   import PicselloWeb.OnboardingLive.Shared,
@@ -122,6 +123,12 @@ defmodule PicselloWeb.OnboardingLive.Mastermind.Index do
     case Payments.create_subscription(stripe_params) do
       {:ok, subscription} ->
         Subscriptions.handle_stripe_subscription(subscription)
+
+        Promotions.insert_or_update_promotion(current_user, %{
+          slug: promotion_code,
+          state: :purchased,
+          name: "Black Friday"
+        })
 
         return =
           if is_nil(subscription.pending_setup_intent) do
