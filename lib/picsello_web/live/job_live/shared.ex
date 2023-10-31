@@ -1339,20 +1339,22 @@ defmodule PicselloWeb.JobLive.Shared do
           </dl>
         </div>
         <%= unless @job.is_gallery_only do %>
-        <div class="lg:flex justify-end items-center mt-8">
-          <.icon_button icon="eye" color="blue-planning-300" class="flex-shrink-0 transition-colors px-6 py-3" id="client-preview" disabled={@disabled_copy_link} phx-click="copy-or-view-client-link" phx-value-action="view" phx-hook="ViewProposal">
-            <a href={if @proposal, do: BookingProposal.url(@proposal.id)}} target="_blank" rel="noopener noreferrer">
-              Client preview
-            </a>
-          </.icon_button>
-          <.icon_button icon="anchor" color="blue-planning-300" class="mt-2 lg:mt-0 flex-shrink-0 lg:mx-4 transition-colors px-6 py-3" id="copy-client-link" data-clipboard-text={if @proposal, do: BookingProposal.url(@proposal.id)} phx-click="copy-or-view-client-link" phx-value-action="copy" phx-hook="Clipboard" disabled={@disabled_copy_link}>
-            <span>Copy client link</span>
-            <div class="hidden p-1 text-sm rounded shadow" role="tooltip">
-              Copied!
-            </div>
-          </.icon_button>
+        <div class="md:flex lg:flex justify-end items-center mt-8 gap-1">
+          <div class="flex gap-1">
+            <.icon_button icon="eye" color="blue-planning-300" class="flex-shrink-0 transition-colors px-6 py-3" id="client-preview" disabled={@disabled_copy_link} phx-click="copy-or-view-client-link" phx-value-action="view" phx-hook="ViewProposal">
+              <a href={if @proposal, do: BookingProposal.url(@proposal.id)}} target="_blank" rel="noopener noreferrer">
+                Client preview
+              </a>
+            </.icon_button>
+            <.icon_button icon="anchor" color="blue-planning-300" class="flex-shrink-0 lg:mx-4 transition-colors px-6 py-3" id="copy-client-link" data-clipboard-text={if @proposal, do: BookingProposal.url(@proposal.id)} phx-click="copy-or-view-client-link" phx-value-action="copy" phx-hook="Clipboard" disabled={@disabled_copy_link}>
+              <span>Copy client link</span>
+              <div class="hidden p-1 text-sm rounded shadow" role="tooltip">
+                Copied!
+              </div>
+            </.icon_button>
+          </div>
           <%= if @proposal && (@proposal.sent_to_client || @proposal.accepted_at) do %>
-            <button class="btn-primary" phx-click="open-proposal" phx-value-action="details">View proposal</button>
+            <button class="btn-primary mt-2 md:mt-0 lg:mt-0 lg:w-auto md:w-auto w-full" phx-click="open-proposal" phx-value-action="details">View proposal</button>
           <% else %>
             <%= render_slot(@send_proposal_button) %>
           <% end %>

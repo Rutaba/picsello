@@ -77,7 +77,7 @@ defmodule PicselloWeb.LeadLive.Show do
       |> assign_new(:class, fn -> nil end)
 
     ~H"""
-    <div class={"mt-2 lg:mt-0 flex flex-col items-center #{@class}"}>
+    <div class={"mt-2 md: mt-0 lg:mt-0 flex flex-col items-center #{@class}"}>
       <button id="finish-proposal" title="send proposal" class="w-full md:w-auto btn-primary intro-finish-proposal" phx-click="finish-proposal" disabled={@disabled_message}>Send proposal</button>
       <%= if @show_message && @disabled_message do %>
         <em class="pt-1 text-xs text-red-sales-300"><%= @disabled_message %></em>
