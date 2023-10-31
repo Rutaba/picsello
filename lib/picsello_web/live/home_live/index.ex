@@ -95,6 +95,30 @@ defmodule PicselloWeb.HomeLive.Index do
   end
 
   @impl true
+  def handle_params(
+        %{"pre_purchase" => "true", "checkout_session_id" => _},
+        _uri,
+        %{assigns: %{promotion_code: promotion_code, current_user: current_user}} = socket
+      ) do
+    Promotions.insert_or_update_promotion(current_user, %{
+      slug: promotion_code,
+      state: :purchased,
+      name: "Black Friday"
+    })
+
+    Onboardings.user_update_promotion_code_changeset(current_user, %{
+      onboarding: %{
+        promotion_code: promotion_code
+      }
+    })
+    |> Repo.update!()
+
+    socket
+    |> put_flash(:success, "Year extended!")
+    |> noreply()
+  end
+
+  @impl true
   def handle_params(_params, _uri, socket), do: socket |> noreply()
 
   @impl true
@@ -284,26 +308,7 @@ defmodule PicselloWeb.HomeLive.Index do
         _,
         socket
       ) do
-    # TODO: pull promotion code from global settings
-    # TODO: create check with invoice
-    # TODO: on return, check if user has pre-purchased
-
     build_invoice_link(socket)
-  end
-
-  @impl true
-  def handle_event(
-        "subscription-billing",
-        _params,
-        %{assigns: %{current_user: current_user}} = socket
-      ) do
-    {:ok, url} =
-      Subscriptions.billing_portal_link(
-        current_user,
-        Routes.home_url(socket, :index)
-      )
-
-    socket |> redirect(external: url) |> noreply()
   end
 
   @impl true
@@ -1840,11 +1845,9 @@ defmodule PicselloWeb.HomeLive.Index do
          %{
            assigns: %{
              current_user: current_user,
-             promotion_code_changeset: promotion_code_changeset,
              promotion_code: promotion_code
            }
-         } = socket,
-         opts \\ []
+         } = socket
        ) do
     discounts_data =
       if promotion_code,
@@ -1861,7 +1864,8 @@ defmodule PicselloWeb.HomeLive.Index do
       %{
         client_reference_id: "blackfriday_2023",
         cancel_url: Routes.home_url(socket, :index),
-        success_url: "#{Routes.home_url(socket, :index)}?session_id={CHECKOUT_SESSION_ID}",
+        success_url:
+          "#{Routes.home_url(socket, :index)}?pre_purchase=true&checkout_session_id={CHECKOUT_SESSION_ID}",
         billing_address_collection: "auto",
         customer: Subscriptions.user_customer_id(current_user),
         line_items: [
@@ -1883,10 +1887,6 @@ defmodule PicselloWeb.HomeLive.Index do
 
     case Payments.create_session(stripe_params, []) do
       {:ok, %{url: url}} ->
-        # promotion_code_changeset
-        # |> Map.put(:action, :update)
-        # |> Repo.update!()
-
         socket |> redirect(external: url) |> noreply()
 
       {:error, error} ->
