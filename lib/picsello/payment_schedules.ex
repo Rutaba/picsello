@@ -351,7 +351,8 @@ defmodule Picsello.PaymentSchedules do
       )
 
       # insert job shoots
-      shoots |> Enum.map(&EmailAutomationSchedules.insert_shoot_emails(proposal.job, &1.shoot))
+      _inserted_shhots =
+        shoots |> Enum.map(&EmailAutomationSchedules.insert_shoot_emails(proposal.job, &1.shoot))
 
       EmailAutomations.send_pays_retainer(
         proposal.job,

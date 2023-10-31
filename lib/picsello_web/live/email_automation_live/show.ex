@@ -423,42 +423,46 @@ defmodule PicselloWeb.Live.EmailAutomations.Show do
         }
 
       _ ->
-        %{sign: sign} = EmailAutomations.explode_hours(email_schedule.total_hours)
-        job = EmailAutomations.get_job(email.job_id)
+        get_next_email_by(email_schedule, email, state, pipeline_id, subcategory)
+    end
+  end
 
-        gallery =
-          if is_nil(email.gallery_id),
-            do: nil,
-            else: EmailAutomations.get_gallery(email.gallery_id)
+  defp get_next_email_by(email_schedule, email, state, pipeline_id, subcategory) do
+    %{sign: sign} = EmailAutomations.explode_hours(email_schedule.total_hours)
+    job = EmailAutomations.get_job(email.job_id)
 
-        state = if is_atom(state), do: state, else: String.to_atom(state)
-        date = get_conditional_date(state, email_schedule, pipeline_id, job, gallery)
+    gallery =
+      if is_nil(email.gallery_id),
+        do: nil,
+        else: EmailAutomations.get_gallery(email.gallery_id)
 
-        cond do
-          not is_nil(date) ->
-            %{
-              text: "Next Email",
-              date: next_schedule_format(date, sign, email_schedule.total_hours),
-              email_preview_id: email_schedule.id,
-              is_completed: false
-            }
+    state = if is_atom(state), do: state, else: String.to_atom(state)
+    date = get_conditional_date(state, email_schedule, pipeline_id, job, gallery)
 
-          subcategory == "payment_reminder_emails" ->
-            %{
-              text: "Transactional",
-              date: "",
-              email_preview_id: email_schedule.id,
-              is_completed: false
-            }
+    cond do
+      not is_nil(date) ->
+        %{
+          text: "Next Email",
+          date: next_schedule_format(date, sign, email_schedule.total_hours),
+          email_preview_id: email_schedule.id,
+          is_completed: false
+        }
 
-          true ->
-            %{
-              text: "Next Email",
-              date: "",
-              email_preview_id: email_schedule.id,
-              is_completed: false
-            }
-        end
+      subcategory == "payment_reminder_emails" ->
+        %{
+          text: "Transactional",
+          date: "",
+          email_preview_id: email_schedule.id,
+          is_completed: false
+        }
+
+      true ->
+        %{
+          text: "Next Email",
+          date: "",
+          email_preview_id: email_schedule.id,
+          is_completed: false
+        }
     end
   end
 
