@@ -329,6 +329,7 @@ defmodule PicselloWeb.EmailAutomationLive.EditEmailComponent do
              pipeline: pipeline,
              email_preset_changeset: email_preset_changeset,
              email: email,
+             email_preset: email_preset,
              current_user: %{organization_id: organization_id}
            }
          } = socket
@@ -347,7 +348,7 @@ defmodule PicselloWeb.EmailAutomationLive.EditEmailComponent do
           from(ep in EmailPreset,
             where:
               ep.state == ^pipeline.state and ep.organization_id == ^organization_id and
-                ep.name == ^preset.name,
+                ep.name == ^preset.name and ep.total_hours == ^email_preset.total_hours,
             update: [
               set: [
                 subject_template: ^preset.subject_template,
