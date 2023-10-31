@@ -70,7 +70,7 @@ defmodule Picsello.JobIndexTest do
         organization: user.organization,
         name: "Elizabeth Taylor",
         email: "taylor@example.com",
-        phone: "(210) 111-1234"
+        phone: "+12101111234"
       }
     )
 
@@ -84,7 +84,7 @@ defmodule Picsello.JobIndexTest do
       client: %{
         organization: user.organization,
         name: "John Snow",
-        phone: "(241) 567-2352",
+        phone: "+12415672352",
         email: "snow@example.com"
       }
     )
@@ -99,7 +99,6 @@ defmodule Picsello.JobIndexTest do
       client: %{
         organization: user.organization,
         name: "Michael Stark",
-        phone: "(442) 567-2321",
         email: "stark@example.com"
       }
     )
@@ -110,7 +109,6 @@ defmodule Picsello.JobIndexTest do
       client: %{
         user: user,
         name: "Rachel Green",
-        phone: "(210) 111-1214",
         email: "green@example.com"
       },
       type: "family",
@@ -124,7 +122,6 @@ defmodule Picsello.JobIndexTest do
       client: %{
         user: user,
         name: "Ross Geller",
-        phone: "(241) 567-7352",
         email: "ross@example.com"
       },
       type: "wedding",
@@ -138,7 +135,6 @@ defmodule Picsello.JobIndexTest do
       client: %{
         user: user,
         name: "Joeshph Tribbiani",
-        phone: "(442) 567-2329",
         email: "joey@example.com"
       },
       type: "event",
@@ -389,7 +385,7 @@ defmodule Picsello.JobIndexTest do
     |> fill_in(css("#search_phrase_input"), with: "taylor@example.com")
     |> assert_has(testid("job-row", count: 1))
     |> click(testid("close_search"))
-    |> fill_in(css("#search_phrase_input"), with: "(241) 567-2352")
+    |> fill_in(css("#search_phrase_input"), with: "+12415672352")
     |> assert_has(testid("job-row", count: 1))
     |> click(testid("close_search"))
     |> fill_in(css("#search_phrase_input"), with: "test@example.com")
@@ -432,8 +428,8 @@ defmodule Picsello.JobIndexTest do
     |> fill_in(css("#search_phrase_input"), with: "green@example.com")
     |> assert_has(testid("job-row", count: 1))
     |> click(testid("close_search"))
-    |> fill_in(css("#search_phrase_input"), with: "(241) 567-7352")
-    |> assert_has(testid("job-row", count: 1))
+    |> fill_in(css("#search_phrase_input"), with: "+12015551234")
+    |> assert_has(testid("job-row", count: 4))
     |> click(testid("close_search"))
     |> fill_in(css("#search_phrase_input"), with: "test@example.com")
     |> assert_text("No jobs match your search or filters.")

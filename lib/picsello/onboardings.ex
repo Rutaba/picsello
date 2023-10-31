@@ -6,6 +6,7 @@ defmodule Picsello.Onboardings do
     Organization,
     OrganizationJobType,
     Profiles.Profile,
+    Utils,
     Subscriptions
   }
 
@@ -108,7 +109,7 @@ defmodule Picsello.Onboardings do
     def phone_changeset(%__MODULE__{} = onboarding, attrs) do
       onboarding
       |> cast(attrs, [:phone])
-      |> validate_required([:phone])
+      |> Utils.validate_phone(:phone)
     end
 
     def promotion_code_changeset(%__MODULE__{} = onboarding, attrs) do

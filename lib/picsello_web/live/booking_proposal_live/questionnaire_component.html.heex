@@ -17,7 +17,7 @@
     <fieldset class={classes(%{"opacity-75" => @read_only})} disabled={@read_only}>
       <dl>
         <%= for {{question, answer}, question_index} <- @questionnaire.questions |> Enum.zip(@answer.answers) |> Enum.with_index() do %>
-          <.questionnaire_item question={question} answer={answer} question_index={question_index} />
+          <.questionnaire_item question={question} answer={answer} question_index={question_index} disable?={@read_only} />
         <% end %>
       </dl>
     </fieldset>

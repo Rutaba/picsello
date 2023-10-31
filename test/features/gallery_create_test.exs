@@ -9,8 +9,7 @@ defmodule Picsello.GalleryCreateTest do
     insert(:client,
       user: user,
       name: "Elizabeth Taylor",
-      email: "taylor@example.com",
-      phone: "(210) 111-1234"
+      email: "taylor@example.com"
     )
 
     [session: session]
