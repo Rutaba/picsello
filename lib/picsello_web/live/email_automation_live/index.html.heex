@@ -35,7 +35,7 @@
           <%= Enum.map(@job_types, fn type -> %>
             <div class={classes("font-bold bg-base-250/10 rounded-lg cursor-pointer grid-item", %{"md:text-blue-planning-300" => @selected_job_type.job_type == type.job_type})}
             phx-click="assign_templates_by_type" phx-value-id={type.id}>
-              <div class="flex items-center lg:h-11 pr-4 lg:pl-2 lg:py-4 pl-3 py-3 overflow-hidden text-sm transition duration-300 ease-in-out rounded-lg text-ellipsis" >
+              <div class="flex items-center lg:h-11 pr-4 lg:pl-2 lg:py-4 pl-3 py-3 overflow-hidden text-base font-bold transition duration-300 ease-in-out rounded-lg text-ellipsis" >
                 <a class="flex w-full">
                   <div class="flex items-center justify-start">
                     <div testid={type.job_type} class="justify-start ml-3">
@@ -51,6 +51,20 @@
               <% end %>
             </div>
           <% end) %>
+          <div class="font-bold rounded-lg cursor-pointer grid-item">
+            <div class="flex text-base font-bold items-center lg:h-11 pr-4 lg:pl-4 bg-blue-planning-300 lg:py-4 pl-3 py-3 overflow-hidden transition duration-300 ease-in-out rounded-lg text-ellipsis text-white hover:bg-blue-planning-300/75 hover:opacity-75" >
+                <a class="flex w-full" href="/brand" target="_blank">
+                  <div class="flex items-center justify-start">
+                    <div class="flex items-center justify-center flex-shrink-0 w-6 h-6">
+                      <.icon name="pencil" class="w-4 h-4 m-1 fill-current text-white" />
+                    </div>
+                    <div class="justify-start ml-3">
+                      <span class="">Edit brand settings</span>
+                    </div>
+                  </div>
+                </a>
+            </div>
+          </div>
           </div>
         </div>
       </div>
