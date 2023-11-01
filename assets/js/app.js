@@ -79,7 +79,7 @@ import Cookies from 'js-cookie';
 import FolderUpload from './hooks/folder-upload';
 import SearchResultSelect from './hooks/search-result-select';
 import Tooltip from './hooks/tooltip';
-import LivePhone from "live_phone"
+import LivePhone from 'live_phone';
 
 const Modal = {
   mounted() {
@@ -106,18 +106,18 @@ const Modal = {
     document.addEventListener('keydown', this.keydownListener);
 
     this.handleEvent('modal:open', () => {
-      document.body.classList.add('overflow-hidden');
+      document.body.classList.add('overflow-hidden', 'z-0', 'relative');
     });
 
     this.handleEvent('modal:close', () => {
       this.el.classList.add('opacity-0');
-      document.body.classList.remove('overflow-hidden');
+      document.body.classList.remove('overflow-hidden', 'z-0', 'relative');
     });
   },
 
   destroyed() {
     document.removeEventListener('keydown', this.keydownListener);
-    document.body.classList.remove('overflow-hidden');
+    document.body.classList.remove('overflow-hidden', 'z-0', 'relative');
   },
 };
 
@@ -216,7 +216,6 @@ const showAdminBanner = {
   },
 };
 
-
 const Hooks = {
   AutoHeight,
   Calendar,
@@ -265,12 +264,12 @@ const Hooks = {
   showAdminBanner,
   FolderUpload,
   SearchResultSelect,
-  LivePhone
+  LivePhone,
 };
 
 window.addEventListener(`phx:download`, (event) => {
-  let frame = document.createElement("iframe");
-  frame.setAttribute("src", event.detail.uri);
+  let frame = document.createElement('iframe');
+  frame.setAttribute('src', event.detail.uri);
   frame.style.visibility = 'hidden';
   frame.style.display = 'none';
   document.body.appendChild(frame);
@@ -354,11 +353,11 @@ window.addEventListener('phx:page-loading-stop', (info) => {
 });
 
 window.addEventListener('phx:scroll:lock', () => {
-  document.body.classList.add('overflow-hidden');
+  document.body.classList.add('overflow-hidden', 'z-0', 'relative');
 });
 
 window.addEventListener('phx:scroll:unlock', () => {
-  document.body.classList.remove('overflow-hidden');
+  document.body.classList.remove('overflow-hidden', 'z-0', 'relative');
 });
 
 // connect if there are any LiveViews on the page
