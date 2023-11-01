@@ -591,7 +591,6 @@ defmodule PicselloWeb.Live.ClientLive.Index do
 
   defp assign_clients(socket) do
     socket
-    |> assign(:sort_col, "name")
     |> assign_preferred_filters()
     |> assign(:search_results, [])
     |> assign(:search_phrase, nil)
@@ -614,22 +613,46 @@ defmodule PicselloWeb.Live.ClientLive.Index do
         |> assign(:job_type, "all")
         |> assign(:sort_by, "name")
         |> assign(:sort_direction, "asc")
+        |> assign(:sort_col, "name")
 
       %{
         filters: %{
           job_type: job_type,
           job_status: job_status,
-          sort_by: sort_by,
-          sort_direction: sort_direction
+          sort_by: sort_by
         }
       } ->
         socket
         |> assign(:job_status, job_status || "all")
         |> assign(:job_type, job_type || "all")
         |> assign(:sort_by, sort_by || "name")
-        |> assign(:sort_direction, sort_direction || "asc")
+        |> assign_sort_direction(sort_by, "asc")
+        |> assign_sort_col(sort_by, "name")
     end
   end
+
+  defp assign_sort_col(socket, nil, default_sort_col),
+    do:
+      socket
+      |> assign(:sort_col, default_sort_col)
+
+  defp assign_sort_col(socket, sort_by, _default_sort_col),
+    do:
+      socket
+      |> assign(:sort_col, Enum.find(sort_options(), fn op -> op.id == sort_by end).column)
+
+  defp assign_sort_direction(socket, nil, default_sort_direction),
+    do:
+      socket
+      |> assign(:sort_direction, default_sort_direction)
+
+  defp assign_sort_direction(socket, sort_by, _default_sort_direction),
+    do:
+      socket
+      |> assign(
+        :sort_direction,
+        Enum.find(sort_options(), fn op -> op.id == sort_by end).direction
+      )
 
   defp open_confirmation_component(socket, client),
     do:

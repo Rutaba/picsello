@@ -457,7 +457,7 @@ defmodule PicselloWeb.JobLive.Index do
        ) do
     case PreferredFilters.load_preferred_filters(organization_id, "jobs") do
       nil ->
-        default_filters(socket, "shoot_date")
+        default_filters(socket, "shoot_date", :starts_at)
 
       %{
         filters: %{
@@ -467,7 +467,15 @@ defmodule PicselloWeb.JobLive.Index do
           sort_direction: sort_direction
         }
       } ->
-        loaded_filters(socket, sort_by, job_type, job_status, sort_direction, "shoot_date")
+        loaded_filters(
+          socket,
+          sort_by,
+          job_type,
+          job_status,
+          sort_direction,
+          "shoot_date",
+          :starts_at
+        )
     end
   end
 
@@ -477,7 +485,7 @@ defmodule PicselloWeb.JobLive.Index do
        ) do
     case PreferredFilters.load_preferred_filters(organization_id, "leads") do
       nil ->
-        default_filters(socket, "newest_lead")
+        default_filters(socket, "newest_lead", :inserted_at)
 
       %{
         filters: %{
@@ -487,39 +495,94 @@ defmodule PicselloWeb.JobLive.Index do
           sort_direction: sort_direction
         }
       } ->
-        loaded_filters(socket, sort_by, job_type, job_status, sort_direction, "newest_lead")
+        loaded_filters(
+          socket,
+          sort_by,
+          job_type,
+          job_status,
+          sort_direction,
+          "newest_lead",
+          :inserted_at
+        )
     end
   end
 
-  defp loaded_filters(socket, sort_by, job_type, job_status, sort_direction, default_sort_by) do
+  defp loaded_filters(
+         socket,
+         sort_by,
+         job_type,
+         job_status,
+         sort_direction,
+         default_sort_by,
+         default_sort_col
+       ) do
     socket
     |> assign(:job_status, job_status || "all")
     |> assign(:job_type, job_type || "all")
     |> assign(:sort_by, sort_by || default_sort_by)
-    |> assign(
-      :sort_direction,
-      if(is_nil(sort_direction), do: :desc, else: String.to_atom(sort_direction))
-    )
+    |> assign_sort_col(sort_by, default_sort_col)
+    |> assign_sort_direction(sort_by, sort_direction)
   end
 
-  defp default_filters(socket, sort_by) do
+  defp assign_sort_col(socket, nil, default_sort_col),
+    do: socket |> assign(:sort_col, default_sort_col)
+
+  defp assign_sort_col(socket, sort_by, _default_sort_by),
+    do:
+      socket
+      |> assign(
+        :sort_col,
+        if(sort_by in ["oldest_lead", "newest_lead"],
+          do: Enum.find(lead_sort_options(), fn op -> op.id == sort_by end).column,
+          else: Enum.find(job_sort_options(), fn op -> op.id == sort_by end).column
+        )
+      )
+
+  defp assign_sort_direction(socket, nil, sort_direction) when not is_nil(sort_direction),
+    do: socket |> assign(:sort_direction, String.to_atom(sort_direction))
+
+  defp assign_sort_direction(socket, nil, _sort_direction),
+    do: socket |> assign(:sort_direction, :desc)
+
+  defp assign_sort_direction(socket, sort_by, _sort_direction)
+       when sort_by in ["oldest_job", "oldest_lead"],
+       do:
+         socket
+         |> assign(:sort_direction, :asc)
+
+  defp assign_sort_direction(socket, sort_by, _sort_direction)
+       when sort_by in ["newest_job", "newest_lead"],
+       do:
+         socket
+         |> assign(:sort_direction, :desc)
+
+  defp assign_sort_direction(socket, _sort_by, nil),
+    do:
+      socket
+      |> assign(:sort_direction, :desc)
+
+  defp assign_sort_direction(socket, _sort_by, sort_direction),
+    do:
+      socket
+      |> assign(:sort_direction, String.to_atom(sort_direction))
+
+  defp default_filters(socket, sort_by, sort_col) do
     socket
     |> assign(:job_status, "all")
     |> assign(:job_type, "all")
     |> assign(:sort_by, sort_by)
     |> assign(:sort_direction, :desc)
+    |> assign(:sort_col, sort_col)
   end
 
   defp assign_type_strings(%{assigns: %{live_action: live_action}} = socket) do
     if live_action == :jobs,
       do:
         socket
-        |> assign(:type, %{singular: "job", plural: "jobs"})
-        |> assign(:sort_col, :starts_at),
+        |> assign(:type, %{singular: "job", plural: "jobs"}),
       else:
         socket
         |> assign(:type, %{singular: "lead", plural: "leads"})
-        |> assign(:sort_col, :inserted_at)
   end
 
   defp assign_search(socket) do

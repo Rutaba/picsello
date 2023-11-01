@@ -20,7 +20,6 @@ defmodule PicselloWeb.Live.Calendar.BookingEvents do
   defp assign_events(socket) do
     socket
     |> assign_preferred_filters()
-    |> assign(:sort_col, "name")
     |> assign(:search_phrase, nil)
     |> assign(:new_event, false)
     |> assign(current_focus: -1)
@@ -36,6 +35,7 @@ defmodule PicselloWeb.Live.Calendar.BookingEvents do
         |> assign(:event_status, "all")
         |> assign(:sort_by, "name")
         |> assign(:sort_direction, "asc")
+        |> assign(:sort_col, "name")
 
       %{
         filters: %{
@@ -48,8 +48,19 @@ defmodule PicselloWeb.Live.Calendar.BookingEvents do
         |> assign(:event_status, event_status || "all")
         |> assign(:sort_by, sort_by || "name")
         |> assign(:sort_direction, sort_direction || "asc")
+        |> assign_sort_col(sort_by, "name")
     end
   end
+
+  defp assign_sort_col(socket, nil, default_sort_col),
+    do:
+      socket
+      |> assign(:sort_col, default_sort_col)
+
+  defp assign_sort_col(socket, sort_by, _default_sort_col),
+    do:
+      socket
+      |> assign(:sort_col, Enum.find(sort_options(), fn op -> op.id == sort_by end).column)
 
   @impl true
   def handle_params(
