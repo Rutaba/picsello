@@ -104,8 +104,8 @@
             </div>
           </div>
           <%= if Enum.any?(@photos) || Enum.any?(@orders) || @photographer_favorites_filter do %>
-            <div class={classes("pt-4 grid", %{"lg:grid-cols-2" => !@selection_filter, "lg:grid-cols-1" => @selection_filter})}>
-              <%= if !@selection_filter do %>
+            <div class={classes("pt-4 grid lg:grid-cols-2", %{"lg:grid-cols-1" => @selection_filter})}>
+              <%= unless @selection_filter do %>
                 <div class="flex flex-col text-sm justify-start md:flex-row">
                   <div class="h-10 lg:mx-0 mx-10 md:w-32 items-center mb-4 font-sans bg-white cursor-pointer rounded-md">
                     <div id="select" class="relative" phx-update="ignore" data-offset-y="10" phx-hook="Select">
@@ -129,7 +129,7 @@
                   </div>
 
                   <div class="h-10 lg:mx-2.5 mx-10 mb-4 md:w-72 font-sans bg-white rounded-md">
-                    <.actions id="actions" disabled={disabled?(@gallery)} update_mode={if @total_progress > 0 && @total_progress < 100, do: "ignore", else: "replace"} photo_selected={Enum.any?(@selected_photos)} selection_filter={@selection_filter} class="text-ellipsis" delete_event="delete_selected_photos_popup" delete_title="Delete" delete_value={@gallery.id}>
+                    <.actions id="gallery-actions" disabled={disabled?(@gallery)} update_mode={if @total_progress > 0 && @total_progress < 100, do: "ignore", else: "replace"} photo_selected={Enum.any?(@selected_photos)} selection_filter={@selection_filter} class="text-ellipsis" delete_event="delete_selected_photos_popup" delete_title="Delete" delete_value={@gallery.id}>
                       <%= if(is_nil(@album)) do %>
                         <.album_actions albums={@gallery.albums} />
                       <% else %>
