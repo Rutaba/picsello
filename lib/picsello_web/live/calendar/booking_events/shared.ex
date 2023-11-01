@@ -283,7 +283,7 @@ defmodule PicselloWeb.Calendar.BookingEvents.Shared do
 
   def handle_event("open-client", params, socket) do
     params
-    |> Map.get("slot_client_id", nil)
+    |> Map.get("slot-client-id", nil)
     |> case do
       nil ->
         socket
@@ -302,7 +302,7 @@ defmodule PicselloWeb.Calendar.BookingEvents.Shared do
         socket
       ) do
     params
-    |> Map.get("slot_job_id", nil)
+    |> Map.get("slot-job-id", nil)
     |> case do
       nil ->
         socket

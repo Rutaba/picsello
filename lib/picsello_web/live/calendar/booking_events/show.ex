@@ -25,6 +25,8 @@ defmodule PicselloWeb.Live.Calendar.BookingEvents.Show do
   alias PicselloWeb.BookingProposalLive.{QuestionnaireComponent, ContractComponent}
   alias PicselloWeb.Calendar.BookingEvents.Shared, as: BEShared
 
+  @text_color "text-black"
+
   @impl true
   def mount(_params, _session, socket) do
     socket
@@ -438,7 +440,7 @@ defmodule PicselloWeb.Live.Calendar.BookingEvents.Show do
 
   # Funtion Description: [Funtionality should be modified according to backend implementation] By default, status is 'nil' here. 'nil' status means 'Enabled'. If we pass status in assigns, it is recieved as 'disabled'. Similarly, by default, uses are '0'. We are to pass uses in assigns.
   defp add_coupon(assigns) do
-    assigns = assigns |> Enum.into(%{status: nil, uses: 0})
+    assigns = assigns |> Enum.into(%{status: nil, uses: 0, text_color: "text-black", btn_class: "border-2 border-base-250/20 bg-base-200 hover:border-base-250 h-8 w-8"})
 
     ~H"""
       <div class="flex mt-2">
@@ -457,11 +459,11 @@ defmodule PicselloWeb.Live.Calendar.BookingEvents.Show do
         <div class="ml-auto flex items-center">
           <div class="flex gap-1.5">
             <%= if @status do %>
-              <.icon_button icon="eye" color="blue-planning-300" class="border-2 border-base-250/20 bg-base-200 hover:border-base-250 h-8 w-8"/>
+              <.icon_button icon="eye" color="blue-planning-300" text_color={@text_color} class={@btn_class}/>
             <% else %>
-              <.icon_button icon="closed-eye" color="red-sales-300" class="border-2 border-base-250/20 bg-base-200 hover:border-base-250 h-8 w-8"/>
+              <.icon_button icon="closed-eye" color="red-sales-300" text_color={@text_color} class={@btn_class}/>
             <% end %>
-            <.icon_button icon="trash" color="red-sales-300" class="border-2 border-base-250/20 bg-base-200 hover:border-base-250 h-8 w-8"/>
+            <.icon_button icon="trash" color="red-sales-300" text_color={@text_color} class={@btn_class}/>
           </div>
         </div>
       </div>
@@ -500,7 +502,7 @@ defmodule PicselloWeb.Live.Calendar.BookingEvents.Show do
                 <% end) %>
                 <div class="flex justify-end gap-2">
                   <%= for %{action: action, icon: icon, disabled: disabled?} <- date_actions(@booking_slot_tab_active, @booking_event, booking_event_date) do %>
-                    <.icon_button icon={icon} phx-click={action} phx-value-id={booking_event_date.id} disabled={disabled?} class="px-2 py-2" color={if icon == "trash", do: "red-sales-300", else: "blue-planning-300"}/>
+                    <.icon_button icon={icon} phx-click={action} phx-value-id={booking_event_date.id} disabled={disabled?} class="px-2 py-2" text_color={"text-black"} color={if icon == "trash", do: "red-sales-300", else: "blue-planning-300"}/>
                   <% end %>
                 </div>
               <% end %>
@@ -560,7 +562,7 @@ defmodule PicselloWeb.Live.Calendar.BookingEvents.Show do
       <%= case @booking_slot_tab_active do %>
         <% "list" -> %>
           <div class="grid grid-cols-3 md:grid-cols-7 items-start md:items-center my-2">
-            <div class="col-span-6 grid grid-cols-2 md:grid-cols-6">
+            <div class="col-span-7 grid grid-cols-2 md:grid-cols-6">
               <div class={classes("col-span-2", %{"text-base-250" => @slot.status == :hidden})}>
                 <%= if @slot.status in [:booked, :reserved] do %>
                   <div class="flex gap-2 items-center">
@@ -573,16 +575,15 @@ defmodule PicselloWeb.Live.Calendar.BookingEvents.Show do
                     <div><%= slot_time_formatter(@slot) %></div>
                   </div>
                 <% end %>
-                <div class=""><%= if @slot.status == :hidden, do: "Booked (Hidden)", else: String.capitalize(to_string(@slot.status)) %></div>
               </div>
               <div class={classes("col-span-2", %{"text-base-250" => @slot.status != :open})}>
-                <div class="flex gap-2 items-center">
+                <div class="flex gap-2 items-center lg:justify-start md:justify-center">
                   <.icon name={@slot.status != :open && "booked-slot" || "open-slot"} class="block md:hidden w-3 h-3 fill-blue-planning-300 mt-1.5" />
                   <div><%= String.capitalize(to_string(@slot.status)) %></div>
                 </div>
               </div>
               <div class="col-span-2">
-                <%= if @client && @slot.status == :book do %>
+                <%= if @client && @slot.status in [:booked, :reserved] do %>
                   <div class="flex gap-2 items-center">
                     <.icon name="client-icon" class="block md:hidden w-3 h-3 text-blue-planning-300 mt-1.5" />
                     <div class="text-blue-planning-300 underline"><%= String.capitalize(@client.name) %></div>
@@ -594,15 +595,11 @@ defmodule PicselloWeb.Live.Calendar.BookingEvents.Show do
                 <% end %>
               </div>
               <div class="justify-start">
-                <.actions id={@booking_event.id} booking_event={@booking_event} button_actions={@button_actions} slot_index={@slot_index} slot_client_id={@slot.client_id} slot_job_id={@slot.job_id}/>
+                <.actions id={@booking_event_date.id} booking_event_date_id={@booking_event_date.id} disabled?={disable_slot_actions?(@booking_event_date, @booking_event.status)} booking_event={@booking_event} button_actions={@button_actions} slot_index={@slot_index} slot_client_id={@slot.client_id} slot_job_id={@slot.job_id}/>
               </div>
               <hr class="my-2 md:my-3 col-span-7">
             </div>
           </div>
-          <div class="justify-start">
-            <.actions id={@booking_event_date.id} disabled?={disable_slot_actions?(@booking_event_date, @booking_event.status)} booking_event={@booking_event} button_actions={@button_actions} slot_index={@slot_index} slot_client_id={@slot.client_id} slot_job_id={@slot.job_id}/>
-          </div>
-          <hr class="my-2 md:my-3 col-span-7">
       <% "calendar" -> %>
         <div class="border-2 border-base-200 rounded-lg flex p-3 my-1.5">
           <div class="flex flex-col">
@@ -622,7 +619,7 @@ defmodule PicselloWeb.Live.Calendar.BookingEvents.Show do
             </p>
           </div>
           <div class="flex ml-auto">
-            <.actions id={@booking_event_date.id} disabled?={disable_slot_actions?(@booking_event_date, @booking_event.status)} button_actions={@button_actions} slot_index={@slot_index} slot_client_id={@slot.client_id} slot_job_id={@slot.job_id}/>
+            <.actions id={@slot_index} booking_event_date_id={@booking_event_date.id} disabled?={disable_slot_actions?(@booking_event_date, @booking_event.status)} button_actions={@button_actions} slot_index={@slot_index} slot_client_id={@slot.client_id} slot_job_id={@slot.job_id}/>
           </div>
         </div>
       <% end %>
@@ -638,7 +635,8 @@ defmodule PicselloWeb.Live.Calendar.BookingEvents.Show do
         slot_index: -1,
         slot_client_id: -1,
         slot_job_id: -1,
-        disabled?: false
+        disabled?: false,
+        booking_event_date_id: nil
       })
 
     assigns =
@@ -657,11 +655,11 @@ defmodule PicselloWeb.Live.Calendar.BookingEvents.Show do
         <div class="z-10 flex flex-col hidden w-auto bg-white border rounded-lg shadow-lg popover-content">
           <%= for %{title: title, action: action, icon: icon} <- @button_actions do %>
             <%= if icon == "anchor" && BookingProposal.url(@proposal.id) do %>
-              <.icon_button icon={icon} class="flex text-base-300 items-center mt-0 px-3 py-2 hover:font-bold rounded-lg" color="blue-planning-300" id="copy-calendar-link" phx-click={action} data-clipboard-text={BookingProposal.url(@proposal.id)} phx-hook="Clipboard">
+              <.icon_button icon={icon} class="flex text-base-300 items-center mt-0 px-3 py-2 hover:font-bold rounded-lg" text_color={"text-black"} color="blue-planning-300" id="copy-calendar-link" phx-click={action} data-clipboard-text={BookingProposal.url(@proposal.id)} phx-hook="Clipboard">
                 <span><%= title %></span>
               </.icon_button>
             <% else %>
-              <.icon_button icon={icon} phx-click={action} phx-value-booking_event_date_id={@id} phx-value-slot_client_id={@slot_client_id} phx-value-slot_job_id={@slot_job_id} phx-value-slot_index={@slot_index} class="flex text-base-300 items-center px-3 py-2 rounded-lg hover:font-bold" color={if title in ["Archive", "Disable"], do: "red-sales-300", else: "blue-planning-300"}>
+              <.icon_button icon={icon} phx-click={action} phx-value-booking_event_date_id={@booking_event_date_id} phx-value-slot_client_id={@slot_client_id} phx-value-slot_job_id={@slot_job_id} phx-value-slot_index={@slot_index} class="flex text-base-300 items-center px-3 py-2 rounded-lg hover:font-bold" text_color={"text-black"} color={if title in ["Archive", "Disable"], do: "red-sales-300", else: "blue-planning-300"}>
                 <span><%= title %></span>
               </.icon_button>
             <% end %>
