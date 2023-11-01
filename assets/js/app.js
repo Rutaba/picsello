@@ -265,6 +265,7 @@ const Hooks = {
   showWelcomeModal,
   showAdminBanner,
   FolderUpload,
+  BookingEventCalendar,
   SearchResultSelect,
   LivePhone
 };
