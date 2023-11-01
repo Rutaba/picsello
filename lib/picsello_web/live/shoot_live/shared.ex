@@ -13,20 +13,25 @@ defmodule PicselloWeb.ShootLive.Shared do
   end
 
   def location(assigns) do
+    assigns = assign_new(assigns, :allow_location_toggle, fn -> true end)
     assigns = assign_new(assigns, :allow_address_toggle, fn -> true end)
     assigns = assign_new(assigns, :is_edit, fn -> true end)
 
     ~H"""
     <div class={classes("flex flex-col", %{"sm:col-span-3" => !@address_field, "sm:col-span-2" => @address_field} |> Map.merge(select_invalid_classes(@f, :location)))}>
       <div class="flex items-center justify-between">
-        <%= label_for @f, :location, label: "Shoot Location" %>
+        <%= if @allow_location_toggle do %>
+          <%= label_for @f, :location, label: "Shoot Location" %>
+        <% end %>
 
         <%= if @allow_address_toggle && !@address_field do %>
           <a class="text-xs link" phx-target={@myself} phx-click="address" phx-value-action="add-field">Add an address</a>
         <% end %>
       </div>
 
-      <%= select_field @f, :location, for(location <- Shoot.locations(), do: {location |> Atom.to_string() |> dyn_gettext(), location }), prompt: "Select below",  disabled: !@is_edit  %>
+      <%= if @allow_location_toggle do %>
+        <%= select_field @f, :location, for(location <- Shoot.locations(), do: {location |> Atom.to_string() |> dyn_gettext(), location }), prompt: "Select below",  disabled: !@is_edit  %>
+      <% end %>
     </div>
 
     <%= if @address_field do %>

@@ -2,7 +2,7 @@ defmodule PicselloWeb.Live.Calendar.BookingEventModal do
   @moduledoc false
   use PicselloWeb, :live_component
 
-  import PicselloWeb.ShootLive.Shared, only: [duration_options: 0]
+  import PicselloWeb.ShootLive.Shared, only: [duration_options: 0, location: 1]
   import PicselloWeb.LiveModal, only: [close_x: 1, footer: 1]
   import PicselloWeb.PackageLive.Shared, only: [current: 1]
   import Ecto.Changeset
@@ -88,6 +88,7 @@ defmodule PicselloWeb.Live.Calendar.BookingEventModal do
               <%= labeled_select f, :session_gap, buffer_options(), label: "Session Gap", prompt: "Select below", optional: true, disabled: @has_booking? %>
             </div>
           </div>
+          <.location f={f} myself={@myself} allow_location_toggle={false} allow_address_toggle={false} address_field={true} is_edit={true}/>
         </div>
         <div class="flex justify-center mr-16">
           <%= error_tag(f, :time_blocks, prefix: "Times", class: "text-red-sales-300 text-sm mb-2") %>

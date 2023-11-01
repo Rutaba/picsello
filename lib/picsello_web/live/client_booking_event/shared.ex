@@ -25,10 +25,11 @@ defmodule PicselloWeb.ClientBookingEventLive.Shared do
   end
 
   def address_display(assigns) do
+    assigns = Enum.into(assigns, %{class: ""})
     ~H"""
       <div class={"flex items-center #{@class}"}>
         <.icon name="pin" class="w-5 h-5 text-black" />
-        <span class="ml-2 pt-1"><%= @booking_event.address %></span>
+          <span class="ml-2 pt-1"><%= if @booking_event.address, do: @booking_event.address, else: "Event location not set" %></span>
       </div>
     """
   end

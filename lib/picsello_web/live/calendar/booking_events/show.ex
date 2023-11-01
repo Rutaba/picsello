@@ -7,7 +7,11 @@ defmodule PicselloWeb.Live.Calendar.BookingEvents.Show do
   import PicselloWeb.GalleryLive.Shared, only: [add_message_and_notify: 3]
 
   import PicselloWeb.ClientBookingEventLive.Shared,
-    only: [blurred_thumbnail: 1, formatted_date: 1]
+    only: [
+      blurred_thumbnail: 1,
+      date_display: 1,
+      address_display: 1
+    ]
 
   import PicselloWeb.BookingProposalLive.Shared, only: [package_description_length_long?: 1]
 
@@ -484,6 +488,7 @@ defmodule PicselloWeb.Live.Calendar.BookingEvents.Show do
                   <.icon name={if Enum.member?(@collapsed_sections, booking_event_date.id), do: "up", else: "down"} class="mt-1.5 md:mt-1 w-4 h-4 ml-2 stroke-current stroke-3 text-blue-planning-300"/>
                 </button>
               </div>
+              <p class="text-base-250 text-md"> <%= if !is_nil(booking_event_date.address), do: booking_event_date.address %> </p>
               <div class="flex">
                 <p class="text-blue-planning-300 mr-4"><b><%= BEShared.count_booked_slots(booking_event_date.slots) %></b> bookings</p>
                 <p class="text-blue-planning-300 mr-4"><b><%= BEShared.count_available_slots(booking_event_date.slots) %></b> available</p>
@@ -733,37 +738,19 @@ defmodule PicselloWeb.Live.Calendar.BookingEvents.Show do
           <% end %>
         </div>
         <%= if @package do %>
-          <div class="flex flex-col">
-            <div class="flex items-center">
+          <%= if Enum.any?(@booking_event.dates) do %>
+            <div class="flex flex-col">
               <div class="flex items-center">
-                <.icon name="marketing" class="inline-block w-4 h-4 mr-3 text-black" />
+                <div class="text-base-250 text-md">
+                  <%= Enum.map(@booking_event.dates, fn booking_event_date -> %>
+                    <.date_display date={date_formatter(booking_event_date.date)} />
+                    <.address_display booking_event={booking_event_date} class="mb-4" />
+                  <% end) %>
+                </div>
               </div>
-              <div class="text-base-250 text-md">
-              <%=
-                if Enum.any?(@booking_event.dates),
-                do:
-                  formatted_date(@booking_event),
-                else:
-                  "Set event dates"
-              %>
-              </div>
+              <hr class="my-3">
             </div>
-            <div class="flex items-center">
-              <div class="flex items-center">
-                <.icon name="location" class="inline-block w-4 h-4 mr-3 text-black" />
-              </div>
-              <div class="text-base-250 text-md">
-                <%=
-                  if @booking_event.location,
-                  do:
-                    @booking_event.location,
-                  else:
-                    "Set event location"
-                %>
-              </div>
-            </div>
-            <hr class="my-3">
-          </div>
+          <% end %>
           <div class="flex flex-col mb-3 items-start">
             <%= if package_description_length_long?(@description) do %>
               <p>

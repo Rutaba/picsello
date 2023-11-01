@@ -16,7 +16,6 @@ defmodule PicselloWeb.ClientBookingEventLive.Show do
       subtitle_display: 1,
       date_display: 1,
       address_display: 1,
-      formatted_date: 1,
       maybe_event_disable_or_archive: 1
     ]
 
@@ -48,8 +47,10 @@ defmodule PicselloWeb.ClientBookingEventLive.Show do
               <p class="text-base-250 mt-2 text-lg"><%= Picsello.Package.price(@booking_event.package_template) %></p>
               <.subtitle_display booking_event={@booking_event} package={@booking_event.package_template} class="text-base-250 mt-2" />
               <div class="mt-4 flex flex-col border-gray-100 border-y py-4 text-base-250">
-                <.date_display date={formatted_date(@booking_event)} />
-                <.address_display booking_event={@booking_event} class="mt-4"/>
+                <%= Enum.map(@booking_event.dates, fn booking_event_date -> %>
+                  <.date_display date={date_formatter(booking_event_date.date)} />
+                  <.address_display booking_event={booking_event_date} class="mb-4" />
+                <% end) %>
               </div>
               <div class="mt-4 raw_html"><%= raw @booking_event.description %></div>
               <.live_link to={Routes.client_booking_event_path(@socket, :booked, @organization.slug, @booking_event.id)} class="btn-primary text-center mt-12">Book now</.live_link>
