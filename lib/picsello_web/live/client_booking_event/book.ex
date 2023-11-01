@@ -58,7 +58,10 @@ defmodule PicselloWeb.ClientBookingEventLive.Book do
           <div class="grid gap-5 sm:grid-cols-2 mt-4">
             <%= labeled_input f, :name, label: "Your name", placeholder: "Type your first and last name…", phx_debounce: "500" %>
             <%= labeled_input f, :email, type: :email_input, label: "Your email", placeholder: "Type email…", phx_debounce: "500" %>
-            <%= labeled_input f, :phone, type: :telephone_input, label: "Your phone number", placeholder: "Type your phone number…", phx_hook: "Phone", phx_debounce: "500" %>
+            <div class="flex flex-col" >
+              <%= label_for f, :phone, label: "Your phone number" %>
+              <.live_component module={LivePhone} id="phone" form={f} field={:phone} tabindex={0} preferred={["US", "CA"]} />
+            </div>
           </div>
 
           <hr class="border-gray-100 my-8 sm:my-12">

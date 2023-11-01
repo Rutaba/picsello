@@ -80,6 +80,7 @@ import Cookies from 'js-cookie';
 import FolderUpload from './hooks/folder-upload';
 import SearchResultSelect from './hooks/search-result-select';
 import Tooltip from './hooks/tooltip';
+import LivePhone from "live_phone"
 
 const Modal = {
   mounted() {
@@ -264,8 +265,8 @@ const Hooks = {
   showWelcomeModal,
   showAdminBanner,
   FolderUpload,
-  BookingEventCalendar,
-  SearchResultSelect
+  SearchResultSelect,
+  LivePhone
 };
 
 window.addEventListener(`phx:download`, (event) => {

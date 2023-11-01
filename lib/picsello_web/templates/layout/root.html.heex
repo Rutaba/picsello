@@ -24,6 +24,7 @@
       <% title -> %> <%= live_title_tag title, suffix: " · Picsello" %>
     <% end %>
     <link phx-track-static rel="stylesheet" href={Routes.static_path(@conn,"/css/app.css")}/>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/intl-tel-input@18.1.1/build/css/intlTelInput.css">
     <link rel="icon" type="image/png" href={Routes.static_path(@conn,"/favicon-196x196.png")} sizes="196x196" />
     <link rel="icon" type="image/png" href={Routes.static_path(@conn,"/favicon-128.png")} sizes="128x128" />
     <link rel="icon" type="image/png" href={Routes.static_path(@conn,"/favicon-96x96.png")} sizes="96x96" />

@@ -329,7 +329,8 @@ defmodule PicselloWeb.BookingProposalLive.Shared do
 
         <% :phone -> %>
           <dd class="mt-2">
-            <input type="tel" phx-debounce="1000" class="w-full text-input" id={"question_#{@question_index}"} name={"answers[#{@question_index}][]"} value={@answer} />
+            <%= hidden_input :question_index, :value, value:  @question_index%>
+            <.live_component module={LivePhone} id={"question_#{@question_index}"}  form={:Phone} field={:value} tabindex={0} preferred={["US", "CA"]} value={List.first(@answer)} disable?={@disable?} />
           </dd>
 
         <% :email -> %>
