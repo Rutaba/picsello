@@ -510,7 +510,7 @@ defmodule PicselloWeb.Live.Calendar.BookingEvents.Show do
           <% end %>
         <% else %>
           <div class="p-3 border-2 border-base-200 rounded-lg">
-            <div class="font-bold text-base-250 text-xl flex items-center justify-center p-3 opacity-50"> <div> Add booking event dates </div> </div>
+            <div class="font-bold text-base-250 text-xl flex items-center justify-center p-3 opacity-50"> <div> Pick a package and add a date </div> </div>
           </div>
         <% end %>
 
@@ -547,7 +547,7 @@ defmodule PicselloWeb.Live.Calendar.BookingEvents.Show do
               </div>
             <% else %>
               <div class="p-3 border-2 border-base-200 rounded-lg">
-                <div class="font-bold text-base-250 text-xl flex items-center justify-center p-3 opacity-50"> <div> Add booking event dates </div> </div>
+                <div class="font-bold text-base-250 text-xl flex items-center justify-center p-3 opacity-50"> <div> Pick a package and add a date </div> </div>
               </div>
             <% end %>
           </div>
@@ -711,9 +711,9 @@ defmodule PicselloWeb.Live.Calendar.BookingEvents.Show do
         <% else %>
           <div class="aspect-video h-full p-6 mb-2 items-center flex flex-col bg-white">
             <div class="flex justify-center h-auto mt-6 items-center">
-              <.icon name="photos-2" class="inline-block w-12 h-12 text-gray-400"/>
+              <.icon name="photos-2" class="inline-block w-12 h-12 text-base-250"/>
             </div>
-            <div class="mt-1 p-4 text-xl text-gray-400 text-center h-full">
+            <div class="mt-1 p-4 text-base-250 text-center h-full">
               <span>Edit marketing details to add a photo. Don’t forget to add a package too</span>
             </div>
           </div>
@@ -785,7 +785,7 @@ defmodule PicselloWeb.Live.Calendar.BookingEvents.Show do
             <% end %>
           </div>
         <% else %>
-          <div class="text-base-250 mt-4 mb-4 text-xl">
+          <div class="text-base-250 mt-2 mb-4">
             <p>Pick a package and update your marketing details to get started</p>
           </div>
         <% end %>

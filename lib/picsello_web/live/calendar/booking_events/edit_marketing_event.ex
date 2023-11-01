@@ -52,6 +52,7 @@ defmodule PicselloWeb.Live.Calendar.EditMarketingEvent do
                 html_field={:description}
                 current_user={@current_user}
                 class="aspect-[3/2] mt-2"
+                editor_class="h-[20rem]"
                 placeholder="Use this area to describe your mini-session event or limited-edition session. Describe what is included in the package (eg, the location, length of time, digital images etc)."
               />
             </div>

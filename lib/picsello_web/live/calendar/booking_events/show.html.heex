@@ -41,7 +41,7 @@
             <div class="lg:col-span-7 rounded-lg">
                 <div class="flex flex-col bg-white p-7 rounded-lg">
                     <div class="flex flex-col">
-                        <div class="mb-1 p-0.5 bg-blue-planning-100 text-blue-planning-300 text-center w-32 h-6 rounded-lg font-bold text-sm"><%= if @booking_event.is_repeating, do: "Repeating Event", else: "Single Event" %></div>
+                        <div class="mb-1 px-1 py-0.5 bg-blue-planning-100 text-blue-planning-300 text-center flex w-max h-6 rounded-lg font-bold text-sm"><%= if @booking_event.is_repeating, do: "Repeating Event", else: "Single Event" %></div>
                         <div class="flex">
                             <div class="flex flex-col">
                                 <h2 class="mb-1 text-2xl font-bold">Let's get you booked!</h2>
@@ -63,7 +63,7 @@
                     <.booking_slot_tabs_nav booking_event={@booking_event} booking_slot_tab_active={@booking_slot_tab_active} booking_slot_tabs={@booking_slot_tabs} socket={@socket} />
                     <.booking_slot_tabs_content booking_event_dates={@booking_event.dates} {assigns} />
 
-                    <div class={classes("mt-10 p-3 border-2 flex items-center rounded-lg border-red-sales-300", %{"border-base-200" => @package})}>
+                    <div class={classes("mt-10 p-3 border-2 flex items-center rounded-lg border-base-200", %{"border-red-sales-300" => !@package})}>
                         <div class="flex flex-col w-full">
                             <div class="mr-2 flex items-center gap-3">
                                 <.icon name="package" class="inline-block w-5 h-5 text-blue-planning-300 mt-1" />
