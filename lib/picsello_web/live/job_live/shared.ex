@@ -726,6 +726,8 @@ defmodule PicselloWeb.JobLive.Shared do
     |> noreply()
   end
 
+  def handle_info({:inbound_messages, %Picsello.Campaign{}}, socket), do: noreply(socket)
+
   def handle_info(
         {:inbound_messages, message},
         %{assigns: %{inbox_count: count, job: job}} = socket

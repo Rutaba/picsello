@@ -184,7 +184,7 @@ defmodule PicselloWeb.SendgridInboundParseController do
       updated_at: now
     }
     |> then(fn
-      object when type == :message -> Map.put(object, :message_id, id)
+      object when type == :message -> Map.put(object, :client_message_id, id)
       object when type == :campaign -> Map.put(object, :campaign_id, id)
     end)
   end

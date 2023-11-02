@@ -106,8 +106,8 @@ defmodule PicselloWeb.InboxLive.Index do
            <%=  subtitle_slice(@subtitle, 30) %>
         </div>
 
-        <%= if (@message) do %>
-          <div class="line-clamp-1 w-48"><%= raw @message %></div>
+        <%= if (@subject) do %>
+          <div class="w-48"><%= raw title_slice(@subject, 18) %></div>
         <% end %>
         <span class="px-2 py-0.5 text-xs font-semibold rounded bg-blue-planning-100 text-blue-planning-300">
           <%= case @type do %>
@@ -214,12 +214,9 @@ defmodule PicselloWeb.InboxLive.Index do
                     <div class="flex flex-col">
                       <%= if @current_thread_type in [:campaign, :campaign_reply] and is_list(message.receiver) and length(message.receiver) > 1 do %>
                         <p> Sent to <%= Enum.count(message.receiver) %> clients </p>
+                        <div phx-click="show-cc" phx-value-id={message.id} class="text-blue-planning-300 cursor-pointer">See all</div>
                       <% else %>
                         <p> To: <%= if is_list(message.receiver), do: hd(message.receiver), else: message.receiver %> </p>
-                      <% end %>
-
-                      <%= if @current_thread_type in [:campaign, :campaign_reply] && is_list(message.receiver) && length(message.receiver) > 1 do %>
-                        <div phx-click="show-cc" phx-value-id={message.id} class="text-blue-planning-300 cursor-pointer">See all</div>
                       <% end %>
 
                       <%= if(message.show_cc?) do %>
@@ -476,6 +473,7 @@ defmodule PicselloWeb.InboxLive.Index do
       title: thread_title(message),
       subtitle: if(message.job, do: Job.name(message.job), else: "CLIENTS SUBTITLE"),
       message: if(message.body_text, do: message.body_text, else: message.body_html),
+      subject: message.subject || "",
       type: thread_type(message),
       outbound: message.outbound,
       date: strftime(current_user.time_zone, message.inserted_at, "%a %b %d, %-I:%M %p")
@@ -491,6 +489,7 @@ defmodule PicselloWeb.InboxLive.Index do
       title: thread_title(campaign),
       subtitle: if(campaign.parent_id, do: "Campaign reply", else: "Campaign"),
       message: if(campaign.body_text, do: campaign.body_text, else: campaign.body_html),
+      subject: campaign.subject || "",
       type: type,
       outbound: type == :campaign,
       date: strftime(current_user.time_zone, campaign.inserted_at, "%a %b %d, %-I:%M %p")
