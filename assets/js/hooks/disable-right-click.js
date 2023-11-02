@@ -1,6 +1,5 @@
 export default {
   click(e) {
-    console.log(e.target);
     if (
       (e.type && e.type == 'contextmenu') ||
       (e.button && e.button == 2) ||
