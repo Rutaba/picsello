@@ -34,11 +34,6 @@ defmodule PicselloWeb.ShootLive.Shared do
           </div>
           <%= select_field @f, :location, for(location <- Shoot.locations(), do: {location |> Atom.to_string() |> dyn_gettext(), location }), prompt: "Select below",  disabled: !@is_edit  %>
         </div>
-
-        <%!-- TODO: commented on purpose. Remove once design changes are finalized --%>
-        <%!-- <%= if @allow_location_toggle do %>
-          <%= select_field @f, :location, for(location <- Shoot.locations(), do: {location |> Atom.to_string() |> dyn_gettext(), location }), prompt: "Select below",  disabled: !@is_edit  %>
-        <% end %> --%>
       </div>
     <% end %>
 
