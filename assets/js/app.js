@@ -79,7 +79,8 @@ import Cookies from 'js-cookie';
 import FolderUpload from './hooks/folder-upload';
 import SearchResultSelect from './hooks/search-result-select';
 import Tooltip from './hooks/tooltip';
-import LivePhone from "live_phone"
+import DisableRightClick from './hooks/disable-right-click';
+import LivePhone from 'live_phone';
 
 const Modal = {
   mounted() {
@@ -216,7 +217,6 @@ const showAdminBanner = {
   },
 };
 
-
 const Hooks = {
   AutoHeight,
   Calendar,
@@ -265,12 +265,13 @@ const Hooks = {
   showAdminBanner,
   FolderUpload,
   SearchResultSelect,
-  LivePhone
+  LivePhone,
+  DisableRightClick,
 };
 
 window.addEventListener(`phx:download`, (event) => {
-  let frame = document.createElement("iframe");
-  frame.setAttribute("src", event.detail.uri);
+  let frame = document.createElement('iframe');
+  frame.setAttribute('src', event.detail.uri);
   frame.style.visibility = 'hidden';
   frame.style.display = 'none';
   document.body.appendChild(frame);
