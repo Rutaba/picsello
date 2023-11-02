@@ -83,8 +83,6 @@ import LivePhone from 'live_phone';
 
 const Modal = {
   mounted() {
-    // console.log(targetElement);
-
     this.el.addEventListener('mousedown', (e) => {
       const targetIsOverlay = (e) => e.target.id === 'modal-wrapper';
 
@@ -354,11 +352,11 @@ window.addEventListener('phx:page-loading-stop', (info) => {
   Analytics.init(info);
 });
 
-window.addEventListener('phx:scroll:lock', (e) => {
+window.addEventListener('phx:scroll:lock', () => {
   document.body.classList.add('overflow-hidden');
 });
 
-window.addEventListener('phx:scroll:unlock', (e) => {
+window.addEventListener('phx:scroll:unlock', () => {
   document.body.classList.remove('overflow-hidden');
 });
 
