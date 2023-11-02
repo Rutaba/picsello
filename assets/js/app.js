@@ -84,7 +84,7 @@ import LivePhone from 'live_phone';
 
 const Modal = {
   mounted() {
-    const targetElement = this.el;
+    // console.log(targetElement);
 
     this.el.addEventListener('mousedown', (e) => {
       const targetIsOverlay = (e) => e.target.id === 'modal-wrapper';
@@ -109,12 +109,12 @@ const Modal = {
     document.addEventListener('keydown', this.keydownListener);
 
     this.handleEvent('modal:open', () => {
-      disableBodyScroll(targetElement);
+      disableBodyScroll(this.el.querySelector('.modal-container > div'));
     });
 
     this.handleEvent('modal:close', () => {
       this.el.classList.add('opacity-0');
-      enableBodyScroll(targetElement);
+      enableBodyScroll(this.el.querySelector('.modal-container > div'));
     });
   },
 
@@ -356,11 +356,11 @@ window.addEventListener('phx:page-loading-stop', (info) => {
 });
 
 window.addEventListener('phx:scroll:lock', (e) => {
-  disableBodyScroll(e.target);
+  disableBodyScroll(e.target.querySelector('.modal-container > div'));
 });
 
 window.addEventListener('phx:scroll:unlock', (e) => {
-  enableBodyScroll(e.target);
+  enableBodyScroll(e.target.querySelector('.modal-container > div'));
 });
 
 // connect if there are any LiveViews on the page
