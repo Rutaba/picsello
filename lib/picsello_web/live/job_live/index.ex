@@ -34,8 +34,8 @@ defmodule PicselloWeb.JobLive.Index do
         %{"job_id" => job_id},
         %{assigns: %{collapsed_shoots: collapsed_shoots}} = socket
       ) do
-
     job_id = String.to_integer(job_id)
+
     collapsed_shoots =
       if Enum.member?(collapsed_shoots, job_id) do
         Enum.filter(collapsed_shoots, &(&1 != job_id))
@@ -559,5 +559,14 @@ defmodule PicselloWeb.JobLive.Index do
   defp capitalize_per_word(string) do
     String.split(string)
     |> Enum.map_join(" ", &String.capitalize/1)
+  end
+
+  defp get_shoots(sort_direction, shoots, collapse?) do
+    shoots
+    |> Enum.sort_by(&DateTime.to_date(&1.starts_at), {sort_direction, Date})
+    |> then(fn
+      shoots when collapse? == false -> Enum.take(shoots, 3)
+      shoots -> shoots
+    end)
   end
 end
