@@ -17,6 +17,7 @@ defmodule PicselloWeb.JobLive.Shared do
   import PicselloWeb.GalleryLive.Shared, only: [truncate_name: 2]
   import PicselloWeb.EmailAutomationLive.Shared, only: [sort_emails: 2]
 
+  alias PicselloWeb.Calendar.BookingEvents.Shared, as: BEShared
   alias Picsello.{
     Galleries,
     Job,
@@ -788,6 +789,8 @@ defmodule PicselloWeb.JobLive.Shared do
     socket
     |> noreply()
   end
+
+  defdelegate handle_info(message, socket), to: BEShared
 
   def assign_changeset(%{assigns: %{job: job}} = socket, params \\ %{}) do
     socket

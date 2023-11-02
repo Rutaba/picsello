@@ -367,6 +367,27 @@ defmodule PicselloWeb.Calendar.BookingEvents.Shared do
         |> open_compose()
 
   def handle_info(
+        {:confirm_event, event},
+        %{assigns: %{current_user: %{organization_id: organization_id}}} = socket
+      )
+      when event in ["create-repeating-event", "create-single-event"] do
+    case BookingEvents.create_booking_event(%{
+           organization_id: organization_id,
+           is_repeating: event == "create-repeating-event",
+           name: "New event"
+         }) do
+      {:ok, booking_event} ->
+        socket
+        |> redirect(to: "/booking-events/#{booking_event.id}")
+
+      {:error, _} ->
+        socket
+        |> put_flash(:error, "Unable to create booking event")
+    end
+    |> noreply()
+  end
+
+  def handle_info(
         {:update_templates, %{templates: templates}},
         %{assigns: %{modal_pid: modal_pid}} = socket
       ) do

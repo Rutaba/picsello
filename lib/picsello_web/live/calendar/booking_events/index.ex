@@ -264,28 +264,6 @@ defmodule PicselloWeb.Live.Calendar.BookingEvents.Index do
   defdelegate handle_event(name, params, socket), to: BEShared
 
   @impl true
-  def handle_info(
-        {:confirm_event, event},
-        %{assigns: %{current_user: %{organization_id: organization_id}}} = socket
-      )
-      when event in ["create-repeating-event", "create-single-event"] do
-    case BE.create_booking_event(%{
-           organization_id: organization_id,
-           is_repeating: event == "create-repeating-event",
-           name: "New event"
-         }) do
-      {:ok, booking_event} ->
-        socket
-        |> redirect(to: "/booking-events/#{booking_event.id}")
-
-      {:error, _} ->
-        socket
-        |> put_flash(:error, "Unable to create booking event")
-    end
-    |> noreply()
-  end
-
-  @impl true
   def handle_info({:update, %{booking_event: _booking_event}}, socket) do
     socket
     |> assign_booking_events()
