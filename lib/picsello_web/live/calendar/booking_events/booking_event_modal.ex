@@ -65,22 +65,25 @@ defmodule PicselloWeb.Live.Calendar.BookingEventModal do
         </div>
       </div>
       <.form :let={f} for={@changeset} phx-change="validate" phx-submit="submit" phx-target={@myself} >
-        <div class="block md:grid md:grid-cols-5 lg:grid-cols-11 gap-5 mt-8">
-          <div class="col-span-3">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-5 mt-8">
+          <div class="">
             <%= labeled_input f, :date, type: :date_input, min: Date.utc_today(), class: "w-full", disabled: @has_booking? %>
           </div>
           <%= inputs_for f, :time_blocks, fn t -> %>
-            <div class="col-span-4 flex items-center sm:mt-4 lg:mt-0 lg:pl-4">
+            <div class="flex gap-2 items-center">
               <div class="grow">
-                <%= labeled_input t, :start_time, type: :time_input, label: "Event Start", class: "w-11/12", disabled: @has_booking? %>
+                <%= labeled_input t, :start_time, type: :time_input, label: "Event Start", class: "", disabled: @has_booking? %>
               </div>
-              <div class="pt-5 mr-4"> - </div>
+              <div class="pt-5"> - </div>
               <div class="grow">
-                <%= labeled_input t, :end_time, type: :time_input, label: "Event End", class: "w-11/12" , disabled: @has_booking?%>
+                <%= labeled_input t, :end_time, type: :time_input, label: "Event End", class: "" , disabled: @has_booking?%>
               </div>
             </div>
           <% end %>
-          <div class="col-span-4 flex gap-5">
+          <div>
+            <.location f={f} myself={@myself} allow_location_toggle={false} allow_address_toggle={false} address_field={true} is_edit={true} address_field_title="Event Address" />
+          </div>
+          <div class="flex gap-5">
             <div class="grow">
               <%= labeled_select f, :session_length, duration_options(), label: "Session length", prompt: "Select below", disabled: @has_booking? %>
             </div>
@@ -88,7 +91,6 @@ defmodule PicselloWeb.Live.Calendar.BookingEventModal do
               <%= labeled_select f, :session_gap, buffer_options(), label: "Session Gap", prompt: "Select below", optional: true, disabled: @has_booking? %>
             </div>
           </div>
-          <.location f={f} myself={@myself} allow_location_toggle={true} allow_address_toggle={false} address_field={true} is_edit={true} address_field_title="Event Address" />
         </div>
         <div class="flex justify-center mr-16">
           <%= error_tag(f, :time_blocks, prefix: "Times", class: "text-red-sales-300 text-sm mb-2") %>
