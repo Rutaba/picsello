@@ -1,6 +1,5 @@
 import * as Sentry from '@sentry/browser';
 import { BrowserTracing } from '@sentry/tracing';
-import { disableBodyScroll, enableBodyScroll } from 'body-scroll-lock';
 
 const env =
   (window.location.host.includes('render') &&
@@ -109,18 +108,18 @@ const Modal = {
     document.addEventListener('keydown', this.keydownListener);
 
     this.handleEvent('modal:open', () => {
-      disableBodyScroll(this.el.querySelector('.modal-container > div'));
+      document.body.classList.add('overflow-hidden');
     });
 
     this.handleEvent('modal:close', () => {
       this.el.classList.add('opacity-0');
-      enableBodyScroll(this.el.querySelector('.modal-container > div'));
+      document.body.classList.remove('overflow-hidden');
     });
   },
 
   destroyed() {
     document.removeEventListener('keydown', this.keydownListener);
-    document.body.classList.remove('modal-open');
+    document.body.classList.remove('overflow-hidden');
   },
 };
 
@@ -356,11 +355,11 @@ window.addEventListener('phx:page-loading-stop', (info) => {
 });
 
 window.addEventListener('phx:scroll:lock', (e) => {
-  disableBodyScroll(e.target.querySelector('.modal-container > div'));
+  document.body.classList.add('overflow-hidden');
 });
 
 window.addEventListener('phx:scroll:unlock', (e) => {
-  enableBodyScroll(e.target.querySelector('.modal-container > div'));
+  document.body.classList.remove('overflow-hidden');
 });
 
 // connect if there are any LiveViews on the page
