@@ -1,5 +1,6 @@
 import * as Sentry from '@sentry/browser';
 import { BrowserTracing } from '@sentry/tracing';
+import { disableBodyScroll, enableBodyScroll } from 'body-scroll-lock';
 
 const env =
   (window.location.host.includes('render') &&
@@ -83,6 +84,8 @@ import LivePhone from 'live_phone';
 
 const Modal = {
   mounted() {
+    const targetElement = this.el;
+
     this.el.addEventListener('mousedown', (e) => {
       const targetIsOverlay = (e) => e.target.id === 'modal-wrapper';
 
@@ -106,18 +109,18 @@ const Modal = {
     document.addEventListener('keydown', this.keydownListener);
 
     this.handleEvent('modal:open', () => {
-      document.body.classList.add('overflow-hidden', 'z-0', 'relative');
+      disableBodyScroll(targetElement);
     });
 
     this.handleEvent('modal:close', () => {
       this.el.classList.add('opacity-0');
-      document.body.classList.remove('overflow-hidden', 'z-0', 'relative');
+      enableBodyScroll(targetElement);
     });
   },
 
   destroyed() {
     document.removeEventListener('keydown', this.keydownListener);
-    document.body.classList.remove('overflow-hidden', 'z-0', 'relative');
+    document.body.classList.remove('modal-open');
   },
 };
 
@@ -352,12 +355,12 @@ window.addEventListener('phx:page-loading-stop', (info) => {
   Analytics.init(info);
 });
 
-window.addEventListener('phx:scroll:lock', () => {
-  document.body.classList.add('overflow-hidden', 'z-0', 'relative');
+window.addEventListener('phx:scroll:lock', (e) => {
+  disableBodyScroll(e.target);
 });
 
-window.addEventListener('phx:scroll:unlock', () => {
-  document.body.classList.remove('overflow-hidden', 'z-0', 'relative');
+window.addEventListener('phx:scroll:unlock', (e) => {
+  enableBodyScroll(e.target);
 });
 
 // connect if there are any LiveViews on the page
