@@ -41,7 +41,7 @@
             <div class="lg:col-span-7 rounded-lg">
                 <div class="flex flex-col bg-white p-7 rounded-lg">
                     <div class="flex flex-col">
-                        <div class="mb-1 p-0.5 bg-blue-planning-100 text-blue-planning-300 text-center w-32 h-6 rounded-lg font-bold text-sm"><%= if @booking_event.is_repeating, do: "Repeating Event", else: "Single Event" %></div>
+                        <div class="mb-1 px-1 py-0.5 bg-blue-planning-100 text-blue-planning-300 text-center flex w-max h-6 rounded-lg font-bold text-sm"><%= if @booking_event.is_repeating, do: "Repeating Event", else: "Single Event" %></div>
                         <div class="flex">
                             <div class="flex flex-col">
                                 <h2 class="mb-1 text-2xl font-bold">Let's get you booked!</h2>

@@ -44,7 +44,7 @@ defmodule PicselloWeb.Live.Calendar.BookingEvents.Index do
           Booking events
         </div>
         <div class="fixed top-12 left-0 right-0 z-10 flex flex-shrink-0 w-full sm:p-0 p-6 mt-1 sm:mt-0 sm:bottom-auto sm:ml-auto sm:static sm:items-start sm:w-auto">
-          <a title="add booking event" class="w-full md:w-auto btn-primary text-center" phx-click="new-event">
+          <a title="add booking event" class="w-full md:w-auto btn-primary text-center cursor-pointer" phx-click="new-event">
             Add booking event
           </a>
         </div>
@@ -99,7 +99,7 @@ defmodule PicselloWeb.Live.Calendar.BookingEvents.Index do
         <% else %>
           <div class="p-6 center-container">
             <.empty_state_base tour_embed="https://demo.arcade.software/eOBqmup7RcW8EVmGpqrY?embed" headline="Meet Client Booking" eyebrow_text="Booking Events Product Tour" body="Accelerate your business growth with mini-sessions, portraits & more! Create a booking link that you can share and take tedious work out of booking" third_party_padding="calc(66.66666666666666% + 41px)">
-              <a title="add booking event" class="w-full md:w-auto btn-primary text-center" phx-click="new-event">
+              <a title="add booking event" class="w-full cursor-pointer md:w-auto btn-primary text-center" phx-click="new-event">
                 Add booking event
               </a>
             </.empty_state_base>
@@ -365,7 +365,7 @@ defmodule PicselloWeb.Live.Calendar.BookingEvents.Index do
               <li id={option.id} target-class="toggle-it" parent-class="toggle" toggle-type="selected-active" phx-hook="ToggleSiblings"
               class="flex items-center py-1.5 hover:bg-blue-planning-100 hover:rounded-md">
 
-                <button id={option.id} class="album-select w-40" phx-click={"apply-filter-#{@id}"} phx-value-option={option.id}><%= option.title %></button>
+                <button class="album-select w-40" phx-click={"apply-filter-#{@id}"} phx-value-option={option.id}><%= option.title %></button>
                 <%= if option.id == @selected_option do %>
                   <.icon name="tick" class="w-6 h-5 mr-1 toggle-it text-green" />
                 <% end %>

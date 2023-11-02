@@ -451,7 +451,7 @@ defmodule PicselloWeb.PackageLive.WizardComponent do
     </button>
 
     <%= if template_selected?(@form) do %>
-      <button class="btn-tertiary" title="Customize" type="button" phx-click="customize-template" phx-target={@myself}>
+      <button class="btn-primary" title="Customize" type="button" phx-click="customize-template" phx-target={@myself}>
         Customize
       </button>
     <% else %>
@@ -487,11 +487,17 @@ defmodule PicselloWeb.PackageLive.WizardComponent do
         <div class="w-1/3 last:text-center"><%= title %></div>
       <% end %>
     </div>
-    <%= for template <- @templates do %>
-      <% checked = is_checked(input_value(@f, :package_template_id), template) %>
-      <.package_row package={template} checked={checked}>
-        <input class={classes("w-5 h-5 mr-2.5 radio", %{"checked" => checked})} type="radio" name={input_name(@f, :package_template_id)} value={template.id} />
-      </.package_row>
+    <%= if @templates == [] do %>
+        <div class="p-6 text-center text-base-300 w-full">
+        No packages found using that search criteria
+        </div>
+    <% else %>
+      <%= for template <- @templates do %>
+        <% checked = is_checked(input_value(@f, :package_template_id), template) %>
+        <.package_row package={template} checked={checked}>
+          <input class={classes("w-5 h-5 mr-2.5 radio", %{"checked" => checked})} type="radio" name={input_name(@f, :package_template_id)} value={template.id} />
+        </.package_row>
+      <% end %>
     <% end %>
     """
   end
