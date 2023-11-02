@@ -54,6 +54,10 @@ defmodule Picsello.EmailPresets.JobResolver do
     end
   end
 
+  ## Retrieves the name of a booking event associated with a job or the job's name.
+  ## This private function takes a map representing a job and retrieves the name of
+  ## the booking event associated with the job. If a booking event is associated with
+  ## the job, it returns the booking event's name. If not, it returns the name of the job itself.
   defp booking_event_name(job) do
     booking_event = Map.get(job, :booking_event, nil)
     if booking_event, do: booking_event.name, else: Picsello.Job.name(job)

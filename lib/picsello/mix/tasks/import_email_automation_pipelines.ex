@@ -13,12 +13,58 @@ defmodule Mix.Tasks.ImportEmailAutomationPipelines do
   }
 
   @shortdoc "import email automation pipelines"
+  @doc """
+  Runs an initialization process for email automation.
+
+  This function is responsible for initializing the email automation system. It loads the application
+  and inserts email pipelines as part of the initialization process.
+
+  ## Parameters
+
+      - `_`: Ignored parameter that can be of any type.
+
+  ## Returns
+
+      `EmailAutomationPipeline.t()` to indicate that the initialization process has completed successfully.
+
+  ## Example
+
+      ```elixir
+      # Run the initialization process for email automation
+      result = Picsello.EmailAutomations.run(nil)
+      if result == :ok do
+        IO.puts("Email automation initialized successfully.")
+      else
+        IO.puts("Email automation initialization failed.")
+      end
+  """
   def run(_) do
     load_app()
 
     insert_email_pipelines()
   end
 
+  @doc """
+  Inserts or updates email automation pipelines.
+
+  This function inserts or updates email automation pipelines based on predefined categories,
+  sub-categories, and states. It initializes the email automation system with default configurations.
+
+  ## Returns
+
+      `map()` to indicate that the email automation pipelines have been successfully inserted or updated.
+
+  ## Example
+
+      ```elixir
+      # Insert or update email automation pipelines
+      result = Picsello.EmailAutomations.insert_email_pipelines()
+      if result == :ok do
+        IO.puts("Email automation pipelines inserted or updated successfully.")
+      else
+        IO.puts("Failed to insert or update email automation pipelines.")
+      end
+  """
   def insert_email_pipelines() do
     now = NaiveDateTime.utc_now() |> NaiveDateTime.truncate(:second)
     categories = from(sc in EmailAutomationCategory) |> Repo.all()
@@ -370,6 +416,9 @@ defmodule Mix.Tasks.ImportEmailAutomationPipelines do
     end)
   end
 
+  ## Inserts or updates an email automation category based on its type. This function checks if an email automation
+  ## category with the specified type already exists. If it exists, it updates the category's name; otherwise,
+  ## it inserts a new category with the provided details.
   defp maybe_insert_email_automation(categories, name, type, position) do
     category = Enum.filter(categories, &(&1.type == String.to_atom(type))) |> List.first()
 
@@ -388,6 +437,9 @@ defmodule Mix.Tasks.ImportEmailAutomationPipelines do
     end
   end
 
+  ## Inserts or updates an email automation sub-category based on its slug. This function checks if an email
+  ## automation sub-category with the specified slug already exists. If it exists, it updates the sub-category's name;
+  ## otherwise, it inserts a new sub-category with the provided details.
   defp maybe_insert_email_automation_slug(sub_categories, name, slug, position) do
     sub_category = Enum.filter(sub_categories, &(&1.slug == slug)) |> List.first()
 
@@ -406,6 +458,9 @@ defmodule Mix.Tasks.ImportEmailAutomationPipelines do
     end
   end
 
+  ## Loads the Elixir application when not running in a production environment. This function checks the
+  ## current environment (`MIX_ENV`) and runs the Elixir application using Mix if the environment is not
+  ## set to "prod." It is typically used for development or testing purposes.
   defp load_app do
     if System.get_env("MIX_ENV") != "prod" do
       Mix.Task.run("app.start")
