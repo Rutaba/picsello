@@ -10,7 +10,8 @@ defmodule Picsello.Client do
     Job,
     ClientTag,
     Repo,
-    ClientMessageRecipient
+    ClientMessageRecipient,
+    Utils
   }
 
   schema "clients" do
@@ -64,6 +65,7 @@ defmodule Picsello.Client do
     |> validate_lengths()
     |> unsafe_validate_unique([:email, :organization_id], Picsello.Repo)
     |> unique_constraint([:email, :organization_id])
+    |> Utils.validate_phone(:phone)
   end
 
   def create_client_changeset(client \\ %__MODULE__{}, attrs) do
@@ -76,6 +78,7 @@ defmodule Picsello.Client do
     |> validate_archived_email()
     |> unsafe_validate_unique([:email, :organization_id], Picsello.Repo)
     |> unique_constraint([:email, :organization_id])
+    |> Utils.validate_phone(:phone)
   end
 
   def edit_client_changeset(%__MODULE__{} = client, attrs) do

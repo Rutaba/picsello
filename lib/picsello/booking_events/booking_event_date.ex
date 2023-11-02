@@ -99,7 +99,7 @@ defmodule Picsello.BookingEventDate do
     field :location, :string
     field :address, :string
     field :calendar, :string
-    field :count_calendar, :integer
+    field :count_calendar, :integer, default: 1
     field :stop_repeating, :date
     field :occurences, :integer, default: 0
     embeds_many :repeat_on, RepeatDayBlock, on_replace: :delete

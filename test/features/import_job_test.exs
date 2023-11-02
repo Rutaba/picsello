@@ -20,13 +20,13 @@ defmodule Picsello.ImportJobTest do
   end
 
   defp fill_in_new_client_form(session, opts \\ []) do
-    phone = Keyword.get(opts, :phone, "(210) 111-1234")
+    phone = Keyword.get(opts, :phone, "2015551234")
 
     session
     |> click(button("Add a new client"))
     |> fill_in(text_field("Client Name"), with: @client_name)
     |> fill_in(text_field("Client Email"), with: @client_email)
-    |> fill_in(text_field("Client Phone"), with: phone)
+    |> fill_in(css("input[type=tel]"), with: phone)
     |> scroll_into_view(css("label", text: "Wedding"))
     |> click(css("label", text: "Wedding"))
   end
@@ -184,7 +184,7 @@ defmodule Picsello.ImportJobTest do
     assert %Client{
              name: "Elizabeth Taylor",
              email: "taylor@example.com",
-             phone: "(210) 111-1234"
+             phone: "+12015551234"
            } = job.client
 
     payment1_price = Money.new(30_000, "USD")

@@ -1,11 +1,26 @@
-import IMask from 'imask';
+import intlTelInput from 'intl-tel-input';
 
-const phone = document?.querySelector('#phone');
+  const form = document?.querySelector('#client-form');
+  const phone = document?.querySelector('#phone');
+  phone.classList.add('w-full');
+  
+  
+  const iti = intlTelInput(phone, {separateDialCode: true,
+    nationalMode: false,
+    separateDialCode: true,
+    formatOnDisplay: true,
+    utilsScript: "https://cdn.jsdelivr.net/npm/intl-tel-input@18.1.1/build/js/utils.js"
+  });
+
+  phone.addEventListener('keyup', (e) => {
+    iti.setNumber(iti.getNumber())
+   });
+
+  form.addEventListener("submit", (e) => {
+    phone.value = iti.getNumber()
+  });
 
 const jobTypes = document?.querySelectorAll('input[name="contact[job_type]"]');
-
-phone && IMask(phone, { mask: '(000) 000-0000' });
-
 jobTypes &&
   jobTypes.forEach((el) => {
     el.addEventListener('change', () => {

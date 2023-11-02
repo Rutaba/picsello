@@ -129,10 +129,10 @@ defmodule PicselloWeb.LiveHelpers do
     assigns =
       assigns
       |> Map.put(:rest, Map.drop(assigns, [:color, :icon, :inner_block, :class, :disabled]))
-      |> Enum.into(%{class: "", disabled: false, inner_block: nil, icon_class: ""})
+      |> Enum.into(%{class: "", disabled: false, inner_block: nil, icon_class: "", text_color: "text-#{assigns.color}"})
 
     ~H"""
-    <button type="button" class={classes("btn-tertiary flex items-center whitespace-nowrap text-#{@color} #{@class}", %{"opacity-75 hover:cursor-not-allowed" => @disabled})}} disabled={@disabled} {@rest}>
+    <button type="button" class={classes("btn-tertiary flex items-center whitespace-nowrap #{@text_color} #{@class}", %{"opacity-50 hover:opacity-30 hover:cursor-not-allowed" => @disabled})}} disabled={@disabled} {@rest}>
       <.icon name={@icon} class={classes("w-4 h-4 fill-current text-#{@color} #{@icon_class}", %{"mr-2" => @inner_block})} />
       <%= if @inner_block do %>
         <%= render_slot(@inner_block) %>
