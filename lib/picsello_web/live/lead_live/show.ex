@@ -161,6 +161,7 @@ defmodule PicselloWeb.LeadLive.Show do
       EmailAutomationSchedules.get_last_completed_email(
         :lead,
         nil,
+        nil,
         job.id,
         pipeline.id,
         :manual_booking_proposal_sent,

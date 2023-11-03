@@ -1917,6 +1917,7 @@ defmodule PicselloWeb.JobLive.Shared do
       EmailAutomationSchedules.get_last_completed_email(
         :lead,
         nil,
+        nil,
         job.id,
         pipeline.id,
         :manual_thank_you_lead,
@@ -2013,7 +2014,7 @@ defmodule PicselloWeb.JobLive.Shared do
   def get_job_email_by_pipeline(_job_id, nil), do: nil
 
   def get_job_email_by_pipeline(job_id, pipeline) do
-    EmailAutomationSchedules.query_get_email_schedule(:lead, nil, job_id, pipeline.id)
+    EmailAutomationSchedules.query_get_email_schedule(:lead, nil, nil, job_id, pipeline.id)
     |> where([es], is_nil(es.stopped_at))
     |> Repo.all()
     |> Repo.preload(email_automation_pipeline: [:email_automation_category])
