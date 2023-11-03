@@ -4,6 +4,8 @@ defmodule PicselloWeb.GalleryLive.GlobalSettings.PrintProductComponent do
   alias Picsello.Repo
   alias Picsello.GlobalSettings
 
+  require Logger
+
   @impl true
   def update(%{product: %{category: %{products: products}}} = assigns, socket) do
     socket
@@ -92,7 +94,9 @@ defmodule PicselloWeb.GalleryLive.GlobalSettings.PrintProductComponent do
     details =
       Enum.map(values, fn %{type: type, base_cost: base_cost} ->
         final_cost = final_cost(print_products_map, product.id, size, type)
-        %{final_cost: final_cost, profit: sub(final_cost, base_cost)}
+        if final_cost do
+          %{final_cost: final_cost, profit: sub(final_cost, base_cost)}
+        end
       end)
 
     assigns = assign(assigns, details: details)
@@ -250,10 +254,13 @@ defmodule PicselloWeb.GalleryLive.GlobalSettings.PrintProductComponent do
   end
 
   defp final_cost(print_products, product_id, size, type) do
-    print_products
+    size = print_products
     |> Map.get(product_id)
     |> Map.get(size <> type)
-    |> Map.get(:final_cost, new())
+
+    Logger.info("product_id: #{product_id} size: #{size <> type}")
+
+    if size, do: Map.get(size, :final_cost, new()), else: nil
   end
 
   defp updater(selections, size_for_update) do
