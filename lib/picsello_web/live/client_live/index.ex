@@ -513,7 +513,7 @@ defmodule PicselloWeb.Live.ClientLive.Index do
           <span class="cursor-pointer">
             <%= if Changeset.get_field(@tags_changeset, :client_id) == @client.id do%>
               <div class="relative flex">
-                <input type="text" autofocus class="border-gray-600 border-2 pl-2 rounded w-24" id={"save-tags-client-#{@client.id}"} name="client_tag_values" phx-debounce="500" spellcheck="false" placeholder="Add tag..." phx-window-keydown="save-tags" phx-value-client_id={@client.id} />
+                <input type="text" autofocus class="border-gray-600 border pl-2 rounded w-24" id={"save-tags-client-#{@client.id}"} name="client_tag_values" phx-debounce="500" spellcheck="false" placeholder="Add tag..." phx-window-keydown="save-tags" phx-value-client_id={@client.id} />
                 <a class="absolute top-0 bottom-0 flex flex-row items-center text-xs text-gray-400 mr-1 right-0">
                   <span phx-click="close-tags" phx-value-client-id={@client.id} class="cursor-pointer">
                     <.icon name="close-x" class="w-3 fill-current stroke-current stroke-2 close-icon text-gray-600" />

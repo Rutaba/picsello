@@ -138,20 +138,20 @@ defmodule PicselloWeb.Live.Calendar.EditMarketingEvent do
   end
 
   defp toggle_visibility(%{show_on_public_profile?: show_on_public_profile?} = assigns) do
-    class_1 = if show_on_public_profile?, do: ~s(bg-blue-planning-100), else: ~s(bg-gray-200)
+    class_1 = if show_on_public_profile?, do: ~s(bg-blue-planning-100), else: ~s(bg-white)
     class_2 = if show_on_public_profile?, do: ~s(right-1), else: ~s(left-1)
     assigns = assign(assigns, class_1: class_1, class_2: class_2)
 
     ~H"""
       <div class="flex mt-4 lg:mt-8">
-        <label class="flex items-center cursor-pointer">
+        <div class="flex items-center">
           <div class="text-sm font-bold lg:text-normal text-black"><%= @title %></div>
-          <div class="relative ml-3">
+          <label class="relative ml-3 cursor-pointer">
             <input type="checkbox" class="sr-only" phx-click={@event} phx-target={@myself}>
             <div class={"block h-6 border rounded-full w-12 border-blue-planning-300 #{@class_1}"}></div>
             <div class={"absolute w-4 h-4 rounded-full dot top-1 bg-blue-planning-300 transition #{@class_2}"}></div>
-          </div>
-        </label>
+          </label>
+        </div>
       </div>
     """
   end

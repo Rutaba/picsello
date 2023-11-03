@@ -24,7 +24,8 @@
             </button>
         </div>
     </div>
-    <div class="ml-2 pb-1.5 mt-10 w-20 text-center border-b-4 border-blue-planning-300 text-blue-planning-300 font-bold">
+    <hr class="my-6">
+    <div class="ml-2 pb-1.5 w-20 text-center border-b-4 border-blue-planning-300 text-blue-planning-300 font-bold">
         Overview
     </div>
 </div>
@@ -63,7 +64,7 @@
                     <.booking_slot_tabs_nav booking_event={@booking_event} booking_slot_tab_active={@booking_slot_tab_active} booking_slot_tabs={@booking_slot_tabs} socket={@socket} />
                     <.booking_slot_tabs_content booking_event_dates={@booking_event.dates} {assigns} />
 
-                    <div class={classes("mt-10 p-3 border-2 flex items-center rounded-lg", %{"border-base-200" => @package, "border-red-sales-300" => !@package})}>
+                    <div class={classes("mt-10 p-3 border flex items-center rounded-lg", %{"border-base-200" => @package, "border-red-sales-300" => !@package})}>
                         <div class="flex flex-col w-full">
                             <div class="mr-2 flex items-center gap-3">
                                 <.icon name="package" class="inline-block w-5 h-5 text-blue-planning-300 mt-1" />
@@ -133,7 +134,7 @@
                         <% end %>
                     </div>
 
-                    <div class={classes("mt-10 p-3 flex border-2 items-center rounded-lg", %{"border-base-200" => @package, "border-red-sales-300" => !@package})}>
+                    <div class={classes("mt-10 p-3 flex border items-center rounded-lg", %{"border-base-200" => @package, "border-red-sales-300" => !@package})}>
                         <div class="flex flex-col w-full">
                             <div class="flex items-center">
                                 <div class="flex flex-col">
@@ -191,7 +192,7 @@
             <div class="bg-base-200 flex flex-col col-span-3">
                 <.marketing_preview {assigns} />
                 <%= if @package do %>
-                    <div class="rounded-lg border-2 border-gray-300 flex flex-col p-3 mt-6">
+                    <div class="rounded-lg border border-gray-300 flex flex-col p-3 mt-6">
                         <div class="flex mb-4 items-center">
                             <div class="mr-2">
                                 <.icon name="package" class="inline-block w-5 h-5 text-blue-planning-300" />

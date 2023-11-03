@@ -56,11 +56,11 @@ defmodule PicselloWeb.Live.Calendar.BookingEventModal do
       <div class="text-4xl font-bold"><%= @title %></div>
       <div class="grid grid-cols-2 mt-4 gap-5">
         <div>
-          <div class="text-blue-planning-300 bg-blue-100 w-14 h-6 pt-0.5 ml-1 text-center font-bold text-sm rounded-lg">Note</div>
+          <div class="text-blue-planning-300 bg-blue-planning-100 w-14 h-6 pt-0.5 text-center font-bold text-sm rounded-lg">Note</div>
           <p>Sessions blocks that are booked, in the process of booking, or reserved are locked. They will not adjust when making changes to any of your date settings.</p>
         </div>
         <div>
-          <div class="text-blue-planning-300 bg-blue-100 w-14 h-6 pt-0.5 ml-1 text-center font-bold text-sm rounded-lg">Note</div>
+          <div class="text-blue-planning-300 bg-blue-planning-100 w-14 h-6 pt-0.5 text-center font-bold text-sm rounded-lg">Note</div>
           <p>Client details, discounts, reservations, and all other settings will be found after you save/close this modal.</p>
         </div>
       </div>
