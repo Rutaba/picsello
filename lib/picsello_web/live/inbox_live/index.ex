@@ -86,8 +86,8 @@ defmodule PicselloWeb.InboxLive.Index do
 
   defp thread_card(assigns) do
     ~H"""
-    <div {testid("thread-card")} phx-click="open-thread" phx-value-id={@id} phx-value-type={@type} class={classes("lg:flex justify-between py-6 border-b pl-2 p-8 cursor-pointer", %{"bg-blue-planning-300 rounded-lg text-white" => @selected, "hover:bg-gray-100 hover:text-black" => !@selected})}>
-      <div class="px-4">
+    <div {testid("thread-card")} phx-click="open-thread" phx-value-id={@id} phx-value-type={@type} class={classes("flex flex-col lg:flex-row justify-between py-6 border-b pl-2 p-8 cursor-pointer", %{"bg-blue-planning-300 rounded-lg text-white" => @selected, "hover:bg-gray-100 hover:text-black" => !@selected})}>
+      <div class="px-4 order-2 lg:order-1">
         <div class="flex items-center">
           <div class="font-bold	text-2xl lg:hidden">
             <%= title_slice(@title, 26) %>
@@ -99,15 +99,15 @@ defmodule PicselloWeb.InboxLive.Index do
             <span {testid("new-badge")} class="mx-4 px-2 py-0.5 text-xs rounded bg-orange-inbox-300 text-white">New</span>
           <% end %>
         </div>
-        <div class=" font-semibold py-0.5 hidden lg:block">
-           <%=  subtitle_slice(@subtitle, 17) %>
+        <div class=" font-semibold py-0.5 hidden lg:block lg:line-clamp-1">
+           <%= @subtitle %>
         </div>
-        <div class=" font-semibold py-0.5  lg:hidden">
+        <div class=" font-semibold py-0.5 lg:hidden">
            <%=  subtitle_slice(@subtitle, 30) %>
         </div>
 
         <%= if (@subject) do %>
-          <div class="w-48"><%= raw title_slice(@subject, 18) %></div>
+          <div class="line-clamp-1"><%= raw @subject %></div>
         <% end %>
         <span class="px-2 py-0.5 text-xs font-semibold rounded bg-blue-planning-100 text-blue-planning-300">
           <%= case @type do %>
@@ -118,7 +118,7 @@ defmodule PicselloWeb.InboxLive.Index do
           <% end %>
         </span>
       </div>
-      <div class="relative flex flex-shrink-0 pl-4">
+      <div class="relative flex flex-shrink-0 pl-4 text-xs order-1 lg:order-2">
         <%= @date %>
         <.icon name="forth" class="sm:hidden absolute top-1.5 -right-6 w-4 h-4 stroke-current text-base-300 stroke-2" />
       </div>
