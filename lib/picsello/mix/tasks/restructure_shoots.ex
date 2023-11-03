@@ -98,16 +98,25 @@ defmodule Mix.Tasks.RestructureShoots do
     end)
   end
 
-  defp with_shoots(job) do
-    job
+  defp with_shoots(job_query) do
+    job_query
     |> preload([:shoots])
     |> Repo.all()
   end
 
-  defp not_archived(job) do
-    job
+  defp not_archived(jobs) do
+    jobs
     |> Enum.filter(&is_nil(&1.archived_at))
   end
+
+  # defp filter_shoots(jobs) do
+  #   jobs
+  #   |> Enum.map(fn %{shoots: shoots} ->
+  #     shoots
+  #     |> Enum.filter(fn %{starts_at} ->
+  #     end)
+  #   end)
+  # end
 
   defp shoots_multi_transactions(
          before_shoot_schedules,
