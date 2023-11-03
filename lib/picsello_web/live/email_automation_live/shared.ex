@@ -621,17 +621,17 @@ defmodule PicselloWeb.EmailAutomationLive.Shared do
 
   def fetch_date_for_state(:before_shoot, email, _last_completed_email, job, _gallery, _order) do
     # Examples
-    # shoot.start_at is ~D[2023-10-20]
+    # shoot.starts_at is ~D[2023-10-20]
     # today is ~D[2023-10-09]
     # difference is 12 days
     # send 7 days before shoot start 12 <= 7 false
 
-    # shoot.start_at is ~D[2023-10-20]
+    # shoot.starts_at is ~D[2023-10-20]
     # today is ~D[2023-10-13]
     # difference is 7 days
     # send 7 days before shoot start 7<= 7 true
 
-    # shoot.start_at is ~D[2023-10-20]
+    # shoot.starts_at is ~D[2023-10-20]
     # today is ~D[2023-10-21]
     # difference is 1 days
     # send 1 days before shoot start 1<= 1 true
@@ -655,7 +655,7 @@ defmodule PicselloWeb.EmailAutomationLive.Shared do
     starts_at = shoot.starts_at |> DateTime.shift_zone!(timezone)
 
     send_time? = is_send_time?(Date.diff(starts_at, today), abs(days_to_compare), sign)
-    if send_time?, do: shoot.start_at, else: nil
+    if send_time?, do: shoot.starts_at, else: nil
   end
 
   def fetch_date_for_state(:balance_due, _email, last_completed_email, job, _gallery, _order) do
@@ -732,17 +732,17 @@ defmodule PicselloWeb.EmailAutomationLive.Shared do
   end
 
   def fetch_date_for_state(:shoot_thanks, email, _last_completed_email, job, _gallery, _order) do
-    # shoot.start_at is ~D[2023-10-20]
+    # shoot.starts_at is ~D[2023-10-20]
     # today is ~D[2023-10-09]
     # difference is -12 days
     # send 7 days after shoot -12 >= 7 false
 
-    # shoot.start_at is ~D[2023-10-20]
+    # shoot.starts_at is ~D[2023-10-20]
     # today is ~D[2023-10-23]
     # difference is 3 days
     # send 7 days after shoot 3 >= 7 false
 
-    # shoot.start_at is ~D[2023-10-20]
+    # shoot.starts_at is ~D[2023-10-20]
     # today is ~D[2023-10-27]
     # difference is 7 days
     # send 7 days after shoot 7 >= 7 true
@@ -756,21 +756,21 @@ defmodule PicselloWeb.EmailAutomationLive.Shared do
     starts_at = shoot.starts_at |> DateTime.shift_zone!(timezone)
 
     send_time? = is_send_time?(Date.diff(today, starts_at), abs(days_to_compare), sign)
-    if send_time?, do: shoot.start_at, else: nil
+    if send_time?, do: shoot.starts_at, else: nil
   end
 
   def fetch_date_for_state(:post_shoot, email, _last_completed_email, job, _gallery, _order) do
-    # shoot.start_at is ~D[2023-10-20]
+    # shoot.starts_at is ~D[2023-10-20]
     # today is ~D[2023-10-09]
     # difference is -12 days
     # send 7 days after shoot -12 >= 7 false
 
-    # shoot.start_at is ~D[2023-10-20]
+    # shoot.starts_at is ~D[2023-10-20]
     # today is ~D[2023-10-23]
     # difference is 3 days
     # send 7 days after shoot 3 >= 7 false
 
-    # shoot.start_at is ~D[2023-10-20]
+    # shoot.starts_at is ~D[2023-10-20]
     # today is ~D[2023-10-27]
     # difference is 7 days
     # send 7 days after shoot 7 >= 7 true
