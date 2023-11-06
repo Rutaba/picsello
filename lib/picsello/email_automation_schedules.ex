@@ -3,6 +3,7 @@ defmodule Picsello.EmailAutomationSchedules do
     context module for email automation
   """
   import Ecto.Query
+  alias Ecto.{Multi}
 
   alias Picsello.{
     Repo,
@@ -307,6 +308,52 @@ defmodule Picsello.EmailAutomationSchedules do
       _ -> query |> where([es], es.job_id == ^job_id)
     end
   end
+
+  def get_all_emails_active_by_job_pipeline(category, job_id, pipeline_id) do
+    query_get_email_schedule(category, nil, nil, job_id, pipeline_id)
+    |> where([es], is_nil(es.stopped_at))
+  end
+
+  def stopped_all_active_proposal_emails(job_id) do
+    pipeline = EmailAutomations.get_pipeline_by_state(:manual_booking_proposal_sent)
+
+    all_proposal_active_emails_query =
+      get_all_emails_active_by_job_pipeline(:lead, job_id, pipeline.id)
+
+    Multi.new()
+    |> Multi.update_all(:proposal_emails, all_proposal_active_emails_query,
+      set: [
+        stopped_reason: :proposal_accepted,
+        stopped_at: DateTime.truncate(DateTime.utc_now(), :second)
+      ]
+    )
+    |> Repo.transaction()
+  end
+
+  def get_stopped_emails_text(job_id, "manual_booking_proposal_sent") do
+    pipeline = EmailAutomations.get_pipeline_by_state(:manual_booking_proposal_sent)
+
+    emails_stopped =
+      from(es in EmailSchedule,
+        where:
+          es.email_automation_pipeline_id == ^pipeline.id and es.job_id == ^job_id and
+            es.stopped_reason == :proposal_accepted
+      )
+      |> Repo.all()
+
+    if Enum.any?(emails_stopped) do
+      count = Enum.count(emails_stopped)
+
+      stopped_at =
+        emails_stopped |> List.first() |> Map.get(:stopped_at) |> Calendar.strftime("%m/%d/%Y")
+
+      "#{count} emails stopped #{stopped_at} because client booked"
+    else
+      nil
+    end
+  end
+
+  def get_stopped_emails_text(_job_id, _state), do: nil
 
   def get_last_completed_email(
         category_type,

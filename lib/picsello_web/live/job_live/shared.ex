@@ -3,7 +3,7 @@ defmodule PicselloWeb.JobLive.Shared do
   handlers used by both leads and jobs
   """
 
-  import Ecto.Query
+  require Ecto.Query
   require Logger
 
   use Phoenix.Component
@@ -2014,8 +2014,7 @@ defmodule PicselloWeb.JobLive.Shared do
   def get_job_email_by_pipeline(_job_id, nil), do: nil
 
   def get_job_email_by_pipeline(job_id, pipeline) do
-    EmailAutomationSchedules.query_get_email_schedule(:lead, nil, nil, job_id, pipeline.id)
-    |> where([es], is_nil(es.stopped_at))
+    EmailAutomationSchedules.get_all_emails_active_by_job_pipeline(:lead, job_id, pipeline.id)
     |> Repo.all()
     |> Repo.preload(email_automation_pipeline: [:email_automation_category])
     |> sort_emails(pipeline.state)

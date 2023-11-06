@@ -37,7 +37,7 @@ defmodule Picsello.EmailAutomation.EmailSchedule do
     email_preset
     |> cast(
       attrs,
-      ~w[email_automation_pipeline_id name type private_name subject_template body_template total_hours condition stopped_at reminded_at job_id gallery_id shoot_id order_id organization_id]a
+      ~w[email_automation_pipeline_id name type private_name subject_template body_template total_hours condition stopped_at stopped_reason reminded_at job_id gallery_id shoot_id order_id organization_id]a
     )
     |> validate_required(~w[email_automation_pipeline_id type subject_template body_template]a)
   end

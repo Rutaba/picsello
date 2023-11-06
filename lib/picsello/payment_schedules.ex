@@ -354,6 +354,10 @@ defmodule Picsello.PaymentSchedules do
       _inserted_shhots =
         shoots |> Enum.map(&EmailAutomationSchedules.insert_shoot_emails(proposal.job, &1.shoot))
 
+      # stopped all active proposal emails when online payment paid
+      _stopped_emails =
+        EmailAutomationSchedules.stopped_all_active_proposal_emails(proposal.job.id)
+
       EmailAutomations.send_pays_retainer(
         proposal.job,
         :pays_retainer,
