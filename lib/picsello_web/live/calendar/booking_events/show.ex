@@ -853,7 +853,7 @@ defmodule PicselloWeb.Live.Calendar.BookingEvents.Show do
         %{action: "edit-date", icon: "pencil", disabled: booking_event_date.date && date_passed?(booking_event_date.date)},
         %{action: "duplicate-date", icon: "duplicate-2", disabled: false},
         %{
-          action: "delete-date",
+          action: "confirm-delete-date",
           icon: "trash",
           disabled:
             Enum.any?(BEShared.get_booking_event_clients(booking_event, booking_event_date.id)) ||
