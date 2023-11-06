@@ -913,7 +913,7 @@ defmodule PicselloWeb.Live.Calendar.BookingEvents.Show do
     "#{List.first(session_list)} - #{List.last(session_list)}"
   end
 
-  defp date_passed?(date), do: Date.compare(date, Date.utc_today()) != :gt
+  defp date_passed?(date), do: Date.compare(date, Date.utc_today()) == :lt
 
   defp slice_description(description) do
     if String.length(description) > 100 do
