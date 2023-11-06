@@ -9,10 +9,9 @@ defmodule Picsello.Workers.ScheduleAutomationEmail do
     EmailAutomations,
     EmailAutomationSchedules,
     ClientMessage,
-    Organization,
     Galleries.Gallery,
     Job,
-    Repo
+    Subscriptions
   }
 
   alias PicselloWeb.EmailAutomationLive.Shared
@@ -21,6 +20,7 @@ defmodule Picsello.Workers.ScheduleAutomationEmail do
     get_all_organizations()
     |> Enum.chunk_every(10)
     |> Enum.each(&send_emails_by_organizations(&1))
+
     # |> Task.async_stream(&send_emails_by_organizations(&1),
     #   max_concurrency: System.schedulers_online() * 3,
     #   timeout: 360_000
@@ -231,7 +231,7 @@ defmodule Picsello.Workers.ScheduleAutomationEmail do
   end
 
   defp get_all_organizations() do
-    Repo.all(Organization) |> Enum.map(& &1.id)
+    Subscriptions.organizations_with_active_subscription() |> Enum.map(& &1.id)
   end
 
   defp is_job_emails?(%Job{
