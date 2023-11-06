@@ -29,8 +29,6 @@ defmodule PicselloWeb.Live.Calendar.BookingEvents.Show do
   alias PicselloWeb.BookingProposalLive.{QuestionnaireComponent, ContractComponent}
   alias PicselloWeb.Calendar.BookingEvents.Shared, as: BEShared
 
-  @text_color "text-black"
-
   @impl true
   def mount(_params, _session, socket) do
     socket
@@ -529,15 +527,9 @@ defmodule PicselloWeb.Live.Calendar.BookingEvents.Show do
               <div class="flex">
                 <div class="flex text-2xl font-bold"><%= date_formatter(@calendar_date_event.date) %></div>
                 <div class="flex justify-end ml-auto">
-                  <div class="flex items-center justify-center w-8 h-8 bg-base-200 rounded-lg p-1 ml-2 mt-1">
-                    <.icon name="pencil" class="w-4 h-4 fill-blue-planning-300" />
-                  </div>
-                  <div class="flex items-center justify-center w-8 h-8 bg-base-200 rounded-lg p-1 ml-2 mt-1">
-                    <.icon name="duplicate-2" class="w-4 h-4 fill-blue-planning-300" />
-                  </div>
-                  <div class="flex items-center justify-center w-8 h-8 bg-base-200 rounded-lg p-1 ml-2 mt-1">
-                    <.icon name="trash" class="w-4 h-4 text-red-sales-300" />
-                  </div>
+                  <%= for %{action: action, icon: icon, disabled: disabled?} <- date_actions(@booking_slot_tab_active, @booking_event, @calendar_date_event) |> IO.inspect(label: "Actions ======>") do %>
+                    <.icon_button icon={icon} phx-click={action} phx-value-id={@calendar_date_event.id} disabled={disabled?} class="px-2 py-2" text_color={"text-black"} color={if icon == "trash", do: "red-sales-300", else: "blue-planning-300"}/>
+                  <% end %>
                 </div>
               </div>
               <div class="flex mb-2">
