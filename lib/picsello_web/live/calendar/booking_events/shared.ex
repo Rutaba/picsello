@@ -897,6 +897,17 @@ defmodule PicselloWeb.Calendar.BookingEvents.Shared do
          date_id \\ nil
        ) do
     clients = get_booking_event_clients(booking_event, date_id)
+    recipients =
+      cond do
+        Enum.any?(clients) && length(clients) > 1 ->
+          %{"to" => clients |> hd(), "bcc" => tl(clients)}
+
+        Enum.any?(clients) ->
+          %{"to" => clients}
+
+        true ->
+          %{"to" => ""}
+      end
 
     socket
     |> ClientMessageComponent.open(%{
@@ -906,7 +917,7 @@ defmodule PicselloWeb.Calendar.BookingEvents.Shared do
       show_subject: true,
       presets: [],
       send_button: "Send",
-      recipients: %{"to" => clients |> hd(), "bcc" => tl(clients)}
+      recipients: recipients
     })
     |> noreply()
   end
