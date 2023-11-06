@@ -21,6 +21,7 @@ defmodule Picsello.Workers.ScheduleAutomationEmail do
     get_all_organizations()
     |> Enum.chunk_every(10)
     |> Enum.each(&send_emails_by_organizations(&1))
+
     # |> Task.async_stream(&send_emails_by_organizations(&1),
     #   max_concurrency: System.schedulers_online() * 3,
     #   timeout: 360_000
