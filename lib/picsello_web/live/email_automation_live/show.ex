@@ -215,7 +215,7 @@ defmodule PicselloWeb.Live.EmailAutomations.Show do
     id = String.to_integer(id)
     stopped_at = DateTime.truncate(DateTime.utc_now(), :second)
 
-    case EmailAutomationSchedules.update_email_schedule(id, %{stopped_at: stopped_at}) do
+    case EmailAutomationSchedules.update_email_schedule(id, %{stopped_at: stopped_at, stopped_reason: :photographer_stopped}) do
       {:ok, _} -> socket |> put_flash(:success, "Email Stopped Successfully")
       _ -> socket |> put_flash(:error, "Error in Updating Email")
     end

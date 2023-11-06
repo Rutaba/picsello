@@ -21,6 +21,7 @@ defmodule Picsello.EmailAutomation.EmailSchedule do
     field :private_name, :string
     field :stopped_at, :utc_datetime, default: nil
     field :reminded_at, :utc_datetime, default: nil
+    field :stopped_reason, Ecto.Enum, values: [:photographer_stopped, :proposal_accepted]
 
     belongs_to(:email_automation_pipeline, EmailAutomationPipeline)
     belongs_to(:job, Job)
