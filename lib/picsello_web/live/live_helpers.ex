@@ -518,20 +518,18 @@ defmodule PicselloWeb.LiveHelpers do
     end
   end
 
-  def format_datetime_via_type(%DateTime{} = datetime, type \\ "MM DD, YY") do
-    time = DateTime.to_time(datetime) |> Time.to_string() |> String.slice(0, 5)
+  @doc """
+  Format datetime as per given type, it aslo accepts timezone to convert datetime accordingly
+  """
+  def format_datetime_via_type(%DateTime{} = datetime, time_zone, type \\ "MM DD, YY") do
+    datetime = DateTime.shift_zone!(datetime, time_zone)
+    date = DateTime.to_date(datetime)
 
-    case type do
-      "MM/DD/YY" ->
-        date =
-          [datetime.month, datetime.day, datetime.year]
-          |> Enum.map(&to_string/1)
-          |> Enum.map_join("/", &String.pad_leading(&1, 2, "0"))
+    time =
+      datetime
+      |> DateTime.to_time()
+      |> Calendar.strftime("%I:%M %p")
 
-        date <> " @ #{time}"
-
-      _ ->
-        "#{Timex.month_name(datetime.month)} #{datetime.day}, #{datetime.year} @ #{time}"
-    end
+    format_date_via_type(date, type) <> " @ #{time}"
   end
 end

@@ -93,12 +93,15 @@
         <div class="sm:col-span-2 flex flex-col md:block">
           <% collapse? = Enum.any?(@collapsed_shoots, & &1 == job.id) %>
           <%= for shoot  <- get_shoots(@sort_direction, job.shoots, collapse?) do %>
-            <p class="sm:text-base text-xs"><%= format_datetime_via_type shoot.starts_at %> </p>
+            <p class="sm:text-base text-xs"><%= format_datetime_via_type(shoot.starts_at, @current_user.time_zone) %> </p>
           <% end %>
           <div class={classes(%{"hidden" => Enum.count(job.shoots) < 4})} phx-click="toggle-shoots" phx-value-job_id={job.id}>
             <.icon name="hellip" class={classes("w-4 h-4 text-blue-planning-300 mt-2 cursor-pointer", %{"hidden" => Enum.any?(@collapsed_shoots, & &1 == job.id)})} />
             <span class={classes("text-blue-planning-300 underline cursor-pointer", %{"hidden" => !collapse?})}>Hide</span>
           </div>
+          <%= if job.shoots == [] do %>
+            <p class="font-bold text-red-sales-300">Missing Shoot Date</p>
+          <% end %>
         </div>
         <.status_badge class="w-fit" job={job}/>
         <hr class="sm:hidden border-gray-100 my-2" />
