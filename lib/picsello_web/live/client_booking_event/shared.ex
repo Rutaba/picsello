@@ -42,14 +42,14 @@ defmodule PicselloWeb.ClientBookingEventLive.Shared do
 
   def formatted_date(%{dates: dates}) do
     dates
-    |> Enum.sort_by(& &1["date"], Date)
+    |> Enum.sort_by(& &1.date, Date)
     |> Enum.reduce([], fn date, acc ->
       case acc do
         [] ->
           [[date]]
 
         [prev_chunk | rest] ->
-          case Date.add(List.last(prev_chunk)["date"], 1) == date["date"] do
+          case Date.add(List.last(prev_chunk).date, 1) == date.date do
             true -> [prev_chunk ++ [date] | rest]
             false -> [[date] | acc]
           end
@@ -60,7 +60,7 @@ defmodule PicselloWeb.ClientBookingEventLive.Shared do
       if Enum.count(chunk) > 1 do
         "#{format_date(List.first(chunk).date)} - #{format_date(List.last(chunk).date)}"
       else
-        format_date(List.first(chunk)["date"])
+        format_date(List.first(chunk).date)
       end
     end)
     |> Enum.uniq()

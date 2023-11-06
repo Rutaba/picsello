@@ -357,13 +357,14 @@ defmodule PicselloWeb.Live.Profile do
         dates
         |> Enum.map(fn %{"date" => date} = booking_events_date ->
           Map.merge(booking_events_date, %{"date" => Date.from_iso8601!(date)})
+          |> Morphix.atomorphiform!()
         end)
 
       Map.merge(booking_events, %{dates: date_structs})
     end)
     |> Stream.filter(fn %{dates: dates} ->
       dates
-      |> Enum.map(fn %{"date" => date} -> date end)
+      |> Enum.map(fn %{date: date} -> date end)
       |> Enum.sort_by(& &1, {:desc, Date})
       |> hd
       |> Date.compare(datetime)
@@ -375,7 +376,7 @@ defmodule PicselloWeb.Live.Profile do
   # Sorts booking events from descending to ascending by their dates
   defp sort_by_date(booking_events, sort_direction) do
     booking_events
-    |> Enum.sort_by(&(&1.dates |> hd() |> Map.get("date")), {sort_direction, Date})
+    |> Enum.sort_by(&(&1.dates |> hd() |> Map.get(:date)), {sort_direction, Date})
   end
 
   defp image_text("logo"), do: "Choose a new logo"
