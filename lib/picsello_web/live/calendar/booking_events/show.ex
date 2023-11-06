@@ -881,7 +881,7 @@ defmodule PicselloWeb.Live.Calendar.BookingEvents.Show do
     if(status == :reserved,
       do: actions ++ [%{title: "Copy booking link", action: "link-copied", icon: "anchor"}],
       else: actions
-    ) ++ [%{title: "Cancel", action: "cancel", icon: "cross"}]
+    ) ++ [%{title: "Cancel", action: "confirm-cancel-session", icon: "cross"}]
   end
 
   defp package_actions do
