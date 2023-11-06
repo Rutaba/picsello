@@ -123,6 +123,7 @@ defmodule Picsello.BookingEvents do
         status: event.status,
         location: event.location,
         duration_minutes: event.duration_minutes,
+        package_template:  package,
         dates:
           fragment(
             "array_agg(to_jsonb(json_build_object('id', ?, 'booking_event_id', ?, 'date', ?)))",
@@ -133,7 +134,7 @@ defmodule Picsello.BookingEvents do
         description: event.description,
         address: event.address
       },
-      group_by: [event.id, package.name, booking_date.booking_event_id]
+      group_by: [event.id, package.id, booking_date.booking_event_id]
     )
     |> Repo.all()
   end
