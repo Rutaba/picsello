@@ -129,7 +129,7 @@ defmodule PicselloWeb.LiveHelpers do
     assigns =
       assigns
       |> Enum.into(%{class: "", disabled: false, inner_block: nil, icon_class: "", text_color: "text-#{assigns.color}"})
-      |> Map.put(:rest, Map.drop(assigns, [:color, :icon, :inner_block, :class, :disabled, :text_color]))
+      |> Map.put(:rest, Map.drop(assigns, [:color, :icon, :inner_block, :class, :disabled, :text_color, :__changed__]))
 
     ~H"""
     <button type="button" class={classes("btn-tertiary flex items-center whitespace-nowrap #{@text_color} #{@class}", %{"opacity-50 hover:opacity-30 hover:cursor-not-allowed" => @disabled})} disabled={@disabled} {@rest}>

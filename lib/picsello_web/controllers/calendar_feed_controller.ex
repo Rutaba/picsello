@@ -27,7 +27,9 @@ defmodule PicselloWeb.CalendarFeedController do
 
   def show(%{assigns: %{current_user: user}} = conn, %{"id" => event_id}) do
     booking_event =
-      BookingEvents.get_preloaded_booking_event!(user.organization_id, event_id)
+      user.organization_id
+      |> BookingEvents.get_booking_event!(String.to_integer(event_id))
+      |> BookingEvents.preload_booking_event()
       |> Map.get(:dates)
       |> map_event()
 
