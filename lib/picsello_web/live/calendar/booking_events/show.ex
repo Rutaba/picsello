@@ -875,7 +875,7 @@ defmodule PicselloWeb.Live.Calendar.BookingEvents.Show do
     actions = [
       %{title: "Go to job", action: "open-job", icon: "gallery-camera"},
       %{title: "View client", action: "open-client", icon: "client-icon"},
-      %{title: "Reschedule", action: "reschedule", icon: "calendar"}
+      %{title: "Reschedule", action: "confirm-reschedule", icon: "calendar"}
     ]
 
     if(status == :reserved,
