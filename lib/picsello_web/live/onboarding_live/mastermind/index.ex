@@ -204,7 +204,7 @@ defmodule PicselloWeb.OnboardingLive.Mastermind.Index do
           </div>
         <% end %>
         <:right_panel>
-          <.signup_deal original_price={Money.new(35000, :USD)} price={Money.new(24500, :USD)} expires_at={@black_friday_timer_end} />
+          <.signup_deal original_price={Money.new(35000, :USD)} price={Money.new(20000, :USD)} expires_at={@black_friday_timer_end} />
           <div
             phx-update="ignore"
             class="my-6"

@@ -110,7 +110,7 @@ defmodule PicselloWeb.UserRegisterLive do
         </h2>
         <p class="text-xl text-center">Build a strong foundation for every part of your business so it supports growth and sustainable profit.</p>
         <div class="max-w-md mx-auto my-8">
-          <.signup_deal original_price={Money.new(35000, :USD)} price={Money.new(24500, :USD)} expires_at={@black_friday_timer_end} />
+          <.signup_deal original_price={Money.new(35000, :USD)} price={Money.new(20000, :USD)} expires_at={@black_friday_timer_end} />
         </div>
         <ul class="mb-8 space-y-2">
           <li class="flex gap-2"><.icon name="checkcircle" class="h-4 w-4 flex-shrink-0 mt-1.5" /> 1 x a month expert session with Q&As</li>
