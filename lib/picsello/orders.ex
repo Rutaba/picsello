@@ -136,7 +136,10 @@ defmodule Picsello.Orders do
 
   def get_all_purchased_photos_in_album(gallery, album_id) do
     if can_download_all?(gallery) do
-      from(photo in Photo, where: photo.gallery_id == ^gallery.id and photo.album_id == ^album_id)
+      from(photo in Photo,
+        where: photo.gallery_id == ^gallery.id and photo.album_id == ^album_id,
+        where: photo.active == true
+      )
       |> Repo.all()
     else
       from(digital in Digital,
@@ -145,6 +148,7 @@ defmodule Picsello.Orders do
         join: photo in assoc(digital, :photo),
         where: order.gallery_id == ^gallery.id,
         where: photo.album_id == ^album_id,
+        where: photo.active == true,
         select: photo
       )
       |> Repo.all()
