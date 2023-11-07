@@ -333,7 +333,7 @@ defmodule PicselloWeb.PackageLive.WizardComponent do
       |> assign(
         templates: templates,
         step: :choose_template,
-        steps: [:choose_template, :details, :pricing, :payment]
+        steps: [:choose_template, :details, :documents, :pricing, :payment]
       )
     else
       _ ->
@@ -342,7 +342,7 @@ defmodule PicselloWeb.PackageLive.WizardComponent do
           templates: [],
           package: booking_event.package_template,
           step: :details,
-          steps: [:details, :pricing, :payment]
+          steps: [:details, :documents, :pricing, :payment]
         )
     end
   end
