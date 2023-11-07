@@ -178,7 +178,7 @@ defmodule Picsello.Pack do
     album.gallery
     |> then(fn gallery ->
       if album.is_finals do
-        album |> Repo.preload(:photos) |> Map.get(:photos, [])
+        album |> Repo.preload(:photos) |> Map.get(:photos, []) |> Enum.filter(& &1.active)
       else
         Orders.get_all_purchased_photos_in_album(gallery, album.id)
       end
