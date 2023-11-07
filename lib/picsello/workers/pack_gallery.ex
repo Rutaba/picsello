@@ -5,9 +5,31 @@ defmodule Picsello.Workers.PackGallery do
 
   require Logger
 
-  alias Picsello.{Pack, Galleries, Workers.PackDigitals}
+  alias Picsello.{Pack, Galleries, Albums, Workers.PackDigitals, Repo}
 
   @cooldown Application.compile_env(:picsello, :gallery_pack_cooldown_seconds, 60)
+
+  def perform(%Oban.Job{args: %{"album_id" => album_id}}) do
+    album = Albums.get_album!(album_id)
+
+    PackDigitals.broadcast(album, :ok, %{packable: album, status: :uploading})
+
+    album
+    |> Pack.url()
+    |> case do
+      {:ok, _url} ->
+        Pack.delete(album)
+
+      {:error, _} ->
+        PackDigitals.cancel(album)
+    end
+
+    Logger.info("[Enqueue] PackDigitals for album: #{album_id}")
+
+    PackDigitals.enqueue(album, replace: [:scheduled_at], schedule_in: @cooldown)
+
+    :ok
+  end
 
   def perform(%Oban.Job{args: %{"gallery_id" => gallery_id}}) do
     gallery = Galleries.get_gallery!(gallery_id)
@@ -32,9 +54,19 @@ defmodule Picsello.Workers.PackGallery do
   end
 
   def enqueue(gallery) do
+    gallery_with_albums = Repo.preload(gallery, :albums)
+
     if can_download_all?(gallery) do
       __MODULE__.new(%{gallery_id: gallery.id})
       |> Oban.insert()
+    end
+
+    if Enum.any?(gallery_with_albums.albums) do
+      gallery_with_albums.albums
+      |> Enum.each(fn album ->
+        __MODULE__.new(%{album_id: album.id})
+        |> Oban.insert()
+      end)
     end
   end
 
