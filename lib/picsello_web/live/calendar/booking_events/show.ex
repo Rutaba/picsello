@@ -824,10 +824,9 @@ defmodule PicselloWeb.Live.Calendar.BookingEvents.Show do
         ])
 
       :archive ->
-        Enum.concat(common_actions, [
-          %{title: "Enable", action: "enable-event", icon: "plus"},
+        [
           %{title: "Unarchive", action: "unarchive-event", icon: "plus"}
-        ])
+        ]
     end
   end
 
