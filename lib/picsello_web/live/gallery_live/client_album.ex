@@ -61,6 +61,7 @@ defmodule PicselloWeb.GalleryLive.ClientAlbum do
 
   def handle_params(%{"hash" => _hash}, _, %{assigns: %{album: album}} = socket) do
     album = album |> Repo.preload(:gallery)
+    if connected?(socket), do: Album.subscribe(album)
 
     socket
     |> assign(:album, album)
