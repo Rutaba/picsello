@@ -625,6 +625,9 @@ defmodule Picsello.Galleries do
       |> Repo.preload(:package)
       |> check_watermark(user)
     end)
+    |> Multi.insert_all(:email_automation_job, EmailSchedule, fn %{gallery: gallery} ->
+      EmailAutomationSchedules.insert_job_emails_from_gallery(gallery, :job)
+    end)
     |> Multi.insert_all(:email_automation, EmailSchedule, fn %{gallery: gallery} ->
       EmailAutomationSchedules.gallery_order_emails(gallery, nil)
     end)
