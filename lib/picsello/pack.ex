@@ -88,24 +88,13 @@ defmodule Picsello.Pack do
 
   @spec url(Order.t() | Gallery.t()) :: {:ok, String.t()} | {:error, any()}
   def url(packable) do
-    case packable |> path() |> PhotoStorage.get() do
+    case packable |> path |> PhotoStorage.get() do
       {:ok, %{name: name}} -> {:ok, PhotoStorage.path_to_url(name)}
       error -> error
     end
   end
 
   def delete(packable) do
-    packable_with_albums = Repo.preload(packable, :albums)
-
-    if Enum.any?(packable_with_albums.albums) do
-      packable_with_albums.albums
-      |> Enum.each(fn album ->
-        album
-        |> path
-        |> PhotoStorage.delete()
-      end)
-    end
-
     packable |> path |> PhotoStorage.delete()
   end
 
