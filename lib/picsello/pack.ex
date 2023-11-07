@@ -94,7 +94,20 @@ defmodule Picsello.Pack do
     end
   end
 
-  def delete(packable), do: packable |> path |> PhotoStorage.delete()
+  def delete(packable) do
+    packable_with_albums = Repo.preload(packable, :albums)
+
+    if Enum.any?(packable_with_albums.albums) do
+      packable_with_albums.albums
+      |> Enum.map(fn album ->
+        album
+        |> path
+        |> PhotoStorage.delete()
+      end)
+    end
+
+    packable |> path |> PhotoStorage.delete()
+  end
 
   def path(%Order{bundle_price: %Money{}} = order), do: path(order.gallery)
 
