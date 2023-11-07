@@ -35,10 +35,10 @@ defmodule PicselloWeb.Shared.EditNameComponent do
 
   @impl true
   def render(assigns) do
-    assigns = Enum.into(assigns, %{input_label: nil, main_class: "items-center gap-2"})
+    assigns = Enum.into(assigns, %{input_label: nil, main_class: "items-center gap-2", class: ""})
 
     ~H"""
-      <div class="flex items-center mt-4 md:justify-start">
+      <div class={"flex items-center mt-4 md:justify-start #{@class}"}>
         <div class={classes("flex items-center", %{"flex-col lg:block" => @input_label})}>
         <%= live_redirect to: @back_path do %>
           <div class={classes("flex items-center justify-center rounded-full p-2.5 mt-2 mr-4 bg-base-200", %{"lg:hidden shadow-lg bg-base-100 mt-0 px-4 py-3 w-fit mb-2" => @input_label})}>
