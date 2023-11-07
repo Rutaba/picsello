@@ -99,7 +99,7 @@ defmodule Picsello.Pack do
 
     if Enum.any?(packable_with_albums.albums) do
       packable_with_albums.albums
-      |> Enum.map(fn album ->
+      |> Enum.each(fn album ->
         album
         |> path
         |> PhotoStorage.delete()
