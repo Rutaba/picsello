@@ -498,6 +498,7 @@ defmodule PicselloWeb.LiveHelpers do
     end
   end
 
+  def date_formatter(nil), do: nil
   def date_formatter(date), do: "#{Timex.month_name(date.month)} #{date.day}, #{date.year}"
 
   def date_formatter(date, :day),
