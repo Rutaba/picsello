@@ -6,6 +6,8 @@ defmodule Picsello.EmailAutomationSchedules do
 
   alias Picsello.{
     Repo,
+    Jobs,
+    PaymentSchedules,
     EmailAutomations,
     EmailAutomation.EmailSchedule,
     EmailAutomation.EmailScheduleHistory,
@@ -335,6 +337,8 @@ defmodule Picsello.EmailAutomationSchedules do
     Insert all emails templates for jobs & leads in email schedules
   """
   def job_emails(type, organization_id, job_id, category_type, skip_states \\ []) do
+    job = Jobs.get_job_by_id(job_id)
+
     shoot_skip_states = [:before_shoot, :shoot_thanks]
     all_skip_states = skip_states ++ shoot_skip_states
     now = DateTime.utc_now() |> DateTime.truncate(:second)
@@ -368,7 +372,8 @@ defmodule Picsello.EmailAutomationSchedules do
 
     previous_emails_history = get_emails_by_job(EmailScheduleHistory, job_id, category_type)
 
-    if Enum.empty?(previous_emails_schedules) and Enum.empty?(previous_emails_history) do
+    if Enum.empty?(previous_emails_schedules) and Enum.empty?(previous_emails_history) and
+         !PaymentSchedules.all_paid?(job) do
       emails
     else
       []

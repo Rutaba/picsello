@@ -92,7 +92,9 @@ defmodule Mix.Tasks.RestructureShoots do
         email_schedules = from(es in EmailSchedule, where: es.job_id == ^job.id) |> Repo.all()
 
         if Enum.any?(email_schedules) do
-          job.shoots |> Enum.map(&EmailAutomationSchedules.insert_shoot_emails(job, &1))
+          job
+          |> filter_shoots()
+          |> Enum.map(&EmailAutomationSchedules.insert_shoot_emails(job, &1))
         end
       end)
     end)
@@ -100,7 +102,7 @@ defmodule Mix.Tasks.RestructureShoots do
 
   defp with_shoots(job_query) do
     job_query
-    |> preload([:shoots])
+    |> preload([:shoots, client: [organization: :user]])
     |> Repo.all()
   end
 
@@ -109,14 +111,35 @@ defmodule Mix.Tasks.RestructureShoots do
     |> Enum.filter(&is_nil(&1.archived_at))
   end
 
-  # defp filter_shoots(jobs) do
-  #   jobs
-  #   |> Enum.map(fn %{shoots: shoots} ->
-  #     shoots
-  #     |> Enum.filter(fn %{starts_at} ->
-  #     end)
-  #   end)
-  # end
+  defp filter_shoots(job) do
+    # Examples
+    # 1 shoot_start = 07-11-2023 add 1 day 08-11-2023
+    # today = 06-11-2023
+    # Date.diff(shoot_start, today) >= 0 ->  2 >= 0 true
+
+    # 2 shoot_start = 07-11-2023 add 1 day 08-11-2023
+    # today = 07-11-2023
+    # Date.diff(shoot_start, today) >= 0 ->  1 >= 0 true
+
+    # 3 shoot_start = 07-11-2023 add 1 day 08-11-2023
+    # today = 08-11-2023
+    # Date.diff(shoot_start, today) >= 0 ->  0 >= 0 true
+
+    # 3 shoot_start = 07-11-2023 add 1 day 08-11-2023
+    # today = 09-11-2023
+    # Date.diff(shoot_start, today) >= 0 ->  -1 >= 0 false
+
+    timezone = job.client.organization.user.time_zone
+    today = DateTime.utc_now() |> DateTime.shift_zone!(timezone)
+
+    job.shoots
+    |> Enum.filter(fn shoot ->
+      starts_at = shoot.starts_at |> DateTime.shift_zone!(timezone)
+      # Add 1 day as buffer
+      shoot_start_with_buffer = Date.add(starts_at, 1)
+      Date.diff(shoot_start_with_buffer, today) >= 0
+    end)
+  end
 
   defp shoots_multi_transactions(
          before_shoot_schedules,
