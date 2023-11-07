@@ -442,7 +442,7 @@ defmodule PicselloWeb.Live.Calendar.BookingEvents.Show do
 
   # Funtion Description: [Funtionality should be modified according to backend implementation] By default, status is 'nil' here. 'nil' status means 'Enabled'. If we pass status in assigns, it is recieved as 'disabled'. Similarly, by default, uses are '0'. We are to pass uses in assigns.
   defp add_coupon(assigns) do
-    assigns = assigns |> Enum.into(%{status: nil, uses: 0, text_color: "text-black", btn_class: "border-2 border-base-250/20 bg-base-200 hover:border-base-250 h-8 w-8"})
+    assigns = assigns |> Enum.into(%{status: nil, uses: 0, text_color: "text-black", btn_class: "border border-base-250/20 bg-base-200 hover:border-base-250 h-8 w-8"})
 
     ~H"""
       <div class="flex mt-2">
@@ -479,10 +479,10 @@ defmodule PicselloWeb.Live.Calendar.BookingEvents.Show do
       <% "list" -> %>
         <%= if @booking_event_dates && @booking_event_dates != [] do %>
           <%= for booking_event_date <- @booking_event_dates do %>
-            <div class={classes("mt-10 p-3 border-2 rounded-lg border-base-200", %{"border-red-sales-300" => is_nil(booking_event_date.date)})}>
+            <div class={classes("mt-10 p-3 border rounded-lg border-base-200", %{"border-red-sales-300" => is_nil(booking_event_date.date)})}>
               <div class="flex mb-1">
                 <p class="text-2xl font-bold"> <%= if booking_event_date.date, do: date_formatter(booking_event_date.date), else: "Add date" %> </p>
-                <button class="flex text-blue-planning-300 ml-auto items-center justify-center whitespace-nowrap" phx-click="toggle-section" phx-value-section_id={booking_event_date.id}>
+                <button class="flex text-blue-planning-300 ml-auto items-center justify-center whitespace-nowrap hover:opacity-75" phx-click="toggle-section" phx-value-section_id={booking_event_date.id}>
                   View details
                   <.icon name={if Enum.member?(@collapsed_sections, booking_event_date.id), do: "up", else: "down"} class="mt-1.5 md:mt-1 w-4 h-4 ml-2 stroke-current stroke-3 text-blue-planning-300"/>
                 </button>
@@ -512,7 +512,7 @@ defmodule PicselloWeb.Live.Calendar.BookingEvents.Show do
             </div>
           <% end %>
         <% else %>
-          <div class="p-3 border-2 border-base-200 rounded-lg">
+          <div class="p-3 border border-base-200 rounded-lg">
             <div class="font-bold text-base-250 text-xl flex items-center justify-center p-3 opacity-50"> <div> Pick a package and add a date </div> </div>
           </div>
         <% end %>
@@ -543,7 +543,7 @@ defmodule PicselloWeb.Live.Calendar.BookingEvents.Show do
               <% end) %>
               </div>
             <% else %>
-              <div class="p-3 border-2 border-base-200 rounded-lg">
+              <div class="p-3 border border-base-200 rounded-lg">
                 <div class="font-bold text-base-250 text-xl flex items-center justify-center p-3 opacity-50"> <div> Pick a package and add a date </div> </div>
               </div>
             <% end %>
@@ -598,7 +598,7 @@ defmodule PicselloWeb.Live.Calendar.BookingEvents.Show do
             </div>
           </div>
       <% "calendar" -> %>
-        <div class="border-2 border-base-200 rounded-lg flex p-3 my-1.5">
+        <div class="border border-base-200 rounded-lg flex p-3 my-1.5">
           <div class="flex flex-col">
             <p class="mb-1 font-bold text-black text-lg">
               <%= if @slot.status in [:booked, :reserved] do %>
@@ -687,7 +687,7 @@ defmodule PicselloWeb.Live.Calendar.BookingEvents.Show do
     assigns = Map.put(assigns, :description, HtmlSanitizeEx.strip_tags(description))
 
     ~H"""
-      <div class="rounded-lg border-2 border-gray-300 flex flex-col p-3">
+      <div class="rounded-lg border border-gray-300 flex flex-col p-3">
         <div class="flex items-center mb-4">
           <div class="flex items-center">
             <.icon name="marketing" class="inline-block w-5 h-5 mr-3 mt-0.5 fill-blue-planning-300" />
