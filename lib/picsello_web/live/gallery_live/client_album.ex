@@ -195,6 +195,8 @@ defmodule PicselloWeb.GalleryLive.ClientAlbum do
     noreply(socket)
   end
 
+  def handle_info({:pack, _, _}, socket), do: noreply(socket)
+
   defdelegate handle_info(message, socket), to: PicselloWeb.GalleryLive.Shared
 
   defp assigns(

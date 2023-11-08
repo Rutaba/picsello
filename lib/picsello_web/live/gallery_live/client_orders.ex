@@ -57,6 +57,8 @@ defmodule PicselloWeb.GalleryLive.ClientOrders do
     socket |> noreply()
   end
 
+  def handle_info({:pack, _, _}, socket), do: noreply(socket)
+
   def order_route(%{socket: socket, album: album}, order)
       when album.is_proofing or album.is_finals do
     Routes.gallery_client_order_path(

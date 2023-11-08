@@ -103,6 +103,8 @@ defmodule PicselloWeb.GalleryLive.ClientOrder do
     socket |> noreply()
   end
 
+  def handle_info({:pack, _, _}, socket), do: noreply(socket)
+
   defp process_checkout_order(%{assigns: %{gallery: gallery}} = socket) do
     if connected?(socket) do
       socket
