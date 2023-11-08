@@ -539,12 +539,6 @@ defmodule Picsello.BookingEvents do
       booking_event
       |> Repo.preload(package_template: [organization: :user])
 
-    # TODO: remove this when location implementation is done
-    booking_event =
-      booking_event
-      |> Map.put(:location, :on_location)
-      |> Map.put(:address, "Edgware Road, London, UK")
-
     starts_at = shoot_start_at(date, time, photographer.time_zone)
 
     Multi.new()

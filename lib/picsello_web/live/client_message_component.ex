@@ -528,7 +528,7 @@ defmodule PicselloWeb.ClientMessageComponent do
       <div clas="flex flex-col">
         <div class="flex flex-row mt-4 md:items-center mb-2">
           <label for={"#{@email_type}_email"} class="text-sm font-semibold"><%= String.capitalize(@email_type) %>: <span class="font-light text-sm ml-0.5 italic">(semicolon separated to add more emails)</span></label>
-          <.icon_button class="ml-10 w-8 bg-white border-red-sales-300" title={"remove-#{@email_type}"} phx-click={"remove-#{@email_type}"} phx-target={@myself} color="red-sales-300" icon="trash"/>
+          <.icon_button_ class="ml-10 w-8 bg-white border-red-sales-300 py-1 px-2" title={"remove-#{@email_type}"} phx-click={"remove-#{@email_type}"} phx-target={@myself} color="red-sales-300" icon="trash" icon_class="w-4 h-4"/>
         </div>
         <div class="flex flex-col">
           <input type="text" class="w-full md:w-2/3 text-input" id={"#{@email_type}_email"} value={(if Map.has_key?(@recipients, @email_type), do: "#{Enum.join(Map.get(@recipients, @email_type, []), "; ")}", else: "")} phx-keyup={"validate_#{@email_type}_email"} phx-target={@myself} phx-debounce="1000" spellcheck="false" placeholder="enter email(s)…"/>
@@ -549,12 +549,13 @@ defmodule PicselloWeb.ClientMessageComponent do
   defp icon_button_(assigns) do
     assigns =
       assigns
-      |> Map.put(:rest, Map.drop(assigns, [:color, :icon, :inner_block, :class, :disabled]))
-      |> Enum.into(%{class: "", disabled: false, inner_block: nil})
+      |> Map.put(:rest, Map.drop(assigns, [:color, :icon, :inner_block, :class, :disabled, :icon_class]))
+      |> Enum.into(%{class: "", disabled: false, inner_block: nil, icon_class: nil})
+      |> IO.inspect
 
     ~H"""
-    <button type="button" class={classes("btn-tertiary flex items-center p-1 font-sans rounded-lg hover:opacity-75 transition-colors text-#{@color} #{@class}", %{"opacity-50 hover:opacity-30 hover:cursor-not-allowed" => @disabled})}} disabled={@disabled} {@rest}>
-      <.icon name={@icon} class={classes("w-3 h-3 fill-current text-#{@color}", %{"mr-1" => @inner_block})} />
+    <button type="button" class={classes("btn-tertiary flex items-center py-1 font-sans rounded-lg hover:opacity-75 transition-colors text-#{@color} #{@class}", %{"opacity-50 hover:opacity-30 hover:cursor-not-allowed" => @disabled})}} disabled={@disabled} {@rest}>
+      <.icon name={@icon} class={classes("w-3 h-3 fill-current text-#{@color} #{@icon_class}", %{"mr-1" => @inner_block})} />
       <%= if @inner_block do %>
         <%= render_block(@inner_block) %>
       <% end %>
