@@ -95,7 +95,7 @@ defmodule PicselloWeb.SearchComponent do
                   <.icon name="search" class="w-4 ml-1 fill-current" />
                 <% end %>
               </a>
-              <%= text_input f, :search, value: Map.get(@selection || %{}, :name), class: "form-control w-full text-input indent-6", phx_debounce: "500", placeholder: @placeholder, maxlength: 3, autocomplete: "off" %>
+              <%= text_input f, :search, value: Map.get(@selection || %{}, :name), class: "form-control w-full text-input indent-6", phx_debounce: "500", placeholder: @placeholder, maxlength: (if @component_used_for == :booking_events_search, do: nil, else: 3), autocomplete: "off" %>
               <%= if Enum.any?(@results) do %>
                 <div id="search_results" class="absolute top-14 w-full z-10">
                   <div class="z-50 left-0 right-0 rounded-lg border border-gray-100 shadow py-2 px-2 bg-white w-full overflow-auto max-h-48 h-fit">

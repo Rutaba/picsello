@@ -442,7 +442,14 @@ defmodule PicselloWeb.Live.Calendar.BookingEvents.Show do
 
   # Funtion Description: [Funtionality should be modified according to backend implementation] By default, status is 'nil' here. 'nil' status means 'Enabled'. If we pass status in assigns, it is recieved as 'disabled'. Similarly, by default, uses are '0'. We are to pass uses in assigns.
   defp add_coupon(assigns) do
-    assigns = assigns |> Enum.into(%{status: nil, uses: 0, text_color: "text-black", btn_class: "border border-base-250/20 bg-base-200 hover:border-base-250 h-8 w-8"})
+    assigns =
+      assigns
+      |> Enum.into(%{
+        status: nil,
+        uses: 0,
+        text_color: "text-black",
+        btn_class: "border border-base-250/20 bg-base-200 hover:border-base-250 h-8 w-8"
+      })
 
     ~H"""
       <div class="flex mt-2">
@@ -564,7 +571,7 @@ defmodule PicselloWeb.Live.Calendar.BookingEvents.Show do
                 <%= if @slot.status in [:booked, :reserved] do %>
                   <div class="flex gap-2 items-center">
                     <.icon name="clock-2" class="block md:hidden w-3 h-3 stroke-current text-blue-planning-300 mt-1" />
-                    <button phx-click="open-job" phx-value-slot_job_id={@slot.job_id} class="text-blue-planning-300 underline"><%= slot_time_formatter(@slot) %></button>
+                    <button phx-click="open-job" phx-value-slot-job-id={@slot.job_id} class="text-blue-planning-300 underline"><%= slot_time_formatter(@slot) %></button>
                   </div>
                 <% else %>
                   <div class="flex gap-2 items-center">
@@ -782,7 +789,8 @@ defmodule PicselloWeb.Live.Calendar.BookingEvents.Show do
   end
 
   defp disable_slot_actions?(booking_event_date, event_status) do
-    event_status not in [:disabled, :archive] && (is_nil(booking_event_date.date) || date_passed?(booking_event_date.date))
+    event_status not in [:disabled, :archive] &&
+      (is_nil(booking_event_date.date) || date_passed?(booking_event_date.date))
   end
 
   defp booking_slot_tabs() do
@@ -840,16 +848,20 @@ defmodule PicselloWeb.Live.Calendar.BookingEvents.Show do
             icon: "envelope",
             disabled:
               is_nil(booking_event_date.date) ||
-              !BookingEventDates.is_booked_any_date?(
-                [booking_event_date.date],
-                booking_event_date.booking_event_id
-              )
+                !BookingEventDates.is_booked_any_date?(
+                  [booking_event_date.date],
+                  booking_event_date.booking_event_id
+                )
           }
         ]
 
     actions ++
       [
-        %{action: "edit-date", icon: "pencil", disabled: booking_event_date.date && date_passed?(booking_event_date.date)},
+        %{
+          action: "edit-date",
+          icon: "pencil",
+          disabled: booking_event_date.date && date_passed?(booking_event_date.date)
+        },
         %{action: "duplicate-date", icon: "duplicate-2", disabled: false},
         %{
           action: "confirm-delete-date",
