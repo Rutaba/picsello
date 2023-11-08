@@ -638,15 +638,7 @@ defmodule PicselloWeb.EmailAutomationLive.Shared do
 
     timezone = job.client.organization.user.time_zone
 
-    Logger.info("-- before_shoot timezone: #{timezone}")
-
     today = today_timezone(timezone)
-
-    today_offset_original =
-      DateTime.utc_now() |> Timex.end_of_day() |> DateTime.shift_zone!(timezone)
-
-    Logger.info("-- before_shoot today: #{today}")
-    Logger.info("-- before_shoot today_offset_original: #{today_offset_original}")
 
     %{sign: sign} = EmailAutomations.explode_hours(email.total_hours)
     days_to_compare = hours_to_days(email.total_hours)
@@ -882,8 +874,11 @@ defmodule PicselloWeb.EmailAutomationLive.Shared do
   defp get_date_for_schedule(nil, date), do: date
   defp get_date_for_schedule(email, _date), do: email.reminded_at
 
-  defp is_send_time?(days_diff, days_to_compare, "+"), do: days_diff >= days_to_compare
-  defp is_send_time?(days_diff, days_to_compare, "-"), do: days_diff <= days_to_compare
+  defp is_send_time?(days_diff, days_to_compare, "+"),
+    do: days_diff >= days_to_compare && days_diff <= days_to_compare + 1
+
+  defp is_send_time?(days_diff, days_to_compare, "-"),
+    do: days_diff <= days_to_compare && days_diff + 1 >= days_to_compare
 
   defp get_job_id(job) when is_map(job), do: job.id
   defp get_job_id(_), do: nil
