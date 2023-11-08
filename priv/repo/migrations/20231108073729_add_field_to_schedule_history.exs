@@ -4,11 +4,8 @@ defmodule Picsello.Repo.Migrations.AddFieldToScheduleHistory do
 
   alias Picsello.{
     EmailAutomation.EmailSchedule,
-    EmailAutomation.EmailScheduleHistory,
     EmailAutomationSchedules
   }
-
-  alias Ecto.Multi
 
   @type_name "stopped_reason_type"
   def up do
@@ -17,7 +14,7 @@ defmodule Picsello.Repo.Migrations.AddFieldToScheduleHistory do
     end
 
     alter table(:email_schedules_history) do
-      add(:stopped_reason, :"#{@type_name}")
+      add(:stopped_reason, :string)
     end
 
     flush()

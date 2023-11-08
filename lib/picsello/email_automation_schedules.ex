@@ -304,13 +304,21 @@ defmodule Picsello.EmailAutomationSchedules do
         piepline_id,
         table \\ EmailSchedule
       ) do
-    query = from(es in table, where: es.email_automation_pipeline_id == ^piepline_id)
+    query = get_schedule_by_pipeline(table, piepline_id)
 
     case category_type do
       :gallery -> query |> where([es], es.gallery_id == ^gallery_id)
       :shoot -> query |> where([es], es.shoot_id == ^shoot_id)
       _ -> query |> where([es], es.job_id == ^job_id)
     end
+  end
+
+  def get_schedule_by_pipeline(table, pipeline_ids) when is_list(pipeline_ids) do
+    from(es in table, where: es.email_automation_pipeline_id in ^pipeline_ids)
+  end
+
+  def get_schedule_by_pipeline(table, pipeline_id) do
+    from(es in table, where: es.email_automation_pipeline_id == ^pipeline_id)
   end
 
   def get_all_emails_active_by_job_pipeline(category, job_id, pipeline_id) do

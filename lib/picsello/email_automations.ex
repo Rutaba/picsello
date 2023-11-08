@@ -52,6 +52,11 @@ defmodule Picsello.EmailAutomations do
     |> Repo.one()
   end
 
+  def get_pipelines_by_states(states) do
+    from(eap in EmailAutomationPipeline, where: eap.state in ^states)
+    |> Repo.all()
+  end
+
   def get_pipeline_by_state(state) do
     from(eap in EmailAutomationPipeline, where: eap.state == ^state)
     |> Repo.one()
