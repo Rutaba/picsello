@@ -1,4 +1,5 @@
 defmodule Picsello.EmailAutomation.GarbageEmailCollector do
+  @moduledoc false
   use GenServer
 
   alias Picsello.{
@@ -21,7 +22,7 @@ defmodule Picsello.EmailAutomation.GarbageEmailCollector do
   ## Time has been set to 3 days
   ## * 60 * 24 * 3
   def init(state) do
-    :timer.send_interval(60000, :collect_garbage_emails)
+    :timer.send_interval(60_000, :collect_garbage_emails)
     {:ok, state}
   end
 
