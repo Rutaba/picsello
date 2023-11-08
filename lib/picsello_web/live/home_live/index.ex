@@ -1404,7 +1404,7 @@ defmodule PicselloWeb.HomeLive.Index do
         :link,
         Routes.gallery_downloads_url(
           socket,
-          :download_csv,
+          :download_lightroom_csv,
           gallery.client_link_hash,
           number
         )

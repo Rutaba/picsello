@@ -265,7 +265,6 @@ defmodule PicselloWeb.Router do
           end
 
           live "/paid", GalleryLive.ClientOrder, :paid
-          get "/csv", GalleryDownloadsController, :download_csv
           get "/csv-lightroom", GalleryDownloadsController, :download_lightroom_csv
         end
       end
