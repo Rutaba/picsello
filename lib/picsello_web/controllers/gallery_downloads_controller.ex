@@ -71,25 +71,6 @@ defmodule PicselloWeb.GalleryDownloadsController do
     process_photos(conn, photos, "#{gallery.name}.zip")
   end
 
-  defp assure_photo_size({with_size, []}), do: with_size
-
-  defp assure_photo_size({with_size, without_size}) do
-    without_size
-    |> Task.async_stream(
-      fn %{original_url: url, id: id} ->
-        case PhotoStorage.path_to_url(url) |> Tesla.get() do
-          {:ok, %{status: 200, body: body}} -> %{id: id, size: byte_size(body)}
-          _ -> %{id: id, size: 123_456}
-        end
-      end,
-      timeout: 15_000
-    )
-    |> Enum.map(&elem(&1, 1))
-    |> then(&Photos.update_photos_in_bulk(without_size, &1))
-    |> then(fn {:ok, photos} -> photos end)
-    |> Enum.concat(with_size)
-  end
-
   defp process_photos(conn, photos, file_name) do
     photos
     |> Picsello.Pack.stream()
