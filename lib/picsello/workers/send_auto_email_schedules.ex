@@ -218,12 +218,12 @@ defmodule Picsello.Workers.ScheduleAutomationEmail do
     case send_email_task do
       {:ok, _result} ->
         Logger.info(
-          "Email #{schedule.name} sent at #{DateTime.truncate(DateTime.utc_now(), :second)}"
+          "---------Email Sent: #{schedule.name} sent at #{DateTime.truncate(DateTime.utc_now(), :second)}"
         )
 
       result when result in ["ok", :ok] ->
         Logger.info(
-          "Email #{schedule.name} sent at #{DateTime.truncate(DateTime.utc_now(), :second)}"
+          "---------Email Sent: #{schedule.name} sent at #{DateTime.truncate(DateTime.utc_now(), :second)}"
         )
 
       error ->
