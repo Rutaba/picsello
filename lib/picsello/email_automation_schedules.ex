@@ -13,8 +13,12 @@ defmodule Picsello.EmailAutomationSchedules do
     Galleries
   }
 
-  def get_schedule_by_id(id) do
+  def get_schedule_by_id_query(id) do
     from(es in EmailSchedule, where: es.id == ^id)
+  end
+
+  def get_schedule_by_id(id) do
+    get_schedule_by_id_query(id)
     |> Repo.one()
   end
 
@@ -320,21 +324,56 @@ defmodule Picsello.EmailAutomationSchedules do
     all_proposal_active_emails_query =
       get_all_emails_active_by_job_pipeline(:lead, job_id, pipeline.id)
 
-    Multi.new()
-    |> Multi.update_all(:proposal_emails, all_proposal_active_emails_query,
-      set: [
-        stopped_reason: :proposal_accepted,
-        stopped_at: DateTime.truncate(DateTime.utc_now(), :second)
-      ]
+    delete_and_insert_schedules_by(
+      all_proposal_active_emails_query,
+      :proposal_accepted
     )
+  end
+
+  def delete_and_insert_schedules_by(email_schedule_query, stopped_reason) do
+    schedule_history_params = make_schedule_history_params(email_schedule_query, stopped_reason)
+
+    Multi.new()
+    |> Multi.delete_all(:proposal_emails, email_schedule_query)
+    |> Multi.insert_all(:schedule_history, EmailScheduleHistory, schedule_history_params)
     |> Repo.transaction()
+  end
+
+  def make_schedule_history_params(query, stopped_reason) do
+    query
+    |> Repo.all()
+    |> Enum.map(fn schedule ->
+      schedule
+      |> Map.take([
+        :total_hours,
+        :condition,
+        :type,
+        :body_template,
+        :name,
+        :subject_template,
+        :private_name,
+        :reminded_at,
+        :email_automation_pipeline_id,
+        :job_id,
+        :shoot_id,
+        :gallery_id,
+        :order_id,
+        :organization_id
+      ])
+      |> Map.merge(%{
+        stopped_reason: stopped_reason,
+        stopped_at: DateTime.truncate(DateTime.utc_now(), :second),
+        inserted_at: DateTime.truncate(DateTime.utc_now(), :second),
+        updated_at: DateTime.truncate(DateTime.utc_now(), :second)
+      })
+    end)
   end
 
   def get_stopped_emails_text(job_id, "manual_booking_proposal_sent") do
     pipeline = EmailAutomations.get_pipeline_by_state(:manual_booking_proposal_sent)
 
     emails_stopped =
-      from(es in EmailSchedule,
+      from(es in EmailScheduleHistory,
         where:
           es.email_automation_pipeline_id == ^pipeline.id and es.job_id == ^job_id and
             es.stopped_reason == :proposal_accepted

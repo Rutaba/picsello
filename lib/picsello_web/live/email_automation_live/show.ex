@@ -213,12 +213,12 @@ defmodule PicselloWeb.Live.EmailAutomations.Show do
   @impl true
   def handle_info({:confirm_event, "stop-email-schedule-" <> id}, socket) do
     id = String.to_integer(id)
-    stopped_at = DateTime.truncate(DateTime.utc_now(), :second)
+    schedule_query = EmailAutomationSchedules.get_schedule_by_id_query(id)
 
-    case EmailAutomationSchedules.update_email_schedule(id, %{
-           stopped_at: stopped_at,
-           stopped_reason: :photographer_stopped
-         }) do
+    case EmailAutomationSchedules.delete_and_insert_schedules_by(
+           schedule_query,
+           :photographer_stopped
+         ) do
       {:ok, _} -> socket |> put_flash(:success, "Email Stopped Successfully")
       _ -> socket |> put_flash(:error, "Error in Updating Email")
     end

@@ -20,6 +20,7 @@ defmodule Picsello.EmailAutomation.EmailScheduleHistory do
     field :private_name, :string
     field :stopped_at, :utc_datetime, default: nil
     field :reminded_at, :utc_datetime, default: nil
+    field :stopped_reason, Ecto.Enum, values: [:photographer_stopped, :proposal_accepted]
 
     belongs_to(:email_automation_pipeline, EmailAutomationPipeline)
     belongs_to(:job, Job)
@@ -35,7 +36,7 @@ defmodule Picsello.EmailAutomation.EmailScheduleHistory do
     email_preset
     |> cast(
       attrs,
-      ~w[email_automation_pipeline_id name type private_name subject_template body_template total_hours condition stopped_at reminded_at job_id shoot_id gallery_id order_id organization_id]a
+      ~w[email_automation_pipeline_id name type private_name subject_template body_template total_hours condition stopped_at stopped_reason reminded_at job_id shoot_id gallery_id order_id organization_id]a
     )
     |> validate_required(~w[email_automation_pipeline_id type subject_template body_template]a)
   end
