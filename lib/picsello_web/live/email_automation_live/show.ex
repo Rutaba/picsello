@@ -568,6 +568,9 @@ defmodule PicselloWeb.Live.EmailAutomations.Show do
       "completed" ->
         "Completed"
 
+      "lead_converted_to_job" ->
+        "Lead has been converted to job"
+
       _ ->
         ""
     end

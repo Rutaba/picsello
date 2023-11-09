@@ -20,10 +20,9 @@ defmodule Picsello.EmailAutomation.GarbageEmailCollector do
     GenServer.start_link(__MODULE__, %{})
   end
 
-  ## Time has been set to 3 days
-  ## * 60 * 24 * 3
+  ## Time has been set to 1 days
   def init(state) do
-    :timer.send_interval(60_000, :collect_garbage_emails)
+    :timer.send_interval(60_000 * 60 * 24, :collect_garbage_emails)
     {:ok, state}
   end
 
@@ -94,10 +93,6 @@ defmodule Picsello.EmailAutomation.GarbageEmailCollector do
 
   defp stop_job_and_lead_emails(job) do
     states = [
-      "client_contact",
-      "manual_thank_you_lead",
-      "manual_booking_proposal_sent",
-      "abandoned_emails",
       "pays_retainer",
       "pays_retainer_offline",
       "balance_due",
@@ -106,6 +101,7 @@ defmodule Picsello.EmailAutomation.GarbageEmailCollector do
       "paid_offline_full"
     ]
 
+    stop_junk_lead_emails(job)
     pipelines = EmailAutomations.get_pipelines_by_states(states) |> Enum.map(& &1.id)
     payment_schedules = PaymentSchedules.payment_schedules(job)
     today = DateTime.utc_now()
@@ -125,6 +121,25 @@ defmodule Picsello.EmailAutomation.GarbageEmailCollector do
         )
       end
     end
+  end
+
+  defp stop_junk_lead_emails(lead) do
+    states = [
+      "client_contact",
+      "manual_thank_you_lead",
+      "manual_booking_proposal_sent",
+      "abandoned_emails"
+    ]
+
+    pipelines = EmailAutomations.get_pipelines_by_states(states) |> Enum.map(& &1.id)
+
+    email_schedules_query =
+      EmailAutomationSchedules.query_get_email_schedule(:job, nil, nil, lead.id, pipelines)
+
+    EmailAutomationSchedules.delete_and_insert_schedules_by(
+      email_schedules_query,
+      :lead_converted_to_job
+    )
   end
 
   defp stop_archived_emails(job) do
