@@ -901,9 +901,6 @@ defmodule PicselloWeb.Live.Calendar.BookingEvents.Show do
     ]
   end
 
-  defp sort_by_date(%{dates: dates} = booking_event),
-    do: Map.replace(booking_event, :dates, Enum.sort(dates, :desc))
-
   defp slot_time_formatter(slot),
     do: Time.to_string(slot.slot_start) <> " - " <> Time.to_string(slot.slot_end)
 

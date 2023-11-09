@@ -105,7 +105,7 @@ defmodule Picsello.BookingEvents do
         package_template: [:package_payment_schedules, :contract, :questionnaire_template]
       ])
 
-    dates = reorder_time_blocks(booking_event.dates)
+    dates = reorder_time_blocks(booking_event.dates) |> Enum.sort_by(& &1.date, {:desc, Date})
     Map.put(booking_event, :dates, dates)
   end
 
