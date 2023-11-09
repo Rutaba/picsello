@@ -64,8 +64,18 @@ defmodule Picsello.Workers.PackGallery do
     if Enum.any?(gallery_with_albums.albums) do
       gallery_with_albums.albums
       |> Enum.each(fn album ->
-        __MODULE__.new(%{album_id: album.id})
-        |> Oban.insert()
+        case album do
+          %{is_proofing: true, is_finals: false} ->
+            Logger.info(
+              "[Enqueue] PackDigitals no pack because album is proofing selections: #{album.id}"
+            )
+
+            :ok
+
+          _ ->
+            __MODULE__.new(%{album_id: album.id})
+            |> Oban.insert()
+        end
       end)
     end
   end
