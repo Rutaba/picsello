@@ -602,7 +602,7 @@ defmodule Picsello.BookingEvents do
       Picsello.Contracts.maybe_add_default_contract_to_package_multi(package)
     end)
     |> Multi.insert(:shoot, fn %{job: job} ->
-      Picsello.Shoot.create_changeset(
+      Picsello.Shoot.create_booking_event_shoot_changeset(
         booking_event
         |> Map.take([:name, :location, :address])
         |> Map.put(:starts_at, starts_at)
