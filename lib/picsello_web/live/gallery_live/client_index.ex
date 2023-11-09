@@ -234,6 +234,7 @@ defmodule PicselloWeb.GalleryLive.ClientIndex do
     |> assign_count(favorites_filter, gallery)
     |> assign(favorites_count: Galleries.gallery_favorites_count(gallery))
     |> update_grid_photos(favorites_filter)
+    |> noreply()
   end
 
   def handle_info({:pack, _, _}, socket), do: noreply(socket)
@@ -253,18 +254,6 @@ defmodule PicselloWeb.GalleryLive.ClientIndex do
 
   defp thumbnail_url(%{thumbnail_photo: nil}), do: @blank_image
   defp thumbnail_url(%{thumbnail_photo: photo}), do: preview_url(photo)
-
-  defp update_grid_photos(socket, true) do
-    socket
-    |> assign_photos(@per_page)
-    |> push_event("reload_grid", %{})
-    |> noreply()
-  end
-
-  defp update_grid_photos(socket, _favorites_filter) do
-    socket
-    |> noreply()
-  end
 
   defp assign_photo_count(
          %{
