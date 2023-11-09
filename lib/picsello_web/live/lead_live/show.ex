@@ -93,7 +93,7 @@ defmodule PicselloWeb.LeadLive.Show do
         %{assigns: %{proposal: proposal, job: job}} = socket
       ) do
     if proposal do
-      push_copy_or_view_event(socket, action, proposal)
+      actions_event(socket, action, proposal)
     else
       socket
       |> upsert_booking_proposal()
@@ -111,7 +111,7 @@ defmodule PicselloWeb.LeadLive.Show do
             |> assign(proposal: proposal)
             |> assign(job: job, package: job.package)
 
-          push_copy_or_view_event(socket, action, proposal)
+          actions_event(socket, action, proposal)
 
         {:error, _} ->
           socket
@@ -459,7 +459,7 @@ defmodule PicselloWeb.LeadLive.Show do
     |> Repo.transaction()
   end
 
-  defp push_copy_or_view_event(socket, action, proposal) do
+  defp actions_event(socket, action, proposal) do
     if action == "view" do
       socket
       |> push_event("ViewClientLink", %{"url" => BookingProposal.url(proposal.id)})
