@@ -204,6 +204,17 @@ config :picsello, :nylas, %{
   picsello_tag: "[From Picsello]"
 }
 
+config(:fun_with_flags, :cache_bust_notifications, enabled: false)
+
+config :fun_with_flags, :persistence,
+  adapter: FunWithFlags.Store.Persistent.Ecto,
+  repo: Picsello.Repo
+
+config :fun_with_flags, :cache,
+  enabled: true,
+  # in seconds
+  ttl: 900
+
 # Import environment specific config. This must remain at the bottom
 # of this file so it overrides the configuration defined above.
 import_config "#{Mix.env()}.exs"
