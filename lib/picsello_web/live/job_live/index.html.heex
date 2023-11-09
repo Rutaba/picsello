@@ -9,7 +9,7 @@
       <div class="fixed top-12 left-0 right-0 z-10 flex flex-shrink-0 w-full sm:p-0 p-6 mt-1 sm:mt-0 sm:bottom-auto sm:static sm:items-start sm:w-auto">
         <%= case @type.singular do %>
           <% "lead" -> %>
-            <a {testid("create-a-lead")} title="create lead" class="w-full md:w-auto btn-primary text-center" phx-click="create-lead">
+            <a {testid("create-a-lead")} title="create lead" class="w-full md:w-auto btn-primary text-center hover:cursor-pointer" phx-click="create-lead">
               Create a lead
             </a>
           <% "job" -> %>
@@ -34,7 +34,7 @@
           <p class="text-center text-lg lg:text-2xl text-base-250">No leads match your search or filters.</p>
         <% else %>
           <.empty_state_base tour_embed="https://demo.arcade.software/2rNmJeh5ZDMmrhth7v0P?embed" headline="Meet Leads" eyebrow_text="Leads Product Tour" body="Leads are the beginning to a great relationship between you and your client! Creating one takes less than a minute." third_party_padding="calc(59.916666666666664% + 41px)">
-            <a title="create lead" class="w-full md:w-auto btn-tertiary text-center flex-shrink-0" phx-click="create-lead">
+            <a title="create lead" class="w-full md:w-auto btn-tertiary text-center flex-shrink-0 hover:cursor-pointer" phx-click="create-lead">
               Create a lead
             </a>
           </.empty_state_base>
