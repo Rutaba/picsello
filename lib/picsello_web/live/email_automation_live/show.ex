@@ -246,7 +246,7 @@ defmodule PicselloWeb.Live.EmailAutomations.Show do
       <div testid="pipeline-section" class="mb-3 md:mr-4 border border-base-200 rounded-lg">
         <% next_email = get_next_email_schdule_date(@category_type, sorted_emails, @pipeline.id, @pipeline.state, @subcategory_slug) %>
         <div class={classes("flex justify-between p-2", %{"opacity-60" => next_email.is_completed})}>
-            <% stopped_email_text = EmailAutomationSchedules.get_stopped_emails_text(@job_id, @pipeline.state) %>
+            <% stopped_email_text = EmailAutomationSchedules.get_stopped_emails_text(@job_id, @pipeline.state, PicselloWeb.Helpers) %>
             <%= if stopped_email_text do %>
               <span class="pl-1 text-red-sales-300 font-bold"> <%= stopped_email_text %> </span>
             <% else %>
@@ -311,7 +311,7 @@ defmodule PicselloWeb.Live.EmailAutomations.Show do
                     Completed <%= get_date(email.reminded_at) %>
                   <% end %>
                   <%= if not is_nil(email.stopped_at) do %>
-                    Stopped <%= get_date(email.stopped_at) %>
+                    Stopped <%= get_date(email.stopped_at) %> | Reason: <%= stop_reason_text(email.stopped_reason) %>
                   <% end %>
 
                   <p class="text-black text-xl">
@@ -544,4 +544,32 @@ defmodule PicselloWeb.Live.EmailAutomations.Show do
 
   defp get_conditional_date(state, email, pipeline_id, job, gallery),
     do: fetch_date_for_state_maybe_manual(state, email, pipeline_id, job, gallery, nil)
+
+  def stop_reason_text(status) do
+    case status do
+      "photographer_stopped" ->
+        "Stopped by Photographer"
+
+      "proposal_accepted" ->
+        "Proposal has already been accepted"
+
+      "already_paid_full" ->
+        "Job has already been paid in full"
+
+      "shoot_starts_at_passed" ->
+        "Shoot date has already been passed"
+
+      "gallery_already_shared_because_order_placed" ->
+        "Gallery has already been shared"
+
+      "archived" ->
+        "Archived"
+
+      "completed" ->
+        "Completed"
+
+      _ ->
+        ""
+    end
+  end
 end

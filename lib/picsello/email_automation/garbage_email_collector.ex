@@ -10,7 +10,8 @@ defmodule Picsello.EmailAutomation.GarbageEmailCollector do
     EmailAutomations,
     EmailAutomationSchedules,
     PaymentSchedules,
-    Orders
+    Orders,
+    EmailAutomation.EmailSchedule
   }
 
   import Ecto.Query
@@ -36,20 +37,58 @@ defmodule Picsello.EmailAutomation.GarbageEmailCollector do
       jobs =
         user
         |> Job.for_user()
+        |> Job.not_leads()
         |> preload([:shoots, galleries: :orders, client: [organization: :user]])
         |> Repo.all()
 
-      stop_garbage_emails(jobs)
+      archived_jobs =
+        user
+        |> Job.for_user()
+        |> archived_jobs()
+
+      completed_jobs =
+        user
+        |> Job.for_user()
+        |> Job.not_leads()
+        |> completed_jobs()
+
+      stop_garbage_emails(%{jobs: jobs})
+      stop_garbage_emails(%{archived_jobs: archived_jobs})
+      stop_garbage_emails(%{completed_jobs: completed_jobs})
     end)
 
     {:noreply, state}
   end
 
-  defp stop_garbage_emails(jobs) do
+  defp archived_jobs(query) do
+    query
+    |> Repo.all()
+    |> Enum.filter(&(not is_nil(&1.archived_at)))
+  end
+
+  defp completed_jobs(query) do
+    query
+    |> Repo.all()
+    |> Enum.filter(&(not is_nil(&1.completed_at)))
+  end
+
+  defp stop_garbage_emails(%{jobs: jobs}) do
     Enum.each(jobs, fn job ->
       stop_job_and_lead_emails(job)
       stop_shoot_emails(job)
       stop_gallery_emails(job)
+    end)
+  end
+
+  defp stop_garbage_emails(%{archived_jobs: archived_jobs}) do
+    Enum.each(archived_jobs, fn archived_job ->
+      stop_archived_emails(archived_job)
+    end)
+  end
+
+  defp stop_garbage_emails(%{completed_jobs: completed_jobs}) do
+    Enum.each(completed_jobs, fn completed_job ->
+      stop_completed_emails(completed_job)
     end)
   end
 
@@ -68,16 +107,49 @@ defmodule Picsello.EmailAutomation.GarbageEmailCollector do
     ]
 
     pipelines = EmailAutomations.get_pipelines_by_states(states) |> Enum.map(& &1.id)
+    payment_schedules = PaymentSchedules.payment_schedules(job)
+    today = DateTime.utc_now()
+    buffer_days = 1
 
     if PaymentSchedules.all_paid?(job) do
-      email_schedules_query =
-        EmailAutomationSchedules.query_get_email_schedule(:job, nil, nil, job.id, pipelines)
+      all_paid_buffer_days? =
+        Enum.all?(payment_schedules, &(Date.diff(today, &1.paid_at) >= buffer_days))
 
-      EmailAutomationSchedules.delete_and_insert_schedules_by(
-        email_schedules_query,
-        :already_paid_full
-      )
+      if all_paid_buffer_days? do
+        email_schedules_query =
+          EmailAutomationSchedules.query_get_email_schedule(:job, nil, nil, job.id, pipelines)
+
+        EmailAutomationSchedules.delete_and_insert_schedules_by(
+          email_schedules_query,
+          :already_paid_full
+        )
+      end
     end
+  end
+
+  defp stop_archived_emails(job) do
+    email_schedules_query = from(es in EmailSchedule, where: es.job_id == ^job.id)
+
+    EmailAutomationSchedules.delete_and_insert_schedules_by(
+      email_schedules_query,
+      :archived
+    )
+  end
+
+  defp stop_completed_emails(job) do
+    post_shoot_pipeline = EmailAutomations.get_pipeline_by_state(:post_shoot)
+
+    email_schedules_query =
+      from(es in EmailSchedule,
+        where:
+          es.job_id == ^job.id and is_nil(es.gallery_id) and
+            es.email_automation_pipeline_id != ^post_shoot_pipeline.id
+      )
+
+    EmailAutomationSchedules.delete_and_insert_schedules_by(
+      email_schedules_query,
+      :completed
+    )
   end
 
   defp stop_shoot_emails(job) do

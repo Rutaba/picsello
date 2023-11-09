@@ -8,6 +8,7 @@ defmodule Picsello.EmailAutomation.EmailScheduleHistory do
   }
 
   @types ~w(lead job shoot gallery order)a
+  @stopped_reason_values ~w(photographer_stopped proposal_accepted already_paid_full shoot_starts_at_passed gallery_already_shared_because_order_placed archived completed)a
   alias Picsello.{Job, Shoot, Galleries.Gallery, Cart.Order, Organization}
 
   schema "email_schedules_history" do
@@ -20,15 +21,7 @@ defmodule Picsello.EmailAutomation.EmailScheduleHistory do
     field :private_name, :string
     field :stopped_at, :utc_datetime, default: nil
     field :reminded_at, :utc_datetime, default: nil
-
-    field :stopped_reason, Ecto.Enum,
-      values: [
-        :photographer_stopped,
-        :proposal_accepted,
-        :already_paid_full,
-        :shoot_starts_at_passed,
-        :gallery_already_shared_because_order_placed
-      ]
+    field :stopped_reason, Ecto.Enum, values: @stopped_reason_values
 
     belongs_to(:email_automation_pipeline, EmailAutomationPipeline)
     belongs_to(:job, Job)
