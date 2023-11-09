@@ -65,106 +65,114 @@ defmodule PicselloWeb.Live.Calendar.BookingEventModal do
         </div>
       </div>
       <.form :let={f} for={@changeset} phx-change="validate" phx-submit="submit" phx-target={@myself} >
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-5 mt-8">
-          <div class="">
-            <%= labeled_input f, :date, type: :date_input, min: Date.utc_today(), class: "w-full", disabled: @has_booking? %>
-          </div>
-          <%= inputs_for f, :time_blocks, fn t -> %>
-            <div class="flex gap-2 items-center">
-              <div class="grow">
-                <%= labeled_input t, :start_time, type: :time_input, label: "Event Start", class: "", disabled: @has_booking? %>
+        <div class="p-2 border border-base-200 rounded-lg mt-8">
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+            <div class="">
+              <%= labeled_input f, :date, type: :date_input, min: Date.utc_today(), class: "w-full", disabled: @has_booking? %>
+            </div>
+            <%= inputs_for f, :time_blocks, fn t -> %>
+              <div class="flex gap-2 items-center">
+                <div class="grow">
+                  <%= labeled_input t, :start_time, type: :time_input, label: "Event Start", class: "", disabled: @has_booking? %>
+                </div>
+                <div class="pt-5"> - </div>
+                <div class="grow">
+                  <%= labeled_input t, :end_time, type: :time_input, label: "Event End", class: "" , disabled: @has_booking?%>
+                </div>
               </div>
-              <div class="pt-5"> - </div>
+            <% end %>
+            <div>
+              <.location f={f} myself={@myself} allow_location_toggle={false} allow_address_toggle={false} address_field={true} is_edit={true} address_field_title="Event Address" />
+            </div>
+            <div class="flex gap-5">
               <div class="grow">
-                <%= labeled_input t, :end_time, type: :time_input, label: "Event End", class: "" , disabled: @has_booking?%>
+                <%= labeled_select f, :session_length, duration_options(), label: "Session length", prompt: "Select below", disabled: @has_booking? %>
+              </div>
+              <div class="grow">
+                <%= labeled_select f, :session_gap, buffer_options(), label: "Session Gap", prompt: "Select below", optional: true, disabled: @has_booking? %>
+              </div>
+            </div>
+          </div>
+          <div class="flex justify-center mr-16">
+            <%= error_tag(f, :time_blocks, prefix: "Times", class: "text-red-sales-300 text-sm mb-2") %>
+          </div>
+
+          <div class="mt-6 flex items-center">
+            <%= input f, :is_repeat, type: :checkbox, class: "checkbox border-blue-planning-300 w-6 h-6" %>
+            <div class="ml-2"> Repeat dates?</div>
+          </div>
+          <%= if @changeset |> current |> Map.get(:is_repeat) do %>
+            <div class="lg:w-2/3 border-2 border-base-200 rounded-lg mt-4">
+              <div class="font-bold p-4 bg-base-200 text-md">
+                Repeat settings
+              </div>
+              <div class="grid grid-cols-1 md:grid-cols-5 gap-3 p-4">
+                <div class="md:col-span-3">
+                  <div class="font-bold mb-1">Repeat every:</div>
+                  <div class="flex gap-4 items-center w-full">
+                    <%= input f, :count_calendar, placeholder: 0, class: "w-24 bg-white p-3 focus:ring-0 focus:outline-none border-2 focus:border-blue-planning-300 text-lg sm:mt-0 font-normal text-center"%>
+                    <%= select f, :calendar, ["week", "month", "year"], class: "w-28 select"%>
+                  </div>
+                  <div class="mt-5 font-bold mb-1">Repeat on:</div>
+                  <div class="flex gap-6 font-bold">
+                  <%= inputs_for f, :repeat_on, fn r -> %>
+                    <div class="flex flex-col items-center">
+                      <div>
+                        <%= input r, :active, type: :checkbox, class: "checkbox border-blue-planning-300 w-6 h-6" %>
+                        <%= hidden_input r, :day, value: input_value(r, :day) %>
+                      </div>
+                      <div class="text-blue-planning-300">
+                        <%= input_value(r, :day) %>
+                      </div>
+                    </div>
+                  <% end %>
+                  </div>
+                </div>
+                <div class="md:col-span-2">
+                  <div class="font-bold mb-2 mt-2 md:mt-0">Stop repeating:</div>
+                  <div class="flex gap-5 mb-2"><%= radio_button f, :repetition, false, class: "w-5 h-5 radio cursor-pointer mb-1" %> On</div>
+                  <div class={classes("pl-10 mb-2", %{"pointer-events-none text-gray-400" => input_value(f, :repetition) === true})}>
+                    <%= input f, :stop_repeating, type: :date_input, min: Date.utc_today(), class: "w-40" %>
+                  </div>
+                  <div class="flex gap-5 mb-2"><%= radio_button f, :repetition, true, class: "w-5 h-5 radio cursor-pointer mb-2" %>After</div>
+                  <div class={classes("pl-10 mb-2", %{"pointer-events-none text-gray-400" => input_value(f, :repetition) != true})}>
+                    <%= select f, :occurences, occurence_options(), class: "select w-40" %>
+                  </div>
+                </div>
               </div>
             </div>
           <% end %>
-          <div>
-            <.location f={f} myself={@myself} allow_location_toggle={false} allow_address_toggle={false} address_field={true} is_edit={true} address_field_title="Event Address" />
+          <hr class="mt-6">
+          <div class="font-bold mt-6">You'll have <span class="text-blue-planning-300"><%= @open_slots %></span> open session blocks</div>
+          <hr class="mt-6">
+          <div class="mt-6 grid grid-cols-5 border-b-4 border-blue-planning-300 text-lg font-bold">
+            <div class="col-span-2">Time</div>
+            <div class="col-span-3">Status</div>
           </div>
-          <div class="flex gap-5">
-            <div class="grow">
-              <%= labeled_select f, :session_length, duration_options(), label: "Session length", prompt: "Select below", disabled: @has_booking? %>
+          <%= inputs_for f, :slots, fn s -> %>
+            <div class="mt-4 grid grid-cols-5 items-center">
+              <div class="col-span-2">
+              <%= hidden_input s, :slot_start %>
+              <%= hidden_input s, :slot_end %>
+              <%= parse_time(input_value(s, :slot_start)) <> "-" <> parse_time(input_value(s, :slot_end))%>
+              </div>
+              <div>
+                <%= if to_string(s |> current |> Map.get(:status)) == "hidden", do: "Booked (Hidden)", else: s |> current |> Map.get(:status) |> to_string() |> String.capitalize() %>
+              </div>
+              <div class="col-span-2 flex justify-end pr-2">
+                <%= input s, :is_hide, type: :checkbox, disabled: (s |> current |> Map.get(:status) == :booked), checked: hidden_time?(s |> current |> Map.get(:status)), class: "checkbox w-6 h-6"%>
+                <div class={classes("ml-2", %{"text-gray-300" => s |> current |> Map.get(:status) == :booked})}> Show block as booked (break)</div>
+              </div>
+              <%= hidden_input s, :client_id, value: s |> current |> Map.get(:client_id) %>
+              <%= hidden_input s, :job_id, value: s |> current |> Map.get(:job_id) %>
+              <%= hidden_input s, :status, value: s |> current |> Map.get(:status) %>
+              <hr class="col-span-2 mt-4">
+              <hr class="mt-4">
+              <hr class="mt-4 col-span-2">
             </div>
-            <div class="grow">
-              <%= labeled_select f, :session_gap, buffer_options(), label: "Session Gap", prompt: "Select below", optional: true, disabled: @has_booking? %>
-            </div>
-          </div>
-        </div>
-        <div class="flex justify-center mr-16">
-          <%= error_tag(f, :time_blocks, prefix: "Times", class: "text-red-sales-300 text-sm mb-2") %>
+          <% end %>
         </div>
 
-        <div class="mt-6 flex items-center">
-          <%= input f, :is_repeat, type: :checkbox, class: "checkbox border-blue-planning-300 w-6 h-6" %>
-          <div class="ml-2"> Repeat dates?</div>
-        </div>
-        <%= if @changeset |> current |> Map.get(:is_repeat) do %>
-          <div class="lg:w-2/3 border-2 border-base-200 rounded-lg mt-4">
-            <div class="font-bold p-4 bg-base-200 text-md">
-              Repeat settings
-            </div>
-            <div class="grid grid-cols-1 md:grid-cols-5 gap-3 p-4">
-              <div class="md:col-span-3">
-                <div class="font-bold mb-1">Repeat every:</div>
-                <div class="flex gap-4 items-center w-full">
-                  <%= input f, :count_calendar, placeholder: 0, class: "w-24 bg-white p-3 focus:ring-0 focus:outline-none border-2 focus:border-blue-planning-300 text-lg sm:mt-0 font-normal text-center"%>
-                  <%= select f, :calendar, ["week", "month", "year"], class: "w-28 select"%>
-                </div>
-                <div class="mt-5 font-bold mb-1">Repeat on:</div>
-                <div class="flex gap-6 font-bold">
-                <%= inputs_for f, :repeat_on, fn r -> %>
-                  <div class="flex flex-col items-center">
-                    <div>
-                      <%= input r, :active, type: :checkbox, class: "checkbox border-blue-planning-300 w-6 h-6" %>
-                      <%= hidden_input r, :day, value: input_value(r, :day) %>
-                    </div>
-                    <div class="text-blue-planning-300">
-                      <%= input_value(r, :day) %>
-                    </div>
-                   </div>
-                <% end %>
-                </div>
-              </div>
-              <div class="md:col-span-2">
-                <div class="font-bold mb-2 mt-2 md:mt-0">Stop repeating:</div>
-                <div class="flex gap-5 mb-2"><%= radio_button f, :repetition, false, class: "w-5 h-5 radio cursor-pointer mb-1" %> On</div>
-                <div class={classes("pl-10 mb-2", %{"pointer-events-none text-gray-400" => input_value(f, :repetition) === true})}>
-                  <%= input f, :stop_repeating, type: :date_input, min: Date.utc_today(), class: "w-40" %>
-                </div>
-                <div class="flex gap-5 mb-2"><%= radio_button f, :repetition, true, class: "w-5 h-5 radio cursor-pointer mb-2" %>After</div>
-                <div class={classes("pl-10 mb-2", %{"pointer-events-none text-gray-400" => input_value(f, :repetition) != true})}>
-                  <%= select f, :occurences, occurence_options(), class: "select w-40" %>
-                </div>
-              </div>
-            </div>
-          </div>
-        <% end %>
-        <div class="font-bold mt-6">You'll have <span class="text-blue-planning-300"><%= @open_slots %></span> open session blocks</div>
-        <div class="mt-6 grid grid-cols-5 border-b-4 border-blue-planning-300 text-lg font-bold">
-          <div class="col-span-2">Time</div>
-          <div class="col-span-3">Status</div>
-        </div>
-         <%= inputs_for f, :slots, fn s -> %>
-          <div class="mt-4 grid grid-cols-5 items-center">
-          <div class="col-span-2">
-            <%= hidden_input s, :slot_start %>
-            <%= hidden_input s, :slot_end %>
-            <%= parse_time(input_value(s, :slot_start)) <> "-" <> parse_time(input_value(s, :slot_end))%>
-            </div>
-            <div>
-              <%= if to_string(s |> current |> Map.get(:status)) == "hidden", do: "Booked (Hidden)", else: s |> current |> Map.get(:status) |> to_string() |> String.capitalize() %>
-            </div>
-            <div class="col-span-2 flex justify-end pr-2">
-              <%= input s, :is_hide, type: :checkbox, disabled: (s |> current |> Map.get(:status) == :booked), checked: hidden_time?(s |> current |> Map.get(:status)), class: "checkbox w-6 h-6"%>
-              <div class={classes("ml-2", %{"text-gray-300" => s |> current |> Map.get(:status) == :booked})}> Show block as booked (break)</div>
-            </div>
-            <%= hidden_input s, :client_id, value: s |> current |> Map.get(:client_id) %>
-            <%= hidden_input s, :job_id, value: s |> current |> Map.get(:job_id) %>
-            <%= hidden_input s, :status, value: s |> current |> Map.get(:status) %>
-          </div>
-        <% end %>
         <.footer>
           <button class="btn-primary" title="Save" type="submit" disabled={!@changeset.valid? || Enum.empty?(@changeset.changes)} phx-disable-with="Save">
               Save
