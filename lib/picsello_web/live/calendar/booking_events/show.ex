@@ -661,8 +661,7 @@ defmodule PicselloWeb.Live.Calendar.BookingEvents.Show do
 
   defp actions(assigns) do
     assigns =
-      assigns
-      |> Enum.into(%{
+       Map.merge(%{
         archive_option: true,
         main_button_class: "text-black",
         slot_index: -1,
@@ -670,7 +669,7 @@ defmodule PicselloWeb.Live.Calendar.BookingEvents.Show do
         slot_job_id: -1,
         disabled?: false,
         booking_event_date_id: nil
-      })
+      }, assigns)
 
     assigns =
       if assigns.slot_job_id,
@@ -678,7 +677,7 @@ defmodule PicselloWeb.Live.Calendar.BookingEvents.Show do
         else: assigns
 
     ~H"""
-      <div class={classes("flex items-center md:ml-auto w-full md:w-auto left-3 sm:left-8", %{"pointer-events-none opacity-40" => @disabled?})} data-placement="bottom-end" phx-hook="Select" id={"manage-client-#{@id}"}>
+      <div class={classes("flex items-center md:ml-auto w-full md:w-auto left-3 sm:left-8", %{"pointer-events-none opacity-40" => @disabled?})} data-placement="bottom-end" phx-hook="Select" id={"slot-#{@slot_index}"}}>
         <button title="Manage" class={"btn-tertiary px-2 py-1 flex items-center gap-3 xl:w-auto w-full text-blue-planning-300 #{@main_button_class}"}>
           Actions
           <.icon name="down" class="w-4 h-4 ml-auto mr-1 stroke-current stroke-3 text-blue-planning-300 open-icon" />
