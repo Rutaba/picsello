@@ -56,35 +56,28 @@ defmodule Picsello.Shoot do
     |> validate_required([:starts_at])
   end
 
+  @attrs ~w(starts_at duration_minutes name notes address external_event_id)a
+  @required_attrs ~w(starts_at duration_minutes name)a
+
+  def create_booking_event_shoot_changeset(attrs) do
+    %__MODULE__{}
+    |> cast(attrs, @attrs ++ [:job_id])
+    |> validate_required(@required_attrs)
+    |> validate_inclusion(:duration_minutes, @durations)
+  end
+
   def create_changeset(attrs) do
     %__MODULE__{}
-    |> cast(attrs, [
-      :starts_at,
-      :duration_minutes,
-      :name,
-      :location,
-      :notes,
-      :job_id,
-      :address,
-      :external_event_id
-    ])
-    |> validate_required([:starts_at, :duration_minutes, :name, :location, :job_id])
+    |> cast(attrs, @attrs ++ [:job_id, :location])
+    |> validate_required(@required_attrs ++ [:location, :job_id])
     |> validate_inclusion(:location, @locations)
     |> validate_inclusion(:duration_minutes, @durations)
   end
 
   def update_changeset(%__MODULE__{} = shoot, attrs) do
     shoot
-    |> cast(attrs, [
-      :address,
-      :starts_at,
-      :duration_minutes,
-      :name,
-      :location,
-      :notes,
-      :external_event_id
-    ])
-    |> validate_required([:starts_at, :duration_minutes, :name, :location])
+    |> cast(attrs, @attrs ++ [:location])
+    |> validate_required(@required_attrs ++ [:location])
     |> validate_inclusion(:location, @locations)
     |> validate_inclusion(:duration_minutes, @durations)
   end
