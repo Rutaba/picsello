@@ -97,7 +97,7 @@ defmodule PicselloWeb.Live.Calendar.BookingEventModal do
         </div>
 
         <div class="mt-6 flex items-center">
-          <%= input f, :is_repeat, type: :checkbox, class: "checkbox border-blue-planning-300 w-6 h-6" %>
+          <%= input f, :is_repeat, type: :checkbox, class: "checkbox border-blue-planning-300 w-6 h-6 cursor-pointer" %>
           <div class="ml-2"> Repeat dates?</div>
         </div>
         <%= if @changeset |> current |> Map.get(:is_repeat) do %>

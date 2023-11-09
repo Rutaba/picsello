@@ -502,9 +502,9 @@ defmodule PicselloWeb.Live.Calendar.BookingEvents.Show do
               </div>
               <hr class="block md:hidden my-2">
               <%= if Enum.member?(@collapsed_sections, booking_event_date.id) do %>
-                <div class="hidden md:grid grid-cols-7 border-b-4 border-blue-planning-300 font-bold text-lg my-4">
+                <div class="hidden md:grid grid-cols-4 border-b-4 border-blue-planning-300 font-bold text-lg my-4">
                 <%= for title <- ["Time", "Status", "Client"] do %>
-                  <div class="col-span-2"><%= title %></div>
+                  <div class="col-span-1"><%= title %></div>
                 <% end %>
                 </div>
                 <%= Enum.with_index(booking_event_date.slots, fn slot, slot_index -> %>
@@ -565,40 +565,42 @@ defmodule PicselloWeb.Live.Calendar.BookingEvents.Show do
     ~H"""
       <%= case @booking_slot_tab_active do %>
         <% "list" -> %>
-          <div class="grid grid-cols-3 md:grid-cols-7 items-start md:items-center my-2">
-            <div class="col-span-7 grid grid-cols-2 md:grid-cols-6">
-              <div class={classes("col-span-2", %{"text-base-250" => @slot.status == :hidden})}>
-                <%= if @slot.status in [:booked, :reserved] do %>
-                  <div class="flex gap-2 items-center">
-                    <.icon name="clock-2" class="block md:hidden w-3 h-3 stroke-current text-blue-planning-300 mt-1" />
-                    <button phx-click="open-job" phx-value-slot-job-id={@slot.job_id} class="text-blue-planning-300 underline"><%= slot_time_formatter(@slot) %></button>
-                  </div>
-                <% else %>
-                  <div class="flex gap-2 items-center">
-                    <.icon name="clock-2" class="block md:hidden w-3 h-3 stroke-current text-blue-planning-300 mt-1" />
-                    <div><%= slot_time_formatter(@slot) %></div>
-                  </div>
-                <% end %>
+          <div class="grid grid-cols-3 md:grid-cols-4 items-start md:items-center my-2">
+            <div class="col-span-4 grid grid-cols-3 md:grid-cols-4">
+              <div class="flex flex-col col-span-3 md:grid md:col-span-3 md:grid-cols-6">
+                 <div class={classes("col-span-2", %{"text-base-250" => @slot.status == :hidden})}>
+                   <%= if @slot.status in [:booked, :reserved] do %>
+                     <div class="flex gap-2 items-center">
+                       <.icon name="clock-2" class="block md:hidden w-3 h-3 stroke-current text-blue-planning-300 mt-1" />
+                       <button phx-click="open-job" phx-value-slot-job-id={@slot.job_id} class="text-blue-planning-300 underline"><%= slot_time_formatter(@slot) %></button>
+                     </div>
+                   <% else %>
+                     <div class="flex gap-2 items-center">
+                       <.icon name="clock-2" class="block md:hidden w-3 h-3 stroke-current text-blue-planning-300 mt-1" />
+                       <div><%= slot_time_formatter(@slot) %></div>
+                     </div>
+                   <% end %>
+                 </div>
+                 <div class={classes("col-span-2", %{"text-base-250" => @slot.status != :open})}>
+                   <div class="flex gap-2 items-center lg:justify-start md:justify-start">
+                     <.icon name={@slot.status != :open && "booked-slot" || "open-slot"} class="block md:hidden w-3 h-3 fill-blue-planning-300 mt-1.5" />
+                     <div><%= String.capitalize(to_string(@slot.status)) %></div>
+                   </div>
+                 </div>
+                 <div class="col-span-2">
+                   <%= if @client && @slot.status in [:booked, :reserved] do %>
+                     <div class="flex gap-2 items-center">
+                       <.icon name="client-icon" class="block md:hidden w-3 h-3 text-blue-planning-300 mt-1.5" />
+                       <div class="text-blue-planning-300 underline"><%= String.capitalize(@client.name) %></div>
+                     </div>
+                   <% else %>
+                     <div class="flex gap-2 items-center">
+                       <.icon name="client-icon" class="block md:hidden w-3 h-3 text-blue-planning-300" />
+                     </div>
+                   <% end %>
+                 </div>
               </div>
-              <div class={classes("col-span-2", %{"text-base-250" => @slot.status != :open})}>
-                <div class="flex gap-2 items-center lg:justify-start md:justify-center">
-                  <.icon name={@slot.status != :open && "booked-slot" || "open-slot"} class="block md:hidden w-3 h-3 fill-blue-planning-300 mt-1.5" />
-                  <div><%= String.capitalize(to_string(@slot.status)) %></div>
-                </div>
-              </div>
-              <div class="col-span-2">
-                <%= if @client && @slot.status in [:booked, :reserved] do %>
-                  <div class="flex gap-2 items-center">
-                    <.icon name="client-icon" class="block md:hidden w-3 h-3 text-blue-planning-300 mt-1.5" />
-                    <div class="text-blue-planning-300 underline"><%= String.capitalize(@client.name) %></div>
-                  </div>
-                <% else %>
-                  <div class="flex gap-2 items-center">
-                    <.icon name="client-icon" class="block md:hidden w-3 h-3 text-blue-planning-300" />
-                  </div>
-                <% end %>
-              </div>
-              <div class="justify-start">
+              <div class="items-start sm:justify-end flex">
                 <.actions id={@booking_event_date.id} booking_event_date_id={@booking_event_date.id} disabled?={disable_slot_actions?(@booking_event_date, @booking_event.status)} booking_event={@booking_event} button_actions={@button_actions} slot_index={@slot_index} slot_client_id={@slot.client_id} slot_job_id={@slot.job_id}/>
               </div>
               <hr class="my-2 md:my-3 col-span-7">
