@@ -80,6 +80,7 @@ import FolderUpload from './hooks/folder-upload';
 import SearchResultSelect from './hooks/search-result-select';
 import Tooltip from './hooks/tooltip';
 import LivePhone from "live_phone"
+import ViewProposal from './hooks/view_proposal';
 
 const Modal = {
   mounted() {
@@ -265,7 +266,8 @@ const Hooks = {
   showAdminBanner,
   FolderUpload,
   SearchResultSelect,
-  LivePhone
+  LivePhone,
+  ViewProposal
 };
 
 window.addEventListener(`phx:download`, (event) => {
