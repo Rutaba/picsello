@@ -37,23 +37,24 @@ defmodule PicselloWeb.ContractTemplateComponent do
           <div class="flex gap-4 items-center">
             <div class={classes("cursor-pointer text-blue-planning-300 font-bold text-lg border-b-4 transition-all shrink-0", %{"opacity-100 border-b-blue-planning-300" => @edit_contract?, "border-b-transparent hover:opacity-100" => !@edit_contract?})}>
               <div phx-click="show_edit_contract" phx-target={@myself} class={classes("p-2 flex items-center text-sm font-semibold", %{"text-blue-planning-300" => @edit_contract?, "text-base-250" => !@edit_contract?})}>
-                <.icon name="pencil" class="inline-block w-3.5 h-3.5 mx-2 fill-current" />
+                <.icon name="pencil" class="inline-block w-3.5 h-3.5 mx-2 fill-current mt-1" />
                 <span>Edit</span>
               </div>
             </div>
             <div class={classes("cursor-pointer text-blue-planning-300 font-bold text-lg border-b-4 transition-all shrink-0", %{"opacity-100 border-b-blue-planning-300" => @client_preview?, "border-b-transparent hover:opacity-100" => !@client_preview?})}>
               <div phx-click="show_client_preview" phx-target={@myself} class={classes("p-2 flex items-center text-sm font-semibold", %{"text-blue-planning-300" => @client_preview?, "text-base-250" => !@client_preview?})}>
-                <.icon name="eye" class="inline-block w-3.5 h-3.5 mx-2 fill-current" />
+                <.icon name="eye" class="inline-block w-4 h-4 mx-1 fill-current mt-1" />
                 <span>Client Preview</span>
               </div>
             </div>
           </div>
           <%= if input_value(f, :job_type) do %>
+            <% job_type = input_value(f, :job_type) %>
             <div class="ml-auto flex px-3">
               <div class="flex items-center justify-center w-7 h-7 ml-1 mr-3 rounded-full flex-shrink-0 text-white bg-blue-planning-300">
-                <.icon name={input_value(f, :job_type)} class="fill-current" width="14" height="14" />
+                <.icon name={job_type} class="fill-current" width="14" height="14" />
               </div>
-              <span><%= String.capitalize(input_value(f, :job_type)) %></span>
+              <span class="font-semibold"><%= String.capitalize(job_type) %></span>
             </div>
           <% end %>
         </div>
@@ -110,18 +111,18 @@ defmodule PicselloWeb.ContractTemplateComponent do
                 <p class="mt-2 text-base-250">{{package price}} USD</p>
                 <p class="text-base-250 mt-2">{{photo_information}}</p>
 
-                <hr class="my-4" />
+                <hr class="mb-4 mt-8" />
                 <div class="mt-2 mb-4">
-                  <div class="line-clamp-2 raw_html raw_html_inline mb-4 text-base-250">
+                  <div class="mb-4">
                     {{package_description}}
                   </div>
                   <button class="flex items-center font-light text-base-250 view_more_click" type="button">
-                    <span>See more</span> <.icon name="down" class="text-base-250 h-4 w-4 stroke-current stroke-2 ml-1 transition-transform" />
+                    <span>See more</span> <.icon name="down" class="text-base-250 h-3 w-3 stroke-current stroke-2 ml-2 mt-1 transition-transform" />
                   </button>
                 </div>
               </div>
               <div>
-                <div class="rounded-lg p-4 items-center flex flex-col w-full h-[300px] mr-4 md:mr-7 bg-base-200">
+                <div class="rounded p-4 items-center flex flex-col w-full h-[300px] mr-4 md:mr-7 bg-base-200">
                   <div class="flex flex-col justify-center h-full items-center">
                     <.icon name="photos-2" class="inline-block w-9 h-9 text-base-250"/>
                     <span class="mt-1 text-base-250 text-center">Optional package thumbnail</span>
@@ -160,9 +161,9 @@ defmodule PicselloWeb.ContractTemplateComponent do
                 {{digital_image_pricing}}
               </div>
 
-              <hr class="hidden col-span-2 sm:block">
+              <hr class="col-span-2">
 
-              <div class="hidden col-start-2 col-span-1 sm:block pr-4 md:pr-8">
+              <div class="col-start-1 col-span-2 lg:col-start-2 lg:col-span-1 pl-4 md:pl-8">
                 <div class="contents">
                   <dl class="flex justify-between text-xl font-light">
                     <dt>Total</dt>
