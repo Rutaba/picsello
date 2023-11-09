@@ -144,7 +144,7 @@ defmodule PicselloWeb.Calendar.BookingEvents.Shared do
       {:ok, _event} ->
         socket
         |> assign_events()
-        |> put_flash(:success, "Event unarchive successfully")
+        |> put_flash(:success, "Event unarchived successfully")
 
       {:error, _} ->
         socket
@@ -637,7 +637,7 @@ defmodule PicselloWeb.Calendar.BookingEvents.Shared do
       {:ok, _event} ->
         socket
         |> assign_events()
-        |> put_flash(:success, "Event archive successfully")
+        |> put_flash(:success, "Event archived successfully")
 
       {:error, _} ->
         socket

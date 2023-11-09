@@ -28,6 +28,7 @@ defmodule PicselloWeb.Live.Calendar.BookingEvents.Show do
   alias PicselloWeb.Live.Calendar.{BookingEventModal, EditMarketingEvent}
   alias PicselloWeb.BookingProposalLive.{QuestionnaireComponent, ContractComponent}
   alias PicselloWeb.Calendar.BookingEvents.Shared, as: BEShared
+  alias PicselloWeb.Router.Helpers, as: Routes
 
   @impl true
   def mount(_params, _session, socket) do
@@ -305,6 +306,17 @@ defmodule PicselloWeb.Live.Calendar.BookingEvents.Show do
       event_id: id,
       current_user: current_user
     })
+    |> noreply()
+  end
+
+  @impl true
+  def handle_event(
+        "open-client",
+        %{"client-id" => id},
+        socket
+      ) do
+    socket
+    |> push_redirect(to: Routes.client_path(socket, :show, id))
     |> noreply()
   end
 
@@ -591,11 +603,12 @@ defmodule PicselloWeb.Live.Calendar.BookingEvents.Show do
                    <%= if @client && @slot.status in [:booked, :reserved] do %>
                      <div class="flex gap-2 items-center">
                        <.icon name="client-icon" class="block md:hidden w-3 h-3 text-blue-planning-300 mt-1.5" />
-                       <div class="text-blue-planning-300 underline"><%= String.capitalize(@client.name) %></div>
+                       <div phx-click="open-client" phx-value-client-id={@client.id} class="text-blue-planning-300 underline cursor-pointer"><%= String.capitalize(@client.name) %></div>
                      </div>
                    <% else %>
-                     <div class="flex gap-2 items-center">
-                       <.icon name="client-icon" class="block md:hidden w-3 h-3 text-blue-planning-300" />
+                     <div class="flex gap-2 items-center md:hidden">
+                       <.icon name="client-icon" class=" w-3 h-3 text-blue-planning-300" />
+                       -
                      </div>
                    <% end %>
                  </div>
