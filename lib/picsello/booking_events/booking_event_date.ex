@@ -116,6 +116,7 @@ defmodule Picsello.BookingEventDate do
   @required_attrs [
     :booking_event_id,
     :session_length,
+    :address,
     :date
   ]
 
