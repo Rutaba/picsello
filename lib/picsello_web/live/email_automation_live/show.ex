@@ -549,18 +549,25 @@ defmodule PicselloWeb.Live.EmailAutomations.Show do
     case status do
       "photographer_stopped" ->
         "Stopped by Photographer"
+
       "proposal_accepted" ->
         "Proposal has already been accepted"
+
       "already_paid_full" ->
         "Job has already been paid in full"
+
       "shoot_starts_at_passed" ->
         "Shoot date has already been passed"
+
       "gallery_already_shared_because_order_placed" ->
         "Gallery has already been shared"
+
       "archived" ->
         "Archived"
+
       "completed" ->
         "Completed"
+
       _ ->
         ""
     end

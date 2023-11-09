@@ -386,7 +386,9 @@ defmodule Picsello.EmailAutomationSchedules do
     emails_stopped =
       from(es in EmailScheduleHistory,
         where:
-          es.email_automation_pipeline_id == ^pipeline.id and es.job_id == ^job_id and not is_nil(es.stopped_at))
+          es.email_automation_pipeline_id == ^pipeline.id and es.job_id == ^job_id and
+            not is_nil(es.stopped_at)
+      )
       |> Repo.all()
 
     if Enum.any?(emails_stopped) do

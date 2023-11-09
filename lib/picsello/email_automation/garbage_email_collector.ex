@@ -142,7 +142,8 @@ defmodule Picsello.EmailAutomation.GarbageEmailCollector do
     email_schedules_query =
       from(es in EmailSchedule,
         where:
-          es.job_id == ^job.id and is_nil(es.gallery_id) and es.email_automation_pipeline_id != ^post_shoot_pipeline.id
+          es.job_id == ^job.id and is_nil(es.gallery_id) and
+            es.email_automation_pipeline_id != ^post_shoot_pipeline.id
       )
 
     EmailAutomationSchedules.delete_and_insert_schedules_by(
