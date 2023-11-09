@@ -22,8 +22,13 @@ defmodule Picsello.Cart.DeliveryInfo do
 
   def changeset(delivery_info, attrs, opts) do
     case Keyword.get(opts, :order) do
-      %{products: [_ | _]} -> delivery_info |> changeset(attrs) |> validate_required([:address])
-      _ -> changeset(delivery_info, attrs)
+      %{products: [_ | _]} ->
+        delivery_info
+        |> changeset(attrs)
+        |> validate_required([:address])
+
+      _ ->
+        changeset(delivery_info, attrs)
     end
   end
 
@@ -166,12 +171,28 @@ defmodule Picsello.Cart.DeliveryInfo do
       struct
       |> cast(attrs, [:city, :state, :zip, :addr1, :addr2])
       |> validate_required([:city, :state, :zip, :addr1])
+      |> validate_zip_code()
     end
 
     def changeset_for_zipcode(struct, attrs) do
       struct
       |> cast(attrs, [:zip])
       |> validate_required([:zip])
+      |> validate_zip_code()
+    end
+
+    defp validate_zip_code(changeset) do
+      case get_change(changeset, :zip) do
+        nil ->
+          changeset
+
+        zip_code ->
+          if Regex.match?(~r/^\d{5}$/, zip_code) do
+            changeset
+          else
+            changeset |> add_error(:zip, "code must be 5 characters long")
+          end
+      end
     end
 
     def states, do: @states

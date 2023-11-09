@@ -147,6 +147,7 @@ defmodule Picsello.WHCC.Client do
     |> new()
     |> post("/oas/orders/create", order)
     |> case do
+      {:ok, %{body: %{"ErrorNumber" => "412.02", "Message" => message}}} -> {:error, message}
       {:ok, %{body: body}} -> {:ok, WHCC.Order.Created.new(body)}
       err -> err
     end
