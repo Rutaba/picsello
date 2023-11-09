@@ -826,6 +826,12 @@ defmodule PicselloWeb.Calendar.BookingEvents.Shared do
   def assign_events(%{assigns: %{booking_events: _booking_events}} = socket),
     do: Index.assign_booking_events(socket)
 
+  def convert_date_string_to_date(nil), do: nil
+  def convert_date_string_to_date(date), do: Date.from_iso8601!(date)
+
+  def get_date(%{"date" => date}), do: date
+  def get_date(%{date: date}), do: date
+
   def count_booked_slots(slot),
     do: Enum.count(slot, fn s -> s.status in [:booked, :reserved] end)
 
@@ -897,6 +903,7 @@ defmodule PicselloWeb.Calendar.BookingEvents.Shared do
          date_id \\ nil
        ) do
     clients = get_booking_event_clients(booking_event, date_id)
+
     recipients =
       cond do
         Enum.any?(clients) && length(clients) > 1 ->

@@ -375,7 +375,7 @@ defmodule PicselloWeb.Live.Calendar.BookingEvents.Index do
           <% @booking_event.status == :disabled -> %>
             <.badge color={:gray}>Disabled</.badge>
           <% true -> %>
-            <p class="font-semibold"><%= if @booking_event.date, do: @booking_event.date |> Calendar.strftime("%m/%d/%Y") %></p>
+            <p class="font-semibold"><%= if Map.has_key?(@booking_event, :date) && !is_nil(@booking_event.date), do: @booking_event.date |> Calendar.strftime("%m/%d/%Y"), else: "Date not set" %></p>
         <% end %>
         <div class="font-bold w-full">
           <a href={if BEShared.disabled?(@booking_event, [:disabled, :archive]), do: "javascript:void(0)", else: Routes.calendar_booking_events_show_path(@socket, :edit, @booking_event.id)} style="text-decoration-thickness: 2px" class="block pt-2 underline underline-offset-1">
@@ -435,6 +435,16 @@ defmodule PicselloWeb.Live.Calendar.BookingEvents.Index do
           status: event_status
         }
       )
+
+    booking_events_with_nil_dates =
+      booking_events
+      |> filter_booking_events_with_dates()
+      |> Enum.map(&BEShared.put_url_booking_event(&1, organization, socket))
+
+    booking_events_with_dates = booking_events |> filter_nil_dates_booking_events()
+
+    booking_events =
+      booking_events_with_dates
       |> Enum.map(fn booking_event ->
         booking_event
         |> assign_sort_date(sort_direction, sort_by, event_status)
@@ -442,6 +452,7 @@ defmodule PicselloWeb.Live.Calendar.BookingEvents.Index do
       end)
       |> filter_date(event_status)
       |> sort_by_date(sort_direction, sort_by)
+      |> Kernel.++(booking_events_with_nil_dates)
 
     socket
     |> assign(booking_events: booking_events)
@@ -455,6 +466,34 @@ defmodule PicselloWeb.Live.Calendar.BookingEvents.Index do
   end
 
   def sort_by_date(booking_events, _sort_direction, _sort_by), do: booking_events
+
+  # this function removes all the booking events with 'date' as date in 'dates'
+  defp filter_booking_events_with_dates(booking_events) do
+    booking_events
+    |> Enum.reduce_while([], fn booking_event, acc ->
+      if Enum.any?(booking_event.dates, fn b ->
+           is_nil(b["date"])
+         end) do
+        {:cont, acc ++ [booking_event]}
+      else
+        {:cont, acc}
+      end
+    end)
+  end
+
+  # this function removes all the booking events with 'date' as nil in 'dates'
+  defp filter_nil_dates_booking_events(booking_events) do
+    booking_events
+    |> Enum.reduce_while([], fn booking_event, acc ->
+      if Enum.all?(booking_event.dates, fn b ->
+           !is_nil(b["date"])
+         end) do
+        {:cont, acc ++ [booking_event]}
+      else
+        {:cont, acc}
+      end
+    end)
+  end
 
   defp assign_sort_date(%{dates: []} = booking_event, _sort_direction, _sort_by, _filter_status),
     do: booking_event |> Map.put(:date, nil)
@@ -475,16 +514,31 @@ defmodule PicselloWeb.Live.Calendar.BookingEvents.Index do
 
           booking_event
           |> Map.get(:dates)
-          |> Enum.map(& &1.date)
+          |> Enum.map(&BEShared.get_date(&1))
+          |> Enum.map(&BEShared.convert_date_string_to_date(&1))
+          |> Enum.reject(&is_nil(&1))
           |> Enum.sort_by(& &1, {sort_direction, Date})
-          |> hd
+          |> hd()
 
         true ->
-          booking_event.dates |> hd |> Map.get(:date)
+          booking_event.dates
+          |> hd
+          |> Map.get("date")
+          |> case do
+            nil -> nil
+            date -> date |> Date.from_iso8601!()
+          end
       end
 
     booking_event
-    |> Map.put(:date, sorted_date)
+    |> Map.put(
+      :date,
+      if is_nil(sorted_date) do
+        nil
+      else
+        sorted_date
+      end
+    )
   end
 
   defp filter_date(booking_events, "future_events"),
@@ -503,7 +557,9 @@ defmodule PicselloWeb.Live.Calendar.BookingEvents.Index do
       date =
         booking_event
         |> Map.get(:dates)
-        |> Enum.map(& &1.date)
+        |> Enum.map(&BEShared.get_date(&1))
+        |> Enum.map(&BEShared.convert_date_string_to_date(&1))
+        |> Enum.reject(&is_nil(&1))
         |> Enum.sort_by(& &1, {sort_by, Date})
         |> hd
 
