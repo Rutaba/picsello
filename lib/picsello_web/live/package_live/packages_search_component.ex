@@ -77,7 +77,7 @@ defmodule PicselloWeb.PackageLive.PackagesSearchComponent do
           </div>
           <%= if @title == "Sort" do%>
           <div class="items-center flex border rounded-r-lg border-grey p-2">
-            <button phx-click="switch_sort" phx-target={@target}>
+            <button type="button" phx-click="switch_sort" phx-target={@target}>
               <%= if @sort_direction == "asc" do%>
                 <.icon name="sort-vector" {testid("edit-link-button")} class="blue-planning-300 w-5 h-5" />
               <% else%>
