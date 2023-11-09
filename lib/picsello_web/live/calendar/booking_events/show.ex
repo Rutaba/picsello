@@ -645,6 +645,20 @@ defmodule PicselloWeb.Live.Calendar.BookingEvents.Show do
     """
   end
 
+  defp button(assigns) do
+    assigns =
+      assigns
+      |> Map.put(:rest, Map.drop(assigns, [:color, :icon, :inner_block, :class, :disabled, :id]))
+      |> Enum.into(%{class: "", hidden: "", disabled: false, inner_block: nil})
+
+    ~H"""
+      <button title={@title} type="button" class={"flex items-center px-3 py-2 rounded-lg text-left hover:bg-#{@color}-100 hover:font-bold #{@hidden}"} disabled={@disabled} {@rest}>
+        <.icon name={@icon} class={"inline-block w-4 h-4 mr-3 fill-current text-#{@color}-300"} />
+        <%= @title %>
+      </button>
+    """
+  end
+
   defp actions(assigns) do
     assigns =
       assigns
@@ -665,22 +679,18 @@ defmodule PicselloWeb.Live.Calendar.BookingEvents.Show do
 
     ~H"""
       <div class={classes("flex items-center md:ml-auto w-full md:w-auto left-3 sm:left-8", %{"pointer-events-none opacity-40" => @disabled?})} data-placement="bottom-end" phx-hook="Select" id={"manage-client-#{@id}"}>
-        <button title="Manage" class={"btn-tertiary px-2 py-1 flex items-center gap-3 xl:w-auto w-full #{@main_button_class}"}>
+        <button title="Manage" class={"btn-tertiary px-2 py-1 flex items-center gap-3 xl:w-auto w-full text-blue-planning-300 #{@main_button_class}"}>
           Actions
           <.icon name="down" class="w-4 h-4 ml-auto mr-1 stroke-current stroke-3 text-blue-planning-300 open-icon" />
           <.icon name="up" class="hidden w-4 h-4 ml-auto mr-1 stroke-current stroke-3 text-blue-planning-300 close-icon" />
         </button>
 
-        <div class="z-10 flex flex-col hidden w-auto bg-white border rounded-lg shadow-lg popover-content">
+        <div class="z-10 flex hidden flex-col w-auto bg-white border rounded-lg shadow-lg popover-content">
           <%= for %{title: title, action: action, icon: icon} <- @button_actions do %>
             <%= if icon == "anchor" && BookingProposal.url(@proposal.id) do %>
-              <.icon_button icon={icon} class="flex text-base-300 items-center mt-0 px-3 py-2 hover:font-bold rounded-lg" text_color={"text-black"} color="blue-planning-300" id="copy-calendar-link" phx-click={action} data-clipboard-text={BookingProposal.url(@proposal.id)} phx-hook="Clipboard">
-                <span><%= title %></span>
-              </.icon_button>
+              <.button icon={icon} title={title} class="text-base-300 mt-0" text_color={"text-black"} color="blue-planning" id="copy-calendar-link" phx-click={action} data-clipboard-text={BookingProposal.url(@proposal.id)} phx-hook="Clipboard" />
             <% else %>
-              <.icon_button icon={icon} phx-click={action} phx-value-booking_event_date_id={@booking_event_date_id} phx-value-slot_client_id={@slot_client_id} phx-value-slot_job_id={@slot_job_id} phx-value-slot_index={@slot_index} class="flex text-base-300 items-center px-3 py-2 rounded-lg hover:font-bold" text_color={"text-black"} color={if title in ["Archive", "Disable"], do: "red-sales-300", else: "blue-planning-300"}>
-                <span><%= title %></span>
-              </.icon_button>
+              <.button icon={icon} title={title} phx-click={action} phx-value-booking_event_date_id={@booking_event_date_id} phx-value-slot_client_id={@slot_client_id} phx-value-slot_job_id={@slot_job_id} phx-value-slot_index={@slot_index} text_color={"text-black"} color={if title in ["Archive", "Disable"], do: "red-sales", else: "blue-planning"} />
             <% end %>
           <% end %>
         </div>
