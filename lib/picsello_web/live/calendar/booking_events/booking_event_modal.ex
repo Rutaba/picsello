@@ -160,8 +160,10 @@ defmodule PicselloWeb.Live.Calendar.BookingEventModal do
               <%= if slot_status(s) |> to_string() == "hidden", do: "Booked (Hidden)", else: slot_status(s) |> to_string() |> String.capitalize() %>
             </div>
             <div class="col-span-2 flex justify-end pr-2">
-              <%= input s, :is_hide, type: :checkbox, disabled: (slot_status(s) in  [:booked, :reserved]), checked: hidden_time?(slot_status(s)), class: "checkbox w-6 h-6 cursor-pointer"%>
-              <div class={classes("ml-2", %{"text-gray-300" => slot_status(s) == :booked})}> Show block as booked (break)</div>
+              <%= unless slot_status(s) in  [:booked, :reserved] do %>
+                <%= input s, :is_hide, type: :checkbox, disabled: (slot_status(s) in  [:booked, :reserved]), checked: hidden_time?(slot_status(s)), class: "checkbox w-6 h-6 cursor-pointer"%>
+                <div class={classes("ml-2", %{"text-gray-300" => (slot_status(s) in  [:booked, :reserved])})}> Show block as booked (break)</div>
+              <% end %>
             </div>
             <%= hidden_input s, :client_id, value: s |> current |> Map.get(:client_id) %>
             <%= hidden_input s, :job_id, value: s |> current |> Map.get(:job_id) %>

@@ -586,7 +586,7 @@ defmodule PicselloWeb.HomeLive.Index do
     case BookingEvents.archive_booking_event(id, current_user.organization_id) do
       {:ok, _event} ->
         socket
-        |> put_flash(:success, "Event archive successfully")
+        |> put_flash(:success, "Event archived successfully")
 
       {:error, _} ->
         socket
