@@ -112,7 +112,7 @@ defmodule Picsello.EmailAutomationSchedules do
           pipeline.state,
           pipeline.description,
           fragment(
-            "to_jsonb(json_build_object('id', ?, 'name', ?, 'total_hours', ?, 'condition', ?, 'body_template', ?, 'subject_template', ?, 'private_name', ?, 'stopped_at', ?, 'reminded_at', ?, 'shoot_id', ?, 'order_id', ?, 'gallery_id', ?, 'job_id', ?))",
+            "to_jsonb(json_build_object('id', ?, 'name', ?, 'total_hours', ?, 'condition', ?, 'body_template', ?, 'subject_template', ?, 'private_name', ?, 'stopped_at', ?, 'reminded_at', ?, 'stopped_reason', ?, 'shoot_id', ?, 'order_id', ?, 'gallery_id', ?, 'job_id', ?))",
             email.id,
             email.name,
             email.total_hours,
@@ -122,6 +122,7 @@ defmodule Picsello.EmailAutomationSchedules do
             email.private_name,
             email.stopped_at,
             email.reminded_at,
+            email.stopped_reason,
             email.shoot_id,
             email.order_id,
             email.gallery_id,
@@ -379,30 +380,23 @@ defmodule Picsello.EmailAutomationSchedules do
     end)
   end
 
-  def get_stopped_emails_text(job_id, "manual_booking_proposal_sent") do
-    pipeline = EmailAutomations.get_pipeline_by_state(:manual_booking_proposal_sent)
+  def get_stopped_emails_text(job_id, state, helper) do
+    pipeline = EmailAutomations.get_pipeline_by_state(state)
 
     emails_stopped =
       from(es in EmailScheduleHistory,
         where:
-          es.email_automation_pipeline_id == ^pipeline.id and es.job_id == ^job_id and
-            es.stopped_reason == :proposal_accepted
-      )
+          es.email_automation_pipeline_id == ^pipeline.id and es.job_id == ^job_id and not is_nil(es.stopped_at))
       |> Repo.all()
 
     if Enum.any?(emails_stopped) do
       count = Enum.count(emails_stopped)
 
-      stopped_at =
-        emails_stopped |> List.first() |> Map.get(:stopped_at) |> Calendar.strftime("%m/%d/%Y")
-
-      "#{count} emails stopped #{stopped_at} because client booked"
+      helper.ngettext("1 email stopped", "#{count} emails stopped", count)
     else
       nil
     end
   end
-
-  def get_stopped_emails_text(_job_id, _state), do: nil
 
   def get_last_completed_email(
         category_type,
@@ -431,7 +425,7 @@ defmodule Picsello.EmailAutomationSchedules do
     Insert all emails templates for jobs & leads in email schedules
   """
   def job_emails(type, organization_id, job_id, category_type, skip_states \\ []) do
-    job = Jobs.get_job_by_id(job_id)
+    job = Jobs.get_job_by_id(job_id) |> Repo.preload([:job_status])
 
     shoot_skip_states = [:before_shoot, :shoot_thanks]
     all_skip_states = skip_states ++ shoot_skip_states
@@ -466,11 +460,17 @@ defmodule Picsello.EmailAutomationSchedules do
 
     previous_emails_history = get_emails_by_job(EmailScheduleHistory, job_id, category_type)
 
-    if Enum.empty?(previous_emails_schedules) and Enum.empty?(previous_emails_history) and
-         !PaymentSchedules.all_paid?(job) do
-      emails
-    else
-      []
+    cond do
+      job.job_status.is_lead and Enum.empty?(previous_emails_schedules) and
+          Enum.empty?(previous_emails_history) ->
+        emails
+
+      Enum.empty?(previous_emails_schedules) and Enum.empty?(previous_emails_history) and
+          !PaymentSchedules.all_paid?(job) ->
+        emails
+
+      true ->
+        []
     end
   end
 
