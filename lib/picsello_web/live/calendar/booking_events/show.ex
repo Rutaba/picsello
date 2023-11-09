@@ -533,7 +533,7 @@ defmodule PicselloWeb.Live.Calendar.BookingEvents.Show do
             <%= if @calendar_date_event do %>
               <div class="flex">
                 <div class="flex text-2xl font-bold"><%= date_formatter(@calendar_date_event.date) %></div>
-                <div class="flex justify-end ml-auto">
+                <div class="flex justify-end ml-auto gap-1">
                   <%= for %{action: action, icon: icon, disabled: disabled?} <- date_actions(@booking_slot_tab_active, @booking_event, @calendar_date_event) do %>
                     <.icon_button icon={icon} phx-click={action} phx-value-id={@calendar_date_event.id} disabled={disabled?} class="px-2 py-2" text_color={"text-black"} color={if icon == "trash", do: "red-sales-300", else: "blue-planning-300"}/>
                   <% end %>

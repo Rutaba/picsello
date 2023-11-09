@@ -85,10 +85,10 @@ defmodule PicselloWeb.Live.Calendar.BookingEventModal do
           </div>
           <div class="flex gap-5">
             <div class="grow">
-              <%= labeled_select f, :session_length, duration_options(), label: "Session length", prompt: "Select below", disabled: @has_booking? %>
+              <%= labeled_select f, :session_length, duration_options(), label: "Session length", prompt: "Select below", disabled: @has_booking?, class: "cursor-pointer"%>
             </div>
             <div class="grow">
-              <%= labeled_select f, :session_gap, buffer_options(), label: "Session Gap", prompt: "Select below", optional: true, disabled: @has_booking? %>
+              <%= labeled_select f, :session_gap, buffer_options(), label: "Session Gap", prompt: "Select below", optional: true, disabled: @has_booking?, class: "cursor-pointer" %>
             </div>
           </div>
         </div>
@@ -110,14 +110,14 @@ defmodule PicselloWeb.Live.Calendar.BookingEventModal do
                 <div class="font-bold mb-1">Repeat every:</div>
                 <div class="flex gap-4 items-center w-full">
                   <%= input f, :count_calendar, placeholder: 0, class: "w-24 bg-white p-3 focus:ring-0 focus:outline-none border-2 focus:border-blue-planning-300 text-lg sm:mt-0 font-normal text-center"%>
-                  <%= select f, :calendar, ["week", "month", "year"], class: "w-28 select"%>
+                  <%= select f, :calendar, ["week", "month", "year"], class: "w-28 select cursor-pointer"%>
                 </div>
                 <div class="mt-5 font-bold mb-1">Repeat on:</div>
                 <div class="flex gap-6 font-bold">
                 <%= inputs_for f, :repeat_on, fn r -> %>
                   <div class="flex flex-col items-center">
                     <div>
-                      <%= input r, :active, type: :checkbox, class: "checkbox border-blue-planning-300 w-6 h-6" %>
+                      <%= input r, :active, type: :checkbox, class: "checkbox  border-blue-planning-300 w-6 h-6 cursor-pointer" %>
                       <%= hidden_input r, :day, value: input_value(r, :day) %>
                     </div>
                     <div class="text-blue-planning-300">
@@ -135,7 +135,7 @@ defmodule PicselloWeb.Live.Calendar.BookingEventModal do
                 </div>
                 <div class="flex gap-5 mb-2"><%= radio_button f, :repetition, true, class: "w-5 h-5 radio cursor-pointer mb-2" %>After</div>
                 <div class={classes("pl-10 mb-2", %{"pointer-events-none text-gray-400" => input_value(f, :repetition) != true})}>
-                  <%= select f, :occurences, occurence_options(), class: "select w-40" %>
+                  <%= select f, :occurences, occurence_options(), class: "select w-40 cursor-pointer" %>
                 </div>
               </div>
             </div>
@@ -157,7 +157,7 @@ defmodule PicselloWeb.Live.Calendar.BookingEventModal do
               <%= if slot_status(s) |> to_string() == "hidden", do: "Booked (Hidden)", else: slot_status(s) |> to_string() |> String.capitalize() %>
             </div>
             <div class="col-span-2 flex justify-end pr-2">
-              <%= input s, :is_hide, type: :checkbox, disabled: (slot_status(s) in  [:booked, :reserved]), checked: hidden_time?(slot_status(s)), class: "checkbox w-6 h-6"%>
+              <%= input s, :is_hide, type: :checkbox, disabled: (slot_status(s) in  [:booked, :reserved]), checked: hidden_time?(slot_status(s)), class: "checkbox w-6 h-6 cursor-pointer"%>
               <div class={classes("ml-2", %{"text-gray-300" => slot_status(s) == :booked})}> Show block as booked (break)</div>
             </div>
             <%= hidden_input s, :client_id, value: s |> current |> Map.get(:client_id) %>
