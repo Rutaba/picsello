@@ -549,7 +549,10 @@ defmodule PicselloWeb.ClientMessageComponent do
   defp icon_button_(assigns) do
     assigns =
       assigns
-      |> Map.put(:rest, Map.drop(assigns, [:color, :icon, :inner_block, :class, :disabled, :icon_class]))
+      |> Map.put(
+        :rest,
+        Map.drop(assigns, [:color, :icon, :inner_block, :class, :disabled, :icon_class])
+      )
       |> Enum.into(%{class: "", disabled: false, inner_block: nil, icon_class: nil})
 
     ~H"""

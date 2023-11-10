@@ -1055,6 +1055,7 @@ defmodule PicselloWeb.HomeLive.Index do
          tab
        ) do
     %{organization: organization} = Repo.preload(current_user, :organization)
+
     case tab do
       "clients" ->
         socket |> assign(:clients, Clients.get_recent_clients(current_user))
