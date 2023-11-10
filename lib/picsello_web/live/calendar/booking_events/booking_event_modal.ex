@@ -211,7 +211,12 @@ defmodule PicselloWeb.Live.Calendar.BookingEventModal do
 
   @impl true
   def handle_event("validate", %{"booking_event_date" => params}, socket) do
-    socket |> assign_changeset_with_slots(params, :validate) |> noreply()
+    if Map.has_key?(params, "slots") do
+      socket |> assign_changeset_with_existing_slots(params, :validate)
+    else
+      socket |> assign_changeset_with_slots(params, :validate)
+    end
+    |> noreply()
   end
 
   @impl true
