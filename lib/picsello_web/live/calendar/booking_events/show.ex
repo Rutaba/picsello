@@ -274,7 +274,7 @@ defmodule PicselloWeb.Live.Calendar.BookingEvents.Show do
         %{"section_id" => section_id},
         %{assigns: %{collapsed_sections: collapsed_sections}} = socket
       ) do
-    section_id = to_integer(section_id)
+    section_id = if section_id in ["Read more", "Read less"], do: section_id, else: to_integer(section_id)
 
     collapsed_sections =
       if Enum.member?(collapsed_sections, section_id) do
