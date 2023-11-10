@@ -24,8 +24,8 @@ defmodule Picsello.Accounts.User.Promotions do
 
   @type t :: %__MODULE__{
           state: atom(),
-          slug: string(),
-          name: string()
+          slug: String.t(),
+          name: String.t()
         }
 
   @spec changeset(t()) :: Changeset.t()
