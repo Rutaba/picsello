@@ -499,10 +499,21 @@ defmodule PicselloWeb.LiveHelpers do
   end
 
   def date_formatter(nil), do: nil
-  def date_formatter(date), do: "#{Timex.month_name(date.month)} #{date.day}, #{date.year}"
+  def date_formatter(date), do: "#{Timex.day_name(day_of_week(date))}, #{Timex.month_name(date.month)} #{date.day}#{
+    cond do
+      date.day in [1, 21, 31] ->
+        "st"
+      date.day in [2, 22] ->
+        "nd"
+      date.day == 3 ->
+        "rd"
+      true ->
+        "th"
+    end
+    }, #{date.year}"
 
   def date_formatter(date, :day),
-    do: "#{day_of_week(date)}, #{Timex.month_name(date.month)} #{date.day}"
+    do: "#{Timex.day_name(day_of_week(date))}, #{Timex.month_name(date.month)} #{date.day}"
 
   def format_date_via_type(_, _ \\ "MM DD, YY")
 
