@@ -8,6 +8,28 @@ defmodule Picsello.EmailPresets do
   alias Picsello.{Repo, Job, Shoot, EmailPresets.EmailPreset, Utils}
   alias Picsello.Galleries.Gallery
 
+  @doc """
+  Retrieves email automation presets for a specific type, job type, and pipeline.
+
+  This function retrieves email automation presets that match the specified `type`, `job_type`,
+  and `pipeline_id`. It returns a list of email automation presets that meet the criteria.
+
+  ## Parameters
+
+      - `type`: The type of email automation presets to retrieve, either `:gallery` or `:order`.
+      - `job_type`: A value representing the job type for which email automation presets are retrieved.
+      - `pipeline_id`: An integer representing the ID of the email automation pipeline.
+
+  ## Returns
+
+  A list of maps, each representing an email automation preset that matches the criteria.
+
+  ## Example
+
+      ```elixir
+      # Retrieve email automation presets for a specific type, job type, and pipeline
+      presets = Picsello.EmailAutomations.email_automation_presets(:gallery, :job, 123)
+  """
   def email_automation_presets(type, job_type, pipeline_id) do
     from(p in presets(type),
       where:

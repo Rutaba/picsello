@@ -97,6 +97,26 @@ defmodule PicselloWeb.EmailAutomationLive.Shared do
     end)
   end
 
+  @doc """
+  Generate sign options based on the provided state.
+
+  This function generates a list of sign options based on the provided `state`. The `state` can be a string or an atom.
+
+  The sign options are determined as follows:
+      - If the `state` is "before_shoot" or "gallery_expiration_soon", it returns options for "Before" and "After".
+      - If the `state` is "balance_due" or "offline_payment", it returns options for "Before" and "After" with the "After" option enabled.
+      - For any other `state`, it returns options for "Before" and "After" with the "Before" option disabled.
+
+  ## Parameters
+
+      - `state` (String.t() | atom()): The state to determine sign options for.
+
+  ## Examples
+
+      ```elixir
+      options = make_sign_options("before_shoot")
+      # Returns: [[key: "Before", value: "-"], [key: "After", value: "+", disabled: true]]
+  """
   def make_sign_options(state) do
     state = if is_atom(state), do: Atom.to_string(state), else: state
 
