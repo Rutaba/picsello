@@ -468,10 +468,11 @@ defmodule PicselloWeb.Live.Calendar.BookingEvents.Index do
   def sort_by_date(booking_events, _sort_direction, _sort_by), do: booking_events
 
   # this function removes all the booking events with 'date' as date in 'dates'
+  # end result would be all the booking events that have nil date in dates field
   defp filter_booking_events_with_dates(booking_events) do
     booking_events
     |> Enum.reduce_while([], fn booking_event, acc ->
-      if Enum.any?(booking_event.dates, fn b ->
+      if Enum.all?(booking_event.dates, fn b ->
            is_nil(b["date"])
          end) do
         {:cont, acc ++ [booking_event]}
@@ -482,6 +483,7 @@ defmodule PicselloWeb.Live.Calendar.BookingEvents.Index do
   end
 
   # this function removes all the booking events with 'date' as nil in 'dates'
+  # end result would be booking events with date in their dates field
   defp filter_nil_dates_booking_events(booking_events) do
     booking_events
     |> Enum.reduce_while([], fn booking_event, acc ->
@@ -490,7 +492,23 @@ defmodule PicselloWeb.Live.Calendar.BookingEvents.Index do
          end) do
         {:cont, acc ++ [booking_event]}
       else
-        {:cont, acc}
+        if Enum.any?(booking_event.dates, fn d ->
+             !is_nil(BEShared.get_date(d))
+           end) do
+          filtered_dates =
+            Enum.reduce_while(booking_event.dates, [], fn d, acc_dates ->
+              if is_nil(BEShared.get_date(d)) do
+                {:cont, acc_dates}
+              else
+                {:cont, acc_dates ++ [d]}
+              end
+            end)
+
+          booking_event = Map.replace(booking_event, :dates, filtered_dates)
+          {:cont, acc ++ [booking_event]}
+        else
+          {:cont, acc}
+        end
       end
     end)
   end

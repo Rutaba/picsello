@@ -151,6 +151,7 @@ defmodule Picsello.BookingEventDate do
       if get_field(changeset, :is_repeat) do
         changeset
         |> validate_required([:count_calendar, :calendar])
+        |> validate_number(:count_calendar, less_than: 100)
         |> validate_stop_repeating()
         |> validate_repeat_date_overlapping()
       else

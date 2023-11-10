@@ -15,7 +15,7 @@ defmodule PicselloWeb.PackageLive.PackagesSearchComponent do
   def update(assigns, socket) do
     socket
     |> assign_new(:package_type, fn -> "all" end)
-    |> assign_new(:sort_by, fn -> "name" end)
+    |> assign_new(:sort_by, fn -> "price" end)
     |> assign_new(:sort_direction, fn -> "desc" end)
     |> assign_new(:search_phrase_packages, fn -> nil end)
     |> assign(assigns)
@@ -30,7 +30,7 @@ defmodule PicselloWeb.PackageLive.PackagesSearchComponent do
     <div class="flex flex-col justify-between items-center px-1.5 md:flex-row mb-10 gap-6">
       <div class="relative flex lg:w-2/3 md:w-1/2 w-full md:mt-6">
         <a href='#' class="absolute top-0 bottom-0 flex flex-row items-center justify-center overflow-hidden text-xs text-gray-400 left-2">
-          <%= if @search_phrase_packages do %>
+          <%= if @search_phrase_packages && @search_phrase_packages != "" do %>
             <span phx-click="clear-search" phx-target={@myself} class="cursor-pointer">
               <.icon name="close-x" class="w-4 ml-1 fill-current stroke-current stroke-2 close-icon text-blue-planning-300" />
             </span>
@@ -79,9 +79,9 @@ defmodule PicselloWeb.PackageLive.PackagesSearchComponent do
           <div class="items-center flex border rounded-r-lg border-grey p-2">
             <button type="button" phx-click="switch_sort" phx-target={@target}>
               <%= if @sort_direction == "asc" do%>
-                <.icon name="sort-vector" {testid("edit-link-button")} class="blue-planning-300 w-5 h-5" />
-              <% else%>
                 <.icon name="sort-vector-2" {testid("edit-link-button")} class="blue-planning-300 w-5 h-5" />
+              <% else%>
+                <.icon name="sort-vector" {testid("edit-link-button")} class="blue-planning-300 w-5 h-5" />
               <% end %>
             </button>
           </div>
