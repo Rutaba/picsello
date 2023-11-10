@@ -3,7 +3,6 @@ defmodule PicselloWeb.OnboardingLive.Mastermind.Index do
   use PicselloWeb, live_view: [layout: :onboarding]
 
   alias Picsello.{
-    Onboardings.Onboarding,
     Subscriptions,
     Subscriptions,
     Payments,

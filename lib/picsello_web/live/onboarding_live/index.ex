@@ -17,7 +17,7 @@ defmodule PicselloWeb.OnboardingLive.Index do
 
   require Logger
 
-  alias Picsello.{Onboardings, Onboardings.Onboarding, Subscriptions}
+  alias Picsello.{Onboardings, Subscriptions}
 
   @impl true
   def mount(_params, _session, socket) do
