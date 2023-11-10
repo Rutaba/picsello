@@ -112,6 +112,9 @@ defmodule PicselloWeb.Live.Calendar.BookingEventModal do
                   <%= input f, :count_calendar, placeholder: 0, class: "w-24 bg-white p-3 focus:ring-0 focus:outline-none border-2 focus:border-blue-planning-300 text-lg sm:mt-0 font-normal text-center"%>
                   <%= select f, :calendar, ["week", "month", "year"], class: "w-28 select"%>
                 </div>
+                <div>
+                  <%= error_tag(f, :count_calendar, class: "text-red-sales-300 text-sm mb-2") %>
+                </div>
                 <div class="mt-5 font-bold mb-1">Repeat on:</div>
                 <div class="flex gap-6 font-bold">
                 <%= inputs_for f, :repeat_on, fn r -> %>
