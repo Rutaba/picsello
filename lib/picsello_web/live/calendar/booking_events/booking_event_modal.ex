@@ -229,8 +229,13 @@ defmodule PicselloWeb.Live.Calendar.BookingEventModal do
   end
 
   @impl true
-  def handle_event("submit", %{"booking_event_date" => _params}, %{assigns: %{changeset: changeset, booking_date: booking_date}} = socket) do
-     changeset = changeset |> Map.replace(:action, nil)
+  def handle_event(
+        "submit",
+        %{"booking_event_date" => _params},
+        %{assigns: %{changeset: changeset, booking_date: booking_date}} = socket
+      ) do
+    changeset = changeset |> Map.replace(:action, nil)
+
     %{dates: repeat_dates, params: repeat_dates_rows} =
       if get_field(changeset, :is_repeat) do
         repeat_dates = get_repeat_dates(changeset)

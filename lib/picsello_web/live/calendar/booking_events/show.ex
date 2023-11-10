@@ -274,7 +274,8 @@ defmodule PicselloWeb.Live.Calendar.BookingEvents.Show do
         %{"section_id" => section_id},
         %{assigns: %{collapsed_sections: collapsed_sections}} = socket
       ) do
-    section_id = if section_id in ["Read more", "Read less"], do: section_id, else: to_integer(section_id)
+    section_id =
+      if section_id in ["Read more", "Read less"], do: section_id, else: to_integer(section_id)
 
     collapsed_sections =
       if Enum.member?(collapsed_sections, section_id) do
@@ -661,15 +662,18 @@ defmodule PicselloWeb.Live.Calendar.BookingEvents.Show do
 
   defp actions(assigns) do
     assigns =
-       Map.merge(%{
-        archive_option: true,
-        main_button_class: "text-black",
-        slot_index: -1,
-        slot_client_id: -1,
-        slot_job_id: -1,
-        disabled?: false,
-        booking_event_date_id: nil
-      }, assigns)
+      Map.merge(
+        %{
+          archive_option: true,
+          main_button_class: "text-black",
+          slot_index: -1,
+          slot_client_id: -1,
+          slot_job_id: -1,
+          disabled?: false,
+          booking_event_date_id: nil
+        },
+        assigns
+      )
 
     assigns =
       if assigns.slot_job_id,

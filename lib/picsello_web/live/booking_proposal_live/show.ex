@@ -478,7 +478,7 @@ I look forward to capturing these memories for you!"}
   defp reorder_payment_schedules(socket), do: socket
 
   defp pending_amount_details(job) do
-    percentage_left = PaymentSchedules.percentage_paid(job) |> IO.inspect() |> to_string()
+    percentage_left = PaymentSchedules.percentage_paid(job) |> to_string()
     "#{percentage_left}% paid"
   end
 
