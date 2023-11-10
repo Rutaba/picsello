@@ -98,7 +98,7 @@ defmodule PicselloWeb.Shared.ConfirmationComponent do
       <%= if @copy_btn_label do %>
         <button class="w-full mt-2 px-6 py-3 btn-tertiary text-blue-planning-300" type="button" id="copy-calendar-link" data-clipboard-text={@copy_btn_value} phx-hook="Clipboard">
           <%= @copy_btn_label %>
-          <div class="hidden p-1 text-sm rounded shadow" role="tooltip">
+          <div class="hidden p-1 text-sm rounded shadow bg-white" role="tooltip">
             Copied!
           </div>
         </button>

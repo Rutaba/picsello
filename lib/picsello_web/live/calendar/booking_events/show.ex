@@ -596,7 +596,7 @@ defmodule PicselloWeb.Live.Calendar.BookingEvents.Show do
                  <div class={classes("col-span-2", %{"text-base-250" => @slot.status != :open})}>
                    <div class="flex gap-2 items-center lg:justify-start md:justify-start">
                      <.icon name={@slot.status != :open && "booked-slot" || "open-slot"} class="block md:hidden w-3 h-3 fill-blue-planning-300 mt-1.5" />
-                     <div><%= String.capitalize(to_string(@slot.status)) %></div>
+                     <div><%= String.capitalize(slot_status(@slot.status)) %></div>
                    </div>
                  </div>
                  <div class="col-span-2">
@@ -606,8 +606,8 @@ defmodule PicselloWeb.Live.Calendar.BookingEvents.Show do
                        <div phx-click="open-client" phx-value-client-id={@client.id} class="text-blue-planning-300 underline cursor-pointer"><%= String.capitalize(@client.name) %></div>
                      </div>
                    <% else %>
-                     <div class="flex gap-2 items-center md:hidden">
-                       <.icon name="client-icon" class=" w-3 h-3 text-blue-planning-300" />
+                     <div class="flex gap-2 items-center ">
+                       <.icon name="client-icon" class=" w-3 h-3 text-blue-planning-300 md:hidden" />
                        -
                      </div>
                    <% end %>
@@ -769,13 +769,13 @@ defmodule PicselloWeb.Live.Calendar.BookingEvents.Show do
           <% end %>
           <div class="flex flex-col mb-3 items-start">
             <%= if package_description_length_long?(@description) do %>
-              <p>
+                <div>
                 <%= if !Enum.member?(@collapsed_sections, "Read more") do %>
                   <%= @description |> slice_description() |> raw() %>
                 <% else %>
                   <%= @description %>
                 <% end %>
-              </p>
+                </div>
               <button class="mt-2 flex text-base-250 items-center justify-center" phx-click="toggle-section" phx-value-section_id="Read more">
                 <%= if Enum.member?(@collapsed_sections, "Read more") do %>
                   Read less <.icon name="up" class="mt-1 w-4 h-4 ml-2 stroke-current stroke-3 text-base-250"/>
@@ -946,4 +946,7 @@ defmodule PicselloWeb.Live.Calendar.BookingEvents.Show do
       description
     end
   end
+
+  defp slot_status(:hidden), do: "Break (hidden)"
+  defp slot_status(s), do: s |> to_string()
 end
