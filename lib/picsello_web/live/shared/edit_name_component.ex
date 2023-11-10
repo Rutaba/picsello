@@ -66,9 +66,9 @@ defmodule PicselloWeb.Shared.EditNameComponent do
                 </.input_label>
               <% end %>
               <%= input f, :name, value: (if Map.has_key?(@data, :name), do: @data.name, else: Job.name(@data)), class: "w-full text-input" %>
-              <div class="flex">
-                <%= submit "Save", disabled: !@changeset.valid?, class: "ml-4 mb-2 btn-save-side-nav" %>
-                <button class="flex ml-2 mb-2 px-4 py-2 mt-4 border rounded-lg shadow-lg hover:opacity-75 border-black" title="cancel" type="button" phx-click="close" phx-target={@myself}>Cancel</button>
+              <div class="flex gap-2">
+                <%= submit "Save", disabled: !@changeset.valid?, class: "grid place-items-center ml-4 px-4 py-2 border rounded-lg shadow-lg hover:opacity-75 border-blue-planning-300" %>
+                <button class="grid place-items-center p-2 border rounded-lg shadow-lg hover:opacity-75 border-black" title="cancel" type="button" phx-click="close" phx-target={@myself}>Cancel</button>
               </div>
             </div>
           </.form>
