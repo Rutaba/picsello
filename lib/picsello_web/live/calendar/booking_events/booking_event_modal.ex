@@ -67,16 +67,16 @@ defmodule PicselloWeb.Live.Calendar.BookingEventModal do
       <.form :let={f} for={@changeset} phx-change="validate" phx-submit="submit" phx-target={@myself} >
         <div class="grid grid-cols-1 md:grid-cols-2 gap-5 mt-8">
           <div class="">
-            <%= labeled_input f, :date, type: :date_input, min: Date.utc_today(), class: "w-full", disabled: @has_booking? %>
+            <%= labeled_input f, :date, type: :date_input, min: Date.utc_today(), class: "w-full cursor-text", disabled: @has_booking? %>
           </div>
           <%= inputs_for f, :time_blocks, fn t -> %>
             <div class="flex gap-2 items-center">
               <div class="grow">
-                <%= labeled_input t, :start_time, type: :time_input, label: "Event Start", class: "", disabled: @has_booking? %>
+                <%= labeled_input t, :start_time, type: :time_input, label: "Event Start", class: "cursor-text", disabled: @has_booking? %>
               </div>
               <div class="pt-5"> - </div>
               <div class="grow">
-                <%= labeled_input t, :end_time, type: :time_input, label: "Event End", class: "" , disabled: @has_booking?%>
+                <%= labeled_input t, :end_time, type: :time_input, label: "Event End", class: "cursor-text" , disabled: @has_booking?%>
               </div>
             </div>
           <% end %>
@@ -85,10 +85,10 @@ defmodule PicselloWeb.Live.Calendar.BookingEventModal do
           </div>
           <div class="flex gap-5">
             <div class="grow">
-              <%= labeled_select f, :session_length, duration_options(), label: "Session length", prompt: "Select below", disabled: @has_booking? %>
+              <%= labeled_select f, :session_length, duration_options(), label: "Session length", prompt: "Select below", disabled: @has_booking?, class: "cursor-pointer"%>
             </div>
             <div class="grow">
-              <%= labeled_select f, :session_gap, buffer_options(), label: "Session Gap", prompt: "Select below", optional: true, disabled: @has_booking? %>
+              <%= labeled_select f, :session_gap, buffer_options(), label: "Session Gap", prompt: "Select below", optional: true, disabled: @has_booking?, class: "cursor-pointer" %>
             </div>
           </div>
         </div>
@@ -97,7 +97,7 @@ defmodule PicselloWeb.Live.Calendar.BookingEventModal do
         </div>
 
         <div class="mt-6 flex items-center">
-          <%= input f, :is_repeat, type: :checkbox, class: "checkbox border-blue-planning-300 w-6 h-6" %>
+          <%= input f, :is_repeat, type: :checkbox, class: "checkbox border-blue-planning-300 w-6 h-6 cursor-pointer" %>
           <div class="ml-2"> Repeat dates?</div>
         </div>
         <%= if @changeset |> current |> Map.get(:is_repeat) do %>
@@ -110,7 +110,7 @@ defmodule PicselloWeb.Live.Calendar.BookingEventModal do
                 <div class="font-bold mb-1">Repeat every:</div>
                 <div class="flex gap-4 items-center w-full">
                   <%= input f, :count_calendar, placeholder: 0, class: "w-24 bg-white p-3 focus:ring-0 focus:outline-none border-2 focus:border-blue-planning-300 text-lg sm:mt-0 font-normal text-center"%>
-                  <%= select f, :calendar, ["week", "month", "year"], class: "w-28 select"%>
+                  <%= select f, :calendar, ["week", "month", "year"], class: "w-28 select cursor-pointer"%>
                 </div>
                 <div>
                   <%= error_tag(f, :count_calendar, class: "text-red-sales-300 text-sm mb-2") %>
@@ -120,7 +120,7 @@ defmodule PicselloWeb.Live.Calendar.BookingEventModal do
                 <%= inputs_for f, :repeat_on, fn r -> %>
                   <div class="flex flex-col items-center">
                     <div>
-                      <%= input r, :active, type: :checkbox, class: "checkbox border-blue-planning-300 w-6 h-6" %>
+                      <%= input r, :active, type: :checkbox, class: "checkbox  border-blue-planning-300 w-6 h-6 cursor-pointer" %>
                       <%= hidden_input r, :day, value: input_value(r, :day) %>
                     </div>
                     <div class="text-blue-planning-300">
@@ -138,7 +138,7 @@ defmodule PicselloWeb.Live.Calendar.BookingEventModal do
                 </div>
                 <div class="flex gap-5 mb-2"><%= radio_button f, :repetition, true, class: "w-5 h-5 radio cursor-pointer mb-2" %>After</div>
                 <div class={classes("pl-10 mb-2", %{"pointer-events-none text-gray-400" => input_value(f, :repetition) != true})}>
-                  <%= select f, :occurences, occurence_options(), class: "select w-40" %>
+                  <%= select f, :occurences, occurence_options(), class: "select w-40 cursor-pointer" %>
                 </div>
               </div>
             </div>
@@ -151,17 +151,23 @@ defmodule PicselloWeb.Live.Calendar.BookingEventModal do
         </div>
          <%= inputs_for f, :slots, fn s -> %>
           <div class="mt-4 grid grid-cols-5 items-center">
-          <div class="col-span-2">
+          <div class={classes("col-span-2", %{"text-gray-300" => (slot_status(s) |> to_string() == "hidden")})}>
             <%= hidden_input s, :slot_start %>
             <%= hidden_input s, :slot_end %>
             <%= parse_time(input_value(s, :slot_start)) <> "-" <> parse_time(input_value(s, :slot_end))%>
             </div>
             <div>
-              <%= if slot_status(s) |> to_string() == "hidden", do: "Booked (Hidden)", else: slot_status(s) |> to_string() |> String.capitalize() %>
+              <%= if slot_status(s) |> to_string() == "hidden" do %>
+               <div class="text-gray-300" > Booked (Hidden) </div>
+              <% else %>
+               <%= slot_status(s) |> to_string() |> String.capitalize() %>
+              <% end %>
             </div>
             <div class="col-span-2 flex justify-end pr-2">
-              <%= input s, :is_hide, type: :checkbox, disabled: (slot_status(s) in  [:booked, :reserved]), checked: hidden_time?(slot_status(s)), class: "checkbox w-6 h-6"%>
-              <div class={classes("ml-2", %{"text-gray-300" => slot_status(s) == :booked})}> Show block as booked (break)</div>
+              <%= unless slot_status(s) in  [:booked, :reserved] do %>
+                <%= input s, :is_hide, type: :checkbox, checked: hidden_time?(slot_status(s)), class: "checkbox w-6 h-6 cursor-pointer"%>
+                <div class="ml-2"> Show block as booked (break)</div>
+              <% end %>
             </div>
             <%= hidden_input s, :client_id, value: s |> current |> Map.get(:client_id) %>
             <%= hidden_input s, :job_id, value: s |> current |> Map.get(:job_id) %>

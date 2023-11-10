@@ -144,7 +144,7 @@ defmodule PicselloWeb.Calendar.BookingEvents.Shared do
       {:ok, _event} ->
         socket
         |> assign_events()
-        |> put_flash(:success, "Event unarchive successfully")
+        |> put_flash(:success, "Event unarchived successfully")
 
       {:error, _} ->
         socket
@@ -637,7 +637,7 @@ defmodule PicselloWeb.Calendar.BookingEvents.Shared do
       {:ok, _event} ->
         socket
         |> assign_events()
-        |> put_flash(:success, "Event archive successfully")
+        |> put_flash(:success, "Event archived successfully")
 
       {:error, _} ->
         socket
@@ -696,7 +696,7 @@ defmodule PicselloWeb.Calendar.BookingEvents.Shared do
       icon: nil,
       title: "Reserve Session",
       subtitle: """
-        Great! Session has been reserved and a <a class="#{class}" href="#{job_url(job.id)}" target="_blank">job</a> + <a class="#{class}" href="#{BookingProposal.url(proposal.id)}" target="_blank">client portal</a> has been created for you to share
+        Great! Session has been reserved and a <a class="#{class}" href="#{Routes.job_path(socket, :leads, job.id)}" target="_blank">job</a> + <a class="#{class}" href="#{BookingProposal.url(proposal.id)}" target="_blank">client portal</a> has been created for you to share
       """,
       copy_btn_label: "Copy link, I’ll send separately",
       copy_btn_event: "copy-link",

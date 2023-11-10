@@ -28,6 +28,7 @@ defmodule PicselloWeb.Live.Calendar.BookingEvents.Show do
   alias PicselloWeb.Live.Calendar.{BookingEventModal, EditMarketingEvent}
   alias PicselloWeb.BookingProposalLive.{QuestionnaireComponent, ContractComponent}
   alias PicselloWeb.Calendar.BookingEvents.Shared, as: BEShared
+  alias PicselloWeb.Router.Helpers, as: Routes
 
   @impl true
   def mount(_params, _session, socket) do
@@ -309,6 +310,17 @@ defmodule PicselloWeb.Live.Calendar.BookingEvents.Show do
   end
 
   @impl true
+  def handle_event(
+        "open-client",
+        %{"client-id" => id},
+        socket
+      ) do
+    socket
+    |> push_redirect(to: Routes.client_path(socket, :show, id))
+    |> noreply()
+  end
+
+  @impl true
   defdelegate handle_event(name, params, socket), to: BEShared
 
   @impl true
@@ -502,9 +514,9 @@ defmodule PicselloWeb.Live.Calendar.BookingEvents.Show do
               </div>
               <hr class="block md:hidden my-2">
               <%= if Enum.member?(@collapsed_sections, booking_event_date.id) do %>
-                <div class="hidden md:grid grid-cols-7 border-b-4 border-blue-planning-300 font-bold text-lg my-4">
+                <div class="hidden md:grid grid-cols-4 border-b-4 border-blue-planning-300 font-bold text-lg my-4">
                 <%= for title <- ["Time", "Status", "Client"] do %>
-                  <div class="col-span-2"><%= title %></div>
+                  <div class="col-span-1"><%= title %></div>
                 <% end %>
                 </div>
                 <%= Enum.with_index(booking_event_date.slots, fn slot, slot_index -> %>
@@ -533,7 +545,7 @@ defmodule PicselloWeb.Live.Calendar.BookingEvents.Show do
             <%= if @calendar_date_event do %>
               <div class="flex">
                 <div class="flex text-2xl font-bold"><%= date_formatter(@calendar_date_event.date) %></div>
-                <div class="flex justify-end ml-auto">
+                <div class="flex justify-end ml-auto gap-1">
                   <%= for %{action: action, icon: icon, disabled: disabled?} <- date_actions(@booking_slot_tab_active, @booking_event, @calendar_date_event) do %>
                     <.icon_button icon={icon} phx-click={action} phx-value-id={@calendar_date_event.id} disabled={disabled?} class="px-2 py-2" text_color={"text-black"} color={if icon == "trash", do: "red-sales-300", else: "blue-planning-300"}/>
                   <% end %>
@@ -565,40 +577,43 @@ defmodule PicselloWeb.Live.Calendar.BookingEvents.Show do
     ~H"""
       <%= case @booking_slot_tab_active do %>
         <% "list" -> %>
-          <div class="grid grid-cols-3 md:grid-cols-7 items-start md:items-center my-2">
-            <div class="col-span-7 grid grid-cols-2 md:grid-cols-6">
-              <div class={classes("col-span-2", %{"text-base-250" => @slot.status == :hidden})}>
-                <%= if @slot.status in [:booked, :reserved] do %>
-                  <div class="flex gap-2 items-center">
-                    <.icon name="clock-2" class="block md:hidden w-3 h-3 stroke-current text-blue-planning-300 mt-1" />
-                    <button phx-click="open-job" phx-value-slot-job-id={@slot.job_id} class="text-blue-planning-300 underline"><%= slot_time_formatter(@slot) %></button>
-                  </div>
-                <% else %>
-                  <div class="flex gap-2 items-center">
-                    <.icon name="clock-2" class="block md:hidden w-3 h-3 stroke-current text-blue-planning-300 mt-1" />
-                    <div><%= slot_time_formatter(@slot) %></div>
-                  </div>
-                <% end %>
+          <div class="grid grid-cols-3 md:grid-cols-4 items-start md:items-center my-2">
+            <div class="col-span-4 grid grid-cols-3 md:grid-cols-4">
+              <div class="flex flex-col col-span-3 md:grid md:col-span-3 md:grid-cols-6">
+                 <div class={classes("col-span-2", %{"text-base-250" => @slot.status == :hidden})}>
+                   <%= if @slot.status in [:booked, :reserved] do %>
+                     <div class="flex gap-2 items-center">
+                       <.icon name="clock-2" class="block md:hidden w-3 h-3 stroke-current text-blue-planning-300 mt-1" />
+                       <button phx-click="open-job" phx-value-slot-job-id={@slot.job_id} class="text-blue-planning-300 underline"><%= slot_time_formatter(@slot) %></button>
+                     </div>
+                   <% else %>
+                     <div class="flex gap-2 items-center">
+                       <.icon name="clock-2" class="block md:hidden w-3 h-3 stroke-current text-blue-planning-300 mt-1" />
+                       <div><%= slot_time_formatter(@slot) %></div>
+                     </div>
+                   <% end %>
+                 </div>
+                 <div class={classes("col-span-2", %{"text-base-250" => @slot.status != :open})}>
+                   <div class="flex gap-2 items-center lg:justify-start md:justify-start">
+                     <.icon name={@slot.status != :open && "booked-slot" || "open-slot"} class="block md:hidden w-3 h-3 fill-blue-planning-300 mt-1.5" />
+                     <div><%= String.capitalize(to_string(@slot.status)) %></div>
+                   </div>
+                 </div>
+                 <div class="col-span-2">
+                   <%= if @client && @slot.status in [:booked, :reserved] do %>
+                     <div class="flex gap-2 items-center">
+                       <.icon name="client-icon" class="block md:hidden w-3 h-3 text-blue-planning-300 mt-1.5" />
+                       <div phx-click="open-client" phx-value-client-id={@client.id} class="text-blue-planning-300 underline cursor-pointer"><%= String.capitalize(@client.name) %></div>
+                     </div>
+                   <% else %>
+                     <div class="flex gap-2 items-center md:hidden">
+                       <.icon name="client-icon" class=" w-3 h-3 text-blue-planning-300" />
+                       -
+                     </div>
+                   <% end %>
+                 </div>
               </div>
-              <div class={classes("col-span-2", %{"text-base-250" => @slot.status != :open})}>
-                <div class="flex gap-2 items-center lg:justify-start md:justify-center">
-                  <.icon name={@slot.status != :open && "booked-slot" || "open-slot"} class="block md:hidden w-3 h-3 fill-blue-planning-300 mt-1.5" />
-                  <div><%= String.capitalize(to_string(@slot.status)) %></div>
-                </div>
-              </div>
-              <div class="col-span-2">
-                <%= if @client && @slot.status in [:booked, :reserved] do %>
-                  <div class="flex gap-2 items-center">
-                    <.icon name="client-icon" class="block md:hidden w-3 h-3 text-blue-planning-300 mt-1.5" />
-                    <div class="text-blue-planning-300 underline"><%= String.capitalize(@client.name) %></div>
-                  </div>
-                <% else %>
-                  <div class="flex gap-2 items-center">
-                    <.icon name="client-icon" class="block md:hidden w-3 h-3 text-blue-planning-300" />
-                  </div>
-                <% end %>
-              </div>
-              <div class="justify-start">
+              <div class="items-start sm:justify-end flex">
                 <.actions id={@booking_event_date.id} booking_event_date_id={@booking_event_date.id} disabled?={disable_slot_actions?(@booking_event_date, @booking_event.status)} booking_event={@booking_event} button_actions={@button_actions} slot_index={@slot_index} slot_client_id={@slot.client_id} slot_job_id={@slot.job_id}/>
               </div>
               <hr class="my-2 md:my-3 col-span-7">
@@ -630,10 +645,23 @@ defmodule PicselloWeb.Live.Calendar.BookingEvents.Show do
     """
   end
 
-  defp actions(assigns) do
+  defp button(assigns) do
     assigns =
       assigns
-      |> Enum.into(%{
+      |> Map.put(:rest, Map.drop(assigns, [:color, :icon, :inner_block, :class, :disabled, :id]))
+      |> Enum.into(%{class: "", hidden: "", disabled: false, inner_block: nil})
+
+    ~H"""
+      <button title={@title} type="button" class={"flex items-center px-3 py-2 rounded-lg text-left hover:bg-#{@color}-100 hover:font-bold #{@hidden}"} disabled={@disabled} {@rest}>
+        <.icon name={@icon} class={"inline-block w-4 h-4 mr-3 fill-current text-#{@color}-300"} />
+        <%= @title %>
+      </button>
+    """
+  end
+
+  defp actions(assigns) do
+    assigns =
+       Map.merge(%{
         archive_option: true,
         main_button_class: "text-black",
         slot_index: -1,
@@ -641,7 +669,7 @@ defmodule PicselloWeb.Live.Calendar.BookingEvents.Show do
         slot_job_id: -1,
         disabled?: false,
         booking_event_date_id: nil
-      })
+      }, assigns)
 
     assigns =
       if assigns.slot_job_id,
@@ -649,23 +677,19 @@ defmodule PicselloWeb.Live.Calendar.BookingEvents.Show do
         else: assigns
 
     ~H"""
-      <div class={classes("flex items-center md:ml-auto w-full md:w-auto left-3 sm:left-8", %{"pointer-events-none opacity-40" => @disabled?})} data-placement="bottom-end" phx-hook="Select" id={"manage-client-#{@id}"}>
-        <button title="Manage" class={"btn-tertiary px-2 py-1 flex items-center gap-3 xl:w-auto w-full #{@main_button_class}"}>
+      <div class={classes("flex items-center md:ml-auto w-full md:w-auto left-3 sm:left-8", %{"pointer-events-none opacity-40" => @disabled?})} data-placement="bottom-end" phx-hook="Select" id={"slot-#{@slot_index}"}}>
+        <button title="Manage" class={"btn-tertiary px-2 py-1 flex items-center gap-3 xl:w-auto w-full text-blue-planning-300 #{@main_button_class}"}>
           Actions
           <.icon name="down" class="w-4 h-4 ml-auto mr-1 stroke-current stroke-3 text-blue-planning-300 open-icon" />
           <.icon name="up" class="hidden w-4 h-4 ml-auto mr-1 stroke-current stroke-3 text-blue-planning-300 close-icon" />
         </button>
 
-        <div class="z-10 flex flex-col hidden w-auto bg-white border rounded-lg shadow-lg popover-content">
+        <div class="z-10 flex hidden flex-col w-auto bg-white border rounded-lg shadow-lg popover-content">
           <%= for %{title: title, action: action, icon: icon} <- @button_actions do %>
             <%= if icon == "anchor" && BookingProposal.url(@proposal.id) do %>
-              <.icon_button icon={icon} class="flex text-base-300 items-center mt-0 px-3 py-2 hover:font-bold rounded-lg" text_color={"text-black"} color="blue-planning-300" id="copy-calendar-link" phx-click={action} data-clipboard-text={BookingProposal.url(@proposal.id)} phx-hook="Clipboard">
-                <span><%= title %></span>
-              </.icon_button>
+              <.button icon={icon} title={title} class="text-base-300 mt-0" text_color={"text-black"} color="blue-planning" id="copy-calendar-link" phx-click={action} data-clipboard-text={BookingProposal.url(@proposal.id)} phx-hook="Clipboard" />
             <% else %>
-              <.icon_button icon={icon} phx-click={action} phx-value-booking_event_date_id={@booking_event_date_id} phx-value-slot_client_id={@slot_client_id} phx-value-slot_job_id={@slot_job_id} phx-value-slot_index={@slot_index} class="flex text-base-300 items-center px-3 py-2 rounded-lg hover:font-bold" text_color={"text-black"} color={if title in ["Archive", "Disable"], do: "red-sales-300", else: "blue-planning-300"}>
-                <span><%= title %></span>
-              </.icon_button>
+              <.button icon={icon} title={title} phx-click={action} phx-value-booking_event_date_id={@booking_event_date_id} phx-value-slot_client_id={@slot_client_id} phx-value-slot_job_id={@slot_job_id} phx-value-slot_index={@slot_index} text_color={"text-black"} color={if title in ["Archive", "Disable"], do: "red-sales", else: "blue-planning"} />
             <% end %>
           <% end %>
         </div>
