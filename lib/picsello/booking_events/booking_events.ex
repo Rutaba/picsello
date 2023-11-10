@@ -42,7 +42,7 @@ defmodule Picsello.BookingEvents do
   end
 
   def duplicate_booking_event(booking_event_id, organization_id) do
-    to_duplicate_booking_event =
+    booking_event_params =
       get_booking_event!(
         organization_id,
         booking_event_id
@@ -50,6 +50,29 @@ defmodule Picsello.BookingEvents do
       |> Repo.preload([:dates])
       |> Map.put(:status, :active)
       |> Map.from_struct()
+
+    to_duplicate_booking_event =
+      if String.contains?(booking_event_params.name, "duplicate-") do
+        number =
+          Regex.run(~r/-([0-9]+)/, booking_event_params.name)
+          |> Enum.at(1)
+          |> String.to_integer()
+
+        new_number = number + 1
+
+        name =
+          String.replace(
+            booking_event_params.name,
+            "duplicate-#{number}",
+            "duplicate-" <> "#{new_number}"
+          )
+
+        booking_event_params
+        |> Map.merge(%{name: name})
+      else
+        booking_event_params
+        |> Map.merge(%{name: booking_event_params.name <> " " <> "duplicate-1"})
+      end
 
     to_duplicate_event_dates =
       to_duplicate_booking_event.dates
@@ -123,7 +146,7 @@ defmodule Picsello.BookingEvents do
         status: event.status,
         location: event.location,
         duration_minutes: event.duration_minutes,
-        package_template:  package,
+        package_template: package,
         dates:
           fragment(
             "array_agg(to_jsonb(json_build_object('id', ?, 'booking_event_id', ?, 'date', ?)))",

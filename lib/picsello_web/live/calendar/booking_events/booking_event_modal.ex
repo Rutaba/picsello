@@ -67,16 +67,16 @@ defmodule PicselloWeb.Live.Calendar.BookingEventModal do
       <.form :let={f} for={@changeset} phx-change="validate" phx-submit="submit" phx-target={@myself} >
         <div class="grid grid-cols-1 md:grid-cols-2 gap-5 mt-8">
           <div class="">
-            <%= labeled_input f, :date, type: :date_input, min: Date.utc_today(), class: "w-full", disabled: @has_booking? %>
+            <%= labeled_input f, :date, type: :date_input, min: Date.utc_today(), class: "w-full cursor-text", disabled: @has_booking? %>
           </div>
           <%= inputs_for f, :time_blocks, fn t -> %>
             <div class="flex gap-2 items-center">
               <div class="grow">
-                <%= labeled_input t, :start_time, type: :time_input, label: "Event Start", class: "", disabled: @has_booking? %>
+                <%= labeled_input t, :start_time, type: :time_input, label: "Event Start", class: "cursor-text", disabled: @has_booking? %>
               </div>
               <div class="pt-5"> - </div>
               <div class="grow">
-                <%= labeled_input t, :end_time, type: :time_input, label: "Event End", class: "" , disabled: @has_booking?%>
+                <%= labeled_input t, :end_time, type: :time_input, label: "Event End", class: "cursor-text" , disabled: @has_booking?%>
               </div>
             </div>
           <% end %>
@@ -151,18 +151,22 @@ defmodule PicselloWeb.Live.Calendar.BookingEventModal do
         </div>
          <%= inputs_for f, :slots, fn s -> %>
           <div class="mt-4 grid grid-cols-5 items-center">
-          <div class="col-span-2">
+          <div class={classes("col-span-2", %{"text-gray-300" => (slot_status(s) |> to_string() == "hidden")})}>
             <%= hidden_input s, :slot_start %>
             <%= hidden_input s, :slot_end %>
             <%= parse_time(input_value(s, :slot_start)) <> "-" <> parse_time(input_value(s, :slot_end))%>
             </div>
             <div>
-              <%= if slot_status(s) |> to_string() == "hidden", do: "Booked (Hidden)", else: slot_status(s) |> to_string() |> String.capitalize() %>
+              <%= if slot_status(s) |> to_string() == "hidden" do %>
+               <div class="text-gray-300" > Booked (Hidden) </div>
+              <% else %>
+               <%= slot_status(s) |> to_string() |> String.capitalize() %>
+              <% end %>
             </div>
             <div class="col-span-2 flex justify-end pr-2">
               <%= unless slot_status(s) in  [:booked, :reserved] do %>
-                <%= input s, :is_hide, type: :checkbox, disabled: (slot_status(s) in  [:booked, :reserved]), checked: hidden_time?(slot_status(s)), class: "checkbox w-6 h-6 cursor-pointer"%>
-                <div class={classes("ml-2", %{"text-gray-300" => (slot_status(s) in  [:booked, :reserved])})}> Show block as booked (break)</div>
+                <%= input s, :is_hide, type: :checkbox, checked: hidden_time?(slot_status(s)), class: "checkbox w-6 h-6 cursor-pointer"%>
+                <div class="ml-2"> Show block as booked (break)</div>
               <% end %>
             </div>
             <%= hidden_input s, :client_id, value: s |> current |> Map.get(:client_id) %>
