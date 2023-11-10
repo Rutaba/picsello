@@ -22,7 +22,7 @@ defmodule PicselloWeb.BookingProposalLive.Shared do
 
   import PicselloWeb.Gettext, only: [dyn_gettext: 1, ngettext: 3]
 
-  alias Picsello.{PaymentSchedules, Job, Package, Packages}
+  alias Picsello.{PaymentSchedules, Job, Package, Packages, EmailAutomationSchedules}
   alias PicselloWeb.Router.Helpers, as: Routes
 
   def banner(assigns) do
@@ -325,7 +325,8 @@ defmodule PicselloWeb.BookingProposalLive.Shared do
 
         <% :phone -> %>
           <dd class="mt-2">
-            <input type="tel" phx-debounce="1000" class="w-full text-input" id={"question_#{@question_index}"} name={"answers[#{@question_index}][]"} value={@answer} />
+            <%= hidden_input :question_index, :value, value:  @question_index%>
+            <.live_component module={LivePhone} id={"question_#{@question_index}"}  form={:Phone} field={:value} tabindex={0} preferred={["US", "CA"]} value={List.first(@answer)} disable?={@disable?} />
           </dd>
 
         <% :email -> %>
@@ -382,6 +383,8 @@ defmodule PicselloWeb.BookingProposalLive.Shared do
       finish_booking(socket) |> noreply()
     else
       PaymentSchedules.pay_with_cash(job)
+      # stopped all active proposal emails when offline checkout
+      _stopped_emails = EmailAutomationSchedules.stopped_all_active_proposal_emails(job.id)
 
       # No need to call old emails as we have automation emails for blance due
       # Notifiers.ClientNotifier.deliver_payment_due(proposal)

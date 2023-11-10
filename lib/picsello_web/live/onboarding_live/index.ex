@@ -11,7 +11,8 @@ defmodule PicselloWeb.OnboardingLive.Index do
       save_multi: 3,
       assign_changeset: 1,
       assign_changeset: 2,
-      org_job_inputs: 1
+      org_job_inputs: 1,
+      most_interested_select: 0
     ]
 
   require Logger
@@ -146,6 +147,17 @@ defmodule PicselloWeb.OnboardingLive.Index do
     <hr class="mt-6 border-base-200" />
 
     <%= for onboarding <- inputs_for(@f, :onboarding) do %>
+      <.form_field
+        label="What are you most interested in using Picsello for?"
+        error={:interested_in}
+        prefix="Select one"
+        f={onboarding}
+      >
+        <%= select(onboarding, :interested_in, [{"select one", nil}] ++ most_interested_select(),
+          class: "select #{@input_class} truncate pr-8"
+        ) %>
+      </.form_field>
+      <hr class="mt-6 border-base-200" />
       <div class="grid sm:grid-cols-2 gap-4">
         <.form_field
           label="Are you a full-time or part-time photographer?"
@@ -174,32 +186,24 @@ defmodule PicselloWeb.OnboardingLive.Index do
 
       <%= hidden_input(onboarding, :welcome_count, value: 0) %>
 
-      <.form_field label="Where’s your business based?" error={:state} f={onboarding}>
-        <%= select(onboarding, :state, [{"select one", nil}] ++ @states,
-          class: "select #{@input_class}"
-        ) %>
-      </.form_field>
-
-      <div class="grid sm:grid-cols-2 gap-4">
-        <.form_field label="Share your Instagram handle" class="py-1.5">
-          <em class="pb-3 text-base-250 text-xs">(optional)</em>
-          <%= input(onboarding, :social_handle,
-            phx_debounce: 500,
-            min: 0,
-            placeholder: "Let’s meet on the Gram",
-            class: @input_class
-          ) %>
-        </.form_field>
-
-        <.form_field label="How did you first hear about us?" class="py-1.5">
-          <em class="pb-3 text-base-250 text-xs">(optional)</em>
-          <%= select(
-            onboarding,
-            :online_source,
-            [{"select one", nil} | Onboarding.online_source_options()],
+      <% info = country_info(input_value(onboarding, :country)) %>
+      <div class={classes("grid gap-4", %{"sm:grid-cols-2" => Map.has_key?(info, :state_label)})}>
+        <.form_field label="What’s your country?" error={:country} f={onboarding}>
+          <%= select(onboarding, :country, [{"United States", :US}] ++ countries(),
             class: "select #{@input_class}"
           ) %>
         </.form_field>
+
+        <%= if Map.has_key?(info, :state_label) do %>
+          <.form_field label={info.state_label} error={:state} f={onboarding}>
+            <%= select(
+              onboarding,
+              field_for(input_value(onboarding, :country)),
+              [{"select one", nil}] ++ states_or_province(input_value(onboarding, :country)),
+              class: "select #{@input_class}"
+            ) %>
+          </.form_field>
+        <% end %>
       </div>
     <% end %>
     """
@@ -227,7 +231,6 @@ defmodule PicselloWeb.OnboardingLive.Index do
       subtitle: "",
       page_title: "Onboarding Step 2"
     )
-    |> assign_new(:states, &states/0)
   end
 
   defp assign_step(socket, 3) do
@@ -324,6 +327,40 @@ defmodule PicselloWeb.OnboardingLive.Index do
         socket |> assign(changeset: reason)
     end)
     |> noreply()
+  end
+
+  defp country_info("US"), do: %{state_label: "What’s your state?"}
+  defp country_info("CA"), do: %{state_label: "What’s your province?"}
+  defp country_info(nil), do: %{state_label: "What's your state?"}
+  defp country_info(_), do: %{}
+
+  defp countries() do
+    Picsello.Country.all() |> Enum.reject(&(&1.code == "US")) |> Enum.map(&{&1.name, &1.code})
+  end
+
+  defp states_or_province("CA"), do: canadian_provinces()
+  defp states_or_province(_), do: states()
+
+  defp field_for("CA"), do: :province
+  defp field_for(_), do: :state
+
+  defp canadian_provinces() do
+    [
+      {"Alberta", :alberta},
+      {"Atlantic Canada", :atlantic_canada},
+      {"British Columbia", :british_columbia},
+      {"Manitoba", :manitoba},
+      {"New Brunswick", :new_brunswick},
+      {"Newfoundland and Labrador", :newfoundland_and_labrador},
+      {"Northwest Territories", :northwest_territories},
+      {"Nova Scotia", :nova_scotia},
+      {"Nunavut", :nunavut},
+      {"Ontario", :ontario},
+      {"Prince Edward Island", :prince_edward_island},
+      {"Quebec", :quebec},
+      {"Saskatchewan", :saskatchewan},
+      {"Yukon", :yukon}
+    ]
   end
 
   defdelegate states(), to: Onboardings, as: :state_options

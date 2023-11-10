@@ -31,8 +31,9 @@
 
             Thank you for choosing <%= @organization.name %>.
           <% else %>
-            <%= raw @client_proposal.message |> String.replace("</p>", "</p><br>") %>
-            <br>
+            <div class="ql-editor h-auto">
+              <%= raw @client_proposal.message %>
+            </div>
           <% end %>
         </p>
         <hr class="border-gray-100 my-8">

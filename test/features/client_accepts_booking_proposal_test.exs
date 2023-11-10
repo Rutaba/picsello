@@ -426,7 +426,7 @@ defmodule Picsello.ClientAcceptsBookingProposalTest do
     |> fill_in(text_field("Describe it"), with: "it's great.")
     |> fill_in_date(text_field("When"), with: ~D[2021-10-10])
     |> fill_in(text_field("Email"), with: "email@example.com")
-    |> fill_in(text_field("Phone"), with: "(255) 123-1234")
+    |> fill_in(css("input[type=tel]"), with: "2015551234")
     |> wait_for_enabled_submit_button()
     |> click(button("Save"))
     |> click(button("Completed Fill out the initial questionnaire"))

@@ -71,9 +71,7 @@ defmodule Picsello.UserSettingsTest do
     session
     |> click(testid("subnav-Settings"))
     |> click(link("Account"))
-    |> fill_in(text_field("Phone number"), with: "")
-    |> assert_text("Phone number can't be blank")
-    |> fill_in(text_field("Phone number"), with: "(222) 222-2222")
+    |> fill_in(css("input[type=tel]"), with: "2015551234")
     |> wait_for_enabled_submit_button(text: "Edit number")
     |> click(button("Edit number"))
     |> assert_flash(:success, text: "Phone number updated successfully")
@@ -81,7 +79,7 @@ defmodule Picsello.UserSettingsTest do
     user = user |> Repo.reload()
 
     assert %{
-             onboarding: %{phone: "(222) 222-2222"}
+             onboarding: %{phone: "+12015551234"}
            } = user
   end
 

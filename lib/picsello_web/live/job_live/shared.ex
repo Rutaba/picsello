@@ -3,7 +3,7 @@ defmodule PicselloWeb.JobLive.Shared do
   handlers used by both leads and jobs
   """
 
-  import Ecto.Query
+  require Ecto.Query
   require Logger
 
   use Phoenix.Component
@@ -42,7 +42,7 @@ defmodule PicselloWeb.JobLive.Shared do
 
   @string_length 15
 
-  def handle_event("copy-client-link", _, socket), do: socket |> noreply()
+  def handle_event("copy-or-view-client-link", _, socket), do: socket |> noreply()
 
   def handle_event(
         "toggle-section",
@@ -1339,15 +1339,22 @@ defmodule PicselloWeb.JobLive.Shared do
           </dl>
         </div>
         <%= unless @job.is_gallery_only do %>
-        <div class="flex justify-end items-center mt-8">
-          <.icon_button icon="anchor" color="blue-planning-300" class="flex-shrink-0 mx-4 transition-colors px-6 py-3" id="copy-client-link" data-clipboard-text={if @proposal, do: BookingProposal.url(@proposal.id)} phx-click="copy-client-link" phx-hook="Clipboard" disabled={@disabled_copy_link}>
-            <span>Copy client link</span>
-            <div class="hidden p-1 text-sm rounded shadow" role="tooltip">
-              Copied!
-            </div>
-          </.icon_button>
+        <div class="md:flex lg:flex justify-end items-center mt-8 gap-1">
+          <div class="flex gap-1">
+            <.icon_button icon="eye" color="blue-planning-300" class="flex-shrink-0 transition-colors px-6 py-3" id="client-preview" disabled={@disabled_copy_link} phx-click="copy-or-view-client-link" phx-value-action="view" phx-hook="ViewProposal">
+              <a href={if @proposal, do: BookingProposal.url(@proposal.id)}} target="_blank" rel="noopener noreferrer">
+                Client preview
+              </a>
+            </.icon_button>
+            <.icon_button icon="anchor" color="blue-planning-300" class="flex-shrink-0 lg:mx-4 transition-colors px-6 py-3" id="copy-client-link" data-clipboard-text={if @proposal, do: BookingProposal.url(@proposal.id)} phx-click="copy-or-view-client-link" phx-value-action="copy" phx-hook="Clipboard" disabled={@disabled_copy_link}>
+              <span>Copy client link</span>
+              <div class="hidden p-1 text-sm rounded shadow" role="tooltip">
+                Copied!
+              </div>
+            </.icon_button>
+          </div>
           <%= if @proposal && (@proposal.sent_to_client || @proposal.accepted_at) do %>
-            <button class="btn-primary" phx-click="open-proposal" phx-value-action="details">View proposal</button>
+            <button class="btn-primary mt-2 md:mt-0 lg:mt-0 lg:w-auto md:w-auto w-full" phx-click="open-proposal" phx-value-action="details">View proposal</button>
           <% else %>
             <%= render_slot(@send_proposal_button) %>
           <% end %>
@@ -1447,10 +1454,13 @@ defmodule PicselloWeb.JobLive.Shared do
         <div class="rounded-lg border border-gray-300 mt-10">
           <h3 class="rounded-t-lg bg-gray-300 px-5 py-2 text-2xl font-bold">Add a new client</h3>
           <div class="row grid grid-cols-1 px-5 py-2 sm:grid-cols-3 gap-5 mt-3">
-            <%= inputs_for @form, :client, fn client_form -> %>
+            <%= for client_form <- inputs_for(@form, :client) do %>
               <%= labeled_input client_form, :email, type: :email_input, label: "Client Email", placeholder: "email@example.com", phx_debounce: "500" %>
               <%= labeled_input client_form, :name, label: "Client Name", placeholder: "First and last name", autocapitalize: "words", autocorrect: "false", spellcheck: "false", autocomplete: "name", phx_debounce: "500" %>
-              <%= labeled_input client_form, :phone, type: :telephone_input, label: "Client Phone", optional: true, placeholder: "(555) 555-5555", phx_debounce: "500" %>
+              <div class="flex flex-col" >
+                <%= label_for client_form, :phone, label: "Client Phone", optional: true %>
+                <.live_component module={LivePhone}  id={"phone"} form={client_form} field={:phone} tabindex={0}  preferred={["US", "CA"]} />
+              </div>
             <% end %>
           </div>
           <div class="flex px-5 py-5 ml-auto">
@@ -1914,6 +1924,7 @@ defmodule PicselloWeb.JobLive.Shared do
       EmailAutomationSchedules.get_last_completed_email(
         :lead,
         nil,
+        nil,
         job.id,
         pipeline.id,
         :manual_thank_you_lead,
@@ -2010,8 +2021,7 @@ defmodule PicselloWeb.JobLive.Shared do
   def get_job_email_by_pipeline(_job_id, nil), do: nil
 
   def get_job_email_by_pipeline(job_id, pipeline) do
-    EmailAutomationSchedules.query_get_email_schedule(:lead, nil, job_id, pipeline.id)
-    |> where([es], is_nil(es.stopped_at))
+    EmailAutomationSchedules.get_all_emails_active_by_job_pipeline(:lead, job_id, pipeline.id)
     |> Repo.all()
     |> Repo.preload(email_automation_pipeline: [:email_automation_category])
     |> sort_emails(pipeline.state)

@@ -1,6 +1,7 @@
 defmodule Picsello.EmailAutomationsTest do
   use Picsello.FeatureCase, async: true
   import Ecto.Query
+  alias Picsello.EmailAutomationNotifierMock
 
   setup :onboarded
   setup :authenticated
@@ -122,6 +123,11 @@ defmodule Picsello.EmailAutomationsTest do
         type: "gallery"
       )
     end
+
+    EmailAutomationNotifierMock
+    |> Mox.expect(:deliver_automation_email_job, 4, fn _, _, _, _, _ ->
+      {:ok, {:ok, "Email Sent"}}
+    end)
 
     {:ok, user: user}
   end

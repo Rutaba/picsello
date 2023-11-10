@@ -18,7 +18,8 @@ defmodule PicselloWeb.OnboardingLive.Mastermind.Index do
       save_final: 3,
       save_multi: 3,
       assign_changeset: 3,
-      org_job_inputs: 1
+      org_job_inputs: 1,
+      most_interested_select: 0
     ]
 
   @impl true
@@ -34,6 +35,7 @@ defmodule PicselloWeb.OnboardingLive.Mastermind.Index do
     |> assign(:step_total, 4)
     |> assign_step()
     |> assign(:state, nil)
+    |> assign(:country, nil)
     |> assign(
       :promotion_code,
       if(Subscriptions.maybe_return_promotion_code_id?(black_friday_code),
@@ -50,13 +52,19 @@ defmodule PicselloWeb.OnboardingLive.Mastermind.Index do
 
   @impl true
   def handle_params(
-        %{"payment_intent" => _, "redirect_status" => "succeeded", "state" => state},
+        %{
+          "payment_intent" => _,
+          "redirect_status" => "succeeded",
+          "state" => state,
+          "country" => country
+        },
         _url,
         socket
       ) do
     socket
     |> assign(:stripe_elements_loading, false)
     |> assign(:state, state)
+    |> assign(:country, country)
     |> assign_step(3)
     |> noreply()
   end
@@ -262,10 +270,17 @@ defmodule PicselloWeb.OnboardingLive.Mastermind.Index do
             </.form_field>
 
             <%= hidden_input onboarding, :welcome_count, value: 0 %>
+            <%= hidden_input onboarding, :country, value: @country %>
 
-            <.form_field label="How did you first hear about us?" class="py-1.5" >
-              <em class="pb-3 text-base-250 text-xs">(optional)</em>
-              <%= select onboarding, :online_source, [{"select one", nil} | Onboarding.online_source_options()], class: "select #{@input_class}" %>
+            <.form_field
+              label="What are you most interested in using Picsello for?"
+              error={:interested_in}
+              prefix="Select one"
+              f={onboarding}
+            >
+              <%= select(onboarding, :interested_in, [{"select one", nil}] ++ most_interested_select(),
+                class: "select #{@input_class} truncate pr-8"
+              ) %>
             </.form_field>
           <% end %>
           <.step_footer {assigns} />
@@ -369,7 +384,8 @@ defmodule PicselloWeb.OnboardingLive.Mastermind.Index do
           Map.get(address, "state")
         else
           "Non-US"
-        end
+        end,
+      country: Map.get(address, "country")
     }
   end
 end

@@ -108,7 +108,10 @@
           <%= hidden_input f, :action, name: "action", value: "update_phone" %>
           
           <%= for o <- inputs_for(f, :onboarding) do %>
-            <%= labeled_input o, :phone, type: :telephone_input, label: "Phone number", placeholder: "Enter new phone number…", phx_debounce: "500" %>
+          <div class="flex flex-col" >
+             <%= label_for o, :phone, label: "Phone number", optional: true %>
+             <.live_component module={LivePhone} id="phone" form={o} field={:phone} tabindex={0} apply_format?{true} preferred={["US", "CA"]} />
+          </div>
           <% end %>
           
           <div class="mt-5 text-right">

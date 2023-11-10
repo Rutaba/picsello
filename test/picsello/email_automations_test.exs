@@ -9,9 +9,11 @@ defmodule Picsello.EmailAutomationsTest do
       |> List.first()
 
     organization = insert(:organization)
-    insert(:user, organization: organization)
+    user = insert(:user, organization: organization)
     client = insert(:client, organization: organization)
     job = insert(:job, client_id: client.id)
+    insert(:payment_schedule, job: job)
+    insert(:user_currency, user: user, organization: organization)
 
     email_1 =
       insert(:email_schedule,
@@ -40,7 +42,7 @@ defmodule Picsello.EmailAutomationsTest do
     Mox.stub_with(Picsello.MockBambooAdapter, Picsello.Sandbox.BambooAdapter)
 
     EmailAutomationNotifierMock
-    |> Mox.expect(:deliver_automation_email_job, 1, fn _, _, _, _, _ ->
+    |> Mox.expect(:deliver_automation_email_job, 3, fn _, _, _, _, _ ->
       {:ok, {:ok, "Email Sent"}}
     end)
 

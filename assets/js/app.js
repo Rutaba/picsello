@@ -81,6 +81,8 @@ import SearchResultSelect from './hooks/search-result-select';
 import Tooltip from './hooks/tooltip';
 import StripeElements from './hooks/stripe-elements';
 import Timer from './hooks/timer';
+import LivePhone from 'live_phone';
+import ViewProposal from './hooks/view_proposal';
 
 const Modal = {
   mounted() {
@@ -278,6 +280,8 @@ const Hooks = {
   StripeElements,
   SearchResultSelect,
   Timer,
+  LivePhone,
+  ViewProposal,
 };
 
 window.addEventListener(`phx:download`, (event) => {

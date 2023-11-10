@@ -57,6 +57,7 @@ defmodule PicselloWeb.GalleryLive.Shared do
             :gallery,
             gallery.id,
             nil,
+            nil,
             pipeline.id,
             state,
             PicselloWeb.EmailAutomationLive.Shared
@@ -136,7 +137,7 @@ defmodule PicselloWeb.GalleryLive.Shared do
   defp get_gallery_email_by_pipeline(_gallery_id, nil), do: nil
 
   defp get_gallery_email_by_pipeline(gallery_id, pipeline) do
-    EmailAutomationSchedules.query_get_email_schedule(:gallery, gallery_id, nil, pipeline.id)
+    EmailAutomationSchedules.query_get_email_schedule(:gallery, gallery_id, nil, nil, pipeline.id)
     |> where([es], is_nil(es.stopped_at))
     |> Repo.all()
     |> Repo.preload(email_automation_pipeline: [:email_automation_category])

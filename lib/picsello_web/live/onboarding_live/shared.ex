@@ -274,4 +274,19 @@ defmodule PicselloWeb.OnboardingLive.Shared do
     socket
     |> assign(changeset: build_changeset(socket, params, onboarding_type, :validate))
   end
+
+  def most_interested_select() do
+    [
+      {"Booking Events", :booking_events},
+      {"All-in-one platform", :all_in_one_platform},
+      {"Business mastermind, education and community",
+       :business_mastermind_education_and_community},
+      {"Smart Profit Calculator™ and help with pricing",
+       :smart_profit_calculator_and_help_with_pricing},
+      {"Mobile-first design", :mobile_first_design},
+      {"Unlimited client photo galleries with self-serve digital image and print product orders",
+       :unlimited},
+      {"Other", :other}
+    ]
+  end
 end

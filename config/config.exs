@@ -135,7 +135,8 @@ config :picsello, Oban,
     {Oban.Plugins.Pruner, max_age: 60 * 60},
     {Oban.Plugins.Cron,
      crontab: [
-       {"*/10 * * * *", Picsello.Workers.ScheduleAutomationEmail},
+       {System.get_env("EMAIL_AUTOMATION_TIME") || "*/10 * * * *",
+        Picsello.Workers.ScheduleAutomationEmail},
        {"0 8 * * *", Picsello.Workers.SendGalleryExpirationReminder},
        {"0 0 * * 0", Picsello.Workers.SyncWHCCCatalog},
        {"0 1 * * *", Picsello.Workers.CleanUploader}

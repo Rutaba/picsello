@@ -107,7 +107,6 @@ defmodule Picsello.Notifiers.ClientNotifier do
       deliver_transactional_email(
         %{
           subject: subject,
-          headline: subject,
           body: body,
           button: %{
             text: "Track shipping",
@@ -126,7 +125,7 @@ defmodule Picsello.Notifiers.ClientNotifier do
          %{body_template: body, subject_template: subject} <-
            Picsello.EmailPresets.resolve_variables(preset, {job, payment_schedule}, helpers) do
       deliver_transactional_email(
-        %{subject: subject, headline: subject, body: body},
+        %{subject: subject, body: body},
         %{"to" => client.email},
         job
       )
@@ -381,7 +380,6 @@ defmodule Picsello.Notifiers.ClientNotifier do
   defp message_params(message) do
     %{
       subject: message.subject,
-      headline: message.subject,
       body: message |> body_html
     }
   end

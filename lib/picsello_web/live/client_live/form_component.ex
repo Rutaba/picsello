@@ -105,7 +105,10 @@ defmodule PicselloWeb.Live.ClientLive.ClientFormComponent do
         <div class="px-1.5 grid grid-cols-1 sm:grid-cols-2 gap-5">
           <%= labeled_input f, :name, placeholder: "First and last name", autocapitalize: "words", autocorrect: "false", spellcheck: "false", autocomplete: "name", phx_debounce: "500" %>
           <%= labeled_input f, :email, type: :email_input, placeholder: "email@example.com", phx_debounce: "500" %>
-          <%= labeled_input f, :phone, type: :telephone_input, placeholder: "(555) 555-5555", phx_debounce: "500", optional: true %>
+          <div class="flex flex-col" >
+             <%= label_for f, :phone, optional: true %>
+             <.live_component module={LivePhone} id="phone" form={f} field={:phone} tabindex={0} preferred={["US", "CA"]} />
+          </div>
           <%= labeled_input f, :address, placeholder: "Street Address", phx_debounce: "500", optional: true %>
         </div>
         <%= if !@client do %>

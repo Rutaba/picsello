@@ -108,6 +108,7 @@ defmodule Picsello.GalleryBundleDownloadTest do
 
     session
     |> visit("/galleries/#{gallery.id}/photos")
+    |> sleep(300)
     |> click(css("div[id$='-remove']", visible: false))
     |> click(button("Yes, delete"))
     |> assert_text("nothing here")

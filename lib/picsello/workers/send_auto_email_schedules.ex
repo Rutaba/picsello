@@ -20,11 +20,13 @@ defmodule Picsello.Workers.ScheduleAutomationEmail do
   def perform(_) do
     get_all_organizations()
     |> Enum.chunk_every(10)
-    |> Task.async_stream(&send_emails_by_organizations(&1),
-      max_concurrency: System.schedulers_online() * 3,
-      timeout: 360_000
-    )
-    |> Stream.run()
+    |> Enum.each(&send_emails_by_organizations(&1))
+
+    # |> Task.async_stream(&send_emails_by_organizations(&1),
+    #   max_concurrency: System.schedulers_online() * 3,
+    #   timeout: 360_000
+    # )
+    # |> Stream.run()
 
     Logger.info("------------Email Automation Schedule Completed")
     :ok
@@ -42,7 +44,7 @@ defmodule Picsello.Workers.ScheduleAutomationEmail do
       rescue
         error ->
           message = "Error sending email #{inspect(%{pipeline: job_pipeline, error: error})}"
-          if Mix.env() == :prod, do: Sentry.capture_message(message, stacktrace: __STACKTRACE__)
+          # if Mix.env() == :prod, do: Sentry.capture_message(message, stacktrace: __STACKTRACE__)
           Logger.error(message)
       end
     end)
@@ -215,19 +217,13 @@ defmodule Picsello.Workers.ScheduleAutomationEmail do
 
     case send_email_task do
       {:ok, _result} ->
-        Phoenix.PubSub.broadcast(
-          Picsello.PubSub,
-          "emails_count:#{job.id}",
-          {:update_emails_count, %{job_id: job.id}}
-        )
-
         Logger.info(
-          "Email #{schedule.name} sent at #{DateTime.truncate(DateTime.utc_now(), :second)}"
+          "---------Email Sent: #{schedule.name} sent at #{DateTime.truncate(DateTime.utc_now(), :second)}"
         )
 
       result when result in ["ok", :ok] ->
         Logger.info(
-          "Email #{schedule.name} sent at #{DateTime.truncate(DateTime.utc_now(), :second)}"
+          "---------Email Sent: #{schedule.name} sent at #{DateTime.truncate(DateTime.utc_now(), :second)}"
         )
 
       error ->

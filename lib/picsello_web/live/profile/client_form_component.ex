@@ -38,7 +38,7 @@ defmodule PicselloWeb.Live.Profile.ClientFormComponent do
             <div class="flex flex-col flex-1 mt-3">
               <%= label_for f, :phone, label: "Phone Number", class: "py-2 font-bold" %>
 
-              <%= input f, :phone, type: :telephone_input, placeholder: "Type phone number...", phx_debounce: 300 %>
+              <.live_component module={LivePhone} id="phone" form={f} field={:phone} tabindex={0} preferred={["US", "CA"]} />
             </div>
           </div>
 

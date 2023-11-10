@@ -8,7 +8,7 @@ defmodule Picsello.GalleryShareTest do
   setup :onboarded
   setup :authenticated
   setup :authenticated_gallery
-
+  @phone "+12015551234"
   setup %{gallery: gallery} do
     Picsello.PhotoStorageMock
     |> Mox.stub(:get, fn _ -> {:error, nil} end)
@@ -30,21 +30,18 @@ defmodule Picsello.GalleryShareTest do
     insert(:client, %{
       organization: gallery.job.client.organization,
       name: "Elizabeth Taylor",
-      phone: "(210) 111-1234",
       email: "taylor@example.com"
     })
 
     insert(:client, %{
       organization: gallery.job.client.organization,
       name: "John Snow",
-      phone: "(241) 567-2352",
       email: "snow@example.com"
     })
 
     insert(:client, %{
       organization: gallery.job.client.organization,
       name: "Michael Stark",
-      phone: "(442) 567-2321",
       email: "stark@example.com"
     })
 
