@@ -902,22 +902,24 @@ defmodule PicselloWeb.HomeLive.Index do
       })
 
     ~H"""
-    <div class="rounded-lg bg-white p-6 grow flex flex-col items-start">
+    <div class="rounded-lg border p-4 grow flex flex-col items-start">
       <div class="flex justify-between items-center mb-2 w-full gap-4">
         <h3 class="text-2xl font-bold flex items-center gap-2">
           <%= @title %>
           <.notification_bubble notification_count={@notification_count} />
         </h3>
-        <%= if @button_action && @button_text do %>
-          <button class="btn-tertiary py-2 px-4 mt-2 md:mt-0 flex-wrap whitespace-nowrap flex-shrink-0" type="button" phx-click={@button_action}><%= @button_text %></button>
-        <% end %>
       </div>
       <div class={"mb-2 #{@inner_block_classes}"}>
         <%= render_slot(@inner_block) %>
       </div>
-      <%= if @link_action && @link_text do %>
-        <button class="underline text-blue-planning-300 mt-auto inline-block" type="button" phx-click={@link_action} phx-value-tab={@link_value} phx-value-to={@redirect_route}><%= @link_text %></button>
-      <% end %>
+      <div class="flex items-center gap-4 mt-auto">
+        <%= if @button_action && @button_text do %>
+          <button class="btn-tertiary border border-base-300/25 py-2 px-4 md:mt-0 flex-wrap whitespace-nowrap flex-shrink-0" type="button" phx-click={@button_action}><%= @button_text %></button>
+        <% end %>
+        <%= if @link_action && @link_text do %>
+          <button class="underline text-blue-planning-300 inline-block" type="button" phx-click={@link_action} phx-value-tab={@link_value} phx-value-to={@redirect_route}><%= @link_text %></button>
+        <% end %>
+      </div>
     </div>
     """
   end

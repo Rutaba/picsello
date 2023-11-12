@@ -15,7 +15,7 @@
             <.action_item button_text="Create gallery" button_action="create-gallery" button_icon="proof_notifier" />
             <.action_item button_text="Import job" button_action="import-job" button_icon="camera-check" />
             <hr class="block mx-4 my-2" />
-            <.action_item button_text="Create booking event" button_action="create-booking-event" button_icon="calendar" />
+            <.action_item button_text="Create event" button_action="create-booking-event" button_icon="calendar" />
             <.action_item button_text="Create package" button_action="add-package" button_icon="files-icon" />
             <.action_item button_text="Create questionnaire" button_action="create-questionnaire" button_icon="files-icon" />
           </div>
@@ -40,14 +40,14 @@
           <% end %>
         <% end %>
       </.dashboard_main_card>
-      <.dashboard_main_card title="Calendar" button_text="Create booking event" button_action="create-booking-event" link_text="View calendar" link_action="redirect" link_value="calendar" redirect_route={Routes.calendar_index_path(@socket, :index)}>
+      <.dashboard_main_card title="Calendar" button_text="Create event" button_action="create-booking-event" link_text="View calendar" link_action="redirect" link_value="calendar" redirect_route={Routes.calendar_index_path(@socket, :index)}>
         <%= if @job_count === 0 do %>
           <p class="text-base-250">Get ready for your calendar to start filling up with shoots! Create a client booking event and you will be off to the races.</p>
         <% else %>
           <p class="flex items-center gap-1 text-base-250">You have <.notification_bubble notification_count={@job_count} /> <%= ngettext "job", "jobs", @job_count %> upcoming this week</p>
         <% end %>
       </.dashboard_main_card>
-      <.dashboard_main_card title="Help & Coaching" button_text="Help" button_action="view-help" link_text="View help center" link_action="view-help">
+      <.dashboard_main_card title="Help & Coaching" button_text="Help" button_action="view-help">
         <p class="text-base-250">Get in touch with our Customer Success and team of photographers for questions, feedback and help.</p>
       </.dashboard_main_card>
       <.dashboard_main_card title="Smart Profit Calculator™" button_text="Get started" button_action="view-calculator" link_text="View calculator" link_action="redirect" link_value="calculator" redirect_route={Routes.calculator_path(@socket, :index)}>
@@ -60,7 +60,7 @@
           <p class="flex items-center gap-1 text-base-250">You have <.notification_bubble notification_count={@client_count} /> clients</p>
         <% end %>
       </.dashboard_main_card>
-      <.dashboard_main_card title="Galleries" button_text="Create a gallery" button_action="create-gallery" link_text="View galleries" link_action="redirect" link_value="gallery" redirect_route={Routes.gallery_path(@socket, :galleries)}>
+      <.dashboard_main_card title="Galleries" button_text="Create gallery" button_action="create-gallery" link_text="View galleries" link_action="redirect" link_value="gallery" redirect_route={Routes.gallery_path(@socket, :galleries)}>
         <p class="text-base-250">Unlimited storage and built-in pressure-free sales tools encourage downloads along with digital and product upsells.</p>
       </.dashboard_main_card>
     </div>

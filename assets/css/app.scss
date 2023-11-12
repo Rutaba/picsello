@@ -331,3 +331,19 @@ canvas {
 .fc .fc-header-toolbar .fc-timeGridWeek-button {
   @apply hidden sm:block;
 }
+
+[data-drawer-open="false"] #default-sidebar {
+  @apply -translate-x-full sm:translate-x-0;
+}
+
+[data-drawer-open="true"] > div {
+  @apply opacity-0 pointer-events-none;
+}
+
+[data-drawer-open="true"] #default-sidebar {
+  @apply transform-none sm:translate-x-0;
+}
+
+[data-drawer-open="true"] {
+  @apply flex items-center justify-center w-full h-full bg-base-300/90 z-50 fixed transition-opacity ease-in-out opacity-100 bottom-0 top-0;
+}

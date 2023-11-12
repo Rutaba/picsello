@@ -4,7 +4,7 @@
     <div class={classes("lg:flex", %{"hidden" => !@is_mobile})}>
       <%= live_component PicselloWeb.GalleryLive.Shared.SideNavComponent, id: @gallery.id, gallery: @gallery, total_progress: @total_progress, photos_error_count: @photos_error_count,  arrow_show: "albums", album_dropdown_show: true, is_mobile: @is_mobile %>
     </div>
-    <div class={classes("lg:block w-full min-h-screen pb-16 lg:pb-6 lg:bg-gray-100 bg-white lg:pl-96", %{"hidden" => @is_mobile})}>
+    <div class={classes("lg:block w-full min-h-screen pb-16 lg:pb-6 lg:bg-gray-100 bg-white", %{"hidden" => @is_mobile})}>
       <div id="page-scroll" phx-hook="PageScroll" class="lg:sticky top-0 z-20 lg:pb-5 lg:bg-gray-100 bg-white lg:pt-14 pt-20">
         <div class="center-container px-10">
           <.mobile_banner albums={@albums} title="Photos" class="py-4">

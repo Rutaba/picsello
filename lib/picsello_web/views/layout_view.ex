@@ -439,81 +439,85 @@ defmodule PicselloWeb.LayoutView do
     """
   end
 
+  def initials_menu(assigns) do
+    assigns =
+      Enum.into(assigns, %{
+        tour_id: "current_user",
+        id: "initials-menu",
+        inner_id: "initials-menu-inner-content"
+      })
+
+    ~H"""
+    <div id={@id} class="relative flex flex-row justify-end cursor-pointer" phx-hook="ToggleContent">
+      <%= if @current_user do %>
+        <div phx-update="ignore" id={@inner_id} class="absolute top-0 right-0 flex flex-col items-end hidden cursor-default text-base-300 toggle-content">
+          <div class="p-4 -mb-2 bg-white shadow-md cursor-pointer text-base-300">
+            <.icon name="close-x" class="w-4 h-4 stroke-current stroke-2" />
+          </div>
+          <div class="bg-gray-100 rounded-lg shadow-md w-max z-30">
+            <%= live_redirect to: Routes.user_settings_path(@socket, :edit), title: "Account", class: "flex items-center px-2 py-2 bg-white" do %>
+              <.initials_circle user={@current_user} />
+              <div class="ml-2 font-semibold">Account</div>
+            <% end %>
+
+            <%= if Enum.any?(@current_user.onboarding.intro_states) do %>
+              <.live_component module={PicselloWeb.Live.RestartTourComponent} id={@tour_id}, current_user={@current_user} />
+            <% end %>
+            <.form :let={_} for={%{}} as={:sign_out} action={Routes.user_session_path(@socket, :delete)} method="delete">
+              <%= submit "Logout", class: "text-center py-2 w-full" %>
+            </.form>
+          </div>
+        </div>
+        <div class="flex flex-col items-center justify-center text-sm text-base-300 bg-gray-100 rounded-full w-9 h-9 pb-0.5" title={@current_user.name}>
+          <%= User.initials @current_user %>
+        </div>
+      <% end %>
+    </div>
+    """
+  end
+
   def main_header(assigns) do
     ~H"""
-    <header class="border-b fixed left-0 right-0 top-0 z-40 bg-white">
-      <div class="flex items-center px-6 center-container">
-        <div id="hamburger-menu" class="relative cursor-pointer" phx-update="ignore" phx-hook="ToggleContent">
-          <%= if @current_user do %>
-          <div class="absolute left-0 z-10 flex flex-col items-start hidden cursor-default -top-2 toggle-content">
-            <div class="p-4 -mb-2 bg-white shadow-md cursor-pointer text-base-300">
-              <.icon name="close-x" class="w-4 h-4 stroke-current stroke-2" />
-            </div>
-
-            <nav class="flex flex-col bg-white rounded-lg shadow-md">
-              <%= for %{heading: heading, items: items} <- side_nav(@socket, @current_user), @current_user do %>
+    <div id="sidebar-wrapper" phx-hook="CollapseSidebar" data-drawer-open="false" class="z-50">
+      <div class="sm:hidden bg-white p-2 flex items-center justify-between fixed top-0 left-0 right-0">
+        <button data-drawer-type="mobile" data-drawer-target="default-sidebar" data-drawer-toggle="default-sidebar" aria-controls="default-sidebar" type="button" class="inline-flex items-center p-2 mt-2 ms-3 text-sm text-gray-500 rounded-lg hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-gray-200 dark:text-gray-400 dark:hover:bg-gray-700 dark:focus:ring-gray-600">
+          <span class="sr-only">Open sidebar</span>
+          <.icon name="hamburger" class="h-4 text-base-300 w-9" />
+        </button>
+        <%= live_redirect to: (apply Routes, (if @current_user, do: :home_path, else: :page_path), [@socket, :index]), title: "Picsello" do %>
+          <.icon name="logo" class="my-4 w-28 h-9 mr-6" />
+        <% end %>
+        <.initials_menu {assigns} />
+      </div>
+      <aside id="default-sidebar" class="fixed top-0 left-0 z-40 w-64 h-screen transition-all" aria-label="Sidebar">
+        <div class="h-full overflow-y-auto bg-white border-r border-r-base-200">
+          <div class="flex items-center justify-between px-4">
+            <%= live_redirect to: (apply Routes, (if @current_user, do: :home_path, else: :page_path), [@socket, :index]), title: "Picsello" do %>
+              <.icon name="logo" class="my-4 w-28 h-9 mr-6" />
+            <% end %>
+            <.initials_menu {assigns} tour_id="current_user_sidebar" id="initials-menu-sidebar" inner_id="initials-menu-inner-content-sidebar" />
+          </div>
+          <.subscription_ending_soon type="header" socket={@socket} current_user={@current_user} />
+          <nav class="flex flex-col">
+            <%= for %{heading: heading, items: items} <- side_nav(@socket, @current_user), @current_user do %>
+              <div>
                 <p class="uppercase font-bold px-4 mt-2 mb-1 tracking-widest text-xs"><%= heading %></p>
                 <%= for %{title: title, icon: icon, path: path} <- items do %>
-                  <.nav_link title={title} to={path} socket={@socket} live_action={@live_action} current_user={@current_user} class="text-sm px-4 flex items-center py-1.5 whitespace-nowrap hover:bg-blue-planning-100 hover:font-bold" active_class="bg-blue-planning-100 font-bold">
-                    <.icon name={icon} class="inline-block w-4 h-4 mr-2 text-blue-planning-300 shrink-0" />
+                  <.nav_link title={title} to={path} socket={@socket} live_action={@live_action} current_user={@current_user} class="text-sm px-4 flex items-center py-2 whitespace-nowrap text-base-250 transition-all hover:bg-blue-planning-100" active_class="bg-blue-planning-100 text-black font-bold">
+                    <.icon name={icon} class="text-black inline-block w-5 h-5 mr-2 shrink-0" />
                     <%= title %>
                   </.nav_link>
                 <% end %>
-              <% end %>
-            </nav>
-          </div>
-
-          <.icon name="hamburger" class="h-4 text-base-300 w-9" />
-          <% end %>
-        </div>
-
-        <nav class="flex items-center justify-center flex-1 mx-8 lg:justify-start">
-          <%= live_redirect to: (apply Routes, (if @current_user, do: :home_path, else: :page_path), [@socket, :index]), title: "Picsello" do %>
-            <.icon name="logo" class="my-4 w-28 h-9 mr-6" />
-          <% end %>
-
-          <div class="hidden lg:flex flex-grow">
-            <%= for %{title: title, path: path, class: class, sub_nav_items: sub_nav_items, id: id} <- main_nav(@socket) do %>
-              <%= if sub_nav_items do %>
-                <.sub_nav socket={@socket} live_action={@live_action} current_user={@current_user} sub_nav_list={sub_nav_items} title={title} id={id} />
-              <% else %>
-                <.nav_link title={title} to={path} socket={@socket} live_action={@live_action} class={"hidden lg:block items-center transition-all font-bold text-blue-planning-300 hover:opacity-70 #{class}"}>
-                  <%= title %>
-                </.nav_link>
-              <% end %>
+              </div>
             <% end %>
-          </div>
-        </nav>
-
-        <.subscription_ending_soon type="header" socket={@socket} current_user={@current_user} />
-
-        <div id="initials-menu" class="relative flex flex-row justify-end cursor-pointer" phx-hook="ToggleContent">
-          <%= if @current_user do %>
-            <div phx-update="ignore" id="initials-menu-inner-content" class="absolute top-0 right-0 flex flex-col items-end hidden cursor-default text-base-300 toggle-content">
-              <div class="p-4 -mb-2 bg-white shadow-md cursor-pointer text-base-300">
-                <.icon name="close-x" class="w-4 h-4 stroke-current stroke-2" />
-              </div>
-              <div class="bg-gray-100 rounded-lg shadow-md w-max z-30">
-                <%= live_redirect to: Routes.user_settings_path(@socket, :edit), title: "Account", class: "flex items-center px-2 py-2 bg-white" do %>
-                  <.initials_circle user={@current_user} />
-                  <div class="ml-2 font-semibold">Account</div>
-                <% end %>
-
-                <%= if Enum.any?(@current_user.onboarding.intro_states) do %>
-                  <.live_component module={PicselloWeb.Live.RestartTourComponent} id="current_user", current_user={@current_user} />
-                <% end %>
-                <.form :let={_} for={%{}} as={:sign_out} action={Routes.user_session_path(@socket, :delete)} method="delete">
-                  <%= submit "Logout", class: "text-center py-2 w-full" %>
-                </.form>
-              </div>
-            </div>
-            <div class="flex flex-col items-center justify-center text-sm text-base-300 bg-gray-100 rounded-full w-9 h-9 pb-0.5" title={@current_user.name}>
-              <%= User.initials @current_user %>
-            </div>
-          <% end %>
+          </nav>
+          <button data-drawer-type="desktop" data-drawer-target="default-sidebar" data-drawer-toggle="default-sidebar" aria-controls="default-sidebar" type="button" class="inline-flex items-center p-2 mt-2 ms-3 text-sm text-gray-500 rounded-lg hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-gray-200 dark:text-gray-400 dark:hover:bg-gray-700 dark:focus:ring-gray-600">
+            <span class="sr-only">Open sidebar</span>
+            Collapse
+          </button>
         </div>
-      </div>
-    </header>
+      </aside>
+    </div>
     """
   end
 
