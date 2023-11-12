@@ -141,6 +141,7 @@ defmodule PicselloWeb.Router do
       live "/brand", Live.BrandSettings, :index, as: :brand_settings
       live "/finance", Live.FinanceSettings, :index, as: :finance_settings
       live "/marketing", Live.Marketing, :index, as: :marketing
+      live "/marketing/:campaign_id", Live.Marketing, :show
       live "/users/settings", Live.User.Settings, :edit
       live "/galleries/settings", GalleryLive.GlobalSettings.Index, :edit
       live "/package_templates/:id/edit", Live.PackageTemplates, :edit
