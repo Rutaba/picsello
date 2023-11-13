@@ -88,13 +88,15 @@ defmodule Picsello.Pack do
 
   @spec url(Order.t() | Gallery.t()) :: {:ok, String.t()} | {:error, any()}
   def url(packable) do
-    case packable |> path() |> PhotoStorage.get() do
+    case packable |> path |> PhotoStorage.get() do
       {:ok, %{name: name}} -> {:ok, PhotoStorage.path_to_url(name)}
       error -> error
     end
   end
 
-  def delete(packable), do: packable |> path |> PhotoStorage.delete()
+  def delete(packable) do
+    packable |> path |> PhotoStorage.delete()
+  end
 
   def path(%Order{bundle_price: %Money{}} = order), do: path(order.gallery)
 
@@ -165,7 +167,7 @@ defmodule Picsello.Pack do
     album.gallery
     |> then(fn gallery ->
       if album.is_finals do
-        album |> Repo.preload(:photos) |> Map.get(:photos, [])
+        album |> Repo.preload(:photos) |> Map.get(:photos, []) |> Enum.filter(& &1.active)
       else
         Orders.get_all_purchased_photos_in_album(gallery, album.id)
       end

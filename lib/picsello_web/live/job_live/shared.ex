@@ -3,7 +3,7 @@ defmodule PicselloWeb.JobLive.Shared do
   handlers used by both leads and jobs
   """
 
-  import Ecto.Query
+  require Ecto.Query
   require Logger
 
   use Phoenix.Component
@@ -42,7 +42,7 @@ defmodule PicselloWeb.JobLive.Shared do
 
   @string_length 15
 
-  def handle_event("copy-client-link", _, socket), do: socket |> noreply()
+  def handle_event("copy-or-view-client-link", _, socket), do: socket |> noreply()
 
   def handle_event(
         "toggle-section",
@@ -165,7 +165,7 @@ defmodule PicselloWeb.JobLive.Shared do
 
   def handle_event("open-inbox", _, %{assigns: %{job: job}} = socket) do
     socket
-    |> push_redirect(to: Routes.inbox_path(socket, :show, job.id))
+    |> push_redirect(to: Routes.inbox_path(socket, :show, "job-#{job.id}"))
     |> noreply()
   end
 
@@ -725,6 +725,8 @@ defmodule PicselloWeb.JobLive.Shared do
     |> assign_disabled_copy_link()
     |> noreply()
   end
+
+  def handle_info({:inbound_messages, %Picsello.Campaign{}}, socket), do: noreply(socket)
 
   def handle_info(
         {:inbound_messages, message},
@@ -1339,15 +1341,22 @@ defmodule PicselloWeb.JobLive.Shared do
           </dl>
         </div>
         <%= unless @job.is_gallery_only do %>
-        <div class="flex justify-end items-center mt-8">
-          <.icon_button icon="anchor" color="blue-planning-300" class="flex-shrink-0 mx-4 transition-colors px-6 py-3" id="copy-client-link" data-clipboard-text={if @proposal, do: BookingProposal.url(@proposal.id)} phx-click="copy-client-link" phx-hook="Clipboard" disabled={@disabled_copy_link}>
-            <span>Copy client link</span>
-            <div class="hidden p-1 text-sm rounded shadow" role="tooltip">
-              Copied!
-            </div>
-          </.icon_button>
+        <div class="md:flex lg:flex justify-end items-center mt-8 gap-1">
+          <div class="flex gap-1">
+            <.icon_button icon="eye" color="blue-planning-300" class="flex-shrink-0 transition-colors px-6 py-3" id="client-preview" disabled={@disabled_copy_link} phx-click="copy-or-view-client-link" phx-value-action="view" phx-hook="ViewProposal">
+              <a href={if @proposal, do: BookingProposal.url(@proposal.id)}} target="_blank" rel="noopener noreferrer">
+                Client preview
+              </a>
+            </.icon_button>
+            <.icon_button icon="anchor" color="blue-planning-300" class="flex-shrink-0 lg:mx-4 transition-colors px-6 py-3" id="copy-client-link" data-clipboard-text={if @proposal, do: BookingProposal.url(@proposal.id)} phx-click="copy-or-view-client-link" phx-value-action="copy" phx-hook="Clipboard" disabled={@disabled_copy_link}>
+              <span>Copy client link</span>
+              <div class="hidden p-1 text-sm rounded shadow" role="tooltip">
+                Copied!
+              </div>
+            </.icon_button>
+          </div>
           <%= if @proposal && (@proposal.sent_to_client || @proposal.accepted_at) do %>
-            <button class="btn-primary" phx-click="open-proposal" phx-value-action="details">View proposal</button>
+            <button class="btn-primary mt-2 md:mt-0 lg:mt-0 lg:w-auto md:w-auto w-full" phx-click="open-proposal" phx-value-action="details">View proposal</button>
           <% else %>
             <%= render_slot(@send_proposal_button) %>
           <% end %>
@@ -1605,6 +1614,27 @@ defmodule PicselloWeb.JobLive.Shared do
     socket |> do_assign_job(job)
   end
 
+  @doc """
+  Assigns a job to the LiveView socket for the current user.
+
+  This function assigns a job to the LiveView socket based on the provided `job_id` and the current user's context.
+  The `socket` parameter should be a Phoenix LiveView socket, and the `job_id` parameter should be the ID of the job to assign.
+
+  The function retrieves the job associated with the provided `job_id` for the current user and assigns it to the socket.
+  It calls the `do_assign_job/2` function to perform the assignment.
+
+  ## Parameters
+
+      - `socket` (Phoenix.LiveView.Socket.t()): The LiveView socket.
+      - `job_id` (integer()): The ID of the job to assign.
+
+  ## Examples
+
+      ```elixir
+      socket = assign_job(socket, 42)
+
+  The assign_job/2 function assigns the job with ID 42 to the LiveView socket.
+  """
   def assign_job(%{assigns: %{current_user: current_user}} = socket, job_id) do
     job =
       current_user
@@ -1917,6 +1947,7 @@ defmodule PicselloWeb.JobLive.Shared do
       EmailAutomationSchedules.get_last_completed_email(
         :lead,
         nil,
+        nil,
         job.id,
         pipeline.id,
         :manual_thank_you_lead,
@@ -2010,11 +2041,29 @@ defmodule PicselloWeb.JobLive.Shared do
   defp retryable?(err) when err in ~w(too_large not_accepted)a, do: false
   defp retryable?(_err), do: true
 
+  @doc """
+  Get an email associated with a job and a specific pipeline.
+
+  This function retrieves an email associated with a job and a specified pipeline.
+
+  If the `pipeline` parameter is `nil`, it returns `nil`. If a valid pipeline is provided,
+  the function queries the database for the email, sorts it by its state, and returns the first email in the sorted list.
+
+  ## Parameters
+
+      - `job_id` (integer()): The ID of the job.
+      - `pipeline` (Pipeline.t() | nil): The pipeline for which to retrieve an email.
+
+  ## Examples
+
+      ```elixir
+      get_job_email_by_pipeline(42, %Pipeline{...})
+      get_job_email_by_pipeline(42, nil)
+  """
   def get_job_email_by_pipeline(_job_id, nil), do: nil
 
   def get_job_email_by_pipeline(job_id, pipeline) do
-    EmailAutomationSchedules.query_get_email_schedule(:lead, nil, job_id, pipeline.id)
-    |> where([es], is_nil(es.stopped_at))
+    EmailAutomationSchedules.get_all_emails_active_by_job_pipeline(:lead, job_id, pipeline.id)
     |> Repo.all()
     |> Repo.preload(email_automation_pipeline: [:email_automation_category])
     |> sort_emails(pipeline.state)

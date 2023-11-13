@@ -6,7 +6,15 @@ defmodule PicselloWeb.ClientMessageComponent do
   import PicselloWeb.Shared.Quill, only: [quill_input: 1]
   import Picsello.Messages, only: [get_emails: 2]
 
-  alias Picsello.{Repo, Job, Clients, AdminGlobalSettings, EmailAutomationSchedules}
+  alias Picsello.{
+    Repo,
+    Job,
+    Clients,
+    AdminGlobalSettings,
+    Campaign,
+    ClientMessage,
+    EmailAutomationSchedules
+  }
 
   @default_assigns %{
     composed_event: :message_composed,
@@ -238,6 +246,13 @@ defmodule PicselloWeb.ClientMessageComponent do
   end
 
   @impl true
+  def handle_event("validate", %{"campaign" => params}, socket) do
+    socket
+    |> assign_changeset(:validate, params)
+    |> noreply()
+  end
+
+  @impl true
   def handle_event("validate", %{"client_message" => params}, socket) do
     socket
     |> assign_changeset(:validate, params)
@@ -247,7 +262,7 @@ defmodule PicselloWeb.ClientMessageComponent do
   @impl true
   def handle_event(
         "save",
-        %{"client_message" => _params},
+        _params,
         %{
           assigns: %{
             email_schedule: email_schedule,
@@ -297,7 +312,8 @@ defmodule PicselloWeb.ClientMessageComponent do
           optional(:enable_image) => boolean,
           optional(:recipients) => map(),
           optional(:manual_toggle) => boolean,
-          optional(:email_schedule) => any
+          optional(:email_schedule) => any,
+          optional(:for) => atom()
         }) :: Phoenix.LiveView.Socket.t()
   def open(%{assigns: assigns} = socket, opts \\ %{}),
     do:
@@ -325,20 +341,38 @@ defmodule PicselloWeb.ClientMessageComponent do
   defp update_recipients_map(map, key, value), do: Map.put(map, key, value)
 
   defp assign_changeset(
+         %{assigns: %{for: :campaign_reply, current_user: user}} = socket,
+         action,
+         params
+       ) do
+    params
+    |> Map.put("organization_id", user.organization_id)
+    |> process_params(socket)
+    |> Campaign.outbound_changeset()
+    |> Map.put(:action, action)
+    |> then(&assign(socket, changeset: &1))
+  end
+
+  defp assign_changeset(
          socket,
          action,
          params
        ) do
-    params =
-      params |> Map.replace(:body_html, remove_client_name(socket, Map.get(params, :body_html)))
-
-    changeset =
-      params |> Picsello.ClientMessage.create_outbound_changeset() |> Map.put(:action, action)
-
-    assign(socket, changeset: changeset)
+    params
+    |> process_params(socket)
+    |> ClientMessage.create_outbound_changeset()
+    |> Map.put(:action, action)
+    |> then(&assign(socket, changeset: &1))
   end
 
-  defp assign_presets(%{assigns: %{job: job}} = socket),
+  defp process_params(params, socket) do
+    # need to check why it's trying to get :body_html when keys are strings
+    body_html = remove_client_name(socket, Map.get(params, :body_html))
+
+    Map.replace(params, :body_html, body_html)
+  end
+
+  defp assign_presets(%{assigns: %{job: %{} = job}} = socket),
     do: assign_new(socket, :presets, fn -> Picsello.EmailPresets.for(job) end)
 
   defp assign_presets(socket), do: socket

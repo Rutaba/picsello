@@ -4,6 +4,8 @@ defmodule PicselloWeb.GalleryLive.GlobalSettings.PrintProductComponent do
   alias Picsello.Repo
   alias Picsello.GlobalSettings
 
+  require Logger
+
   @impl true
   def update(%{product: %{category: %{products: products}}} = assigns, socket) do
     socket
@@ -250,6 +252,8 @@ defmodule PicselloWeb.GalleryLive.GlobalSettings.PrintProductComponent do
   end
 
   defp final_cost(print_products, product_id, size, type) do
+    Logger.info("product_id: #{product_id}, size: #{size <> type}")
+
     print_products
     |> Map.get(product_id)
     |> Map.get(size <> type)

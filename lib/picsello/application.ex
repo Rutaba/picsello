@@ -30,6 +30,7 @@ defmodule Picsello.Application do
       Picsello.Galleries.Workers.PositionNormalizer,
       {Picsello.Galleries.PhotoProcessing.ProcessedConsumer, [producer_module: producer_module]},
       Picsello.Galleries.PhotoProcessing.Waiter,
+      Picsello.EmailAutomation.GarbageEmailCollector,
       {ConCache, [name: :cache, ttl_check_interval: false]}
     ]
 

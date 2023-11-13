@@ -3,6 +3,7 @@ defmodule PicselloWeb.Live.Marketing do
   use PicselloWeb, :live_view
 
   alias Picsello.{Repo, Marketing, Profiles, BrandLink}
+  alias PicselloWeb.Live.Marketing.CampaignDetailsComponent
 
   @impl true
   def mount(params, _session, socket) do
@@ -15,6 +16,13 @@ defmodule PicselloWeb.Live.Marketing do
     |> assign_campaigns()
     |> ok()
   end
+
+  @impl true
+  def handle_params(%{"campaign_id" => campaign_id}, _uri, socket) do
+    socket |> CampaignDetailsComponent.open(campaign_id) |> noreply()
+  end
+
+  def handle_params(_params, _uri, socket), do: noreply(socket)
 
   @impl true
   def render(assigns) do
@@ -146,7 +154,16 @@ defmodule PicselloWeb.Live.Marketing do
 
   @impl true
   def handle_event("open-campaign", %{"campaign-id" => campaign_id}, socket) do
-    socket |> PicselloWeb.Live.Marketing.CampaignDetailsComponent.open(campaign_id) |> noreply()
+    socket
+    |> push_patch(
+      to:
+        Routes.marketing_path(
+          socket,
+          :show,
+          campaign_id
+        )
+    )
+    |> noreply()
   end
 
   @impl true
@@ -199,6 +216,12 @@ defmodule PicselloWeb.Live.Marketing do
     )
 
     socket
+    |> noreply()
+  end
+
+  def handle_info({:close_detail_component, _}, socket) do
+    socket
+    |> push_patch(to: Routes.marketing_path(socket, :index))
     |> noreply()
   end
 
