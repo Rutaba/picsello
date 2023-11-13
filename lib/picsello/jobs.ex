@@ -127,11 +127,13 @@ defmodule Picsello.Jobs do
       |> Repo.update()
 
     case result do
-      {:ok, _} ->
+      {:ok, updated_job} ->
         pull_back_email_schedules(job)
-    end
+        {:ok, updated_job}
 
-    result
+      error ->
+        error
+    end
   end
 
   defp pull_back_email_schedules(job) do
