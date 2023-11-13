@@ -7,7 +7,7 @@ defmodule Picsello.JobType do
 
   alias Picsello.Repo
 
-  @other_type "other"
+  @global_type "global"
 
   @primary_key {:name, :string, []}
   schema "job_types" do
@@ -25,5 +25,5 @@ defmodule Picsello.JobType do
     from(t in __MODULE__, select: t.name, order_by: t.position) |> Repo.all()
   end
 
-  def other_type(), do: @other_type
+  def global_type(), do: @global_type
 end

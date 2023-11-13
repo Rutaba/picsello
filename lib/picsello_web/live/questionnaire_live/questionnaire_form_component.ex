@@ -43,7 +43,7 @@ defmodule PicselloWeb.QuestionnaireFormComponent do
         </div>
 
         <div class={classes("mt-8", %{"hidden" => @state == :edit_lead})}>
-          <%= label_for f, :type, label: "Type of Photography (select Other to use for all types)" %>
+          <%= label_for f, :type, label: "Type of Photography (select Global to use for all types)" %>
           <div class="grid grid-cols-2 gap-3 mt-2 sm:grid-cols-4 sm:gap-5">
             <%= for job_type <- @job_types do %>
               <.job_type_option type="radio" name={input_name(f, :job_type)} job_type={job_type} checked={input_value(f, :job_type) == job_type} disabled={is_nil(@state)} />
@@ -446,7 +446,7 @@ defmodule PicselloWeb.QuestionnaireFormComponent do
     socket
     |> assign_new(:job_types, fn ->
       (Profiles.enabled_job_types(job_types) ++
-         [Picsello.JobType.other_type()])
+         [Picsello.JobType.global_type()])
       |> Enum.uniq()
     end)
   end

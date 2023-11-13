@@ -88,6 +88,9 @@ msgstr "Portrait"
 msgid "other"
 msgstr "Other"
 
+msgid "global"
+msgstr "Global"
+
 msgid "boudoir"
 msgstr "Boudoir"
 

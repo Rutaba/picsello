@@ -237,7 +237,7 @@ defmodule PicselloWeb.ContractTemplateComponent do
     socket
     |> assign_new(:job_types, fn ->
       (Profiles.enabled_job_types(job_types) ++
-         [Picsello.JobType.other_type()])
+         [Picsello.JobType.global_type()])
       |> Enum.uniq()
     end)
   end

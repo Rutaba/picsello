@@ -18,7 +18,7 @@ defmodule Picsello.PricingCalculations do
     headshot: 10.4,
     maternity: 18.97,
     mini: 10.4,
-    other: 10.4,
+    global: 10.4,
     newborn: 27.94,
     portrait: 18.97,
     wedding: 66.57

@@ -164,7 +164,7 @@ defmodule PicselloWeb.JobLive.NewComponent do
     socket
     |> assign_new(:job_types, fn ->
       (Profiles.enabled_job_types(organization.organization_job_types) ++
-         [Picsello.JobType.other_type()])
+         [Picsello.JobType.global_type()])
       |> Enum.uniq()
     end)
   end
