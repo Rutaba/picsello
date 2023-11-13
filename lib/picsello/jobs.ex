@@ -1,5 +1,7 @@
 defmodule Picsello.Jobs do
   @moduledoc "context module for jobs"
+  alias Picsello.EmailAutomation.{EmailSchedule, EmailScheduleHistory}
+
   alias Picsello.{
     Repo,
     Client,
@@ -8,6 +10,8 @@ defmodule Picsello.Jobs do
     PaymentSchedule,
     OrganizationJobType
   }
+
+  alias Ecto.Multi
 
   import Ecto.Query
 
@@ -102,14 +106,14 @@ defmodule Picsello.Jobs do
     if job.job_status.is_lead do
       job |> Job.archive_changeset() |> Repo.update()
     else
-      Ecto.Multi.new()
-      |> Ecto.Multi.update(:job, Job.archive_changeset(job))
-      |> Ecto.Multi.update_all(
+      Multi.new()
+      |> Multi.update(:job, Job.archive_changeset(job))
+      |> Multi.update_all(
         :update_payment_schedules,
         from(ps in PaymentSchedule, where: ps.job_id == ^job.id),
         set: [reminded_at: now]
       )
-      |> Ecto.Multi.update_all(:update_shoots, from(s in Shoot, where: s.job_id == ^job.id),
+      |> Multi.update_all(:update_shoots, from(s in Shoot, where: s.job_id == ^job.id),
         set: [reminded_at: now]
       )
       |> Repo.transaction()
@@ -117,14 +121,68 @@ defmodule Picsello.Jobs do
   end
 
   def unarchive_job(%Job{} = job) do
-    job |> Job.unarchive_changeset() |> Repo.update()
+    result =
+      job
+      |> Job.unarchive_changeset()
+      |> Repo.update()
+
+    case result do
+      {:ok, _} ->
+        pull_back_email_schedules(job)
+    end
+
+    result
   end
 
-  def maybe_upsert_client(%Ecto.Multi{} = multi, client, current_user) do
+  defp pull_back_email_schedules(job) do
+    schedule_history_query =
+      from(esh in EmailScheduleHistory,
+        where: esh.job_id == ^job.id and esh.stopped_reason == :archived
+      )
+
+    email_schedule_params = make_schedule_params(schedule_history_query)
+
+    Multi.new()
+    |> Multi.delete_all(:schedule_history, schedule_history_query)
+    |> Multi.insert_all(:email_schedule, EmailSchedule, email_schedule_params)
+    |> Repo.transaction()
+  end
+
+  def make_schedule_params(query) do
+    query
+    |> Repo.all()
+    |> Enum.map(fn schedule ->
+      schedule
+      |> Map.take([
+        :total_hours,
+        :condition,
+        :type,
+        :body_template,
+        :name,
+        :subject_template,
+        :private_name,
+        :reminded_at,
+        :email_automation_pipeline_id,
+        :job_id,
+        :shoot_id,
+        :gallery_id,
+        :order_id,
+        :organization_id,
+        :inserted_at,
+        :updated_at
+      ])
+      |> Map.merge(%{
+        stopped_at: nil,
+        stopped_reason: nil
+      })
+    end)
+  end
+
+  def maybe_upsert_client(%Multi{} = multi, client, current_user) do
     client = Map.put(client, :email, client.email |> String.downcase())
 
     multi
-    |> Ecto.Multi.insert(
+    |> Multi.insert(
       :client,
       client
       |> Map.take([:name, :email, :phone])

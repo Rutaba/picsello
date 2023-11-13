@@ -96,7 +96,7 @@ defmodule Picsello.EmailAutomation.GarbageEmailCollector do
     # if job is before 13 Nov 2023
     # then call stop_job_and_lead_emails(job)
     reference_date = ~D[2023-11-13]
-    if Timex.diff(job.inserted_at, reference_date, :days) < 0, do: stop_job_and_lead_emails(job)
+    if Date.diff(job.inserted_at, reference_date) < 0, do: stop_job_and_lead_emails(job)
   end
 
   def stop_job_and_lead_emails(job) do
