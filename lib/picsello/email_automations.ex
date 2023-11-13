@@ -19,6 +19,7 @@ defmodule Picsello.EmailAutomations do
   }
 
   alias Picsello.EmailAutomation.{
+    GarbageEmailCollector,
     EmailAutomationPipeline,
     EmailAutomationSubCategory
   }
@@ -688,30 +689,39 @@ defmodule Picsello.EmailAutomations do
   defp make_positive_number(no), do: if(no > 0, do: no, else: -1 * no)
 
   def send_pays_retainer(job, state, organization_id) do
-    if !PaymentSchedules.all_paid?(job) do
-      pipeline = get_pipeline_by_state(state)
+    state_full_paid = if state == :pays_retainer_offline, do: :paid_offline_full, else: :paid_full
 
-      email_schedule =
-        get_email_from_schedule(
-          job.id,
-          pipeline.id,
-          state,
-          PicselloWeb.EmailAutomationLive.Shared
-        )
-        |> preload_email()
-
-      email_preset =
-        EmailPresets.user_email_automation_presets(
-          :job,
-          job.type,
-          pipeline.id,
-          organization_id
-        )
-        |> List.first()
-        |> preload_email()
-
-      send_payment_email(email_schedule, email_preset, job, state)
+    if PaymentSchedules.all_paid?(job) do
+      send_job_payment(job, state_full_paid, organization_id)
+      GarbageEmailCollector.stop_job_and_lead_emails(job)
+    else
+      send_job_payment(job, state, organization_id)
     end
+  end
+
+  defp send_job_payment(job, state, organization_id) do
+    pipeline = get_pipeline_by_state(state)
+
+    email_schedule =
+      get_email_from_schedule(
+        job.id,
+        pipeline.id,
+        state,
+        PicselloWeb.EmailAutomationLive.Shared
+      )
+      |> preload_email()
+
+    email_preset =
+      EmailPresets.user_email_automation_presets(
+        :job,
+        job.type,
+        pipeline.id,
+        organization_id
+      )
+      |> List.first()
+      |> preload_email()
+
+    send_payment_email(email_schedule, email_preset, job, state)
   end
 
   defp send_payment_email(nil, email_preset, job, state) do

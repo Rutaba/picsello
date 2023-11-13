@@ -545,31 +545,15 @@ defmodule PicselloWeb.Live.EmailAutomations.Show do
   defp get_conditional_date(state, email, pipeline_id, job, gallery),
     do: fetch_date_for_state_maybe_manual(state, email, pipeline_id, job, gallery, nil)
 
-  def stop_reason_text(status) do
-    case status do
-      "photographer_stopped" ->
-        "Stopped by Photographer"
-
-      "proposal_accepted" ->
-        "Proposal has already been accepted"
-
-      "already_paid_full" ->
-        "Job has already been paid in full"
-
-      "shoot_starts_at_passed" ->
-        "Shoot date has already been passed"
-
-      "gallery_already_shared_because_order_placed" ->
-        "Gallery has already been shared"
-
-      "archived" ->
-        "Archived"
-
-      "completed" ->
-        "Completed"
-
-      _ ->
-        ""
-    end
-  end
+  @status_texts %{
+    "photographer_stopped" => "Stopped by Photographer",
+    "proposal_accepted" => "Proposal has already been accepted",
+    "already_paid_full" => "Job has already been paid in full",
+    "shoot_starts_at_passed" => "Shoot date has already passed",
+    "gallery_already_shared_because_order_placed" => "Gallery has already been shared",
+    "archived" => "Archived",
+    "completed" => "Completed",
+    "lead_converted_to_job" => "Lead has been converted to job"
+  }
+  def stop_reason_text(status), do: Map.get(@status_texts, status, "")
 end
