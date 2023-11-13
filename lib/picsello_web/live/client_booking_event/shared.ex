@@ -26,6 +26,7 @@ defmodule PicselloWeb.ClientBookingEventLive.Shared do
 
   def address_display(assigns) do
     assigns = Enum.into(assigns, %{class: ""})
+
     ~H"""
       <div class={"flex items-center #{@class}"}>
         <.icon name="pin" class="w-5 h-5 text-black" />

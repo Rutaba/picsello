@@ -492,25 +492,29 @@ defmodule PicselloWeb.Live.Calendar.BookingEvents.Index do
          end) do
         {:cont, acc ++ [booking_event]}
       else
-        if Enum.any?(booking_event.dates, fn d ->
-             !is_nil(BEShared.get_date(d))
-           end) do
-          filtered_dates =
-            Enum.reduce_while(booking_event.dates, [], fn d, acc_dates ->
-              if is_nil(BEShared.get_date(d)) do
-                {:cont, acc_dates}
-              else
-                {:cont, acc_dates ++ [d]}
-              end
-            end)
-
-          booking_event = Map.replace(booking_event, :dates, filtered_dates)
-          {:cont, acc ++ [booking_event]}
-        else
-          {:cont, acc}
-        end
+        do_filter_nil_dates(booking_event, acc)
       end
     end)
+  end
+
+  defp do_filter_nil_dates(booking_event, acc) do
+    if Enum.any?(booking_event.dates, fn d ->
+         !is_nil(BEShared.get_date(d))
+       end) do
+      filtered_dates =
+        Enum.reduce_while(booking_event.dates, [], fn d, acc_dates ->
+          if is_nil(BEShared.get_date(d)) do
+            {:cont, acc_dates}
+          else
+            {:cont, acc_dates ++ [d]}
+          end
+        end)
+
+      booking_event = Map.replace(booking_event, :dates, filtered_dates)
+      {:cont, acc ++ [booking_event]}
+    else
+      {:cont, acc}
+    end
   end
 
   defp assign_sort_date(%{dates: []} = booking_event, _sort_direction, _sort_by, _filter_status),
@@ -523,23 +527,11 @@ defmodule PicselloWeb.Live.Calendar.BookingEvents.Index do
           booking_event
 
         sort_by == "date" || filter_status in ["future_events", "past_events"] ->
-          sort_direction =
-            case filter_status do
-              "future_events" -> :desc
-              "past_events" -> :asc
-              _ -> String.to_atom(sort_direction)
-            end
-
-          booking_event
-          |> Map.get(:dates)
-          |> Enum.map(&BEShared.get_date(&1))
-          |> Enum.map(&BEShared.convert_date_string_to_date(&1))
-          |> Enum.reject(&is_nil(&1))
-          |> Enum.sort_by(& &1, {sort_direction, Date})
-          |> hd()
+          sort_booking_event(booking_event, filter_status, sort_direction)
 
         true ->
-          booking_event.dates
+          booking_event
+          |> Map.get(:dates)
           |> hd
           |> Map.get("date")
           |> case do
@@ -549,14 +541,24 @@ defmodule PicselloWeb.Live.Calendar.BookingEvents.Index do
       end
 
     booking_event
-    |> Map.put(
-      :date,
-      if is_nil(sorted_date) do
-        nil
-      else
-        sorted_date
+    |> Map.put(:date, sorted_date)
+  end
+
+  defp sort_booking_event(booking_event, filter_status, sort_direction) do
+    sort_direction =
+      case filter_status do
+        "future_events" -> :desc
+        "past_events" -> :asc
+        _ -> String.to_atom(sort_direction)
       end
-    )
+
+    booking_event
+    |> Map.get(:dates)
+    |> Enum.map(&BEShared.get_date(&1))
+    |> Enum.map(&BEShared.convert_date_string_to_date(&1))
+    |> Enum.reject(&is_nil(&1))
+    |> Enum.sort_by(& &1, {sort_direction, Date})
+    |> hd()
   end
 
   defp filter_date(booking_events, "future_events"),

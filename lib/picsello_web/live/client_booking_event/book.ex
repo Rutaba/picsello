@@ -125,7 +125,9 @@ defmodule PicselloWeb.ClientBookingEventLive.Book do
 
   defp assign_booking_event(%{assigns: %{organization: organization}} = socket, event_id) do
     socket
-    |> assign(booking_event: BookingEvents.get_preloaded_booking_event!(organization.id, event_id))
+    |> assign(
+      booking_event: BookingEvents.get_preloaded_booking_event!(organization.id, event_id)
+    )
   end
 
   @impl true
