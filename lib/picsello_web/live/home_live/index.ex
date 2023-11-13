@@ -1767,8 +1767,6 @@ defmodule PicselloWeb.HomeLive.Index do
 
   defp thread_type(%{job_id: nil}), do: :client
   defp thread_type(%{job_id: _job_id}), do: :job
-  defp thread_type(%{campaign_clients: [_]}), do: :campaign_reply
-  defp thread_type(%{parent_id: nil}), do: :campaign
 
   defdelegate get_all_proofing_album_orders(organization_id), to: Orders
 end
