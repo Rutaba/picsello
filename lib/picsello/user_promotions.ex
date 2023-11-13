@@ -22,22 +22,15 @@ defmodule Picsello.Accounts.User.Promotions do
     timestamps()
   end
 
-  @type t :: %__MODULE__{
-          state: atom(),
-          slug: String.t(),
-          name: String.t()
-        }
-
-  @spec changeset(t()) :: Changeset.t()
   def changeset(user_promotions \\ %__MODULE__{}) do
     user_promotions
     |> cast(%{}, [:user_id])
   end
 
-  def get_user_promotion_by_slug(current_user, slug) do
+  def get_user_promotion_by_slug(%{id: id}, slug) do
     from(up in __MODULE__,
       where: up.slug == ^slug,
-      where: up.user_id == ^current_user.id,
+      where: up.user_id == ^id,
       select: up
     )
     |> Repo.one()
@@ -46,23 +39,21 @@ defmodule Picsello.Accounts.User.Promotions do
   def insert_or_update_promotion(current_user, attrs \\ %{}) do
     user_promotion = get_user_promotion_by_slug(current_user, attrs.slug)
 
-    case user_promotion do
-      nil ->
-        %__MODULE__{}
-        |> Ecto.Changeset.change(attrs)
-        |> Ecto.Changeset.put_assoc(:user, current_user)
-        |> Repo.insert()
-
-      _ ->
-        user_promotion
-        |> Ecto.Changeset.change(attrs)
-        |> Repo.update()
+    if is_nil(user_promotion) do
+      %__MODULE__{}
+      |> change(attrs)
+      |> put_assoc(:user, current_user)
+      |> Repo.insert()
+    else
+      user_promotion
+      |> change(attrs)
+      |> Repo.update()
     end
   end
 
   def dismiss_promotion(user_promotion) do
     user_promotion
-    |> Ecto.Changeset.change(state: :dismissed)
+    |> change(state: :dismissed)
     |> Repo.update()
   end
 end
