@@ -73,7 +73,8 @@ defmodule Picsello.EmailAutomation.GarbageEmailCollector do
 
   defp stop_garbage_emails(%{jobs: jobs}) do
     Enum.each(jobs, fn job ->
-      stop_job_and_lead_emails(job)
+      stop_junk_lead_emails(job)
+      stop_old_job_payment_emails(job)
       stop_shoot_emails(job)
       stop_gallery_emails(job)
     end)
@@ -91,7 +92,14 @@ defmodule Picsello.EmailAutomation.GarbageEmailCollector do
     end)
   end
 
-  defp stop_job_and_lead_emails(job) do
+  def stop_old_job_payment_emails(job) do
+    # if job is before 13 Nov 2023
+    # then call stop_job_and_lead_emails(job)
+    reference_date = ~D[2023-11-13]
+    if Timex.diff(job.inserted_at, reference_date, :days) < 0, do: stop_job_and_lead_emails(job)
+  end
+
+  def stop_job_and_lead_emails(job) do
     states = [
       "pays_retainer",
       "pays_retainer_offline",
@@ -102,24 +110,17 @@ defmodule Picsello.EmailAutomation.GarbageEmailCollector do
     ]
 
     stop_junk_lead_emails(job)
-    pipelines = EmailAutomations.get_pipelines_by_states(states) |> Enum.map(& &1.id)
-    payment_schedules = PaymentSchedules.payment_schedules(job)
-    today = DateTime.utc_now()
-    buffer_days = 1
 
     if PaymentSchedules.all_paid?(job) do
-      all_paid_buffer_days? =
-        Enum.all?(payment_schedules, &(Date.diff(today, &1.paid_at) >= buffer_days))
+      pipelines = EmailAutomations.get_pipelines_by_states(states) |> Enum.map(& &1.id)
 
-      if all_paid_buffer_days? do
-        email_schedules_query =
-          EmailAutomationSchedules.query_get_email_schedule(:job, nil, nil, job.id, pipelines)
+      email_schedules_query =
+        EmailAutomationSchedules.query_get_email_schedule(:job, nil, nil, job.id, pipelines)
 
-        EmailAutomationSchedules.delete_and_insert_schedules_by(
-          email_schedules_query,
-          :already_paid_full
-        )
-      end
+      EmailAutomationSchedules.delete_and_insert_schedules_by(
+        email_schedules_query,
+        :already_paid_full
+      )
     end
   end
 
