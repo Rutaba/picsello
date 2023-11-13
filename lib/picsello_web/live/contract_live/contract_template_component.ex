@@ -79,7 +79,7 @@ defmodule PicselloWeb.ContractTemplateComponent do
             <div class="flex items-center">
               <%= label_for f, :type, label: "Contract Photography Type" %>
               <.icon name="tooltip" class="inline-block w-3.5 h-3.5 mx-1 fill-current text-blue-planning-300" />
-              <span class="ml-auto text-sm underline text-blue-planning-300">I need more help</span>
+              <a class="ml-auto text-sm underline text-blue-planning-300" target="_blank" href="https://support.picsello.com">I need more help</a>
             </div>
             <p class="text-base-250">Select “Global” so your contract will show up for all photography types or select only the one you want to use that contract for. </p>
             <div class="grid grid-cols-2 gap-3 mt-2 sm:grid-cols-4 sm:gap-5">
