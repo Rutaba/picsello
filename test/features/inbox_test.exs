@@ -39,6 +39,7 @@ defmodule Picsello.InboxTest do
         body_text: "client type  message ",
         inserted_at: ~N[2021-10-12 08:00:00]
       )
+
     campaign = insert(:campaign, user: user, body_html: "<p>body</p>")
     insert(:campaign_client, campaign: campaign, client: job.client)
 
@@ -61,7 +62,6 @@ defmodule Picsello.InboxTest do
   end
 
   feature "user views job/leads  messages in inbox", %{session: session} do
-
     session
     |> click(button("View inbox"))
     |> assert_has(testid("thread-card", count: 4))
@@ -71,7 +71,6 @@ defmodule Picsello.InboxTest do
   end
 
   feature "user views marketing  messages in inbox", %{session: session} do
-
     session
     |> click(button("View inbox"))
     |> assert_has(testid("thread-card", count: 4))

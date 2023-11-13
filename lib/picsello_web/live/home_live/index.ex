@@ -398,7 +398,6 @@ defmodule PicselloWeb.HomeLive.Index do
 
   @impl true
   def handle_event("open-thread", %{"id" => id, "type" => type}, socket) do
-
     socket
     |> push_redirect(to: Routes.inbox_path(socket, :show, "#{type}-#{id}"))
     |> noreply()
@@ -978,7 +977,7 @@ defmodule PicselloWeb.HomeLive.Index do
           subtitle: Job.name(message.job),
           message: message.body_text,
           date: strftime(current_user.time_zone, message.inserted_at, "%-m/%-d/%y"),
-          type: thread_type(message),
+          type: thread_type(message)
         }
       end)
 
@@ -1768,8 +1767,6 @@ defmodule PicselloWeb.HomeLive.Index do
 
   defp thread_type(%{job_id: nil}), do: :client
   defp thread_type(%{job_id: _job_id}), do: :job
-  defp thread_type(%{campaign_clients: [_]}), do: :campaign_reply
-  defp thread_type(%{parent_id: nil}), do: :campaign
 
   defdelegate get_all_proofing_album_orders(organization_id), to: Orders
 end

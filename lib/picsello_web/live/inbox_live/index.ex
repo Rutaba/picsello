@@ -781,17 +781,16 @@ defmodule PicselloWeb.InboxLive.Index do
       ) do
     {thread_id, message_result} = insert_messages_query(message_changeset, recipients, assings)
 
-    with {:ok, %{client_message: message, client_message_recipients: _}} <-
-           Repo.transaction(message_result),
+    with {:ok, %{client_message: message}} <- Repo.transaction(message_result),
          {:ok, _email} <- ClientNotifier.deliver_email(message, recipients) do
       socket
-      |> close_modal()
       |> assign_threads()
       |> assign_current_thread(thread_id, message.id)
     else
       _error ->
-        socket |> put_flash(:error, "Something went wrong") |> close_modal()
+        socket |> put_flash(:error, "Something went wrong")
     end
+    |> close_modal()
     |> noreply()
   end
 
@@ -801,15 +800,16 @@ defmodule PicselloWeb.InboxLive.Index do
       ) do
     client = Clients.client_by_email(organization_id, clinet_email)
 
-    with {:ok, %{campaign: campaign}} <- Marketing.save_campaign(changeset, [client]) do
-      socket
-      |> close_modal()
-      |> assign_threads()
-      |> assign_current_thread(to_string(client.id), campaign.id)
-    else
+    case Marketing.save_campaign(changeset, [client]) do
+      {:ok, %{campaign: campaign}} ->
+        socket
+        |> assign_threads()
+        |> assign_current_thread(to_string(client.id), campaign.id)
+
       _error ->
-        socket |> put_flash(:error, "Something went wrong") |> close_modal()
+        socket |> put_flash(:error, "Something went wrong")
     end
+    |> close_modal()
     |> noreply()
   end
 
