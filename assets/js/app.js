@@ -79,7 +79,9 @@ import Cookies from 'js-cookie';
 import FolderUpload from './hooks/folder-upload';
 import SearchResultSelect from './hooks/search-result-select';
 import Tooltip from './hooks/tooltip';
-import LivePhone from "live_phone"
+import StripeElements from './hooks/stripe-elements';
+import Timer from './hooks/timer';
+import LivePhone from 'live_phone';
 import ViewProposal from './hooks/view_proposal';
 
 const Modal = {
@@ -147,10 +149,21 @@ const ClearInput = {
   },
 };
 
-const TZCookie = {
+const OnboardingCookie = {
   mounted() {
+    function getQueryParam(paramName) {
+      const urlParams = new URLSearchParams(window.location.search);
+      return urlParams.get(paramName);
+    }
+
     const { timeZone } = Intl.DateTimeFormat().resolvedOptions();
     document.cookie = `time_zone=${timeZone}; path=/`;
+
+    if (getQueryParam('onboarding_type')) {
+      document.cookie = `onboarding_type=${getQueryParam(
+        'onboarding_type'
+      )}; path=/`;
+    }
   },
 };
 
@@ -217,7 +230,6 @@ const showAdminBanner = {
   },
 };
 
-
 const Hooks = {
   AutoHeight,
   Calendar,
@@ -253,7 +265,7 @@ const Hooks = {
   ResumeUpload,
   ScrollIntoView,
   Select,
-  TZCookie,
+  OnboardingCookie,
   ToggleContent,
   ToggleSiblings,
   Tooltip,
@@ -265,14 +277,16 @@ const Hooks = {
   showWelcomeModal,
   showAdminBanner,
   FolderUpload,
+  StripeElements,
   SearchResultSelect,
+  Timer,
   LivePhone,
-  ViewProposal
+  ViewProposal,
 };
 
 window.addEventListener(`phx:download`, (event) => {
-  let frame = document.createElement("iframe");
-  frame.setAttribute("src", event.detail.uri);
+  let frame = document.createElement('iframe');
+  frame.setAttribute('src', event.detail.uri);
   frame.style.visibility = 'hidden';
   frame.style.display = 'none';
   document.body.appendChild(frame);

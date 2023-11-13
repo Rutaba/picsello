@@ -68,6 +68,7 @@ config :picsello, :global_watermarked_path, System.get_env("GLOBAL_WATERMARKED_P
 
 config :stripity_stripe,
   api_key: System.get_env("STRIPE_SECRET"),
+  publishable_key: System.get_env("STRIPE_PUBLISHABLE_KEY"),
   connect_signing_secret: System.get_env("STRIPE_CONNECT_SIGNING_SECRET"),
   app_signing_secret: System.get_env("STRIPE_APP_SIGNING_SECRET")
 

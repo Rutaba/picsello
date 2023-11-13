@@ -5,10 +5,6 @@ defmodule Picsello.ClientMessage do
   alias Picsello.{Repo, Job, ClientMessageRecipient, ClientMessageAttachment}
 
   schema "client_messages" do
-    belongs_to(:job, Job)
-    has_many(:client_message_recipients, ClientMessageRecipient)
-    has_many(:client_message_attachments, ClientMessageAttachment)
-    has_many(:clients, through: [:client_message_recipients, :client])
     field(:subject, :string)
     field(:body_text, :string)
     field(:body_html, :string)
@@ -16,6 +12,11 @@ defmodule Picsello.ClientMessage do
     field(:outbound, :boolean)
     field(:read_at, :utc_datetime)
     field(:deleted_at, :utc_datetime)
+
+    belongs_to(:job, Job)
+    has_many(:client_message_recipients, ClientMessageRecipient)
+    has_many(:client_message_attachments, ClientMessageAttachment)
+    has_many(:clients, through: [:client_message_recipients, :client])
 
     timestamps(type: :utc_datetime)
   end
