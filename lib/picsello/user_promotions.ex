@@ -36,7 +36,7 @@ defmodule Picsello.Accounts.User.Promotions do
     |> Repo.one()
   end
 
-  def insert_or_update_promotion(current_user, attrs \\ %{}) do
+  def insert_or_update_promotion(current_user, attrs) do
     user_promotion = get_user_promotion_by_slug(current_user, attrs.slug)
 
     if is_nil(user_promotion) do
