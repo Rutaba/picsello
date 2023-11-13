@@ -1873,7 +1873,7 @@ defmodule PicselloWeb.HomeLive.Index do
           %{
             price_data: %{
               currency: "USD",
-              unit_amount: 35000,
+              unit_amount: 350_00,
               product_data: %{
                 name: "Black Friday 2023",
                 description: "Pre purchase your next year of Picsello!"
