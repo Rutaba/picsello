@@ -146,45 +146,32 @@ defmodule PicselloWeb.Router do
 
   scope "/", PicselloWeb do
     live_session :default, on_mount: PicselloWeb.LiveAuth do
-      pipe_through([:browser, :require_authenticated_user])
-      get("/nylas/callback", NylasController, :callback)
-      put("/users/settings", UserSettingsController, :update)
-
-      get(
-        "/users/settings/stripe-refresh",
-        UserSettingsController,
-        :stripe_refresh
-      )
-
-      get(
-        "/users/settings/confirm_email/:token",
-        UserSettingsController,
-        :confirm_email
-      )
-
-      live("/brand", Live.BrandSettings, :index, as: :brand_settings)
-      live("/finance", Live.FinanceSettings, :index, as: :finance_settings)
-      live("/marketing", Live.Marketing, :index, as: :marketing)
-      live("/users/settings", Live.User.Settings, :edit)
-      live("/galleries/settings", GalleryLive.GlobalSettings.Index, :edit)
-      live("/package_templates/:id/edit", Live.PackageTemplates, :edit)
-      live("/package_templates/new", Live.PackageTemplates, :new)
-      live("/package_templates", Live.PackageTemplates, :index)
-      live("/pricing/categories/:category_id", Live.Pricing.Category, :show)
-      live("/pricing", Live.Pricing, :index)
-
-      live("/pricing/calculator", Live.Pricing.Calculator.Index, :index, as: :calculator)
-
-      live("/profile/settings", Live.Profile.Settings, :index, as: :profile_settings)
-
-      live("/profile/settings/edit", Live.Profile, :edit, as: :profile_settings)
-      live("/calendar", Live.Calendar.Index, :index)
-      live("/calendar/settings", Live.Calendar.Settings, :settings)
-      live("/booking-events", Live.Calendar.BookingEvents, :index)
-      live("/booking-events/new", Live.Calendar.BookingEvents, :new)
-      live("/booking-events/:id/edit", Live.Calendar.BookingEvents, :edit)
-      live("/questionnaires", Live.Questionnaires.Index, :index)
-      get("/calendar-feed", CalendarFeedController, :index)
+      pipe_through [:browser, :require_authenticated_user]
+      get "/nylas/callback", NylasController, :callback
+      put "/users/settings", UserSettingsController, :update
+      get "/users/settings/stripe-refresh", UserSettingsController, :stripe_refresh
+      get "/users/settings/confirm_email/:token", UserSettingsController, :confirm_email
+      live "/brand", Live.BrandSettings, :index, as: :brand_settings
+      live "/finance", Live.FinanceSettings, :index, as: :finance_settings
+      live "/marketing", Live.Marketing, :index, as: :marketing
+      live "/marketing/:campaign_id", Live.Marketing, :show
+      live "/users/settings", Live.User.Settings, :edit
+      live "/galleries/settings", GalleryLive.GlobalSettings.Index, :edit
+      live "/package_templates/:id/edit", Live.PackageTemplates, :edit
+      live "/package_templates/new", Live.PackageTemplates, :new
+      live "/package_templates", Live.PackageTemplates, :index
+      live "/pricing/categories/:category_id", Live.Pricing.Category, :show
+      live "/pricing", Live.Pricing, :index
+      live "/pricing/calculator", Live.Pricing.Calculator.Index, :index, as: :calculator
+      live "/profile/settings", Live.Profile.Settings, :index, as: :profile_settings
+      live "/profile/settings/edit", Live.Profile, :edit, as: :profile_settings
+      live "/calendar", Live.Calendar.Index, :index
+      live "/calendar/settings", Live.Calendar.Settings, :settings
+      live "/booking-events", Live.Calendar.BookingEvents, :index
+      live "/booking-events/new", Live.Calendar.BookingEvents, :new
+      live "/booking-events/:id/edit", Live.Calendar.BookingEvents, :edit
+      live "/questionnaires", Live.Questionnaires.Index, :index
+      get "/calendar-feed", CalendarFeedController, :index
 
       scope "/galleries/:id", GalleryLive do
         live("/", PhotographerIndex, :index)

@@ -474,9 +474,9 @@ defmodule PicselloWeb.HomeLive.Index do
   end
 
   @impl true
-  def handle_event("open-thread", %{"id" => id}, socket) do
+  def handle_event("open-thread", %{"id" => id, "type" => type}, socket) do
     socket
-    |> push_redirect(to: Routes.inbox_path(socket, :show, id))
+    |> push_redirect(to: Routes.inbox_path(socket, :show, "#{type}-#{id}"))
     |> noreply()
   end
 
@@ -1015,7 +1015,7 @@ defmodule PicselloWeb.HomeLive.Index do
 
   def thread_card(assigns) do
     ~H"""
-    <div {testid("thread-card")} phx-click="open-thread" phx-value-id={@id} class="flex justify-between border-b cursor-pointer first:pt-0 py-3">
+    <div {testid("thread-card")} phx-click="open-thread" phx-value-id={@id} phx-value-type={@type} class="flex justify-between border-b cursor-pointer first:pt-0 py-3">
       <div class="">
         <div class="flex items-center">
           <div class="text-xl line-clamp-1 font-bold"><%= @title %></div>
@@ -1053,7 +1053,8 @@ defmodule PicselloWeb.HomeLive.Index do
           title: message.job.client.name,
           subtitle: Job.name(message.job),
           message: message.body_text,
-          date: strftime(current_user.time_zone, message.inserted_at, "%-m/%-d/%y")
+          date: strftime(current_user.time_zone, message.inserted_at, "%-m/%-d/%y"),
+          type: thread_type(message)
         }
       end)
 
@@ -1894,6 +1895,9 @@ defmodule PicselloWeb.HomeLive.Index do
         socket |> put_flash(:error, "Couldn't redirect to Stripe. Please try again") |> noreply()
     end
   end
+
+  defp thread_type(%{job_id: nil}), do: :client
+  defp thread_type(%{job_id: _job_id}), do: :job
 
   defdelegate get_all_proofing_album_orders(organization_id), to: Orders
 end

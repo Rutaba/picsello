@@ -1,6 +1,6 @@
 defmodule Picsello.Marketing do
   @moduledoc "context module for campaigns"
-  import Ecto.Query, only: [from: 2]
+  import Ecto.Query
 
   alias Picsello.{
     Repo,
@@ -12,6 +12,7 @@ defmodule Picsello.Marketing do
     Accounts.User
   }
 
+  alias Ecto.Changeset
   import Picsello.Notifiers, only: [noreply_address: 0, email_signature: 1]
 
   def new_campaign_changeset(attrs, organization_id) do
@@ -21,11 +22,18 @@ defmodule Picsello.Marketing do
   end
 
   def save_new_campaign(attrs, organization_id) do
-    changeset = new_campaign_changeset(attrs, organization_id)
+    changeset =
+      attrs
+      |> new_campaign_changeset(organization_id)
+      |> Changeset.put_change(:read_at, DateTime.utc_now() |> DateTime.truncate(:second))
 
     segment_type = Ecto.Changeset.get_field(changeset, :segment_type)
     clients = clients(segment_type, organization_id)
 
+    save_campaign(changeset, clients)
+  end
+
+  def save_campaign(changeset, clients) do
     Ecto.Multi.new()
     |> Ecto.Multi.insert(:campaign, changeset)
     |> Ecto.Multi.insert_all(:campaign_clients, CampaignClient, fn %{campaign: campaign} ->
@@ -49,11 +57,12 @@ defmodule Picsello.Marketing do
     |> Repo.transaction()
   end
 
+  @campaign_segment_types ~w(new all)
   def recent_campaigns(organization_id, limit \\ 4) do
     from(c in Campaign,
       left_join: cc in CampaignClient,
       on: cc.campaign_id == c.id,
-      where: c.organization_id == ^organization_id,
+      where: c.organization_id == ^organization_id and c.segment_type in @campaign_segment_types,
       order_by: [desc: c.inserted_at],
       limit: ^limit,
       group_by: c.id,
@@ -82,6 +91,30 @@ defmodule Picsello.Marketing do
       }
     )
     |> Repo.one()
+  end
+
+  def get_campaign(campaign_id) do
+    Campaign
+    |> where([c], c.id == ^campaign_id)
+    |> preload_associations()
+    |> Repo.one()
+  end
+
+  def get_campaign_replies(client_id) do
+    Campaign
+    |> join(:inner, [c], cc in assoc(c, :campaign_clients))
+    |> where([_c, cc], cc.client_id == ^client_id)
+    |> order_by(asc: :inserted_at)
+    |> preload_associations()
+    |> Repo.all()
+  end
+
+  defp preload_associations(
+         query,
+         preloads \\ [:client_message_attachments, campaign_clients: :client]
+       ) do
+    query
+    |> preload(^preloads)
   end
 
   def clients(segment_type, organization_id) do
@@ -157,13 +190,15 @@ defmodule Picsello.Marketing do
       )
       |> Repo.all()
 
+    reply_to = Picsello.Messages.email_address(campaign)
+
     # chunk clients since Sendgrid limits 1000 personalizations per request
     all_clients
     |> Enum.chunk_every(1000)
     |> Enum.each(fn clients ->
       body = %{
         from: %{email: noreply_address(), name: organization.name},
-        reply_to: %{email: organization.user.email, name: organization.name},
+        reply_to: %{email: reply_to, name: organization.name},
         personalizations:
           Enum.map(clients, fn client ->
             %{

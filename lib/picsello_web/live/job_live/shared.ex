@@ -165,7 +165,7 @@ defmodule PicselloWeb.JobLive.Shared do
 
   def handle_event("open-inbox", _, %{assigns: %{job: job}} = socket) do
     socket
-    |> push_redirect(to: Routes.inbox_path(socket, :show, job.id))
+    |> push_redirect(to: Routes.inbox_path(socket, :show, "job-#{job.id}"))
     |> noreply()
   end
 
@@ -725,6 +725,8 @@ defmodule PicselloWeb.JobLive.Shared do
     |> assign_disabled_copy_link()
     |> noreply()
   end
+
+  def handle_info({:inbound_messages, %Picsello.Campaign{}}, socket), do: noreply(socket)
 
   def handle_info(
         {:inbound_messages, message},
@@ -1612,6 +1614,27 @@ defmodule PicselloWeb.JobLive.Shared do
     socket |> do_assign_job(job)
   end
 
+  @doc """
+  Assigns a job to the LiveView socket for the current user.
+
+  This function assigns a job to the LiveView socket based on the provided `job_id` and the current user's context.
+  The `socket` parameter should be a Phoenix LiveView socket, and the `job_id` parameter should be the ID of the job to assign.
+
+  The function retrieves the job associated with the provided `job_id` for the current user and assigns it to the socket.
+  It calls the `do_assign_job/2` function to perform the assignment.
+
+  ## Parameters
+
+      - `socket` (Phoenix.LiveView.Socket.t()): The LiveView socket.
+      - `job_id` (integer()): The ID of the job to assign.
+
+  ## Examples
+
+      ```elixir
+      socket = assign_job(socket, 42)
+
+  The assign_job/2 function assigns the job with ID 42 to the LiveView socket.
+  """
   def assign_job(%{assigns: %{current_user: current_user}} = socket, job_id) do
     job =
       current_user
@@ -2018,6 +2041,25 @@ defmodule PicselloWeb.JobLive.Shared do
   defp retryable?(err) when err in ~w(too_large not_accepted)a, do: false
   defp retryable?(_err), do: true
 
+  @doc """
+  Get an email associated with a job and a specific pipeline.
+
+  This function retrieves an email associated with a job and a specified pipeline.
+
+  If the `pipeline` parameter is `nil`, it returns `nil`. If a valid pipeline is provided,
+  the function queries the database for the email, sorts it by its state, and returns the first email in the sorted list.
+
+  ## Parameters
+
+      - `job_id` (integer()): The ID of the job.
+      - `pipeline` (Pipeline.t() | nil): The pipeline for which to retrieve an email.
+
+  ## Examples
+
+      ```elixir
+      get_job_email_by_pipeline(42, %Pipeline{...})
+      get_job_email_by_pipeline(42, nil)
+  """
   def get_job_email_by_pipeline(_job_id, nil), do: nil
 
   def get_job_email_by_pipeline(job_id, pipeline) do
