@@ -62,7 +62,7 @@ module.exports = {
         'red-sales': { 300: '#E1662F', 200: '#EF8F83', 100: '#FDF2F2' },
         'blue-planning': { 300: '#4DAAC6', 200: '#86C3CC', 100: '#F2FDFB' },
         'yellow-files': { 300: '#F7CB45', 200: '#FAE46B', 100: '#FEF9E2' },
-        'purple-marketing': { 300: '#585DF6', 200: '#7F82E6', 100: '#F8F4FE' },
+        'purple-marketing': { 300: '#5464B2', 200: '#687DE1', 100: '#C9D2FF' },
         'orange-inbox': {
           400: '#FCF0EA',
           300: '#F19D4A',

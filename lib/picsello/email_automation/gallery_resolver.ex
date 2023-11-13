@@ -52,6 +52,10 @@ defmodule Picsello.EmailPresets.GalleryResolver do
     resolver |> photographer() |> Map.get(:time_zone) |> helpers.strftime(date, format)
   end
 
+  ## Generates a download link for photos in a gallery. This private function takes an instance of the current module
+  ## (usually representing a gallery) and attempts to generate a download link for the photos in the gallery.
+  ## It uses the `Pack.url/1` function to create the download link. If successful, it returns the download
+  ## link as a string; otherwise, it returns nil.
   defp download_photos_link(%__MODULE__{gallery: gallery}) do
     case Pack.url(gallery) do
       {:ok, url} -> url

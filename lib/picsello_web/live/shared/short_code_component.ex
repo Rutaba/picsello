@@ -53,12 +53,56 @@ defmodule PicselloWeb.Shared.ShortCodeComponent do
     """
   end
 
+  @doc """
+  Generates an HTML code snippet to include a LiveView component.
+
+  This function generates an HTML code snippet for embedding a LiveView component
+  in a web page. The `assigns` parameter is a map that allows you to pass configuration
+  or data to the LiveView component.
+
+  ## Parameters
+
+      - `assigns`: A map containing data or configuration to pass to the LiveView component.
+
+  ## Examples
+
+      ```elixir
+      assigns = %{id: "my-live-view", option: "value"}
+      short_codes_select(assigns)
+
+  The short_codes_select/1 function generates HTML code with the specified module and assigns,
+  which can be included in a web page to render the LiveView component.
+  """
   def short_codes_select(assigns) do
     ~H"""
     <.live_component module={__MODULE__} id={assigns[:id]} {assigns} />
     """
   end
 
+  @doc """
+  Generates a list of variable definitions based on the specified job type.
+
+  This function generates a list of variable definitions commonly used in job types
+  based on the provided `job_type`. The returned list contains maps representing different
+  types of variables with relevant information.
+
+  ## Parameters
+
+      - `job_type`: The type of job for which variable definitions are needed.
+      - `current_user`: A struct of current signed-in user
+      - `job`: A struct of the job
+      - `user_currency`: User's currency i.e. USD, AED etc
+      - `total_hours`: A map containing calendar, count, and sign
+
+  ## Examples
+
+      ```elixir
+      job_type = :job
+      variables_codes(job_type, user, job, "USD", total_hours)
+
+  The variables_codes/5 function returns a list of variable definitions tailored to the
+  specified job_type.
+  """
   def variables_codes(job_type, current_user, job, user_currency, total_hours) do
     %{calendar: calendar, count: count, sign: sign} =
       EmailAutomations.get_email_meta(total_hours, PicselloWeb.Helpers)
@@ -86,7 +130,7 @@ defmodule PicselloWeb.Shared.ShortCodeComponent do
             name: "booking_event_client_link",
             sample: """
             <a target="_blank" href="https://bookingeventclientlinkhere.com">
-              Client Event Link
+              Client Url
             </a>
             """,
             description: "Link to the client booking-event"
@@ -235,12 +279,6 @@ defmodule PicselloWeb.Shared.ShortCodeComponent do
           },
           %{
             id: 2,
-            name: "email_signature",
-            sample: name,
-            description: "Included on every email sent from your Picsello account"
-          },
-          %{
-            id: 3,
             name: "photographer_cell",
             sample: "(123) 456-7891",
             description:
@@ -326,7 +364,7 @@ defmodule PicselloWeb.Shared.ShortCodeComponent do
   end
 
   defp get_photopgrapher_data(user) do
-    Map.get(user.organization, :name, "John lee") |> String.capitalize()
+    Map.get(user.organization, :name, "John lee")
   end
 
   defp get_client_data(nil), do: nil

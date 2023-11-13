@@ -7,6 +7,27 @@ defmodule Picsello.Notifiers.EmailAutomationNotifier.Impl do
 
   @behaviour EmailAutomationNotifier
 
+  @doc """
+  Delivers an automation email for a job.
+
+  This function prepares and delivers an automation email for a job based
+  on the provided email preset, job details, email schema, and state. It first
+  resolves the email's subject and body templates, and then sends the email to the job's client.
+
+  ## Parameters
+
+      - `email_preset`: The email preset configuration.
+      - `job`: The job for which the email is being sent.
+      - `schema`: Email schema (specific details required for rendering).
+      - `state`: Current state (optional).
+      - `helpers`: Helper functions or modules (e.g., PicselloWeb.Helpers).
+
+  ## Returns
+
+      - `{:ok, any}`: Indicates a successful email delivery.
+      - `any`: Possible errors or exceptions during email delivery.
+  """
+
   @spec deliver_automation_email_job(map(), map(), tuple(), atom(), any()) ::
           {:error, binary() | map()} | {:ok, map()}
   @impl EmailAutomationNotifier
@@ -21,6 +42,27 @@ defmodule Picsello.Notifiers.EmailAutomationNotifier.Impl do
       )
     end
   end
+
+  @doc """
+  Delivers an automation email for a gallery.
+
+  This function prepares and delivers an automation email for a gallery based on
+  the provided email preset, gallery details, email schema, and state. It first
+  resolves the email's subject and body templates, and then sends the email to the gallery's job client.
+
+  ## Parameters
+
+      - `email_preset`: The email preset configuration.
+      - `gallery`: The gallery for which the email is being sent.
+      - `schema`: Email schema (specific details required for rendering).
+      - `state`: Current state (optional).
+      - `helpers`: Helper functions or modules (e.g., PicselloWeb.Helpers).
+
+  ## Returns
+
+      - `{:ok, any}`: Indicates a successful email delivery.
+      - `any`: Possible errors or exceptions during email delivery.
+  """
 
   @spec deliver_automation_email_gallery(map(), map(), tuple(), atom(), any()) ::
           {:error, binary() | map()} | {:ok, map()}
@@ -42,6 +84,28 @@ defmodule Picsello.Notifiers.EmailAutomationNotifier.Impl do
       gallery.job
     )
   end
+
+  @doc """
+  Delivers an automation email for an order.
+
+  This function prepares and delivers an automation email for an order
+  based on the provided email preset, order details, email schema, and state.
+  It first resolves the email's subject and body templates, and then sends the email
+  to the recipient's email address associated with the order's delivery information.
+
+  ## Parameters
+
+      - `email_preset`: The email preset configuration.
+      - `order`: The order for which the email is being sent.
+      - `schema`: Email schema (specific details required for rendering).
+      - `state`: Current state (optional).
+      - `helpers`: Helper functions or modules (e.g., PicselloWeb.Helpers).
+
+  ## Returns
+
+      - `{:ok, any}`: Indicates a successful email delivery.
+      - `any`: Possible errors or exceptions during email delivery.
+  """
 
   @spec deliver_automation_email_order(map(), map(), tuple(), atom(), any()) ::
           {:error, binary() | map()} | {:ok, map()}

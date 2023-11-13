@@ -44,10 +44,12 @@ defmodule Picsello.UserOnboardsTest do
   @onboarding_path Routes.onboarding_path(PicselloWeb.Endpoint, :index)
   @org_name_field text_field("onboarding-step-2_organization_name")
   @photographer_years_field text_field("onboarding-step-2_onboarding_photographer_years")
+  @interested_in_field select("onboarding-step-2_onboarding_interested_in")
 
   def fill_in_step(session, 2) do
     session
     |> fill_in(@photographer_years_field, with: "5")
+    |> find(@interested_in_field, &click(&1, option("Booking Events")))
     |> click(option("OK"))
   end
 
@@ -111,6 +113,7 @@ defmodule Picsello.UserOnboardsTest do
     |> assert_has(css("span.invalid-feedback", text: "Photography business name can't be blank"))
     |> fill_in(@org_name_field, with: "Photogenious")
     |> fill_in(@photographer_years_field, with: "5")
+    |> find(@interested_in_field, &click(&1, option("Booking Events")))
     |> click(option("OK"))
     |> wait_for_enabled_submit_button()
     |> click(button("Next"))
@@ -213,6 +216,7 @@ defmodule Picsello.UserOnboardsTest do
     |> assert_path(@onboarding_path)
     |> fill_in(@org_name_field, with: "Photogenious")
     |> fill_in(@photographer_years_field, with: "5")
+    |> find(@interested_in_field, &click(&1, option("Booking Events")))
     |> click(option("Non-US"))
     |> click(button("Next"))
     |> assert_text("speciality")

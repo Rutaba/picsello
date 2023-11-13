@@ -136,7 +136,10 @@ defmodule Picsello.Orders do
 
   def get_all_purchased_photos_in_album(gallery, album_id) do
     if can_download_all?(gallery) do
-      from(photo in Photo, where: photo.gallery_id == ^gallery.id and photo.album_id == ^album_id)
+      from(photo in Photo,
+        where: photo.gallery_id == ^gallery.id and photo.album_id == ^album_id,
+        where: photo.active == true
+      )
       |> Repo.all()
     else
       from(digital in Digital,
@@ -145,6 +148,7 @@ defmodule Picsello.Orders do
         join: photo in assoc(digital, :photo),
         where: order.gallery_id == ^gallery.id,
         where: photo.album_id == ^album_id,
+        where: photo.active == true,
         select: photo
       )
       |> Repo.all()
@@ -339,6 +343,30 @@ defmodule Picsello.Orders do
     |> Repo.one()
   end
 
+  @doc """
+  Retrieves an order by its ID.
+
+  This function queries the database to retrieve an order based on the provided order ID.
+  It preloads associated data, including the gallery and job, for more comprehensive order information.
+
+  ## Parameters
+
+      - `id`: The unique identifier (ID) of the order to retrieve.
+
+  ## Returns
+
+      - `%Order{}`: A struct representing the retrieved order with associated data, including the gallery and job.
+
+  ## Examples
+
+      ```elixir
+      order_id = 123
+      order = MyApp.Orders.get_order(order_id)
+
+      # Accessing order details:
+      # order.gallery - The associated gallery for the order
+      # order.job - The associated job for the order
+  """
   def get_order(id) do
     from(order in Order,
       preload: [gallery: :job],
