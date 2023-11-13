@@ -2,20 +2,28 @@ defmodule PicselloWeb.OnboardingLive.Index do
   @moduledoc false
   use PicselloWeb, live_view: [layout: :onboarding]
 
-  import Picsello.Zapier.User, only: [user_trial_created_webhook: 1]
   import PicselloWeb.GalleryLive.Shared, only: [steps: 1]
-  import PicselloWeb.PackageLive.Shared, only: [current: 1]
+
+  import PicselloWeb.OnboardingLive.Shared,
+    only: [
+      form_field: 1,
+      save_final: 2,
+      save_multi: 3,
+      assign_changeset: 1,
+      assign_changeset: 2,
+      org_job_inputs: 1,
+      most_interested_select: 0
+    ]
+
   require Logger
 
-  alias Ecto.Multi
-  alias Picsello.{Repo, Onboardings, Subscriptions, UserCurrency}
-  alias Picsello.GlobalSettings.Gallery, as: GSGallery
+  alias Picsello.{Onboardings, Subscriptions}
 
   @impl true
   def mount(_params, _session, socket) do
     socket
     |> assign_step()
-    |> assign(:loading_stripe, false)
+    |> assign(:stripe_loading, false)
     |> assign(
       :subscription_plan_metadata,
       Subscriptions.get_subscription_plan_metadata()
@@ -91,37 +99,18 @@ defmodule PicselloWeb.OnboardingLive.Index do
         id={"onboarding-step-#{@step}"}
       >
         <.step f={f} {assigns} />
-
-        <div
-          class="flex items-center justify-between mt-5 sm:justify-end sm:mt-9"
-          phx-hook="HandleTrialCode"
-          id="handle-trial-code"
-          data-handle="retrieve"
-        >
-          <%= if @step > 2 do %>
-            <button
-              type="button"
-              phx-click="previous"
-              class="flex-grow px-6 sm:flex-grow-0 btn-secondary sm:px-8"
-            >
-              Back
+          <div class="flex items-center justify-between mt-5 sm:justify-end sm:mt-9" phx-hook="HandleTrialCode" id="handle-trial-code" data-handle="retrieve">
+            <%= if @step > 2 do %>
+              <button type="button" phx-click="previous" class="flex-grow px-6 sm:flex-grow-0 btn-secondary sm:px-8">
+                Back
+              </button>
+            <% else %>
+              <%= link("Logout", to: Routes.user_session_path(@socket, :delete), method: :delete, class: "flex-grow sm:flex-grow-0 underline mr-auto text-left") %>
+            <% end %>
+            <button type="submit" phx-disable-with="Saving" disabled={!@changeset.valid? || @stripe_loading} class="flex-grow px-6 ml-4 sm:flex-grow-0 btn-primary sm:px-8">
+              <%= if @step == 3, do: "Start Trial", else: "Next" %>
             </button>
-          <% else %>
-            <%= link("Logout",
-              to: Routes.user_session_path(@socket, :delete),
-              method: :delete,
-              class: "flex-grow sm:flex-grow-0 underline mr-auto text-left"
-            ) %>
-          <% end %>
-          <button
-            type="submit"
-            phx-disable-with="Saving"
-            disabled={!@changeset.valid? || @loading_stripe}
-            class="flex-grow px-6 ml-4 sm:flex-grow-0 btn-primary sm:px-8"
-          >
-            <%= if @step == 3, do: "Start Trial", else: "Next" %>
-          </button>
-        </div>
+          </div>
       </.form>
     </.container>
     """
@@ -222,88 +211,8 @@ defmodule PicselloWeb.OnboardingLive.Index do
 
   defp step(%{step: 3} = assigns) do
     ~H"""
-    <%= for o <- inputs_for(@f, :organization) do %>
-      <%= hidden_inputs_for(o) %>
-
-      <div class="flex flex-col pb-1">
-        <p class="py-2 font-extrabold">
-          What’s your photography speciality? <i class="italic font-light">(Select one or more)</i>
-        </p>
-
-        <div data-rewardful-email={@current_user.email} id="rewardful-email"></div>
-
-        <div class="mt-2 grid grid-cols-2 gap-3 sm:gap-5">
-          <%= for jt <- inputs_for(o, :organization_job_types) |> Enum.sort_by(&(&1.data.job_type)) do %>
-            <% input_name = input_name(jt, :job_type) %>
-            <%= hidden_inputs_for(jt) %>
-            <%= if jt.data.job_type != "other" do %>
-              <% checked = jt |> current() |> Map.get(:show_on_business?) %>
-              <.job_type_option
-                type="checkbox"
-                name={input_name}
-                form={jt}
-                job_type={jt |> current() |> Map.get(:job_type)}
-                checked={checked}
-              />
-            <% else %>
-              <input
-                class="hidden"
-                type="checkbox"
-                name={input_name}
-                value={jt |> current() |> Map.get(:job_type)}
-                checked={true}
-              />
-            <% end %>
-            <%= hidden_input(jt, :type, value: jt |> current() |> Map.get(:job_type)) %>
-          <% end %>
-        </div>
-        <div class="flex flex-row">
-          <div class="flex items-center justify-center w-7 h-7 ml-1 mr-3 mt-2 rounded-full flex-shrink-0 bg-blue-planning-300 text-white">
-            <.icon name="other" class="fill-current" width="14" height="14" />
-          </div>
-          <div class="flex flex-col">
-            <p class="pt-2 font-bold">
-              Not seeing yours here?
-            </p>
-            <p class="text-gray-400 font-normal">
-              All Picsello accounts include an <strong>Other</strong>
-              photography speciality in case yours isn’t listed here.
-            </p>
-          </div>
-        </div>
-      </div>
-    <% end %>
+      <.org_job_inputs {assigns} />
     """
-  end
-
-  defp form_field(assigns) do
-    assigns = Enum.into(assigns, %{error: nil, prefix: nil, class: "py-2", mt: 4})
-
-    ~H"""
-    <label class={"flex flex-col mt-#{@mt}"}>
-      <p class={"#{@class} font-extrabold"}><%= @label %></p>
-      <%= render_slot(@inner_block) %>
-
-      <%= if @error do %>
-        <%= error_tag(@f, @error, prefix: @prefix, class: "text-red-sales-300 text-sm") %>
-      <% end %>
-    </label>
-    """
-  end
-
-  defp most_interested_select() do
-    [
-      {"Booking Events", :booking_events},
-      {"All-in-one platform", :all_in_one_platform},
-      {"Business mastermind, education and community",
-       :business_mastermind_education_and_community},
-      {"Smart Profit Calculator™ and help with pricing",
-       :smart_profit_calculator_and_help_with_pricing},
-      {"Mobile-first design", :mobile_first_design},
-      {"Unlimited client photo galleries with self-serve digital image and print product orders",
-       :unlimited},
-      {"Other", :other}
-    ]
   end
 
   defp assign_step(%{assigns: %{current_user: %{onboarding: onboarding}}} = socket) do
@@ -333,17 +242,6 @@ defmodule PicselloWeb.OnboardingLive.Index do
       subtitle: "",
       page_title: "Onboarding Step 3"
     )
-  end
-
-  defp build_changeset(%{assigns: %{current_user: user, step: step}}, params, action \\ nil) do
-    user
-    |> Onboardings.changeset(params, step: step)
-    |> Map.put(:action, action)
-  end
-
-  defp assign_changeset(socket, params \\ %{}) do
-    socket
-    |> assign(changeset: build_changeset(socket, params, :validate))
   end
 
   def optimized_container(assigns) do
@@ -416,114 +314,14 @@ defmodule PicselloWeb.OnboardingLive.Index do
     """
   end
 
-  @impl true
-  def handle_info({:stripe_session_id, stripe_session_id}, socket) do
-    case Subscriptions.handle_subscription_by_session_id(stripe_session_id) do
-      :ok ->
-        socket
-        |> assign(current_user: Onboardings.complete!(socket.assigns.current_user))
-        |> update_user_client_trial(socket.assigns.current_user)
-        |> noreply()
-
-      _ ->
-        socket
-        |> put_flash(:error, "Couldn't fetch your Stripe session. Please try again")
-        |> noreply()
-    end
-  end
-
-  defp update_user_client_trial(socket, current_user) do
-    %{
-      list_ids: SendgridClient.get_all_client_list_env(),
-      clients: [
-        %{
-          email: current_user.email,
-          state_province_region: current_user.onboarding.state,
-          custom_fields: %{
-            w3_T: current_user.organization.name,
-            w1_T: "trial"
-          }
-        }
-      ]
-    }
-    |> SendgridClient.add_clients()
-
-    user_trial_created_webhook(%{email: current_user.email})
-
-    socket
-  end
-
-  defp save(%{assigns: %{step: step}} = socket, params, data \\ :skip) do
-    Multi.new()
-    |> Multi.put(:data, data)
-    |> Multi.update(:user, build_changeset(socket, params))
-    |> Repo.transaction()
+  def save(%{assigns: %{step: step}} = socket, params, data \\ :skip) do
+    save_multi(socket, params, data)
     |> then(fn
       {:ok, %{user: user}} ->
         socket
         |> assign(current_user: user)
         |> assign_step(step + 1)
         |> assign_changeset()
-
-      {:error, reason} ->
-        socket |> assign(changeset: reason)
-    end)
-    |> noreply()
-  end
-
-  defp save_final(socket, params, data \\ :skip) do
-    params = update_job_params(params)
-
-    Multi.new()
-    |> Multi.put(:data, data)
-    |> Multi.update(:user, build_changeset(socket, params))
-    |> Multi.insert(:global_gallery_settings, fn %{user: %{organization: organization}} ->
-      GSGallery.price_changeset(%GSGallery{}, %{organization_id: organization.id})
-    end)
-    |> Multi.insert(
-      :user_currencies,
-      fn %{user: %{organization: organization}} ->
-        UserCurrency.currency_changeset(
-          %UserCurrency{},
-          %{
-            organization_id: organization.id,
-            currency: "USD"
-          }
-        )
-      end,
-      conflict_target: [:organization_id],
-      on_conflict: :nothing
-    )
-    |> Multi.run(:subscription, fn _repo, %{user: user} ->
-      with :ok <-
-             Subscriptions.subscription_base(user, "month",
-               trial_days: socket.assigns.subscription_plan_metadata.trial_length
-             )
-             |> Picsello.Subscriptions.handle_stripe_subscription() do
-        {:ok, nil}
-      end
-    end)
-    |> Multi.run(:user_automations, fn _repo, %{user: %{organization: organization}} ->
-      case Mix.Tasks.ImportEmailPresets.assign_default_presets_new_user(organization.id) do
-        {_, nil} ->
-          {:ok, nil}
-
-        {:error, _} ->
-          {:error, "Couldn't assign default email presets"}
-      end
-    end)
-    |> Multi.run(:user_final, fn _repo, %{user: user} ->
-      with _ <- Onboardings.complete!(user) do
-        {:ok, nil}
-      end
-    end)
-    |> Repo.transaction()
-    |> then(fn
-      {:ok, %{user: user}} ->
-        socket
-        |> assign(current_user: user)
-        |> update_user_client_trial(user)
-        |> push_redirect(to: Routes.home_path(socket, :index), replace: true)
 
       {:error, reason} ->
         socket |> assign(changeset: reason)
@@ -563,19 +361,6 @@ defmodule PicselloWeb.OnboardingLive.Index do
       {"Saskatchewan", :saskatchewan},
       {"Yukon", :yukon}
     ]
-  end
-
-  defp update_job_params(params) do
-    {key, _value} =
-      Enum.find(params["organization"]["organization_job_types"], fn {_key, value} ->
-        Map.get(value, "type") == "mini"
-      end)
-
-    update_in(
-      params,
-      ["organization", "organization_job_types", key],
-      &Map.put(&1, "job_type", "mini")
-    )
   end
 
   defdelegate states(), to: Onboardings, as: :state_options

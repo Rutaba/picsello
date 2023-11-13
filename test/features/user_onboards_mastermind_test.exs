@@ -2,11 +2,16 @@ defmodule Picsello.UserOnboardsTest do
   @moduledoc false
   use Picsello.FeatureCase, async: false
 
+  import Ecto.Changeset
+
   alias Picsello.{Accounts.User, Profiles, Repo}
 
-  setup :authenticated
+  setup %{session: session} do
+    user =
+      insert(:user)
+      |> cast(%{onboarding_flow_source: ["mastermind"]}, [:onboarding_flow_source])
+      |> Repo.update!()
 
-  setup %{session: session, user: user} do
     test_pid = self()
 
     Tesla.Mock.mock_global(fn
@@ -37,14 +42,25 @@ defmodule Picsello.UserOnboardsTest do
 
     insert(:package_tier)
     insert(:package_base_price, base_price: %{amount: 300, currency: :USD})
-    subscription_plan = insert(:subscription_plan)
-    [session: visit(session, "/"), subscription_plan: subscription_plan]
+    [subscription_plan | _] = insert_subscription_plans!()
+
+    insert(:subscription_promotion_codes,
+      code: "BLACKFRIDAY2024",
+      stripe_promotion_code_id: "asdf231",
+      percent_off: 45.86
+    )
+
+    [
+      session: sign_in(session, user),
+      user: user,
+      subscription_plan: subscription_plan
+    ]
   end
 
-  @onboarding_path Routes.onboarding_path(PicselloWeb.Endpoint, :index)
-  @org_name_field text_field("onboarding-step-2_organization_name")
-  @photographer_years_field text_field("onboarding-step-2_onboarding_photographer_years")
-  @interested_in_field select("onboarding-step-2_onboarding_interested_in")
+  @onboarding_path Routes.onboarding_mastermind_path(PicselloWeb.Endpoint, :index)
+  @org_name_field text_field("onboarding-step-3_organization_name")
+  @photographer_years_field text_field("onboarding-step-3_onboarding_photographer_years")
+  @interested_in_field select("onboarding-step-3_onboarding_interested_in")
 
   def fill_in_step(session, 2) do
     session
@@ -61,38 +77,8 @@ defmodule Picsello.UserOnboardsTest do
 
     home_path = Routes.home_path(PicselloWeb.Endpoint, :index)
 
-    test_pid = self()
-
     Picsello.MockPayments
-    |> Mox.stub(:create_session, fn params, opts ->
-      send(
-        test_pid,
-        {:checkout_linked, opts |> Enum.into(params)}
-      )
-
-      {:ok, %Stripe.Session{url: "https://example.com/stripe-checkout"}}
-    end)
-    |> Mox.stub(:retrieve_session, fn "{CHECKOUT_SESSION_ID}", _opts ->
-      {:ok, %Stripe.Session{subscription: "sub_123"}}
-    end)
-    |> Mox.stub(:create_customer, fn %{}, _opts ->
-      {:ok, %Stripe.Customer{id: "cus_123"}}
-    end)
-    |> Mox.stub(:retrieve_customer, fn "cus_123", _ ->
-      {:ok, %Stripe.Customer{invoice_settings: %{default_payment_method: "pm_12345"}}}
-    end)
     |> Mox.stub(:create_subscription, fn %{}, _opts ->
-      {:ok,
-       %Stripe.Subscription{
-         id: "s1",
-         status: "active",
-         current_period_start: DateTime.utc_now() |> DateTime.to_unix(),
-         current_period_end: DateTime.utc_now() |> DateTime.add(100) |> DateTime.to_unix(),
-         plan: %{id: subscription_plan.stripe_price_id},
-         customer: "cus_123"
-       }}
-    end)
-    |> Mox.stub(:retrieve_subscription, fn "sub_123", _opts ->
       {:ok,
        %Stripe.Subscription{
          id: "s1",
@@ -106,22 +92,48 @@ defmodule Picsello.UserOnboardsTest do
 
     session
     |> assert_path(@onboarding_path)
-    |> sleep(250)
-    |> assert_disabled_submit()
+    |> assert_text("is here to help")
+    |> sleep(4000)
+    |> focus_frame(css("#address-element iframe:first-child"))
+    |> fill_in(text_field("addressLine1"), with: "123 Main St")
+    |> focus_default_frame()
+    |> focus_frame(css("#address-element iframe:last-child"))
+    |> click(css(".p-DropdownItem:first-child"))
+    |> focus_default_frame()
+    |> focus_frame(css("#address-element iframe:first-child"))
+    |> fill_in(text_field("locality"), with: "Picsello")
+    |> find(select("administrativeArea"), &click(&1, option("New York")))
+    |> fill_in(text_field("postalCode"), with: "12345")
+    |> focus_default_frame()
+    |> focus_frame(css("#payment-element iframe:first-child"))
+    |> fill_in(text_field("number"), with: "4242424242424242")
+    |> fill_in(text_field("expiry"), with: "1231")
+    |> fill_in(text_field("cvc"), with: "123")
+    |> focus_default_frame()
+    |> click(css("#payment-element-submit"))
+    |> assert_text("Processing payment")
+    |> visit(
+      Routes.onboarding_mastermind_path(PicselloWeb.Endpoint, :index,
+        state: "OK",
+        country: "US",
+        promotion_code: "BLACKFRIDAY2024",
+        redirect_status: "succeeded",
+        payment_intent: "pi_123"
+      )
+    )
     |> assert_value(@org_name_field, user.organization.name)
     |> fill_in(@org_name_field, with: "")
     |> assert_has(css("span.invalid-feedback", text: "Photography business name can't be blank"))
     |> fill_in(@org_name_field, with: "Photogenious")
     |> fill_in(@photographer_years_field, with: "5")
     |> find(@interested_in_field, &click(&1, option("Booking Events")))
-    |> click(option("OK"))
     |> wait_for_enabled_submit_button()
     |> click(button("Next"))
     |> sleep(250)
     |> click(css("label", text: "Portrait"))
     |> click(css("label", text: "Event"))
     |> wait_for_enabled_submit_button()
-    |> click(css("button[type='submit']", text: "Start Trial"))
+    |> click(css("button[type='submit']", text: "Finish"))
     |> wait_for_enabled_submit_button()
     |> assert_path(home_path)
 
@@ -185,52 +197,8 @@ defmodule Picsello.UserOnboardsTest do
   feature "user logs out during onboarding", %{session: session} do
     session
     |> assert_path(@onboarding_path)
-    |> assert_disabled_submit()
     |> click(link("Logout"))
     |> assert_path("/")
     |> assert_flash(:info, text: "Logged out successfully")
-  end
-
-  feature "user goes back while onboarding", %{session: session, user: user} do
-    session
-    |> assert_path(@onboarding_path)
-    |> assert_disabled_submit()
-    |> fill_in_step(2)
-    |> wait_for_enabled_submit_button()
-    |> click(button("Next"))
-    |> assert_text("speciality")
-    |> click(button("Back"))
-    |> assert_has(@photographer_years_field)
-
-    user = user |> Repo.reload() |> Repo.preload(organization: :organization_job_types)
-
-    assert %User{
-             onboarding: %{schedule: :full_time}
-           } = user
-
-    assert ["other"] = Profiles.enabled_job_types(user.organization.organization_job_types)
-  end
-
-  feature "user selects Non-US state", %{session: session, user: user} do
-    session
-    |> assert_path(@onboarding_path)
-    |> fill_in(@org_name_field, with: "Photogenious")
-    |> fill_in(@photographer_years_field, with: "5")
-    |> find(@interested_in_field, &click(&1, option("Booking Events")))
-    |> click(option("Non-US"))
-    |> click(button("Next"))
-    |> assert_text("speciality")
-
-    user = user |> Repo.reload()
-
-    assert %User{onboarding: %{state: "Non-US"}} = user
-  end
-
-  feature "user is redirected to onboarding", %{session: session} do
-    session
-    |> assert_path(@onboarding_path)
-    |> visit(Routes.job_path(PicselloWeb.Endpoint, :jobs))
-    |> assert_path(@onboarding_path)
-    |> assert_text("Tell us more about yourself")
   end
 end
