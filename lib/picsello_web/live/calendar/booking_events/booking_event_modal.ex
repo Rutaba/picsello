@@ -64,10 +64,12 @@ defmodule PicselloWeb.Live.Calendar.BookingEventModal do
           <p>Client details, discounts, reservations, and all other settings will be found after you save/close this modal.</p>
         </div>
       </div>
+
       <.form :let={f} for={@changeset} phx-change="validate" phx-submit="submit" phx-target={@myself} >
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-5 mt-8">
+        <div class="mt-4 px-4 border rounded-lg border-base-200" >
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
           <div class="">
-            <%= labeled_input f, :date, type: :date_input, min: Date.utc_today(), class: "w-full cursor-text", disabled: @has_booking? %>
+            <%= labeled_input f, :date, type: :date_input, label: "Event Date", min: Date.utc_today(), class: "w-full cursor-text", label_class: "font-bold", disabled: @has_booking? %>
           </div>
           <%= inputs_for f, :time_blocks, fn t -> %>
             <div class="flex gap-2 items-center">
@@ -91,16 +93,16 @@ defmodule PicselloWeb.Live.Calendar.BookingEventModal do
               <%= labeled_select f, :session_gap, buffer_options(), label: "Session Gap", prompt: "Select below", optional: true, disabled: @has_booking?, class: "cursor-pointer" %>
             </div>
           </div>
-        </div>
-        <div class="flex justify-center mr-16">
+          </div>
+          <div class="flex justify-center mr-16">
           <%= error_tag(f, :time_blocks, prefix: "Times", class: "text-red-sales-300 text-sm mb-2") %>
-        </div>
+          </div>
 
-        <div class="mt-6 flex items-center">
+          <div class="mt-6 flex items-center">
           <%= input f, :is_repeat, type: :checkbox, class: "checkbox border-blue-planning-300 w-6 h-6 cursor-pointer" %>
           <div class="ml-2"> Repeat dates?</div>
-        </div>
-        <%= if @changeset |> current |> Map.get(:is_repeat) do %>
+          </div>
+          <%= if @changeset |> current |> Map.get(:is_repeat) do %>
           <div class="lg:w-2/3 border-2 border-base-200 rounded-lg mt-4">
             <div class="font-bold p-4 bg-base-200 text-md">
               Repeat settings
@@ -143,13 +145,15 @@ defmodule PicselloWeb.Live.Calendar.BookingEventModal do
               </div>
             </div>
           </div>
-        <% end %>
-        <div class="font-bold mt-6">You'll have <span class="text-blue-planning-300"><%= @open_slots %></span> open session blocks</div>
-        <div class="mt-6 grid grid-cols-5 border-b-4 border-blue-planning-300 text-lg font-bold">
+          <% end %>
+          <hr class="mt-4">
+          <div class="font-bold mt-4">You'll have <span class="text-blue-planning-300"><%= @open_slots %></span> open session blocks</div>
+          <hr class="mt-4">
+          <div class="my-6 grid grid-cols-5 border-b-4 border-blue-planning-300 text-lg font-bold">
           <div class="col-span-2">Time</div>
           <div class="col-span-3">Status</div>
-        </div>
-         <%= inputs_for f, :slots, fn s -> %>
+          </div>
+           <%= inputs_for f, :slots, fn s -> %>
           <div class="mt-4 grid grid-cols-5 items-center">
           <div class={classes("col-span-2", %{"text-gray-300" => (slot_status(s) |> to_string() == "hidden")})}>
             <%= hidden_input s, :slot_start %>
@@ -173,8 +177,10 @@ defmodule PicselloWeb.Live.Calendar.BookingEventModal do
             <%= hidden_input s, :job_id, value: s |> current |> Map.get(:job_id) %>
             <%= hidden_input s, :status, value: slot_status(s) %>
           </div>
-        <% end %>
-        <.footer>
+          <hr class="mt-4">
+          <% end %>
+        </div>
+        <.footer class="pt-16">
           <button class="btn-primary" title="Save" type="submit" disabled={!@changeset.valid? || Enum.empty?(@changeset.changes)} phx-disable-with="Save">
               Save
           </button>
