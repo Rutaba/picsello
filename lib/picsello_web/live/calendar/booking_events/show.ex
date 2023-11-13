@@ -460,7 +460,7 @@ defmodule PicselloWeb.Live.Calendar.BookingEvents.Show do
       |> Enum.into(%{
         status: nil,
         uses: 0,
-        text_color: "text-black",
+        text_color: "text-base-300",
         btn_class: "border border-base-250/20 bg-base-200 hover:border-base-250 h-8 w-8"
       })
 
@@ -481,11 +481,11 @@ defmodule PicselloWeb.Live.Calendar.BookingEvents.Show do
         <div class="ml-auto flex items-center">
           <div class="flex gap-1.5">
             <%= if @status do %>
-              <.icon_button icon="eye" color="blue-planning-300" text_color={@text_color} class={@btn_class}/>
+              <.button_simple icon="eye" color="blue-planning-300"class={@btn_class}/>
             <% else %>
-              <.icon_button icon="closed-eye" color="red-sales-300" text_color={@text_color} class={@btn_class}/>
+              <.button_simple icon="closed-eye" color="red-sales-300"class={@btn_class}/>
             <% end %>
-            <.icon_button icon="trash" color="red-sales-300" text_color={@text_color} class={@btn_class}/>
+            <.button_simple icon="trash" color="red-sales-300"class={@btn_class}/>
           </div>
         </div>
       </div>
@@ -773,7 +773,7 @@ defmodule PicselloWeb.Live.Calendar.BookingEvents.Show do
           <% end %>
           <div class="flex flex-col mb-3 items-start">
             <%= if package_description_length_long?(@description) do %>
-                <div>
+                <div class="break-all">
                 <%= if !Enum.member?(@collapsed_sections, "Read more") do %>
                   <%= @description |> slice_description() |> raw() %>
                 <% else %>

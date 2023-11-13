@@ -68,9 +68,7 @@ defmodule PicselloWeb.Live.Calendar.BookingEventModal do
       <.form :let={f} for={@changeset} phx-change="validate" phx-submit="submit" phx-target={@myself} >
         <div class="mt-4 px-4 border rounded-lg border-base-200" >
           <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
-          <div class="">
             <%= labeled_input f, :date, type: :date_input, label: "Event Date", min: Date.utc_today(), class: "w-full cursor-text", label_class: "font-bold", disabled: @has_booking? %>
-          </div>
           <%= inputs_for f, :time_blocks, fn t -> %>
             <div class="flex gap-2 items-center">
               <div class="grow">
