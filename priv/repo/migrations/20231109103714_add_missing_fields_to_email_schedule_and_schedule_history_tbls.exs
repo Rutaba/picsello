@@ -1,6 +1,7 @@
 defmodule Picsello.Repo.Migrations.AddMissingFieldsToEmailScheduleAndScheduleHistoryTbls do
   use Ecto.Migration
   import Ecto.Query
+
   alias Picsello.{
     EmailAutomation.EmailSchedule,
     EmailAutomationSchedules
