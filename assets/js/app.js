@@ -79,6 +79,7 @@ import Cookies from 'js-cookie';
 import FolderUpload from './hooks/folder-upload';
 import SearchResultSelect from './hooks/search-result-select';
 import Tooltip from './hooks/tooltip';
+import DisableRightClick from './hooks/disable-right-click';
 import StripeElements from './hooks/stripe-elements';
 import Timer from './hooks/timer';
 import LivePhone from 'live_phone';
@@ -279,6 +280,7 @@ const Hooks = {
   FolderUpload,
   StripeElements,
   SearchResultSelect,
+  DisableRightClick,
   Timer,
   LivePhone,
   ViewProposal,
