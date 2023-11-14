@@ -304,7 +304,6 @@ defmodule PicselloWeb.GalleryLive.ChooseProduct do
     """
   end
 
-
   defp get_proofing_album_id(%{is_proofing: true}, photo), do: photo.album_id
   defp get_proofing_album_id(_album, _photo), do: nil
 
