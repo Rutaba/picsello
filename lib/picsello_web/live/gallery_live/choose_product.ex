@@ -226,9 +226,13 @@ defmodule PicselloWeb.GalleryLive.ChooseProduct do
   defp get_finals_album_id(%{is_finals: true, id: album_id}), do: album_id
   defp get_finals_album_id(_album), do: nil
 
+  defp is_finals?(%{is_finals: true}), do: true
+  defp is_finals?(_album), do: nil
+
   defp button_option(%{is_proofing: false} = assigns) do
     opts = [testid: "digital_download", title: "Digital Download"]
-    assigns = assign(assigns, :opts, opts)
+    digital_status = if is_finals?(assigns.album), do: :purchased, else: assigns.digital_status
+    assigns = assign(assigns, opts: opts, digital_status: digital_status)
 
     ~H"""
       <%= case @digital_status do %>
@@ -237,9 +241,18 @@ defmodule PicselloWeb.GalleryLive.ChooseProduct do
           <:button disabled>In cart</:button>
         </.option>
       <% :purchased -> %>
-      <.download_button {assigns} />
-      <% :available -> %>
-      <.download_button {assigns} />
+        <.option {@opts}>
+          <:button
+            icon="download"
+            icon_class="h-4 w-4 fill-current"
+            phx-click="download-photo"
+            phx-target={@myself}
+            phx-value-uri={Routes.gallery_downloads_path(@socket, :download_photo, @gallery.client_link_hash, @photo.id)}
+            class="my-4 py-1.5"
+            >
+            Download
+          </:button>
+        </.option>
       <% _ -> %>
         <.option {@opts} min_price={if @digital_credit <= 0, do: @download_each_price}>
           <:button phx-target={@myself} phx-click="digital_add_to_cart">
@@ -288,23 +301,6 @@ defmodule PicselloWeb.GalleryLive.ChooseProduct do
           <:button disabled>Unselect</:button>
         </.option>
       <% end %>
-    """
-  end
-
-  defp download_button(assigns) do
-    ~H"""
-    <.option {@opts}>
-      <:button
-        icon="download"
-        icon_class="h-4 w-4 fill-current"
-        phx-click="download-photo"
-        phx-target={@myself}
-        phx-value-uri={Routes.gallery_downloads_path(@socket, :download_photo, @gallery.client_link_hash, @photo.id)}
-        class="my-4 py-1.5"
-        >
-        Download
-      </:button>
-    </.option>
     """
   end
 
