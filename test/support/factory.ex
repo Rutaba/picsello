@@ -1057,8 +1057,7 @@ defmodule Picsello.Factory do
 
   def job_factory() do
     %Picsello.Job{
-      type: "wedding",
-      client_id: 2
+      type: "wedding"
     }
   end
 
