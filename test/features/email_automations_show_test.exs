@@ -169,10 +169,11 @@ defmodule Picsello.EmailAutomationsTest do
     |> click(css("div[testid='wedding']"))
     |> click(css("div[testid='wedding']"))
     |> click(button("Next"))
-    |> fill_in(css("input[id='form-package_payment_name']"), with: "Demo Title")
-    |> wait_for_enabled_submit_button()
+    |> fill_in_package_form()
+    |> wait_for_enabled_submit_button(text: "Next")
     |> click(button("Next"))
-    |> wait_for_enabled_submit_button()
+    |> fill_in_payments_form()
+    |> wait_for_enabled_submit_button(text: "Next")
     |> click(button("Next"))
     |> click(button("Finish"))
     |> click(css("span", text: "MyClient Wedding"))
@@ -184,7 +185,7 @@ defmodule Picsello.EmailAutomationsTest do
       assert_has(div, css("div", text: "Jobs", count: 2))
       assert_has(div, css("div", text: "Galleries", count: 0))
     end)
-    |> assert_has(css("div[testid='pipeline-section']", count: 10))
+    |> assert_has(css("div[testid='pipeline-section']", count: 8))
   end
 
   # feature "testing categories and pipelines related to a job when it is created from gallery. Then effect of adding more galleries",
@@ -354,5 +355,44 @@ defmodule Picsello.EmailAutomationsTest do
     |> assert_has(css("button[disabled]", count: 10))
     |> click(button("Start Sequence"))
     |> click(button("Yes, send email"))
+  end
+
+  defp fill_in_package_form(session) do
+    session
+    |> fill_in(text_field("Title"), with: "Wedding Deluxe")
+    |> find(select("# of Shoots"), &click(&1, option("2")))
+    |> fill_in(text_field("Image Turnaround Time"), with: "2")
+    |> find(
+      text_field("The amount you’ve charged for your job"),
+      &(&1 |> Element.clear() |> Element.fill_in(with: "1000.00"))
+    )
+    |> find(
+      text_field("How much of the creative session fee is for print credits"),
+      &(&1 |> Element.clear() |> Element.fill_in(with: "$100.00"))
+    )
+    |> find(
+      text_field("The amount you’ve already collected"),
+      &(&1 |> Element.clear() |> Element.fill_in(with: "$200.00"))
+    )
+    |> scroll_into_view(testid("remaining-balance"))
+    |> assert_has(definition("Remaining balance to collect with Picsello", text: "$800.00"))
+  end
+
+  defp fill_in_payments_form(session) do
+    session
+    |> assert_text("Balance to collect: $800.00")
+    |> assert_text("Remaining to collect: $800.00")
+    |> find(testid("payment-1"), &fill_in(&1, text_field("Payment amount"), with: "300"))
+    |> click(css("#payment-0"))
+    |> fill_in(css(".numInput.cur-year"), with: "2030")
+    |> find(css(".flatpickr-monthDropdown-months"), &click(&1, option("January")))
+    |> click(css("[aria-label='January 1, 2030']"))
+    |> assert_text("Remaining to collect: $500.00")
+    |> find(testid("payment-2"), &fill_in(&1, text_field("Payment amount"), with: "500"))
+    |> click(css("#payment-1"))
+    |> fill_in(css(".numInput.cur-year"), with: "2030")
+    |> find(css(".flatpickr-monthDropdown-months"), &click(&1, option("February")))
+    |> click(css("[aria-label='February 1, 2030']"))
+    |> assert_text("Remaining to collect: $0.00")
   end
 end

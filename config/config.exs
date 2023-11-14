@@ -68,6 +68,7 @@ config :picsello, :global_watermarked_path, System.get_env("GLOBAL_WATERMARKED_P
 
 config :stripity_stripe,
   api_key: System.get_env("STRIPE_SECRET"),
+  publishable_key: System.get_env("STRIPE_PUBLISHABLE_KEY"),
   connect_signing_secret: System.get_env("STRIPE_CONNECT_SIGNING_SECRET"),
   app_signing_secret: System.get_env("STRIPE_APP_SIGNING_SECRET")
 
@@ -203,6 +204,17 @@ config :picsello, :nylas, %{
   base_color: "#585DF6",
   picsello_tag: "[From Picsello]"
 }
+
+config(:fun_with_flags, :cache_bust_notifications, enabled: false)
+
+config :fun_with_flags, :persistence,
+  adapter: FunWithFlags.Store.Persistent.Ecto,
+  repo: Picsello.Repo
+
+config :fun_with_flags, :cache,
+  enabled: true,
+  # in seconds
+  ttl: 900
 
 # Import environment specific config. This must remain at the bottom
 # of this file so it overrides the configuration defined above.

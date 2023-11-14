@@ -3,6 +3,7 @@ defmodule PicselloWeb.Live.Marketing.NewCampaignComponent do
   use PicselloWeb, :live_component
   alias Picsello.Marketing
   import PicselloWeb.Shared.Quill, only: [quill_input: 1]
+  alias Ecto.Changeset
 
   @impl true
   def update(assigns, socket) do
@@ -155,7 +156,7 @@ defmodule PicselloWeb.Live.Marketing.NewCampaignComponent do
         _,
         %{assigns: %{review: false, changeset: changeset}} = socket
       ) do
-    body_html = Ecto.Changeset.get_field(changeset, :body_html)
+    body_html = Changeset.get_field(changeset, :body_html)
     Process.send_after(self(), {:load_template_preview, __MODULE__, body_html}, 50)
     socket |> assign(:review, true) |> assign(:template_preview, :loading) |> noreply()
   end
@@ -193,7 +194,7 @@ defmodule PicselloWeb.Live.Marketing.NewCampaignComponent do
       Marketing.new_campaign_changeset(params, current_user.organization_id)
       |> Map.put(:action, action)
 
-    count = Map.get(segments_count, Ecto.Changeset.get_field(changeset, :segment_type))
+    count = Map.get(segments_count, Changeset.get_field(changeset, :segment_type))
 
     assign(socket, changeset: changeset, current_segment_count: count)
   end

@@ -569,6 +569,13 @@ defmodule PicselloWeb.LayoutView do
             </ul>
             <.subscription_ending_soon type="footer" socket={@socket} current_user={@current_user} class="flex ml-auto bg-white text-black rounded px-4 py-2 items-center text-sm"/>
           </nav>
+          <%= if FunWithFlags.enabled?(:footer_feature_flag) do %>
+            <span class="ml-10">You're seeing this because you have enabled feature flag globally</span>
+          <% end %>
+
+          <%= if FunWithFlags.enabled?(:footer_feature_flag_for_specific_user, for: @current_user) do %>
+            <span class="ml-10">You're seeing this because you have enabled feature flag for specific user including you</span>
+          <% end %>
         </div>
         <hr class="my-8 opacity-30" />
         <div class="flex flex-col lg:flex-row">

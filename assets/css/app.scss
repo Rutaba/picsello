@@ -210,6 +210,12 @@ canvas {
     .item {
       @apply md:w-[calc(25%-10px)] w-full items-center bg-gray-100;
     }
+
+    .galleryItem img,
+    .js-disable-right-click img,
+    .js-disable-right-click canvas {
+      @apply pointer-events-none;
+    }
   }
 }
 

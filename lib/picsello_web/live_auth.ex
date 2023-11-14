@@ -185,9 +185,27 @@ defmodule PicselloWeb.LiveAuth do
   end
 
   defp maybe_redirect_to_onboarding(
-         %{view: view, assigns: %{current_user: current_user}} = socket
+         %{
+           view: view,
+           assigns: %{
+             current_user: %{onboarding_flow_source: onboarding_flow_source} = current_user
+           }
+         } = socket
        ) do
-    onboarding_view = PicselloWeb.OnboardingLive.Index
+    %{onboarding_view: onboarding_view, onboarding_route: onboarding_route} =
+      case Enum.member?(onboarding_flow_source, "mastermind") do
+        true ->
+          %{
+            onboarding_view: PicselloWeb.OnboardingLive.Mastermind.Index,
+            onboarding_route: Routes.onboarding_mastermind_path(socket, :index)
+          }
+
+        _ ->
+          %{
+            onboarding_view: PicselloWeb.OnboardingLive.Index,
+            onboarding_route: Routes.onboarding_path(socket, :index)
+          }
+      end
 
     case {view, User.onboarded?(current_user)} do
       {^onboarding_view, true} ->
@@ -200,7 +218,7 @@ defmodule PicselloWeb.LiveAuth do
         socket |> cont()
 
       {_, false} ->
-        socket |> push_redirect(to: Routes.onboarding_path(socket, :index)) |> halt()
+        socket |> push_redirect(to: onboarding_route) |> halt()
     end
   end
 
