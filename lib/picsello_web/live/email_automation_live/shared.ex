@@ -904,8 +904,11 @@ defmodule PicselloWeb.EmailAutomationLive.Shared do
   defp get_date_for_schedule(nil, date), do: date
   defp get_date_for_schedule(email, _date), do: email.reminded_at
 
-  defp is_send_time?(days_diff, days_to_compare, "+"), do: days_diff >= days_to_compare && days_diff <= (days_to_compare + 1)
-  defp is_send_time?(days_diff, days_to_compare, "-"), do: days_diff <= days_to_compare && (days_diff + 1) >= days_to_compare
+  defp is_send_time?(days_diff, days_to_compare, "+"),
+    do: days_diff >= days_to_compare && days_diff <= days_to_compare + 1
+
+  defp is_send_time?(days_diff, days_to_compare, "-"),
+    do: days_diff <= days_to_compare && days_diff + 1 >= days_to_compare
 
   defp get_job_id(job) when is_map(job), do: job.id
   defp get_job_id(_), do: nil
