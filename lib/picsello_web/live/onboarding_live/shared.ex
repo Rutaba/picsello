@@ -1,5 +1,6 @@
 defmodule PicselloWeb.OnboardingLive.Shared do
   @moduledoc false
+  require Logger
 
   use Phoenix.Component
   use Phoenix.HTML
@@ -174,6 +175,10 @@ defmodule PicselloWeb.OnboardingLive.Shared do
   end
 
   def save_final(socket, params, onboarding_type \\ nil, data \\ :skip) do
+    IO.inspect(params, label: "checkparams")
+    # Logger.info(
+    #   "Check params for create: #{params}"
+    # )
     params = update_job_params(params)
 
     Multi.new()
