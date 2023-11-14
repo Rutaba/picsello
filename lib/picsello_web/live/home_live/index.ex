@@ -9,6 +9,7 @@ defmodule PicselloWeb.HomeLive.Index do
     Payments,
     Repo,
     Accounts,
+    Accounts.User.Promotions,
     Shoot,
     Shoots,
     Accounts.User,
@@ -63,7 +64,10 @@ defmodule PicselloWeb.HomeLive.Index do
   ]
 
   @impl true
-  def mount(params, _session, socket) do
+  def mount(params, _session, %{assigns: %{current_user: current_user}} = socket) do
+    %{value: black_friday_code} =
+      Picsello.AdminGlobalSettings.get_settings_by_slug("black_friday_code")
+
     socket
     |> assign(:main_class, "bg-gray-100")
     |> assign_stripe_status()
@@ -71,6 +75,10 @@ defmodule PicselloWeb.HomeLive.Index do
     |> assign(:stripe_subscription_status, nil)
     |> assign_counts()
     |> assign(:promotion_code_open, false)
+    |> assign(
+      :current_sale,
+      Promotions.get_user_promotion_by_slug(current_user, black_friday_code)
+    )
     |> assign_attention_items()
     |> assign(:tabs, tabs_list(socket))
     |> assign(:tab_active, "todo")
@@ -79,7 +87,38 @@ defmodule PicselloWeb.HomeLive.Index do
     |> subscribe_inbound_messages()
     |> assign_inbox_threads()
     |> maybe_show_success_subscription(params)
+    |> assign(
+      :promotion_code,
+      if(Subscriptions.maybe_return_promotion_code_id?(black_friday_code),
+        do: black_friday_code,
+        else: nil
+      )
+    )
     |> ok()
+  end
+
+  @impl true
+  def handle_params(
+        %{"pre_purchase" => "true", "checkout_session_id" => _},
+        _uri,
+        %{assigns: %{promotion_code: promotion_code, current_user: current_user}} = socket
+      ) do
+    Promotions.insert_or_update_promotion(current_user, %{
+      slug: promotion_code,
+      state: :purchased,
+      name: "Black Friday"
+    })
+
+    Onboardings.user_update_promotion_code_changeset(current_user, %{
+      onboarding: %{
+        promotion_code: promotion_code
+      }
+    })
+    |> Repo.update!()
+
+    socket
+    |> put_flash(:success, "Year extended!")
+    |> noreply()
   end
 
   @impl true
@@ -89,7 +128,10 @@ defmodule PicselloWeb.HomeLive.Index do
   def handle_event("open-welcome-modal", %{}, %{assigns: %{current_user: current_user}} = socket) do
     socket
     |> assign(:current_user, Onboardings.increase_welcome_count!(current_user))
-    |> PicselloWeb.WelcomeComponent.open(%{close_event: "toggle_welcome_event"})
+    |> PicselloWeb.WelcomeComponent.open(%{
+      close_event: "toggle_welcome_event",
+      current_user: current_user
+    })
     |> noreply()
   end
 
@@ -265,6 +307,41 @@ defmodule PicselloWeb.HomeLive.Index do
 
   @impl true
   def handle_event(
+        "subscription-prepurchase",
+        _,
+        socket
+      ) do
+    build_invoice_link(socket)
+  end
+
+  @impl true
+  def handle_event(
+        "subscription-prepurchase-dismiss",
+        _,
+        %{assigns: %{current_user: current_user, promotion_code: promotion_code}} = socket
+      ) do
+    case Promotions.insert_or_update_promotion(current_user, %{
+           slug: promotion_code,
+           name: "Black Friday",
+           state: :dismissed
+         }) do
+      {:ok, promotion_code} ->
+        socket
+        |> assign(
+          :current_sale,
+          promotion_code
+        )
+        |> put_flash(:success, "Deal hidden successfully")
+
+      {:error, _} ->
+        socket
+        |> put_flash(:error, "Failed to dismiss promotion")
+    end
+    |> noreply()
+  end
+
+  @impl true
+  def handle_event(
         "card_status",
         %{"org_card_id" => org_card_id, "status" => status},
         socket
@@ -386,9 +463,9 @@ defmodule PicselloWeb.HomeLive.Index do
   end
 
   @impl true
-  def handle_event("open-thread", %{"id" => id}, socket) do
+  def handle_event("open-thread", %{"id" => id, "type" => type}, socket) do
     socket
-    |> push_redirect(to: Routes.inbox_path(socket, :show, id))
+    |> push_redirect(to: Routes.inbox_path(socket, :show, "#{type}-#{id}"))
     |> noreply()
   end
 
@@ -935,7 +1012,7 @@ defmodule PicselloWeb.HomeLive.Index do
 
   def thread_card(assigns) do
     ~H"""
-    <div {testid("thread-card")} phx-click="open-thread" phx-value-id={@id} class="flex justify-between border-b cursor-pointer first:pt-0 py-3">
+    <div {testid("thread-card")} phx-click="open-thread" phx-value-id={@id} phx-value-type={@type} class="flex justify-between border-b cursor-pointer first:pt-0 py-3">
       <div class="">
         <div class="flex items-center">
           <div class="text-xl line-clamp-1 font-bold"><%= @title %></div>
@@ -973,7 +1050,8 @@ defmodule PicselloWeb.HomeLive.Index do
           title: message.job.client.name,
           subtitle: Job.name(message.job),
           message: message.body_text,
-          date: strftime(current_user.time_zone, message.inserted_at, "%-m/%-d/%y")
+          date: strftime(current_user.time_zone, message.inserted_at, "%-m/%-d/%y"),
+          type: thread_type(message)
         }
       end)
 
@@ -1757,6 +1835,63 @@ defmodule PicselloWeb.HomeLive.Index do
       build_promotion_code_changeset(socket, params, :validate)
     )
   end
+
+  defp build_invoice_link(
+         %{
+           assigns: %{
+             current_user: current_user,
+             promotion_code: promotion_code
+           }
+         } = socket
+       ) do
+    discounts_data =
+      if promotion_code,
+        do: %{
+          discounts: [
+            %{
+              coupon: Subscriptions.maybe_return_promotion_code_id?(promotion_code)
+            }
+          ]
+        },
+        else: %{}
+
+    stripe_params =
+      %{
+        client_reference_id: "blackfriday_2023",
+        cancel_url: Routes.home_url(socket, :index),
+        success_url:
+          "#{Routes.home_url(socket, :index)}?pre_purchase=true&checkout_session_id={CHECKOUT_SESSION_ID}",
+        billing_address_collection: "auto",
+        customer: Subscriptions.user_customer_id(current_user),
+        line_items: [
+          %{
+            price_data: %{
+              currency: "USD",
+              unit_amount: 35_000,
+              product_data: %{
+                name: "Black Friday 2023",
+                description: "Pre purchase your next year of Picsello!"
+              },
+              tax_behavior: "exclusive"
+            },
+            quantity: 1
+          }
+        ]
+      }
+      |> Map.merge(discounts_data)
+
+    case Payments.create_session(stripe_params, []) do
+      {:ok, %{url: url}} ->
+        socket |> redirect(external: url) |> noreply()
+
+      {:error, error} ->
+        Logger.warning("Error redirecting to Stripe: #{inspect(error)}")
+        socket |> put_flash(:error, "Couldn't redirect to Stripe. Please try again") |> noreply()
+    end
+  end
+
+  defp thread_type(%{job_id: nil}), do: :client
+  defp thread_type(%{job_id: _job_id}), do: :job
 
   defdelegate get_all_proofing_album_orders(organization_id), to: Orders
 end

@@ -33,6 +33,23 @@ defmodule PicselloWeb.Live.BrandSettings do
             <div class="text-base-250">
               Showcase your brand—if you don’t have a logo, no worries, we will display a default one.
             </div>
+            <div class="raw_html mt-4">
+              <strong>Optimize Your Logo</strong>
+              <div class="text-base-250">
+                <p>Before uploading, follow these steps:</p>
+                <ul class="list-decimal">
+                  <li>
+                    <strong>Transparent Background:</strong> Use a PNG file format with a transparent background to ensure it seamlessly blends with your email's background color.
+                  </li>
+                  <li>
+                    <strong>Go Bigger:</strong> Upload a larger logo size for flexibility. Scaling down won't compromise quality, while a small logo may appear pixelated if enlarged. Stick to dimensions under 650 pixels wide and less than 5MB in size.
+                  </li>
+                  <li>
+                    <strong>Remove Padding:</strong> Maintain design balance by cropping excess white space from your image before resizing.
+                  </li>
+                </ul>
+              </div>
+            </div>
             <button phx-click="add-update-logo" class="hidden mt-6 sm:block btn-primary intro-signature">Add or update logo</button>
           </div>
           <div {testid("logo-preview")} class="flex flex-col">

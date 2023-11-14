@@ -57,6 +57,7 @@ defmodule PicselloWeb.GalleryLive.Shared do
             :gallery,
             gallery.id,
             nil,
+            nil,
             pipeline.id,
             state,
             PicselloWeb.EmailAutomationLive.Shared
@@ -147,6 +148,52 @@ defmodule PicselloWeb.GalleryLive.Shared do
         :changeset,
         Galleries.change_gallery(gallery, attrs) |> Map.put(:action, :validate)
       )
+      _ ->
+        %{body_template: "", subject_template: ""}
+    end
+  end
+
+  defp get_email_body_subject(email_by_state, gallery, _state) do
+    EmailAutomations.resolve_variables(
+      email_by_state,
+      schemas(gallery),
+      PicselloWeb.Helpers
+    )
+  end
+
+  defp get_gallery_email_by_pipeline(_gallery_id, nil), do: nil
+
+  defp get_gallery_email_by_pipeline(gallery_id, pipeline) do
+    EmailAutomationSchedules.query_get_email_schedule(:gallery, gallery_id, nil, nil, pipeline.id)
+    |> where([es], is_nil(es.stopped_at))
+    |> Repo.all()
+    |> Repo.preload(email_automation_pipeline: [:email_automation_category])
+    |> sort_emails(pipeline.state)
+    |> List.first()
+  end
+
+  defp is_manual_toggle?(nil), do: false
+  defp is_manual_toggle?(%EmailSchedule{reminded_at: nil}), do: true
+  defp is_manual_toggle?(_email), do: false
+
+  defp schemas(%{type: :standard} = gallery), do: {gallery}
+  defp schemas(%{albums: [album]} = gallery), do: {gallery, album}
+
+  defp automation_state(:standard), do: :manual_gallery_send_link
+  defp automation_state(:proofing), do: :manual_send_proofing_gallery
+  defp automation_state(:finals), do: :manual_send_proofing_gallery_finals
+
+  defp modal_title(:standard), do: "Share gallery"
+  defp modal_title(:proofing), do: "Share Proofing Album"
+  defp modal_title(:finals), do: "Share Finals Album"
+
+  defp composed_event(:standard), do: :message_composed
+  defp composed_event(_type), do: :message_composed_for_album
+
+  defp maybe_insert_gallery_client(gallery, email) do
+    {:ok, gallery_client} = Galleries.insert_gallery_client(gallery, email)
+    gallery_client
+  end
 
   def get_client_by_email(%{client_email: client_email, gallery: gallery} = assigns) do
     result =
@@ -794,7 +841,7 @@ defmodule PicselloWeb.GalleryLive.Shared do
     assigns = Enum.into(assigns, %{is_proofing: false})
 
     ~H"""
-    <div class={@class}>
+    <div class={@class} id="order_images" phx-hook="DisableRightClick">
       <div class="mt-0 mb-4 ml-0 md:ml-5 md:mt-2">
       <h4 class="text-lg font-bold md:text-2xl"><%= if @is_proofing, do: "Your Selected Favorites", else: "Order details" %></h4>
         <%= unless @is_proofing do %>

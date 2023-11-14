@@ -1,6 +1,6 @@
 defmodule PicselloWeb.AuthController do
   use PicselloWeb, :controller
-  plug Ueberauth
+  plug(Ueberauth)
   require Logger
 
   alias PicselloWeb.UserAuth
@@ -12,9 +12,20 @@ defmodule PicselloWeb.AuthController do
   end
 
   def callback(%{assigns: %{ueberauth_auth: auth}, req_cookies: cookies} = conn, _params) do
-    case Picsello.Accounts.user_from_auth(auth, cookies |> Map.get("time_zone")) do
+    onboarding_flow_source =
+      case Map.get(cookies, "onboarding_type") do
+        nil -> []
+        onboarding_type -> [onboarding_type]
+      end
+
+    case Picsello.Accounts.user_from_auth(
+           auth,
+           cookies |> Map.get("time_zone"),
+           onboarding_flow_source
+         ) do
       {:ok, user} ->
         conn
+        |> delete_resp_cookie("onboarding_type")
         |> UserAuth.log_in_user(user)
 
       {:error, changeset} ->

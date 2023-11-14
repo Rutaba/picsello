@@ -429,7 +429,7 @@ defmodule PicselloWeb.Live.Profile do
   defp logo_image(assigns) do
     ~H"""
     <div class="relative flex flex-wrap items-center justify-left">
-      <.photographer_logo organization={@organization} include_font_bold?={false} />
+      <.photographer_logo organization={@organization} include_font_bold?={false} show_large_logo?={true} />
       <%= if @edit do %>
         <%= if @organization.profile.logo && @organization.profile.logo.url do %>
           <div class="my-8 sm:my-0 sm:ml-8"><.edit_image_button image={@uploads.logo} image_field={"logo"}/></div>

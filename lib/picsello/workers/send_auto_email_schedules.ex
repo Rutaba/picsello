@@ -17,14 +17,41 @@ defmodule Picsello.Workers.ScheduleAutomationEmail do
 
   alias PicselloWeb.EmailAutomationLive.Shared
   @impl Oban.Worker
+
+  @doc """
+  Performs email automation tasks for multiple organizations and pipelines.
+
+  This function is responsible for orchestrating email automation tasks across multiple
+  organizations and pipelines. It chunks organizations into groups and processes emails
+  for each group in parallel. For each organization, it retrieves email pipelines, subjects,
+  and checks if any email requires sending based on the job's state and previous interactions
+  with the client. If no client reply is detected, emails are sent for each pipeline.
+
+  ## Parameters
+
+      - `args`: An optional argument, typically not used. It can be any value or data structure.
+
+  ## Returns
+
+      - `:ok`: Indicates that the email automation tasks have been successfully performed.
+
+  ## Example
+
+      ```elixir
+      EmailAutomations.perform(nil)
+
+      # The function will perform email automation tasks for multiple organizations and pipelines.
+  """
   def perform(_) do
     get_all_organizations()
     |> Enum.chunk_every(10)
-    |> Task.async_stream(&send_emails_by_organizations(&1),
-      max_concurrency: System.schedulers_online() * 3,
-      timeout: 360_000
-    )
-    |> Stream.run()
+    |> Enum.each(&send_emails_by_organizations(&1))
+
+    # |> Task.async_stream(&send_emails_by_organizations(&1),
+    #   max_concurrency: System.schedulers_online() * 3,
+    #   timeout: 360_000
+    # )
+    # |> Stream.run()
 
     Logger.info("------------Email Automation Schedule Completed")
     :ok
@@ -42,7 +69,7 @@ defmodule Picsello.Workers.ScheduleAutomationEmail do
       rescue
         error ->
           message = "Error sending email #{inspect(%{pipeline: job_pipeline, error: error})}"
-          if Mix.env() == :prod, do: Sentry.capture_message(message, stacktrace: __STACKTRACE__)
+          # if Mix.env() == :prod, do: Sentry.capture_message(message, stacktrace: __STACKTRACE__)
           Logger.error(message)
       end
     end)
@@ -97,6 +124,29 @@ defmodule Picsello.Workers.ScheduleAutomationEmail do
     end
   end
 
+  @doc """
+  Retrieves and organizes email automation schedules for multiple organizations.
+
+  This function retrieves email automation schedules for a list of organizations and organizes them
+  into a structured list of `EmailPresetGroup` records. Each group represents a combination of job,
+  gallery, pipeline, state, and associated emails. The retrieved emails are sorted according to their respective states.
+
+  ## Parameters
+
+      - `organizations`: A list of organization records for which to retrieve email schedules.
+
+  ## Returns
+
+      - A list of `EmailPresetGroup` records, each containing information about a specific job, gallery, pipeline, state, and associated emails.
+
+  ## Example
+
+      ```elixir
+      organizations = MyModule.get_all_organizations()
+      email_groups = EmailAutomations.get_all_emails(organizations)
+
+      # The `email_groups` variable now contains organized email automation schedules.
+  """
   def get_all_emails(organizations) do
     EmailAutomationSchedules.get_all_emails_schedules(organizations)
     |> Enum.group_by(&group_key/1)
@@ -216,12 +266,12 @@ defmodule Picsello.Workers.ScheduleAutomationEmail do
     case send_email_task do
       {:ok, _result} ->
         Logger.info(
-          "Email #{schedule.name} sent at #{DateTime.truncate(DateTime.utc_now(), :second)}"
+          "---------Email Sent: #{schedule.name} sent at #{DateTime.truncate(DateTime.utc_now(), :second)}"
         )
 
       result when result in ["ok", :ok] ->
         Logger.info(
-          "Email #{schedule.name} sent at #{DateTime.truncate(DateTime.utc_now(), :second)}"
+          "---------Email Sent: #{schedule.name} sent at #{DateTime.truncate(DateTime.utc_now(), :second)}"
         )
 
       error ->

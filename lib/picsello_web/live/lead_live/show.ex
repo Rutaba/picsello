@@ -82,7 +82,7 @@ defmodule PicselloWeb.LeadLive.Show do
       |> assign_new(:class, fn -> nil end)
 
     ~H"""
-    <div class={"flex flex-col items-center #{@class}"}>
+    <div class={"mt-2 md: mt-0 lg:mt-0 flex flex-col items-center #{@class}"}>
       <button id="finish-proposal" title="send proposal" class="w-full md:w-auto btn-primary intro-finish-proposal" phx-click="finish-proposal" disabled={@disabled_message}>Send proposal</button>
       <%= if @show_message && @disabled_message do %>
         <em class="pt-1 text-xs text-red-sales-300"><%= @disabled_message %></em>
@@ -92,9 +92,13 @@ defmodule PicselloWeb.LeadLive.Show do
   end
 
   @impl true
-  def handle_event("copy-client-link", _, %{assigns: %{proposal: proposal, job: job}} = socket) do
+  def handle_event(
+        "copy-or-view-client-link",
+        %{"action" => action},
+        %{assigns: %{proposal: proposal, job: job}} = socket
+      ) do
     if proposal do
-      socket
+      actions_event(socket, action, proposal)
     else
       socket
       |> upsert_booking_proposal()
@@ -107,10 +111,12 @@ defmodule PicselloWeb.LeadLive.Show do
               force: true
             )
 
-          socket
-          |> assign(proposal: proposal)
-          |> assign(job: job, package: job.package)
-          |> push_event("CopyToClipboard", %{"url" => BookingProposal.url(proposal.id)})
+          socket =
+            socket
+            |> assign(proposal: proposal)
+            |> assign(job: job, package: job.package)
+
+          actions_event(socket, action, proposal)
 
         {:error, _} ->
           socket
@@ -165,6 +171,7 @@ defmodule PicselloWeb.LeadLive.Show do
     last_completed_email =
       EmailAutomationSchedules.get_last_completed_email(
         :lead,
+        nil,
         nil,
         job.id,
         pipeline.id,
@@ -401,6 +408,45 @@ defmodule PicselloWeb.LeadLive.Show do
 
   defp assign_stripe_status(%{assigns: %{current_user: current_user}} = socket) do
     socket |> assign(stripe_status: Payments.status(current_user))
+  end
+
+  defp open_questionnaire_modal(socket, current_user, questionnaire) do
+    socket
+    |> PicselloWeb.QuestionnaireFormComponent.open(%{
+      state: :edit_lead,
+      current_user: current_user,
+      questionnaire: questionnaire
+    })
+  end
+
+  defp maybe_insert_questionnaire(template, current_user, %{id: package_id} = package) do
+    Ecto.Multi.new()
+    |> Ecto.Multi.insert(:questionnaire_insert, fn _ ->
+      Questionnaire.clean_questionnaire_for_changeset(
+        template,
+        current_user.organization_id,
+        package_id
+      )
+      |> Questionnaire.changeset()
+    end)
+    |> Ecto.Multi.update(:package_update, fn %{questionnaire_insert: questionnaire} ->
+      package
+      |> Picsello.Package.changeset(
+        %{questionnaire_template_id: questionnaire.id},
+        step: :details
+      )
+    end)
+    |> Repo.transaction()
+  end
+
+  defp actions_event(socket, action, proposal) do
+    if action == "view" do
+      socket
+      |> push_event("ViewClientLink", %{"url" => BookingProposal.url(proposal.id)})
+    else
+      socket
+      |> push_event("CopyToClipboard", %{"url" => BookingProposal.url(proposal.id)})
+    end
   end
 
   defp assign_emails_count(socket, job_id) do

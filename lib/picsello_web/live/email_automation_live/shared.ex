@@ -12,6 +12,7 @@ defmodule PicselloWeb.EmailAutomationLive.Shared do
 
   alias Picsello.{
     Marketing,
+    Shoots,
     PaymentSchedules,
     PaymentSchedule,
     EmailPresets.EmailPreset,
@@ -96,6 +97,26 @@ defmodule PicselloWeb.EmailAutomationLive.Shared do
     end)
   end
 
+  @doc """
+  Generate sign options based on the provided state.
+
+  This function generates a list of sign options based on the provided `state`. The `state` can be a string or an atom.
+
+  The sign options are determined as follows:
+      - If the `state` is "before_shoot" or "gallery_expiration_soon", it returns options for "Before" and "After".
+      - If the `state` is "balance_due" or "offline_payment", it returns options for "Before" and "After" with the "After" option enabled.
+      - For any other `state`, it returns options for "Before" and "After" with the "Before" option disabled.
+
+  ## Parameters
+
+      - `state` (String.t() | atom()): The state to determine sign options for.
+
+  ## Examples
+
+      ```elixir
+      options = make_sign_options("before_shoot")
+      # Returns: [[key: "Before", value: "-"], [key: "After", value: "+", disabled: true]]
+  """
   def make_sign_options(state) do
     state = if is_atom(state), do: Atom.to_string(state), else: state
 
@@ -372,6 +393,7 @@ defmodule PicselloWeb.EmailAutomationLive.Shared do
       EmailAutomationSchedules.get_last_completed_email(
         type,
         gallery_id,
+        nil,
         job_id,
         pipeline_id,
         state,
@@ -619,50 +641,33 @@ defmodule PicselloWeb.EmailAutomationLive.Shared do
 
   def fetch_date_for_state(:before_shoot, email, _last_completed_email, job, _gallery, _order) do
     # Examples
-    # shoot.start_at is ~D[2023-10-20]
+    # shoot.starts_at is ~D[2023-10-20]
     # today is ~D[2023-10-09]
     # difference is 12 days
     # send 7 days before shoot start 12 <= 7 false
 
-    # shoot.start_at is ~D[2023-10-20]
+    # shoot.starts_at is ~D[2023-10-20]
     # today is ~D[2023-10-13]
     # difference is 7 days
     # send 7 days before shoot start 7<= 7 true
 
-    # shoot.start_at is ~D[2023-10-20]
+    # shoot.starts_at is ~D[2023-10-20]
     # today is ~D[2023-10-21]
     # difference is 1 days
     # send 1 days before shoot start 1<= 1 true
 
     timezone = job.client.organization.user.time_zone
 
-    Logger.info("-- before_shoot timezone: #{timezone}")
-
     today = today_timezone(timezone)
-
-    today_offset_original =
-      DateTime.utc_now() |> Timex.end_of_day() |> DateTime.shift_zone!(timezone)
-
-    Logger.info("-- before_shoot today: #{today}")
-    Logger.info("-- before_shoot today_offset_original: #{today_offset_original}")
 
     %{sign: sign} = EmailAutomations.explode_hours(email.total_hours)
     days_to_compare = hours_to_days(email.total_hours)
 
-    job.shoots
-    |> Enum.filter(fn item ->
-      starts_at = item.starts_at |> DateTime.shift_zone!(timezone)
+    shoot = Shoots.get_shoot(email.shoot_id)
+    starts_at = shoot.starts_at |> DateTime.shift_zone!(timezone)
 
-      Logger.info("-- before_shoot starts_at: #{starts_at}")
-      Logger.info("-- before_shoot date_diff: #{Date.diff(starts_at, today)}")
-
-      is_send_time?(Date.diff(starts_at, today), abs(days_to_compare), sign)
-    end)
-    |> (fn filtered_list ->
-          if Enum.empty?(filtered_list),
-            do: nil,
-            else: List.first(filtered_list) |> Map.get(:starts_at)
-        end).()
+    send_time? = is_send_time?(Date.diff(starts_at, today), abs(days_to_compare), sign)
+    if send_time?, do: shoot.starts_at, else: nil
   end
 
   def fetch_date_for_state(:balance_due, _email, last_completed_email, job, _gallery, _order) do
@@ -739,17 +744,17 @@ defmodule PicselloWeb.EmailAutomationLive.Shared do
   end
 
   def fetch_date_for_state(:shoot_thanks, email, _last_completed_email, job, _gallery, _order) do
-    # shoot.start_at is ~D[2023-10-20]
+    # shoot.starts_at is ~D[2023-10-20]
     # today is ~D[2023-10-09]
     # difference is -12 days
     # send 7 days after shoot -12 >= 7 false
 
-    # shoot.start_at is ~D[2023-10-20]
+    # shoot.starts_at is ~D[2023-10-20]
     # today is ~D[2023-10-23]
     # difference is 3 days
     # send 7 days after shoot 3 >= 7 false
 
-    # shoot.start_at is ~D[2023-10-20]
+    # shoot.starts_at is ~D[2023-10-20]
     # today is ~D[2023-10-27]
     # difference is 7 days
     # send 7 days after shoot 7 >= 7 true
@@ -759,30 +764,25 @@ defmodule PicselloWeb.EmailAutomationLive.Shared do
     %{sign: sign} = EmailAutomations.explode_hours(email.total_hours)
     days_to_compare = hours_to_days(email.total_hours)
 
-    job.shoots
-    |> Enum.filter(fn item ->
-      starts_at = item.starts_at |> DateTime.shift_zone!(timezone)
-      is_send_time?(Date.diff(today, starts_at), abs(days_to_compare), sign)
-    end)
-    |> (fn filtered_list ->
-          if Enum.empty?(filtered_list),
-            do: nil,
-            else: List.first(filtered_list) |> Map.get(:starts_at)
-        end).()
+    shoot = Shoots.get_shoot(email.shoot_id)
+    starts_at = shoot.starts_at |> DateTime.shift_zone!(timezone)
+
+    send_time? = is_send_time?(Date.diff(today, starts_at), abs(days_to_compare), sign)
+    if send_time?, do: shoot.starts_at, else: nil
   end
 
   def fetch_date_for_state(:post_shoot, email, _last_completed_email, job, _gallery, _order) do
-    # shoot.start_at is ~D[2023-10-20]
+    # shoot.starts_at is ~D[2023-10-20]
     # today is ~D[2023-10-09]
     # difference is -12 days
     # send 7 days after shoot -12 >= 7 false
 
-    # shoot.start_at is ~D[2023-10-20]
+    # shoot.starts_at is ~D[2023-10-20]
     # today is ~D[2023-10-23]
     # difference is 3 days
     # send 7 days after shoot 3 >= 7 false
 
-    # shoot.start_at is ~D[2023-10-20]
+    # shoot.starts_at is ~D[2023-10-20]
     # today is ~D[2023-10-27]
     # difference is 7 days
     # send 7 days after shoot 7 >= 7 true
@@ -894,8 +894,11 @@ defmodule PicselloWeb.EmailAutomationLive.Shared do
   defp get_date_for_schedule(nil, date), do: date
   defp get_date_for_schedule(email, _date), do: email.reminded_at
 
-  defp is_send_time?(days_diff, days_to_compare, "+"), do: days_diff >= days_to_compare
-  defp is_send_time?(days_diff, days_to_compare, "-"), do: days_diff <= days_to_compare
+  defp is_send_time?(days_diff, days_to_compare, "+"),
+    do: days_diff >= days_to_compare && days_diff <= days_to_compare + 1
+
+  defp is_send_time?(days_diff, days_to_compare, "-"),
+    do: days_diff <= days_to_compare && days_diff + 1 >= days_to_compare
 
   defp get_job_id(job) when is_map(job), do: job.id
   defp get_job_id(_), do: nil

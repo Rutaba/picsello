@@ -19,8 +19,7 @@ defmodule Picsello.OnboardingsTest do
       assert %{
                onboarding: %{
                  photographer_years: [:required],
-                 schedule: [:required],
-                 state: [:required]
+                 schedule: [:required]
                },
                organization: %{name: [:required]} = organization_errors
              } =
@@ -33,6 +32,26 @@ defmodule Picsello.OnboardingsTest do
       assert 1 = map_size(organization_errors)
     end
 
+    test "step 2 :mastermind requires org name, schedule, photographer years, and state" do
+      user = insert(:user)
+
+      assert %{
+               onboarding: %{
+                 photographer_years: [:required],
+                 schedule: [:required]
+               },
+               organization: %{name: [:required]} = organization_errors
+             } =
+               changeset_errors(
+                 user,
+                 %{onboarding: %{}, organization: %{id: user.organization_id, name: nil}},
+                 step: 2,
+                 onboarding_type: :mastermind
+               )
+
+      assert 1 = map_size(organization_errors)
+    end
+
     test "step 3 requires job type(s)" do
       user = insert(:user)
 
@@ -40,7 +59,8 @@ defmodule Picsello.OnboardingsTest do
                onboarding: %{
                  photographer_years: [:required],
                  schedule: [:required],
-                 state: [:required]
+                 country: [:required],
+                 interested_in: [:required]
                },
                organization: %{
                  name: [:required],
@@ -54,6 +74,57 @@ defmodule Picsello.OnboardingsTest do
                    organization: %{id: user.organization_id, name: nil, profile: %{}}
                  },
                  step: 3
+               )
+    end
+
+    test "step 3 :mastermind requires job type(s)" do
+      user = insert(:user)
+
+      assert %{
+               onboarding: %{
+                 photographer_years: [:required],
+                 schedule: [:required],
+                 country: [:required],
+                 interested_in: [:required]
+               },
+               organization: %{
+                 name: [:required]
+               }
+             } ==
+               changeset_errors(
+                 user,
+                 %{
+                   onboarding: %{},
+                   organization: %{id: user.organization_id, name: nil, profile: %{}}
+                 },
+                 step: 3,
+                 onboarding_type: :mastermind
+               )
+    end
+
+    test "step 4 :mastermind requires job type(s)" do
+      user = insert(:user)
+
+      assert %{
+               onboarding: %{
+                 photographer_years: [:required],
+                 schedule: [:required],
+                 country: [:required],
+                 interested_in: [:required]
+               },
+               organization: %{
+                 name: [:required],
+                 organization_job_types: [:required]
+               }
+             } ==
+               changeset_errors(
+                 user,
+                 %{
+                   onboarding: %{},
+                   organization: %{id: user.organization_id, name: nil, profile: %{}}
+                 },
+                 step: 4,
+                 onboarding_type: :mastermind
                )
     end
   end

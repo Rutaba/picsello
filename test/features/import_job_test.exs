@@ -1,7 +1,17 @@
 defmodule Picsello.ImportJobTest do
   @moduledoc false
   use Picsello.FeatureCase, async: true
-  alias Picsello.{Repo, Package, Job, Client, PaymentSchedule, BookingProposal, Organization}
+
+  alias Picsello.{
+    Repo,
+    Package,
+    Job,
+    Client,
+    PaymentSchedule,
+    BookingProposal,
+    Organization,
+    EmailAutomationNotifierMock
+  }
 
   setup :onboarded
   setup :authenticated
@@ -15,6 +25,11 @@ defmodule Picsello.ImportJobTest do
     |> Repo.update!()
 
     stub_stripe_account!()
+
+    EmailAutomationNotifierMock
+    |> Mox.expect(:deliver_automation_email_job, 1, fn _, _, _, _, _ ->
+      {:ok, {:ok, "Email Sent"}}
+    end)
 
     :ok
   end
