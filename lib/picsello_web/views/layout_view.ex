@@ -501,17 +501,17 @@ defmodule PicselloWeb.LayoutView do
           <nav class="flex flex-col">
             <%= for %{heading: heading, items: items} <- side_nav(@socket, @current_user), @current_user do %>
               <div>
-                <p class="uppercase font-bold px-4 mt-2 mb-1 tracking-widest text-xs"><%= heading %></p>
+                <p class="uppercase font-bold px-4 mt-2 mb-1 tracking-widest text-xs flex-shrink-0 whitespace-nowrap"><%= heading %></p>
                 <%= for %{title: title, icon: icon, path: path} <- items do %>
-                  <.nav_link title={title} to={path} socket={@socket} live_action={@live_action} current_user={@current_user} class="text-sm px-4 flex items-center py-2 whitespace-nowrap text-base-250 transition-all hover:bg-blue-planning-100" active_class="bg-blue-planning-100 text-black font-bold">
+                  <.nav_link title={title} to={path} socket={@socket} live_action={@live_action} current_user={@current_user} class="text-sm px-4 flex items-center py-2.5 whitespace-nowrap text-base-250 transition-all hover:bg-blue-planning-100" active_class="bg-blue-planning-100 text-black font-bold">
                     <.icon name={icon} class="text-black inline-block w-5 h-5 mr-2 shrink-0" />
-                    <%= title %>
+                    <span><%= title %></span>
                   </.nav_link>
                 <% end %>
               </div>
             <% end %>
           </nav>
-          <button data-drawer-type="desktop" data-drawer-target="default-sidebar" data-drawer-toggle="default-sidebar" aria-controls="default-sidebar" type="button" class="inline-flex items-center p-2 mt-2 ms-3 text-sm text-gray-500 rounded-lg hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-gray-200 dark:text-gray-400 dark:hover:bg-gray-700 dark:focus:ring-gray-600">
+          <button data-drawer-type="desktop" data-drawer-target="default-sidebar" data-drawer-toggle="default-sidebar" aria-controls="default-sidebar" type="button" class="inline-flex items-center p-2 mt-2 ms-3 text-sm text-gray-500 rounded-lg hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-gray-200 dark:text-gray-400 dark:hover:bg-gray-700 dark:focus:ring-gray-600 sm:block hidden">
             <span class="sr-only">Open sidebar</span>
             Collapse
           </button>

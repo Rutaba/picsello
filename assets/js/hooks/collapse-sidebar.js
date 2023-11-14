@@ -8,13 +8,13 @@ export default {
     document.body.classList.remove('overflow-hidden');
   },
   openDesktopDrawer(main, targetEl) {
-    // targetEl.classList.remove('w-64');
+    this.el.setAttribute('data-drawer-open', true);
     targetEl.classList.add('sm:w-12');
     main.classList.remove('sm:ml-64');
     main.classList.add('sm:ml-12');
   },
   closeDesktopDrawer(main, targetEl) {
-    // targetEl.classList.add('w-64');
+    this.el.setAttribute('data-drawer-open', false);
     targetEl.classList.remove('sm:w-12');
     main.classList.add('sm:ml-64');
     main.classList.remove('sm:ml-12');
