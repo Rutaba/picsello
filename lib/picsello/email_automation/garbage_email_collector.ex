@@ -74,7 +74,6 @@ defmodule Picsello.EmailAutomation.GarbageEmailCollector do
   defp stop_garbage_emails(%{jobs: jobs}) do
     Enum.each(jobs, fn job ->
       stop_junk_lead_emails(job)
-      stop_old_job_payment_emails(job)
       stop_shoot_emails(job)
       stop_gallery_emails(job)
     end)
@@ -90,13 +89,6 @@ defmodule Picsello.EmailAutomation.GarbageEmailCollector do
     Enum.each(completed_jobs, fn completed_job ->
       stop_completed_emails(completed_job)
     end)
-  end
-
-  def stop_old_job_payment_emails(job) do
-    # if job is before 13 Nov 2023
-    # then call stop_job_and_lead_emails(job)
-    reference_date = ~D[2023-11-13]
-    if Date.diff(job.inserted_at, reference_date) < 0, do: stop_job_and_lead_emails(job)
   end
 
   def stop_job_and_lead_emails(job) do
