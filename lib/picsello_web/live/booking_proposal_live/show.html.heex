@@ -138,7 +138,7 @@
             <%= cond do %>
               <% PaymentSchedules.is_with_cash?(@job) && @next_due_payment && DateTime.compare(DateTime.utc_now(), @next_due_payment |> Map.get(:due_at)) in [:eq, :gt] -> %>
                 <.badge class="mb-1" color={:red} mode={:outlined}><%= pending_amount_details(@job) %>—Pending offline payment</.badge>
-              <% PaymentSchedules.all_paid?(@job) -> %>
+              <% PaymentSchedules.all_paid?(@job) && Money.zero?(PaymentSchedules.owed_price(@job)) -> %>
                 <.badge class="mb-1" color={:gray} mode={:outlined}>100% paid</.badge>
               <% true -> %>
                 <.badge class="mb-1" color={:red} mode={:outlined}><%= pending_amount_details(@job) %></.badge>

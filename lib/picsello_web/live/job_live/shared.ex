@@ -18,6 +18,7 @@ defmodule PicselloWeb.JobLive.Shared do
   import PicselloWeb.EmailAutomationLive.Shared, only: [sort_emails: 2]
 
   alias PicselloWeb.Calendar.BookingEvents.Shared, as: BEShared
+
   alias Picsello.{
     Galleries,
     Job,

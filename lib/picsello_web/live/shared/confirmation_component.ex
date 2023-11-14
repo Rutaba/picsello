@@ -66,7 +66,7 @@ defmodule PicselloWeb.Shared.ConfirmationComponent do
     ~H"""
       <.form :let={f} for={%{}} as={:dropdown} phx-submit={@confirm_event} phx-target={@myself} class="mt-2">
         <h1 class="font-extrabold text-sm"><%= @dropdown_label %></h1>
-        <%= select(f, :item_id, @dropdown_items, class: "w-full px-2 py-3 border border-slate-400 rounded-md mt-1") %>
+        <%= select(f, :item_id, @dropdown_items, class: "w-full px-2 py-3 border border-slate-400 rounded-md mt-1 cursor-pointer") %>
 
         <button class="w-full btn-primary text-center mt-6" phx-disable-with="Saving&hellip;">
           <%= @confirm_label %>
@@ -98,7 +98,7 @@ defmodule PicselloWeb.Shared.ConfirmationComponent do
       <%= if @copy_btn_label do %>
         <button class="w-full mt-2 px-6 py-3 btn-tertiary text-blue-planning-300" type="button" id="copy-calendar-link" data-clipboard-text={@copy_btn_value} phx-hook="Clipboard">
           <%= @copy_btn_label %>
-          <div class="hidden p-1 text-sm rounded shadow" role="tooltip">
+          <div class="hidden p-1 text-sm rounded shadow bg-white" role="tooltip">
             Copied!
           </div>
         </button>

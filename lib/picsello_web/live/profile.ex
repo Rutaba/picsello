@@ -110,7 +110,7 @@ defmodule PicselloWeb.Live.Profile do
             <div class="grid sm:grid-cols-2 gap-8">
               <%= for event <- @booking_events do %>
                 <div {testid("booking-cards")}>
-                  <a href={"#{event.url}/book"} class="block w-full col">
+                  <a href={Routes.client_booking_event_path(@socket, :booked, @organization.slug, event.id)} class="block w-full col">
                     <.blurred_thumbnail class="w-full" url={event.thumbnail_url} />
                     <div>
                       <h3 class="text-xl font-semibold mt-4">

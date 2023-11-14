@@ -113,7 +113,14 @@ defmodule PicselloWeb.LiveHelpers do
         :rest,
         Map.drop(assigns, [:color, :icon, :inner_block, :class, :disabled, :target])
       )
-      |> Enum.into(%{class: "", target: nil, disabled: false, inner_block: nil, icon_class: "", text_color: "text-#{assigns.color}"})
+      |> Enum.into(%{
+        class: "",
+        target: nil,
+        disabled: false,
+        inner_block: nil,
+        icon_class: "",
+        text_color: "text-#{assigns.color}"
+      })
 
     ~H"""
     <a href={if @disabled, do: "javascript:void(0)", else: href} target={unless @disabled, do: @target} class={classes("btn-tertiary flex items-center px-2 py-1 font-sans rounded-lg hover:opacity-75 transition-colors #{@text_color} #{@class}", %{"opacity-75 hover:cursor-not-allowed" => @disabled})} {@rest}>
@@ -128,8 +135,25 @@ defmodule PicselloWeb.LiveHelpers do
   def icon_button(assigns) do
     assigns =
       assigns
-      |> Enum.into(%{class: "", disabled: false, inner_block: nil, icon_class: "", text_color: "text-#{assigns.color}"})
-      |> Map.put(:rest, Map.drop(assigns, [:color, :icon, :inner_block, :class, :disabled, :text_color, :__changed__]))
+      |> Enum.into(%{
+        class: "",
+        disabled: false,
+        inner_block: nil,
+        icon_class: "",
+        text_color: "text-#{assigns.color}"
+      })
+      |> Map.put(
+        :rest,
+        Map.drop(assigns, [
+          :color,
+          :icon,
+          :inner_block,
+          :class,
+          :disabled,
+          :text_color,
+          :__changed__
+        ])
+      )
 
     ~H"""
     <button type="button" class={classes("btn-tertiary flex items-center whitespace-nowrap #{@text_color} #{@class}", %{"opacity-50 hover:opacity-30 hover:cursor-not-allowed" => @disabled})} disabled={@disabled} {@rest}>
@@ -142,10 +166,10 @@ defmodule PicselloWeb.LiveHelpers do
   end
 
   def button_simple(assigns) do
-    assigns = assigns |> Enum.into(%{class: "", disabled: false})
+    assigns = assigns |> Enum.into(%{class: "", color: "blue-planning-300", icon_class: "", inner_block: nil, disabled: false})
 
     ~H"""
-    <button type="button" class={classes("flex items-center px-2 py-1 font-sans hover:opacity-75 #{@class}", %{"opacity-50 hover:opacity-30 hover:cursor-not-allowed" => @disabled})}} disabled={@disabled} {@rest}>
+    <button type="button" class={classes("flex items-center px-2 py-1 font-sans hover:opacity-75 #{@class}", %{"opacity-50 hover:opacity-30 hover:cursor-not-allowed" => @disabled})}} disabled={@disabled}>
       <.icon name={@icon} class={"fill-current text-#{@color} #{@icon_class}"} />
       <%= if @inner_block do %>
         <%= render_slot(@inner_block) %>
@@ -499,10 +523,18 @@ defmodule PicselloWeb.LiveHelpers do
   end
 
   def date_formatter(nil), do: nil
-  def date_formatter(date), do: "#{Timex.month_name(date.month)} #{date.day}, #{date.year}"
+
+  def date_formatter(date),
+    do:
+      "#{Timex.day_name(day_of_week(date))}, #{Timex.month_name(date.month)} #{date.day}#{cond do
+        date.day in [1, 21, 31] -> "st"
+        date.day in [2, 22] -> "nd"
+        date.day == 3 -> "rd"
+        true -> "th"
+      end}, #{date.year}"
 
   def date_formatter(date, :day),
-    do: "#{day_of_week(date)}, #{Timex.month_name(date.month)} #{date.day}"
+    do: "#{Timex.day_name(day_of_week(date))}, #{Timex.month_name(date.month)} #{date.day}"
 
   def format_date_via_type(_, _ \\ "MM DD, YY")
 

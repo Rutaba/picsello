@@ -144,7 +144,7 @@ defmodule PicselloWeb.Calendar.BookingEvents.Shared do
       {:ok, _event} ->
         socket
         |> assign_events()
-        |> put_flash(:success, "Event unarchive successfully")
+        |> put_flash(:success, "Event unarchived successfully")
 
       {:error, _} ->
         socket
@@ -637,7 +637,7 @@ defmodule PicselloWeb.Calendar.BookingEvents.Shared do
       {:ok, _event} ->
         socket
         |> assign_events()
-        |> put_flash(:success, "Event archive successfully")
+        |> put_flash(:success, "Event archived successfully")
 
       {:error, _} ->
         socket
@@ -696,7 +696,7 @@ defmodule PicselloWeb.Calendar.BookingEvents.Shared do
       icon: nil,
       title: "Reserve Session",
       subtitle: """
-        Great! Session has been reserved and a <a class="#{class}" href="#{job_url(job.id)}" target="_blank">job</a> + <a class="#{class}" href="#{BookingProposal.url(proposal.id)}" target="_blank">client portal</a> has been created for you to share
+        Great! Session has been reserved and a <a class="#{class}" href="#{Routes.job_path(socket, :leads, job.id)}" target="_blank">job</a> + <a class="#{class}" href="#{BookingProposal.url(proposal.id)}" target="_blank">client portal</a> has been created for you to share
       """,
       copy_btn_label: "Copy link, I’ll send separately",
       copy_btn_event: "copy-link",
@@ -826,6 +826,12 @@ defmodule PicselloWeb.Calendar.BookingEvents.Shared do
   def assign_events(%{assigns: %{booking_events: _booking_events}} = socket),
     do: Index.assign_booking_events(socket)
 
+  def convert_date_string_to_date(nil), do: nil
+  def convert_date_string_to_date(date), do: Date.from_iso8601!(date)
+
+  def get_date(%{"date" => date}), do: date
+  def get_date(%{date: date}), do: date
+
   def count_booked_slots(slot),
     do: Enum.count(slot, fn s -> s.status in [:booked, :reserved] end)
 
@@ -897,6 +903,7 @@ defmodule PicselloWeb.Calendar.BookingEvents.Shared do
          date_id \\ nil
        ) do
     clients = get_booking_event_clients(booking_event, date_id)
+
     recipients =
       cond do
         Enum.any?(clients) && length(clients) > 1 ->

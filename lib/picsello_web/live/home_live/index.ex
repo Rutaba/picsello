@@ -586,7 +586,7 @@ defmodule PicselloWeb.HomeLive.Index do
     case BookingEvents.archive_booking_event(id, current_user.organization_id) do
       {:ok, _event} ->
         socket
-        |> put_flash(:success, "Event archive successfully")
+        |> put_flash(:success, "Event archived successfully")
 
       {:error, _} ->
         socket
@@ -1051,9 +1051,11 @@ defmodule PicselloWeb.HomeLive.Index do
   end
 
   defp assign_tab_data(
-         %{assigns: %{current_user: %{organization: organization}} = current_user} = socket,
+         %{assigns: %{current_user: current_user}} = socket,
          tab
        ) do
+    %{organization: organization} = Repo.preload(current_user, :organization)
+
     case tab do
       "clients" ->
         socket |> assign(:clients, Clients.get_recent_clients(current_user))
