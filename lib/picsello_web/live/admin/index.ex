@@ -48,6 +48,8 @@ defmodule PicselloWeb.Live.Admin.Index do
         <li><%= live_redirect "Manage Admin Global Settings", to: Routes.admin_global_settings_path(@socket, :index), class: @class %></li>
 
         <li><%= live_redirect "WHCC Orders report", to: Routes.admin_whcc_orders_report_path(@socket, :index), class: @class %></li>
+
+        <li><%= live_redirect "Feature Flags", to: "/feature-flags", class: @class %></li>
       </ul>
     </nav>
     """

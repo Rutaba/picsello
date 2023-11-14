@@ -76,6 +76,13 @@ defmodule PicselloWeb.Router do
     post("/webhook", PicselloWeb.WhccWebhookController, :webhook)
   end
 
+  scope path: "/feature-flags" do
+    pipe_through :browser
+
+    unless Mix.env() in [:dev, :test], do: pipe_through(:admins_only)
+    forward "/", FunWithFlags.UI.Router, namespace: "feature-flags"
+  end
+
   # Other scopes may use custom stacks.
   # scope "/api", PicselloWeb do
   #   pipe_through :api
