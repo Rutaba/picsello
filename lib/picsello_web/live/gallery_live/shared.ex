@@ -148,6 +148,16 @@ defmodule PicselloWeb.GalleryLive.Shared do
         :changeset,
         Galleries.change_gallery(gallery, attrs) |> Map.put(:action, :validate)
       )
+
+  defp get_email_body_subject(nil, gallery, state) do
+    case Picsello.EmailPresets.for(gallery, state) do
+      [preset | _] ->
+        Picsello.EmailPresets.resolve_variables(
+          preset,
+          schemas(gallery),
+          PicselloWeb.Helpers
+        )
+
       _ ->
         %{body_template: "", subject_template: ""}
     end
