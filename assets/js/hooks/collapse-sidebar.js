@@ -1,30 +1,20 @@
 export default {
   openMobileDrawer() {
-    this.el.setAttribute('data-drawer-open', true);
     document.body.classList.add('overflow-hidden');
   },
   closeMobileDrawer() {
-    this.el.setAttribute('data-drawer-open', false);
     document.body.classList.remove('overflow-hidden');
   },
-  openDesktopDrawer(main, targetEl) {
-    this.el.setAttribute('data-drawer-open', true);
-    targetEl.classList.add('sm:w-12');
+  openDesktopDrawer(main) {
     main.classList.remove('sm:ml-64');
     main.classList.add('sm:ml-12');
   },
-  closeDesktopDrawer(main, targetEl) {
-    this.el.setAttribute('data-drawer-open', false);
-    targetEl.classList.remove('sm:w-12');
+  closeDesktopDrawer(main) {
     main.classList.add('sm:ml-64');
     main.classList.remove('sm:ml-12');
   },
   mounted() {
-    const { el } = this;
-    const isOpen = el.dataset.drawerOpen === 'true';
-
-    const mobileButton = el.querySelector('[data-drawer-type="mobile"]');
-    const desktopButton = el.querySelector('[data-drawer-type="desktop"]');
+    const main = document.querySelector('main');
 
     this.el.addEventListener('mousedown', (e) => {
       const targetIsOverlay = (e) => e.target.id === 'sidebar-wrapper';
@@ -32,7 +22,7 @@ export default {
       if (targetIsOverlay(e)) {
         const mouseup = (e) => {
           if (targetIsOverlay(e)) {
-            this.closeMobileDrawer();
+            this.pushEventTo(this.el.dataset.target, 'open');
           }
           this.el.removeEventListener('mouseup', mouseup);
         };
@@ -40,20 +30,16 @@ export default {
       }
     });
 
-    mobileButton.addEventListener('click', () => {
-      isOpen ? this.closeMobileDrawer() : this.openMobileDrawer();
+    this.handleEvent('sidebar:mobile', ({ is_drawer_open }) => {
+      is_drawer_open
+        ? this.closeMobileDrawer(main)
+        : this.openMobileDrawer(main);
     });
 
-    desktopButton.addEventListener('click', (e) => {
-      const target = e.target.dataset.drawerTarget;
-      const targetEl = el.querySelector(`#${target}`);
-      const main = document.querySelector('main');
-
-      if (targetEl.classList.contains('sm:w-12')) {
-        this.closeDesktopDrawer(main, targetEl);
-      } else {
-        this.openDesktopDrawer(main, targetEl);
-      }
+    this.handleEvent('sidebar:collapse', ({ is_drawer_open }) => {
+      is_drawer_open
+        ? this.closeDesktopDrawer(main)
+        : this.openDesktopDrawer(main);
     });
   },
 };

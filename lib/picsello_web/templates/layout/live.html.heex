@@ -1,22 +1,29 @@
 <%= live_render @socket, PicselloWeb.LiveModal, id: "live_modal" %>
-<main role="main" class={"flex flex-col min-h-screen sm:ml-64 transition-all #{dynamic_background_class(assigns)}"} phx-hook="showAdminBanner" id="show-admin-banner">
-  <.main_header socket={@socket} current_user={@current_user} live_action={@live_action} />
+<main role="main" class={classes("flex flex-col min-h-screen transition-all #{dynamic_background_class(assigns)}", %{"sm:ml-64" => Map.get(@current_user.onboarding, :sidebar_open_preference, true), "sm:ml-12" => !Map.get(@current_user.onboarding, :sidebar_open_preference, true)})} phx-hook="showAdminBanner" id="show-admin-banner">
+
+  <.main_header current_user={@current_user} live_action={@live_action} />
+
   <%= flash(@flash) %>
 
   <div class="pt-16 sm:pt-0">
     <%= if @current_user && !@current_user.organization.payment_options.allow_cash do %>
       <.stripe_setup_banner socket={@socket} current_user={@current_user} />
     <% end %>
+
     <.gallery_top_banner class="text-white bg-blue-planning-300 border-b" socket={@socket} current_user={@current_user} accumulated_progress={@accumulated_progress} galleries_count={@galleries_count}/>
+
     <.subscription_ending_soon type="banner" socket={@socket} current_user={@current_user} class="flex px-6 py-2 items-center bg-blue-planning-300 text-white justify-center"/>
+
     <%= @inner_content %>
   </div>
 
   <.main_footer socket={@socket} current_user={@current_user} />
+  
   <.admin_banner socket={@socket} />
 </main>
 
 <%= if System.get_env("MIX_ENV") != "test" do %>
   <.sticky_upload current_user={@current_user} />
 <% end %>
+
 <.help_chat_widget current_user={@current_user} />

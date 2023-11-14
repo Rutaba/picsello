@@ -1,5 +1,5 @@
-<main role="main" class="min-h-screen flex flex-col sm:ml-64 transition-all" phx-hook="showAdminBanner" id="show-admin-banner">
-  <.main_header socket={@socket} current_user={@current_user} live_action={@live_action} />
+<main role="main" class={classes("min-h-screen flex flex-col sm:ml-64 transition-all", %{"sm:ml-64" => Map.get(@current_user.onboarding, :sidebar_open_preference, true), "sm:ml-12" => !Map.get(@current_user.onboarding, :sidebar_open_preference, true)})} phx-hook="showAdminBanner" id="show-admin-banner">
+  <.main_header current_user={@current_user} live_action={@live_action} />
 
   <%= flash(@flash) %>
 

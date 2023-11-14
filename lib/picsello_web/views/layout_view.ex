@@ -1,7 +1,6 @@
 defmodule PicselloWeb.LayoutView do
   use PicselloWeb, :view
 
-  alias Picsello.Accounts.User
   alias Picsello.Payments
 
   import PicselloWeb.LiveHelpers,
@@ -10,14 +9,14 @@ defmodule PicselloWeb.LayoutView do
       classes: 2,
       icon: 1,
       nav_link: 1,
-      classes: 1,
-      initials_circle: 1
+      classes: 1
     ]
 
   import Picsello.Profiles, only: [public_url: 1]
 
   import PicselloWeb.Live.Profile.Shared, only: [photographer_logo: 1]
   import PicselloWeb.Shared.StickyUpload, only: [sticky_upload: 1, gallery_top_banner: 1]
+  import PicselloWeb.Shared.Sidebar, only: [main_header: 1]
 
   use Phoenix.Component
 
@@ -140,108 +139,6 @@ defmodule PicselloWeb.LayoutView do
       <.reattach_activator intercom_id={@intercom_id} />
     <% end %>
     """
-  end
-
-  def side_nav(socket, _current_user) do
-    [
-      %{
-        heading: "Get Booked",
-        items: [
-          %{
-            title: "Booking Events",
-            icon: "calendar",
-            path: Routes.calendar_booking_events_path(socket, :index)
-          },
-          %{title: "Leads", icon: "three-people", path: Routes.job_path(socket, :leads)},
-          %{title: "Marketing", icon: "bullhorn", path: Routes.marketing_path(socket, :index)}
-        ]
-      },
-      %{
-        heading: "Manage",
-        items: [
-          %{
-            title: "Clients",
-            icon: "client-icon",
-            path: Routes.clients_path(socket, :index)
-          },
-          %{
-            title: "Galleries",
-            icon: "upload",
-            path: Routes.gallery_path(socket, :galleries)
-          },
-          %{
-            title: "Jobs",
-            icon: "camera-check",
-            path: Routes.job_path(socket, :jobs)
-          },
-          %{
-            title: "Inbox",
-            icon: "envelope",
-            path: Routes.inbox_path(socket, :index)
-          },
-          %{
-            title: "Calendar",
-            icon: "calendar",
-            path: Routes.calendar_index_path(socket, :index)
-          }
-        ]
-      },
-      %{
-        heading: "Settings",
-        items: [
-          %{
-            title: "Automations (Beta)",
-            icon: "play-icon",
-            path: Routes.email_automations_index_path(socket, :index)
-          },
-          %{
-            title: "Packages",
-            icon: "package",
-            path: Routes.package_templates_path(socket, :index)
-          },
-          %{
-            title: "Contracts",
-            icon: "contract",
-            path: Routes.contracts_index_path(socket, :index)
-          },
-          %{
-            title: "Questionnaires",
-            icon: "questionnaire",
-            path: Routes.questionnaires_index_path(socket, :index)
-          },
-          %{
-            title: "Calendar",
-            icon: "calendar",
-            path: Routes.calendar_settings_path(socket, :settings)
-          },
-          %{
-            title: "Gallery",
-            icon: "gallery-settings",
-            path: Routes.gallery_global_settings_index_path(socket, :edit)
-          },
-          %{
-            title: "Finances",
-            icon: "money-bags",
-            path: Routes.finance_settings_path(socket, :index)
-          },
-          %{
-            title: "Brand",
-            icon: "brand",
-            path: Routes.brand_settings_path(socket, :index)
-          },
-          %{
-            title: "Public Profile",
-            icon: "website",
-            path: Routes.profile_settings_path(socket, :index)
-          },
-          %{
-            title: "Account",
-            icon: "settings",
-            path: Routes.user_settings_path(socket, :edit)
-          }
-        ]
-      }
-    ]
   end
 
   def sub_nav_list(socket, :get_booked),
@@ -435,88 +332,6 @@ defmodule PicselloWeb.LayoutView do
     <div class="hidden fixed top-4 right-4 p-2 bg-red-sales-300/25 rounded-lg text-red-sales-300 shadow-lg backdrop-blur-md z-[1000]" id="admin-banner">
       <span class="font-bold">You are logged in as a user, please log out when finished</span>
       <%= link("Logout", to: Routes.user_session_path(@socket, :delete), method: :delete, class: "ml-4 btn-tertiary px-2 py-1 text-sm text-red-sales-300") %>
-    </div>
-    """
-  end
-
-  def initials_menu(assigns) do
-    assigns =
-      Enum.into(assigns, %{
-        tour_id: "current_user",
-        id: "initials-menu",
-        inner_id: "initials-menu-inner-content"
-      })
-
-    ~H"""
-    <div id={@id} class="relative flex flex-row justify-end cursor-pointer" phx-hook="ToggleContent">
-      <%= if @current_user do %>
-        <div phx-update="ignore" id={@inner_id} class="absolute top-0 right-0 flex flex-col items-end hidden cursor-default text-base-300 toggle-content">
-          <div class="p-4 -mb-2 bg-white shadow-md cursor-pointer text-base-300">
-            <.icon name="close-x" class="w-4 h-4 stroke-current stroke-2" />
-          </div>
-          <div class="bg-gray-100 rounded-lg shadow-md w-max z-30">
-            <%= live_redirect to: Routes.user_settings_path(@socket, :edit), title: "Account", class: "flex items-center px-2 py-2 bg-white" do %>
-              <.initials_circle user={@current_user} />
-              <div class="ml-2 font-semibold">Account</div>
-            <% end %>
-
-            <%= if Enum.any?(@current_user.onboarding.intro_states) do %>
-              <.live_component module={PicselloWeb.Live.RestartTourComponent} id={@tour_id}, current_user={@current_user} />
-            <% end %>
-            <.form :let={_} for={%{}} as={:sign_out} action={Routes.user_session_path(@socket, :delete)} method="delete">
-              <%= submit "Logout", class: "text-center py-2 w-full" %>
-            </.form>
-          </div>
-        </div>
-        <div class="flex flex-col items-center justify-center text-sm text-base-300 bg-gray-100 rounded-full w-9 h-9 pb-0.5" title={@current_user.name}>
-          <%= User.initials @current_user %>
-        </div>
-      <% end %>
-    </div>
-    """
-  end
-
-  def main_header(assigns) do
-    ~H"""
-    <div id="sidebar-wrapper" phx-hook="CollapseSidebar" data-drawer-open="false" class="z-50">
-      <div class="sm:hidden bg-white p-2 flex items-center justify-between fixed top-0 left-0 right-0">
-        <button data-drawer-type="mobile" data-drawer-target="default-sidebar" data-drawer-toggle="default-sidebar" aria-controls="default-sidebar" type="button" class="inline-flex items-center p-2 mt-2 ms-3 text-sm text-gray-500 rounded-lg hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-gray-200 dark:text-gray-400 dark:hover:bg-gray-700 dark:focus:ring-gray-600">
-          <span class="sr-only">Open sidebar</span>
-          <.icon name="hamburger" class="h-4 text-base-300 w-9" />
-        </button>
-        <%= live_redirect to: (apply Routes, (if @current_user, do: :home_path, else: :page_path), [@socket, :index]), title: "Picsello" do %>
-          <.icon name="logo" class="my-4 w-28 h-9 mr-6" />
-        <% end %>
-        <.initials_menu {assigns} />
-      </div>
-      <aside id="default-sidebar" class="fixed top-0 left-0 z-40 w-64 h-screen transition-all" aria-label="Sidebar">
-        <div class="h-full overflow-y-auto bg-white border-r border-r-base-200">
-          <div class="flex items-center justify-between px-4">
-            <%= live_redirect to: (apply Routes, (if @current_user, do: :home_path, else: :page_path), [@socket, :index]), title: "Picsello" do %>
-              <.icon name="logo" class="my-4 w-28 h-9 mr-6" />
-            <% end %>
-            <.initials_menu {assigns} tour_id="current_user_sidebar" id="initials-menu-sidebar" inner_id="initials-menu-inner-content-sidebar" />
-          </div>
-          <.subscription_ending_soon type="header" socket={@socket} current_user={@current_user} />
-          <nav class="flex flex-col">
-            <%= for %{heading: heading, items: items} <- side_nav(@socket, @current_user), @current_user do %>
-              <div>
-                <p class="uppercase font-bold px-4 mt-2 mb-1 tracking-widest text-xs flex-shrink-0 whitespace-nowrap"><%= heading %></p>
-                <%= for %{title: title, icon: icon, path: path} <- items do %>
-                  <.nav_link title={title} to={path} socket={@socket} live_action={@live_action} current_user={@current_user} class="text-sm px-4 flex items-center py-2.5 whitespace-nowrap text-base-250 transition-all hover:bg-blue-planning-100" active_class="bg-blue-planning-100 text-black font-bold">
-                    <.icon name={icon} class="text-black inline-block w-5 h-5 mr-2 shrink-0" />
-                    <span><%= title %></span>
-                  </.nav_link>
-                <% end %>
-              </div>
-            <% end %>
-          </nav>
-          <button data-drawer-type="desktop" data-drawer-target="default-sidebar" data-drawer-toggle="default-sidebar" aria-controls="default-sidebar" type="button" class="inline-flex items-center p-2 mt-2 ms-3 text-sm text-gray-500 rounded-lg hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-gray-200 dark:text-gray-400 dark:hover:bg-gray-700 dark:focus:ring-gray-600 sm:block hidden">
-            <span class="sr-only">Open sidebar</span>
-            Collapse
-          </button>
-        </div>
-      </aside>
     </div>
     """
   end
