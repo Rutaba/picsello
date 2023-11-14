@@ -68,6 +68,7 @@ config :picsello, :global_watermarked_path, System.get_env("GLOBAL_WATERMARKED_P
 
 config :stripity_stripe,
   api_key: System.get_env("STRIPE_SECRET"),
+  publishable_key: System.get_env("STRIPE_PUBLISHABLE_KEY"),
   connect_signing_secret: System.get_env("STRIPE_CONNECT_SIGNING_SECRET"),
   app_signing_secret: System.get_env("STRIPE_APP_SIGNING_SECRET")
 
@@ -134,7 +135,8 @@ config :picsello, Oban,
     {Oban.Plugins.Pruner, max_age: 60 * 60},
     {Oban.Plugins.Cron,
      crontab: [
-       {"*/10 * * * *", Picsello.Workers.ScheduleAutomationEmail},
+       {System.get_env("EMAIL_AUTOMATION_TIME") || "*/10 * * * *",
+        Picsello.Workers.ScheduleAutomationEmail},
        {"0 8 * * *", Picsello.Workers.SendGalleryExpirationReminder},
        {"0 0 * * 0", Picsello.Workers.SyncWHCCCatalog},
        {"0 1 * * *", Picsello.Workers.CleanUploader}

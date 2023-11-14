@@ -5,12 +5,14 @@ defmodule PicselloWeb.Live.User.Settings do
   alias Picsello.{
     Accounts,
     Accounts.User,
+    Accounts.User.Promotions,
     Organization,
     Onboardings,
     Packages,
     Repo,
     Subscription,
-    Subscriptions
+    Subscriptions,
+    Payments
   }
 
   import PicselloWeb.Gettext, only: [ngettext: 3]
@@ -22,13 +24,55 @@ defmodule PicselloWeb.Live.User.Settings do
 
   @impl true
   def mount(_params, _session, %{assigns: %{current_user: user}} = socket) do
+    %{value: black_friday_code} =
+      Picsello.AdminGlobalSettings.get_settings_by_slug("black_friday_code")
+
     socket
     |> assign(:current_user, Accounts.preload_address(user))
     |> assigns_changesets()
     |> assign(:promotion_code, Subscriptions.maybe_get_promotion_code?(user))
     |> assign(:card_btn_class, "btn-primary px-9 mx-1")
+    |> assign(
+      :current_sale,
+      Promotions.get_user_promotion_by_slug(user, black_friday_code)
+    )
+    |> assign(
+      :sale_promotion_code,
+      if(Subscriptions.maybe_return_promotion_code_id?(black_friday_code),
+        do: black_friday_code,
+        else: nil
+      )
+    )
     |> ok()
   end
+
+  @impl true
+  def handle_params(
+        %{"pre_purchase" => "true", "checkout_session_id" => _},
+        _uri,
+        %{assigns: %{sale_promotion_code: sale_promotion_code, current_user: current_user}} =
+          socket
+      ) do
+    Promotions.insert_or_update_promotion(current_user, %{
+      slug: sale_promotion_code,
+      state: :purchased,
+      name: "Black Friday"
+    })
+
+    Onboardings.user_update_promotion_code_changeset(current_user, %{
+      onboarding: %{
+        sale_promotion_code: sale_promotion_code
+      }
+    })
+    |> Repo.update!()
+
+    socket
+    |> put_flash(:success, "Year extended!")
+    |> noreply()
+  end
+
+  @impl true
+  def handle_params(_params, _uri, socket), do: socket |> noreply()
 
   defp assigns_changesets(%{assigns: %{current_user: user}} = socket) do
     socket
@@ -482,6 +526,42 @@ defmodule PicselloWeb.Live.User.Settings do
     do: PicselloWeb.LiveHelpers.handle_event(event, params, socket)
 
   @impl true
+  def handle_event(
+        "subscription-prepurchase",
+        _,
+        socket
+      ) do
+    build_invoice_link(socket)
+  end
+
+  @impl true
+  def handle_event(
+        "subscription-prepurchase-dismiss",
+        _,
+        %{assigns: %{current_user: current_user, sale_promotion_code: sale_promotion_code}} =
+          socket
+      ) do
+    case Promotions.insert_or_update_promotion(current_user, %{
+           slug: sale_promotion_code,
+           name: "Black Friday",
+           state: :dismissed
+         }) do
+      {:ok, sale_promotion_code} ->
+        socket
+        |> assign(
+          :current_sale,
+          sale_promotion_code
+        )
+        |> put_flash(:success, "Deal hidden successfully")
+
+      {:error, _} ->
+        socket
+        |> put_flash(:error, "Failed to dismiss promotion")
+    end
+    |> noreply()
+  end
+
+  @impl true
   def handle_info(
         {:confirm_event, "change-name"},
         %{assigns: %{organization_name_changeset: changeset}} = socket
@@ -612,6 +692,60 @@ defmodule PicselloWeb.Live.User.Settings do
 
       true ->
         nil
+    end
+  end
+
+  defp build_invoice_link(
+         %{
+           assigns: %{
+             current_user: current_user,
+             sale_promotion_code: sale_promotion_code
+           }
+         } = socket
+       ) do
+    discounts_data =
+      if sale_promotion_code,
+        do: %{
+          discounts: [
+            %{
+              coupon: Subscriptions.maybe_return_promotion_code_id?(sale_promotion_code)
+            }
+          ]
+        },
+        else: %{}
+
+    stripe_params =
+      %{
+        client_reference_id: "blackfriday_2023",
+        cancel_url: Routes.user_settings_url(socket, :edit),
+        success_url:
+          "#{Routes.user_settings_url(socket, :edit)}?pre_purchase=true&checkout_session_id={CHECKOUT_SESSION_ID}",
+        billing_address_collection: "auto",
+        customer: Subscriptions.user_customer_id(current_user),
+        line_items: [
+          %{
+            price_data: %{
+              currency: "USD",
+              unit_amount: 35_000,
+              product_data: %{
+                name: "Black Friday 2023",
+                description: "Pre purchase your next year of Picsello!"
+              },
+              tax_behavior: "exclusive"
+            },
+            quantity: 1
+          }
+        ]
+      }
+      |> Map.merge(discounts_data)
+
+    case Payments.create_session(stripe_params, []) do
+      {:ok, %{url: url}} ->
+        socket |> redirect(external: url) |> noreply()
+
+      {:error, error} ->
+        Logger.warning("Error redirecting to Stripe: #{inspect(error)}")
+        socket |> put_flash(:error, "Couldn't redirect to Stripe. Please try again") |> noreply()
     end
   end
 end

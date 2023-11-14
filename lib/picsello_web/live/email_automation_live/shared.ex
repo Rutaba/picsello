@@ -12,6 +12,7 @@ defmodule PicselloWeb.EmailAutomationLive.Shared do
 
   alias Picsello.{
     Marketing,
+    Shoots,
     PaymentSchedules,
     PaymentSchedule,
     EmailPresets.EmailPreset,
@@ -96,6 +97,26 @@ defmodule PicselloWeb.EmailAutomationLive.Shared do
     end)
   end
 
+  @doc """
+  Generate sign options based on the provided state.
+
+  This function generates a list of sign options based on the provided `state`. The `state` can be a string or an atom.
+
+  The sign options are determined as follows:
+      - If the `state` is "before_shoot" or "gallery_expiration_soon", it returns options for "Before" and "After".
+      - If the `state` is "balance_due" or "offline_payment", it returns options for "Before" and "After" with the "After" option enabled.
+      - For any other `state`, it returns options for "Before" and "After" with the "Before" option disabled.
+
+  ## Parameters
+
+      - `state` (String.t() | atom()): The state to determine sign options for.
+
+  ## Examples
+
+      ```elixir
+      options = make_sign_options("before_shoot")
+      # Returns: [[key: "Before", value: "-"], [key: "After", value: "+", disabled: true]]
+  """
   def make_sign_options(state) do
     state = if is_atom(state), do: Atom.to_string(state), else: state
 
@@ -372,6 +393,7 @@ defmodule PicselloWeb.EmailAutomationLive.Shared do
       EmailAutomationSchedules.get_last_completed_email(
         type,
         gallery_id,
+        nil,
         job_id,
         pipeline_id,
         state,
@@ -436,7 +458,7 @@ defmodule PicselloWeb.EmailAutomationLive.Shared do
 
     days_to_compare = hours_to_days(email.total_hours)
     %{sign: sign} = EmailAutomations.explode_hours(email.total_hours)
-    today = DateTime.utc_now() |> Timex.end_of_day()
+    today = DateTime.utc_now()
 
     cond do
       is_nil(gallery.expired_at) ->
@@ -488,7 +510,7 @@ defmodule PicselloWeb.EmailAutomationLive.Shared do
     # send 7 days after gallery send 7 >= 7
 
     days_to_compare = hours_to_days(email.total_hours)
-    today = DateTime.utc_now() |> Timex.end_of_day()
+    today = DateTime.utc_now()
 
     %{sign: sign} = EmailAutomations.explode_hours(email.total_hours)
 
@@ -549,8 +571,29 @@ defmodule PicselloWeb.EmailAutomationLive.Shared do
     get_date_for_schedule(last_completed_email, lead_date)
   end
 
-  def fetch_date_for_state(state, _email, last_completed_email, job, _gallery, _order)
-      when state in [:pays_retainer, :thanks_booking] do
+  def fetch_date_for_state(:thanks_booking, _email, last_completed_email, job, _gallery, _order) do
+    payment_schedules = PaymentSchedules.payment_schedules(job)
+    any_with_cash? = PaymentSchedules.is_with_cash?(job)
+
+    paid_at =
+      payment_schedules
+      |> Enum.filter(&(!is_nil(&1.paid_at)))
+
+    cond do
+      Enum.any?(paid_at) ->
+        payment_date = paid_at |> List.first() |> Map.get(:paid_at)
+        get_date_for_schedule(last_completed_email, payment_date)
+
+      any_with_cash? ->
+        payment_date = payment_schedules |> List.first() |> Map.get(:inserted_at)
+        get_date_for_schedule(last_completed_email, payment_date)
+
+      true ->
+        nil
+    end
+  end
+
+  def fetch_date_for_state(:pays_retainer, _email, last_completed_email, job, _gallery, _order) do
     payment_schedules = PaymentSchedules.payment_schedules(job)
 
     online_pays =
@@ -558,7 +601,7 @@ defmodule PicselloWeb.EmailAutomationLive.Shared do
       |> Enum.filter(&(!is_nil(&1.paid_at) and &1.type == "stripe"))
       |> Enum.sort_by(& &1.paid_at, :asc)
 
-    if Enum.any?(online_pays) do
+    if Enum.any?(online_pays) and !PaymentSchedules.all_paid?(job) do
       payment_date = online_pays |> List.first() |> Map.get(:paid_at)
       get_date_for_schedule(last_completed_email, payment_date)
     else
@@ -573,26 +616,21 @@ defmodule PicselloWeb.EmailAutomationLive.Shared do
   end
 
   def fetch_date_for_state(
-        state,
+        :pays_retainer_offline,
         _email,
         last_completed_email,
         job,
         _gallery,
         _order
-      )
-      when state in [:pays_retainer_offline, :thanks_booking] do
+      ) do
     payment_schedules = PaymentSchedules.payment_schedules(job)
-
-    all_paid_payments =
-      payment_schedules
-      |> Enum.filter(&(!is_nil(&1.paid_at)))
 
     offline_pays =
       payment_schedules
       |> Enum.filter(&(!is_nil(&1.paid_at) and &1.type != "stripe"))
       |> Enum.sort_by(& &1.paid_at, :asc)
 
-    if Enum.any?(offline_pays) and Enum.count(all_paid_payments) == 1 do
+    if Enum.any?(offline_pays) and !PaymentSchedules.all_paid?(job) do
       payment_offline = offline_pays |> List.first() |> Map.get(:paid_at)
 
       get_date_for_schedule(last_completed_email, payment_offline)
@@ -603,50 +641,33 @@ defmodule PicselloWeb.EmailAutomationLive.Shared do
 
   def fetch_date_for_state(:before_shoot, email, _last_completed_email, job, _gallery, _order) do
     # Examples
-    # shoot.start_at is ~D[2023-10-20]
+    # shoot.starts_at is ~D[2023-10-20]
     # today is ~D[2023-10-09]
     # difference is 12 days
     # send 7 days before shoot start 12 <= 7 false
 
-    # shoot.start_at is ~D[2023-10-20]
+    # shoot.starts_at is ~D[2023-10-20]
     # today is ~D[2023-10-13]
     # difference is 7 days
     # send 7 days before shoot start 7<= 7 true
 
-    # shoot.start_at is ~D[2023-10-20]
+    # shoot.starts_at is ~D[2023-10-20]
     # today is ~D[2023-10-21]
     # difference is 1 days
     # send 1 days before shoot start 1<= 1 true
 
     timezone = job.client.organization.user.time_zone
 
-    Logger.info("-- before_shoot timezone: #{timezone}")
-
     today = today_timezone(timezone)
-
-    today_offset_original =
-      DateTime.utc_now() |> Timex.end_of_day() |> DateTime.shift_zone!(timezone)
-
-    Logger.info("-- before_shoot today: #{today}")
-    Logger.info("-- before_shoot today_offset_original: #{today_offset_original}")
 
     %{sign: sign} = EmailAutomations.explode_hours(email.total_hours)
     days_to_compare = hours_to_days(email.total_hours)
 
-    job.shoots
-    |> Enum.filter(fn item ->
-      starts_at = item.starts_at |> DateTime.shift_zone!(timezone)
+    shoot = Shoots.get_shoot(email.shoot_id)
+    starts_at = shoot.starts_at |> DateTime.shift_zone!(timezone)
 
-      Logger.info("-- before_shoot starts_at: #{starts_at}")
-      Logger.info("-- before_shoot date_diff: #{Date.diff(starts_at, today)}")
-
-      is_send_time?(Date.diff(starts_at, today), abs(days_to_compare), sign)
-    end)
-    |> (fn filtered_list ->
-          if Enum.empty?(filtered_list),
-            do: nil,
-            else: List.first(filtered_list) |> Map.get(:starts_at)
-        end).()
+    send_time? = is_send_time?(Date.diff(starts_at, today), abs(days_to_compare), sign)
+    if send_time?, do: shoot.starts_at, else: nil
   end
 
   def fetch_date_for_state(:balance_due, _email, last_completed_email, job, _gallery, _order) do
@@ -688,30 +709,17 @@ defmodule PicselloWeb.EmailAutomationLive.Shared do
   end
 
   def fetch_date_for_state(:paid_full, _email, last_completed_email, job, _gallery, _order) do
-    payment_schedules = PaymentSchedules.payment_schedules(job)
+    payment_schedules =
+      PaymentSchedules.payment_schedules(job) |> Enum.sort_by(& &1.updated_at, :desc)
+
     # Trigger when all paid & last payment is paid by stripe
     if Enum.any?(payment_schedules) and PaymentSchedules.all_paid?(job) do
-      payment_schedule = payment_schedules |> List.last()
+      payment_schedule = payment_schedules |> List.first()
       paid_at = paid_online(payment_schedule)
       get_date_for_schedule(last_completed_email, paid_at)
     else
       nil
     end
-
-    # all_paid_online =
-    #   payment_schedules
-    #   |> Enum.all?(fn p -> not is_nil(p.paid_at) and p.type not in ["check", "cash"] end)
-
-    # if all_paid_online and Enum.any?(payment_schedules)do
-    #   paid_at =
-    #     payment_schedules
-    #     |> List.last()
-    #     |> Map.get(:paid_at)
-
-    #   get_date_for_schedule(last_completed_email, paid_at)
-    # else
-    #   nil
-    # end
   end
 
   def fetch_date_for_state(
@@ -722,44 +730,31 @@ defmodule PicselloWeb.EmailAutomationLive.Shared do
         _gallery,
         _order
       ) do
-    payment_schedules = PaymentSchedules.payment_schedules(job)
+    payment_schedules =
+      PaymentSchedules.payment_schedules(job) |> Enum.sort_by(& &1.updated_at, :desc)
+
     # Trigger when all paid & last payment is paid by cash/check
     if Enum.any?(payment_schedules) and PaymentSchedules.all_paid?(job) do
-      payment_schedule = payment_schedules |> List.last()
+      payment_schedule = payment_schedules |> List.first()
       paid_at = paid_offline(payment_schedule)
       get_date_for_schedule(last_completed_email, paid_at)
     else
       nil
     end
-
-    # all_paid_offline =
-    #   payment_schedules
-    #   |> Enum.all?(fn p -> not is_nil(p.paid_at) and p.type in ["check", "cash"] end)
-
-    # if all_paid_offline and Enum.any?(payment_schedules) do
-    #   paid_at =
-    #     payment_schedules
-    #     |> List.last()
-    #     |> Map.get(:paid_at)
-
-    #   get_date_for_schedule(last_completed_email, paid_at)
-    # else
-    #   nil
-    # end
   end
 
   def fetch_date_for_state(:shoot_thanks, email, _last_completed_email, job, _gallery, _order) do
-    # shoot.start_at is ~D[2023-10-20]
+    # shoot.starts_at is ~D[2023-10-20]
     # today is ~D[2023-10-09]
     # difference is -12 days
     # send 7 days after shoot -12 >= 7 false
 
-    # shoot.start_at is ~D[2023-10-20]
+    # shoot.starts_at is ~D[2023-10-20]
     # today is ~D[2023-10-23]
     # difference is 3 days
     # send 7 days after shoot 3 >= 7 false
 
-    # shoot.start_at is ~D[2023-10-20]
+    # shoot.starts_at is ~D[2023-10-20]
     # today is ~D[2023-10-27]
     # difference is 7 days
     # send 7 days after shoot 7 >= 7 true
@@ -769,30 +764,25 @@ defmodule PicselloWeb.EmailAutomationLive.Shared do
     %{sign: sign} = EmailAutomations.explode_hours(email.total_hours)
     days_to_compare = hours_to_days(email.total_hours)
 
-    job.shoots
-    |> Enum.filter(fn item ->
-      starts_at = item.starts_at |> DateTime.shift_zone!(timezone)
-      is_send_time?(Date.diff(today, starts_at), abs(days_to_compare), sign)
-    end)
-    |> (fn filtered_list ->
-          if Enum.empty?(filtered_list),
-            do: nil,
-            else: List.first(filtered_list) |> Map.get(:starts_at)
-        end).()
+    shoot = Shoots.get_shoot(email.shoot_id)
+    starts_at = shoot.starts_at |> DateTime.shift_zone!(timezone)
+
+    send_time? = is_send_time?(Date.diff(today, starts_at), abs(days_to_compare), sign)
+    if send_time?, do: shoot.starts_at, else: nil
   end
 
   def fetch_date_for_state(:post_shoot, email, _last_completed_email, job, _gallery, _order) do
-    # shoot.start_at is ~D[2023-10-20]
+    # shoot.starts_at is ~D[2023-10-20]
     # today is ~D[2023-10-09]
     # difference is -12 days
     # send 7 days after shoot -12 >= 7 false
 
-    # shoot.start_at is ~D[2023-10-20]
+    # shoot.starts_at is ~D[2023-10-20]
     # today is ~D[2023-10-23]
     # difference is 3 days
     # send 7 days after shoot 3 >= 7 false
 
-    # shoot.start_at is ~D[2023-10-20]
+    # shoot.starts_at is ~D[2023-10-20]
     # today is ~D[2023-10-27]
     # difference is 7 days
     # send 7 days after shoot 7 >= 7 true
@@ -898,7 +888,7 @@ defmodule PicselloWeb.EmailAutomationLive.Shared do
   end
 
   defp today_timezone(timezone) do
-    DateTime.utc_now() |> DateTime.shift_zone!(timezone) |> Timex.end_of_day()
+    DateTime.utc_now() |> DateTime.shift_zone!(timezone)
   end
 
   defp get_date_for_schedule(nil, date), do: date

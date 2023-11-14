@@ -14,6 +14,7 @@
 @import './client-app.scss';
 @import './components/welcomeComponent.css';
 @import 'components/date-picker.css';
+@import "live_phone/assets/live_phone";
 
 html {
   @apply text-base-300 bg-white text-13px sm:text-16px;
@@ -208,6 +209,12 @@ canvas {
     
     .item {
       @apply md:w-[calc(25%-10px)] w-full items-center bg-gray-100;
+    }
+
+    .galleryItem img,
+    .js-disable-right-click img,
+    .js-disable-right-click canvas {
+      @apply pointer-events-none;
     }
   }
 }

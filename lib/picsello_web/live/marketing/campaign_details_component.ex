@@ -76,6 +76,7 @@ defmodule PicselloWeb.Live.Marketing.CampaignDetailsComponent do
         socket,
         __MODULE__,
         %{
+          close_event: :close_detail_component,
           assigns: assigns |> Map.take([:current_user]) |> Map.put(:campaign_id, campaign_id)
         }
       )

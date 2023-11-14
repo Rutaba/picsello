@@ -7,11 +7,18 @@ defmodule PicselloWeb.UserRegistrationController do
   alias PicselloWeb.UserAuth
 
   def create(%{req_cookies: cookies} = conn, %{"user" => user_params}) do
+    onboarding_flow_source =
+      case user_params do
+        %{"onboarding_flow_source" => onboarding_flow_source} -> [onboarding_flow_source]
+        _ -> []
+      end
+
     user_params
     |> Map.put("organization", %{
       organization_cards: OrganizationCard.for_new_changeset(),
       gs_gallery_products: GlobalSettings.gallery_products_params()
     })
+    |> Map.put("onboarding_flow_source", onboarding_flow_source)
     |> Enum.into(Map.take(cookies, ["time_zone"]))
     |> Accounts.register_user()
     |> case do

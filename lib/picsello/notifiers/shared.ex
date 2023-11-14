@@ -25,13 +25,18 @@ defmodule Notifiers.Shared do
     deliver_transactional_email(params, recipients, reply_to, client)
   end
 
-  def deliver_transactional_email(params, recipients, %ClientMessage{} = message) do
-    if message.job do
-      reply_to = Messages.email_address(message.job)
-      deliver_transactional_email(params, recipients, reply_to, message.job.client)
-    else
-      deliver_transactional_email(params, recipients)
-    end
+  def deliver_transactional_email(params, recipients, %ClientMessage{job: job} = message) do
+    {reply_to, client} =
+      if job do
+        {Messages.email_address(job), job.client}
+      else
+        %{client_message_recipients: [%{client: %{organization: organization} = client} | _]} =
+          Repo.preload(message, client_message_recipients: [client: :organization])
+
+        {Messages.email_address(organization), client}
+      end
+
+    deliver_transactional_email(params, recipients, reply_to, client)
   end
 
   def deliver_transactional_email(params, recipients, reply_to, client) do

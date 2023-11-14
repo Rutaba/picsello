@@ -198,12 +198,6 @@ defmodule PicselloWeb.Live.EmailAutomations.Show do
     end
     |> case do
       {:ok, _} ->
-        Phoenix.PubSub.broadcast(
-          Picsello.PubSub,
-          "emails_count:#{job_id}",
-          {:update_emails_count, %{job_id: job_id}}
-        )
-
         socket
         |> put_flash(:success, "Email Sent Successfully")
 
@@ -219,9 +213,12 @@ defmodule PicselloWeb.Live.EmailAutomations.Show do
   @impl true
   def handle_info({:confirm_event, "stop-email-schedule-" <> id}, socket) do
     id = String.to_integer(id)
-    stopped_at = DateTime.truncate(DateTime.utc_now(), :second)
+    schedule_query = EmailAutomationSchedules.get_schedule_by_id_query(id)
 
-    case EmailAutomationSchedules.update_email_schedule(id, %{stopped_at: stopped_at}) do
+    case EmailAutomationSchedules.delete_and_insert_schedules_by(
+           schedule_query,
+           :photographer_stopped
+         ) do
       {:ok, _} -> socket |> put_flash(:success, "Email Stopped Successfully")
       _ -> socket |> put_flash(:error, "Error in Updating Email")
     end
@@ -247,13 +244,17 @@ defmodule PicselloWeb.Live.EmailAutomations.Show do
     <%= if Enum.member?(@collapsed_sections, @subcategory) do %>
       <% sorted_emails = sort_emails(@pipeline.emails, @pipeline.state) %>
       <div testid="pipeline-section" class="mb-3 md:mr-4 border border-base-200 rounded-lg">
-        <% next_email = get_next_email_schdule_date(@category_type, @gallery_id, @job_id, @pipeline.id, @pipeline.state, @subcategory_slug) %>
+        <% next_email = get_next_email_schdule_date(@category_type, sorted_emails, @pipeline.id, @pipeline.state, @subcategory_slug) %>
         <div class={classes("flex justify-between p-2", %{"opacity-60" => next_email.is_completed})}>
-          <span class="pl-1 text-blue-planning-300 font-bold"> <%= next_email.text %>
-          </span>
-        <%= if not is_nil(next_email.email_preview_id) do %>
-          <span class="text-blue-planning-300 pr-4 underline hover:cursor-pointer" phx-click="email-preview" phx-value-email_preview_id={next_email.email_preview_id} >Preview</span>
-        <% end %>
+            <% stopped_email_text = EmailAutomationSchedules.get_stopped_emails_text(@job_id, @pipeline.state, PicselloWeb.Helpers) %>
+            <%= if stopped_email_text do %>
+              <span class="pl-1 text-red-sales-300 font-bold"> <%= stopped_email_text %> </span>
+            <% else %>
+              <span class="pl-1 text-blue-planning-300 font-bold"> <%= next_email.text %> </span>
+            <% end %>
+          <%= if not is_nil(next_email.email_preview_id) do %>
+            <span class="text-blue-planning-300 pr-4 underline hover:cursor-pointer" phx-click="email-preview" phx-value-email_preview_id={next_email.email_preview_id} >Preview</span>
+          <% end %>
         </div>
 
         <div class={classes("flex bg-base-200 pl-2 pr-7 py-3 items-center cursor-pointer", %{"opacity-60" => next_email.is_completed})} phx-click="toggle-section" phx-value-section_id={"pipeline-#{@pipeline.id}-#{@subcategory}"}>
@@ -310,7 +311,7 @@ defmodule PicselloWeb.Live.EmailAutomations.Show do
                     Completed <%= get_date(email.reminded_at) %>
                   <% end %>
                   <%= if not is_nil(email.stopped_at) do %>
-                    Stopped <%= get_date(email.stopped_at) %>
+                    Stopped <%= get_date(email.stopped_at) %> | Reason: <%= stop_reason_text(email.stopped_reason) %>
                   <% end %>
 
                   <p class="text-black text-xl">
@@ -382,19 +383,16 @@ defmodule PicselloWeb.Live.EmailAutomations.Show do
     |> assign(email_schedules: email_schedules)
   end
 
-  defp get_next_email_schdule_date(
-         category_type,
-         gallery_id,
-         job_id,
-         pipeline_id,
-         state,
-         subcategory
-       ) do
+  defp get_next_email_schdule_date(category_type, emails, pipeline_id, state, subcategory) do
+    email = emails |> List.first()
+    category_type = if email.shoot_id, do: :shoot, else: category_type
+
     email_schedule =
       EmailAutomationSchedules.query_get_email_schedule(
         category_type,
-        gallery_id,
-        job_id,
+        email.gallery_id,
+        email.shoot_id,
+        email.job_id,
         pipeline_id
       )
       |> where([es], is_nil(es.reminded_at))
@@ -406,8 +404,9 @@ defmodule PicselloWeb.Live.EmailAutomations.Show do
     last_completed_email =
       EmailAutomationSchedules.get_last_completed_email(
         category_type,
-        gallery_id,
-        job_id,
+        email.gallery_id,
+        email.shoot_id,
+        email.job_id,
         pipeline_id,
         state,
         PicselloWeb.EmailAutomationLive.Shared
@@ -431,37 +430,46 @@ defmodule PicselloWeb.Live.EmailAutomations.Show do
         }
 
       _ ->
-        %{sign: sign} = EmailAutomations.explode_hours(email_schedule.total_hours)
-        job = EmailAutomations.get_job(job_id)
-        gallery = if is_nil(gallery_id), do: nil, else: EmailAutomations.get_gallery(gallery_id)
-        state = if is_atom(state), do: state, else: String.to_atom(state)
-        date = get_conditional_date(state, email_schedule, pipeline_id, job, gallery)
+        get_next_email_by(email_schedule, email, state, pipeline_id, subcategory)
+    end
+  end
 
-        cond do
-          not is_nil(date) ->
-            %{
-              text: "Next Email",
-              date: next_schedule_format(date, sign, email_schedule.total_hours),
-              email_preview_id: email_schedule.id,
-              is_completed: false
-            }
+  defp get_next_email_by(email_schedule, email, state, pipeline_id, subcategory) do
+    %{sign: sign} = EmailAutomations.explode_hours(email_schedule.total_hours)
+    job = EmailAutomations.get_job(email.job_id)
 
-          subcategory == "payment_reminder_emails" ->
-            %{
-              text: "Transactional",
-              date: "",
-              email_preview_id: email_schedule.id,
-              is_completed: false
-            }
+    gallery =
+      if is_nil(email.gallery_id),
+        do: nil,
+        else: EmailAutomations.get_gallery(email.gallery_id)
 
-          true ->
-            %{
-              text: "Next Email",
-              date: "",
-              email_preview_id: email_schedule.id,
-              is_completed: false
-            }
-        end
+    state = if is_atom(state), do: state, else: String.to_atom(state)
+    date = get_conditional_date(state, email_schedule, pipeline_id, job, gallery)
+
+    cond do
+      not is_nil(date) ->
+        %{
+          text: "Next Email",
+          date: next_schedule_format(date, sign, email_schedule.total_hours),
+          email_preview_id: email_schedule.id,
+          is_completed: false
+        }
+
+      subcategory == "payment_reminder_emails" ->
+        %{
+          text: "Transactional",
+          date: "",
+          email_preview_id: email_schedule.id,
+          is_completed: false
+        }
+
+      true ->
+        %{
+          text: "Next Email",
+          date: "",
+          email_preview_id: email_schedule.id,
+          is_completed: false
+        }
     end
   end
 
@@ -536,4 +544,16 @@ defmodule PicselloWeb.Live.EmailAutomations.Show do
 
   defp get_conditional_date(state, email, pipeline_id, job, gallery),
     do: fetch_date_for_state_maybe_manual(state, email, pipeline_id, job, gallery, nil)
+
+  @status_texts %{
+    "photographer_stopped" => "Stopped by Photographer",
+    "proposal_accepted" => "Proposal has already been accepted",
+    "already_paid_full" => "Job has already been paid in full",
+    "shoot_starts_at_passed" => "Shoot date has already passed",
+    "gallery_already_shared_because_order_placed" => "Gallery has already been shared",
+    "archived" => "Archived",
+    "completed" => "Completed",
+    "lead_converted_to_job" => "Lead has been converted to job"
+  }
+  def stop_reason_text(status), do: Map.get(@status_texts, status, "")
 end

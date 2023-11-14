@@ -9,8 +9,8 @@
   </div>
   <div class="flex flex-col items-start w-full h-full pt-2 overflow-y-auto editProductPopup__content lg:flex-row">
     <div class="flex items-center justify-center w-full h-full p-8 ml-0 editProductPopup__img lg:w-2/4 bg-base-250 lg:ml-12">
-      <div class="flex flex-col justify-between">
-        <div class="flex items-center justify-center photos__rect xl:h-96">
+      <div class="flex flex-col justify-between" id="edit_product_modal" phx-hook="DisableRightClick">
+        <div class="flex items-center justify-center photos__rect xl:h-96 js-disable-right-click">
           <.framed_preview item_id={@photo.id} category={@category} photo={@photo} height={384} />
         </div>
       </div>

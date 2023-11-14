@@ -237,18 +237,9 @@ defmodule PicselloWeb.GalleryLive.ChooseProduct do
           <:button disabled>In cart</:button>
         </.option>
       <% :purchased -> %>
-        <.option {@opts}>
-          <:button
-            icon="download"
-            icon_class="h-4 w-4 fill-current"
-            phx-click="download-photo"
-            phx-target={@myself}
-            phx-value-uri={Routes.gallery_downloads_path(@socket, :download_photo, @gallery.client_link_hash, @photo.id)}
-            class="my-4 py-1.5"
-            >
-            Download
-          </:button>
-        </.option>
+      <.download_button {assigns} />
+      <% :available -> %>
+      <.download_button {assigns} />
       <% _ -> %>
         <.option {@opts} min_price={if @digital_credit <= 0, do: @download_each_price}>
           <:button phx-target={@myself} phx-click="digital_add_to_cart">
@@ -297,6 +288,23 @@ defmodule PicselloWeb.GalleryLive.ChooseProduct do
           <:button disabled>Unselect</:button>
         </.option>
       <% end %>
+    """
+  end
+
+  defp download_button(assigns) do
+    ~H"""
+    <.option {@opts}>
+      <:button
+        icon="download"
+        icon_class="h-4 w-4 fill-current"
+        phx-click="download-photo"
+        phx-target={@myself}
+        phx-value-uri={Routes.gallery_downloads_path(@socket, :download_photo, @gallery.client_link_hash, @photo.id)}
+        class="my-4 py-1.5"
+        >
+        Download
+      </:button>
+    </.option>
     """
   end
 
