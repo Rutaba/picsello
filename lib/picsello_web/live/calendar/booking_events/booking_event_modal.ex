@@ -193,6 +193,17 @@ defmodule PicselloWeb.Live.Calendar.BookingEventModal do
 
   @impl true
   def handle_event(
+        "place_changed",
+        %{"formatted_address" => address} = params,
+        %{assigns: %{changeset: changeset}} = socket
+      ) do
+    socket
+    |> assign(:changeset, changeset |> Ecto.Changeset.put_change(:address, address))
+    |> noreply()
+  end
+
+  @impl true
+  def handle_event(
         "validate",
         %{
           "booking_event_date" => params,
@@ -308,7 +319,7 @@ defmodule PicselloWeb.Live.Calendar.BookingEventModal do
 
   defp assign_changeset(
          %{assigns: %{booking_date: booking_date}} = socket,
-         params,
+          params,
          action \\ nil
        ) do
     changeset =
