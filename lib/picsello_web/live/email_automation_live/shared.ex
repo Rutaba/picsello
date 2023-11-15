@@ -383,7 +383,7 @@ defmodule PicselloWeb.EmailAutomationLive.Shared do
     else fetch_date_for_state to handle all other states
   """
   def fetch_date_for_state_maybe_manual(state, email, pipeline_id, job, gallery, order) do
-    job = Repo.preload(job, [:booking_event, client: [organization: :user]])
+    job = Repo.preload(job, [:booking_event, :job_status, client: [organization: :user]])
     job_id = get_job_id(job)
     gallery_id = get_gallery_id(gallery, order)
     order = if order, do: Repo.preload(order, [:digitals]), else: nil
@@ -665,9 +665,8 @@ defmodule PicselloWeb.EmailAutomationLive.Shared do
 
     shoot = Shoots.get_shoot(email.shoot_id)
     starts_at = shoot.starts_at |> DateTime.shift_zone!(timezone)
-
     send_time? = is_send_time?(Date.diff(starts_at, today), abs(days_to_compare), sign)
-    if send_time?, do: shoot.starts_at, else: nil
+    if send_time? and !job.job_status.is_lead, do: shoot.starts_at, else: nil
   end
 
   def fetch_date_for_state(:balance_due, _email, last_completed_email, job, _gallery, _order) do
@@ -768,7 +767,7 @@ defmodule PicselloWeb.EmailAutomationLive.Shared do
     starts_at = shoot.starts_at |> DateTime.shift_zone!(timezone)
 
     send_time? = is_send_time?(Date.diff(today, starts_at), abs(days_to_compare), sign)
-    if send_time?, do: shoot.starts_at, else: nil
+    if send_time? and !job.job_status.is_lead, do: shoot.starts_at, else: nil
   end
 
   def fetch_date_for_state(:post_shoot, email, _last_completed_email, job, _gallery, _order) do

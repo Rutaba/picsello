@@ -692,14 +692,14 @@ defmodule Picsello.EmailAutomations do
     state_full_paid = if state == :pays_retainer_offline, do: :paid_offline_full, else: :paid_full
 
     if PaymentSchedules.all_paid?(job) do
-      send_job_payment(job, state_full_paid, organization_id)
+      send_email_by_state(job, state_full_paid, organization_id)
       GarbageEmailCollector.stop_job_and_lead_emails(job)
     else
-      send_job_payment(job, state, organization_id)
+      send_email_by_state(job, state, organization_id)
     end
   end
 
-  defp send_job_payment(job, state, organization_id) do
+  def send_email_by_state(job, state, organization_id) do
     pipeline = get_pipeline_by_state(state)
 
     email_schedule =
@@ -713,7 +713,7 @@ defmodule Picsello.EmailAutomations do
 
     email_preset =
       EmailPresets.user_email_automation_presets(
-        :job,
+        :lead,
         job.type,
         pipeline.id,
         organization_id
@@ -721,10 +721,12 @@ defmodule Picsello.EmailAutomations do
       |> List.first()
       |> preload_email()
 
-    send_payment_email(email_schedule, email_preset, job, state)
+    send_automation_email(email_schedule, email_preset, job, state)
   end
 
-  defp send_payment_email(nil, email_preset, job, state) do
+  defp send_automation_email(nil, nil, _job, _state), do: nil
+
+  defp send_automation_email(nil, email_preset, job, state) do
     EmailAutomationNotifier.deliver_automation_email_job(
       email_preset,
       job,
@@ -734,7 +736,7 @@ defmodule Picsello.EmailAutomations do
     )
   end
 
-  defp send_payment_email(email_schedule, _email_preset, job, state) do
+  defp send_automation_email(email_schedule, _email_preset, job, state) do
     EmailAutomationNotifier.deliver_automation_email_job(
       email_schedule,
       job,
