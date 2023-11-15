@@ -234,8 +234,8 @@ defmodule PicselloWeb.Live.Calendar.BookingEventModal do
   end
 
   @impl true
-  def handle_event("validate", %{"booking_event_date" => params}, socket) do
-    if Map.has_key?(params, "slots") do
+  def handle_event("validate", %{"booking_event_date" => params, "_target" => target}, socket) do
+    if Map.has_key?(params, "slots") and target not in [["booking_event_date", "session_gap"], ["booking_event_date", "session_length"] , ["booking_event_date", "time_blocks", "0", "start_time"], ["booking_event_date", "time_blocks", "0", "end_time"]] do
       socket |> assign_changeset_with_existing_slots(params, :validate)
     else
       socket |> assign_changeset_with_slots(params, :validate)
@@ -352,7 +352,7 @@ defmodule PicselloWeb.Live.Calendar.BookingEventModal do
     event = current(changeset)
 
     slots = event |> BookingEventDates.available_slots(booking_event)
-    open_slots = Enum.count(slots, &(&1.status == :open))
+    # open_slots = Enum.count(slots, &(&1.status == :open))
 
     slots =
       slots
@@ -360,7 +360,7 @@ defmodule PicselloWeb.Live.Calendar.BookingEventModal do
 
     params = Map.put(params, "slots", slots)
     changeset = booking_date |> BookingEventDate.changeset(params) |> Map.put(:action, action)
-    socket |> assign(changeset: changeset, open_slots: open_slots)
+    socket |> assign(changeset: changeset, open_slots: 2)
   end
 
   defp hidden_time?(:hidden), do: true

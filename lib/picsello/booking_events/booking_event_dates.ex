@@ -446,7 +446,7 @@ defmodule Picsello.BookingEventDates do
   @spec is_booked_any_date?(repeat_dates :: [Date.t()], booking_event_id :: integer()) ::
           boolean()
   def is_booked_any_date?(repeat_dates, booking_event_id) do
-    booked? = fn %{slots: slots} -> Enum.any?(slots, &(&1.status == :booked)) end
+    booked? = fn %{slots: slots} -> Enum.any?(slots, &(&1.status in [:booked, :reserved])) end
 
     Enum.any?(repeat_dates, fn date ->
       [booking_event_id]
@@ -538,20 +538,49 @@ defmodule Picsello.BookingEventDates do
          start_time,
          end_time
        ) do
-    Enum.reduce_while(slot, [], fn x, acc ->
-      duration = if x != available_slots - 1, do: duration_buffer, else: duration
+    if available_slots > 0 do
+      Enum.reduce_while(slot, [], fn x, acc ->
+        %{slot_start: slot_time, slot_end: slot_end} =
+          if x != available_slots do
+            %{
+              slot_start: start_time |> Time.add(duration_buffer * x),
+              slot_end: start_time |> Time.add(duration_buffer * (x + 1))
+            }
+          else
+            %{
+              slot_start: start_time |> Time.add(duration * x),
+              slot_end: start_time |> Time.add(duration * (x + 1))
+            }
+          end
 
-      {slot_start, slot_end} =
-        {Time.add(start_time, duration * x), Time.add(start_time, duration * (x + 1))}
+        slot_trunc = slot_end |> Time.truncate(:second) |> IO.inspect(label: "Slot trunc")
+        time = duration * -1
+        end_trunc = end_time |> Time.add(time) |> Time.truncate(:second) |> IO.inspect(label: "End Trunc")
 
-      slot_trunc = slot_end |> Time.truncate(:second)
-      time = duration * -1
-      end_trunc = end_time |> Time.add(time) |> Time.truncate(:second)
+        if slot_trunc > end_trunc do
+          {:halt, [%SlotBlock{slot_start: slot_time, slot_end: slot_trunc} | acc]}
+        else
+          {:cont, [%SlotBlock{slot_start: slot_time, slot_end: slot_end} | acc]}
+        end
+      end)
+      |> Enum.reverse()
+    else
+      []
+    end
+    # Enum.reduce_while(slot, [], fn x, acc ->
+    #   duration = if x != available_slots, do: duration_buffer, else: duration
 
-      flag_type = if slot_trunc > end_trunc, do: :halt, else: :cont
-      {flag_type, [%SlotBlock{slot_start: slot_start, slot_end: slot_end} | acc]}
-    end)
-    |> Enum.reverse()
+    #   {slot_start, slot_end} =
+    #     {Time.add(start_time, duration * x), Time.add(start_time, duration * (x + 1))}
+
+    #   slot_trunc = slot_end |> Time.truncate(:second)
+    #   time = duration * -1
+    #   end_trunc = end_time |> Time.add(time) |> Time.truncate(:second)
+
+    #   flag_type = if slot_trunc > end_trunc, do: :halt, else: :cont
+    #   {flag_type, [%SlotBlock{slot_start: slot_start, slot_end: slot_end} | acc]}
+    # end)
+    # |> Enum.reverse()
   end
 
   # Returns slots with status open or book
@@ -560,11 +589,11 @@ defmodule Picsello.BookingEventDates do
        do: []
 
   # Filters time slots based on overlapping shoots and assigns booking status.
-  defp filter_overlapping_shoots_slots(slot_times, booking_event, booking_date, false) do
-    booking_date = Map.put(booking_date, :slots, slot_times)
-    update_slots_status(booking_event, booking_date)
+  defp filter_overlapping_shoots_slots(slot_times, _booking_event, _booking_date, _) do
+    slot_times
   end
 
+  # TODO: delete this function after testing, not being used
   defp update_slots_status(booking_event, booking_date) do
     %{date: date, session_length: session_length, session_gap: session_gap, slots: slot_times} =
       booking_date
