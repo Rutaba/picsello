@@ -110,7 +110,7 @@ defmodule PicselloWeb.Live.Profile do
             <div class="grid sm:grid-cols-2 gap-8">
               <%= for event <- @booking_events do %>
                 <div {testid("booking-cards")}>
-                  <a href={Routes.client_booking_event_path(@socket, :booked, @organization.slug, event.id)} class="block w-full col">
+                  <a href={Routes.client_booking_event_path(@socket, :book, @organization.slug, event.id)} class="block w-full col">
                     <.blurred_thumbnail class="w-full" url={event.thumbnail_url} />
                     <div>
                       <h3 class="text-xl font-semibold mt-4">
@@ -348,21 +348,24 @@ defmodule PicselloWeb.Live.Profile do
     {:ok, utc_datetime} = DateTime.now("Etc/UTC")
     datetime = DateTime.to_date(utc_datetime)
 
-    Stream.reject(booking_events, fn
-      %{dates: [%{"booking_event_id" => nil}]} -> true
-      _ -> false
-    end)
-    |> Stream.map(fn %{dates: dates} = booking_events ->
+    Enum.map(booking_events, fn %{dates: dates} = booking_event ->
       date_structs =
-        dates
+        Enum.reject(dates, fn
+          %{"date" => nil} -> true
+          _ -> false
+        end)
         |> Enum.map(fn %{"date" => date} = booking_events_date ->
           Map.merge(booking_events_date, %{"date" => Date.from_iso8601!(date)})
           |> Morphix.atomorphiform!()
         end)
 
-      Map.merge(booking_events, %{dates: date_structs})
+      Map.merge(booking_event, %{dates: date_structs})
     end)
-    |> Stream.filter(fn %{dates: dates} ->
+    |> Enum.reject( fn
+      %{dates:  []} -> true
+      _ -> false
+    end)
+    |> Enum.filter(fn %{dates: dates} ->
       dates
       |> Enum.map(fn %{date: date} -> date end)
       |> Enum.sort_by(& &1, {:desc, Date})
@@ -370,7 +373,6 @@ defmodule PicselloWeb.Live.Profile do
       |> Date.compare(datetime)
       |> then(&(&1 in [:gt, :eq]))
     end)
-    |> Enum.to_list()
   end
 
   # Sorts booking events from descending to ascending by their dates
