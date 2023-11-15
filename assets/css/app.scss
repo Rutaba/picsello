@@ -338,11 +338,29 @@ canvas {
   @apply hidden sm:block;
 }
 
+#default-sidebar {
+  summary {
+    @apply list-none;
+
+    &::-webkit-details-marker {
+      @apply hidden;
+    }
+  }
+}
+
 [data-drawer-open="true"] #default-sidebar {
   @apply w-64;
 
   [data-drawer-type="desktop"] svg {
     @apply transform rotate-180;
+  }
+
+  .logo-badge {
+    @apply hidden;
+  }
+
+  .logo-full {
+    @apply block;
   }
 }
 
@@ -351,14 +369,16 @@ canvas {
     @apply transform-none sm:translate-x-0 sm:w-12;
   }
 
-  summary {
-    span {
-      @apply sm:opacity-0 sm:hidden;
-    }
-  }
-
   span {
     @apply sm:opacity-0;
+  }
+
+  .logo-badge {
+    @apply block;
+  }
+
+  .logo-full {
+    @apply hidden;
   }
 }
 

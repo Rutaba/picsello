@@ -103,11 +103,12 @@ defmodule PicselloWeb.Shared.Sidebar do
         <% end %>
         <.initials_menu {assigns} />
       </div>
-      <aside id="default-sidebar" class="fixed top-0 left-0 z-40 h-screen transition-all" aria-label="Sidebar">
+      <aside id="default-sidebar" class="fixed top-0 left-0 z-40 max-h-screen h-full transition-all" aria-label="Sidebar">
         <div class="h-full flex flex-col overflow-y-auto bg-white border-r border-r-base-200">
           <div class="flex items-center justify-between px-4">
             <%= live_redirect to: (apply Routes, (if @current_user, do: :home_path, else: :page_path), [@socket, :index]), title: "Picsello" do %>
-              <.icon name="logo" class="my-4 w-28 h-9 mr-6" />
+              <.icon name="logo" class="my-4 w-28 h-9 mr-6 logo-full" />
+              <.icon name="logo-badge" class="w-5 h-5 my-4 mr-6 logo-badge" />
             <% end %>
             <.initials_menu {assigns} tour_id="current_user_sidebar" id="initials-menu-sidebar" inner_id="initials-menu-inner-content-sidebar" />
           </div>
