@@ -1,6 +1,6 @@
 defmodule PicselloWeb.Shared.Sidebar do
   @moduledoc """
-    Helper functions to use the Sticky upload component
+    Live component for sidebar
   """
 
   alias Picsello.{
@@ -104,7 +104,7 @@ defmodule PicselloWeb.Shared.Sidebar do
         <.initials_menu {assigns} />
       </div>
       <aside id="default-sidebar" class="fixed top-0 left-0 z-40 h-screen transition-all" aria-label="Sidebar">
-        <div class="h-full overflow-y-auto bg-white border-r border-r-base-200">
+        <div class="h-full flex flex-col overflow-y-auto bg-white border-r border-r-base-200">
           <div class="flex items-center justify-between px-4">
             <%= live_redirect to: (apply Routes, (if @current_user, do: :home_path, else: :page_path), [@socket, :index]), title: "Picsello" do %>
               <.icon name="logo" class="my-4 w-28 h-9 mr-6" />
@@ -112,22 +112,42 @@ defmodule PicselloWeb.Shared.Sidebar do
             <.initials_menu {assigns} tour_id="current_user_sidebar" id="initials-menu-sidebar" inner_id="initials-menu-inner-content-sidebar" />
           </div>
           <nav class="flex flex-col">
-            <%= for %{heading: heading, items: items} <- side_nav(@socket, @current_user), @current_user do %>
-              <div>
-                <p class="uppercase font-bold px-4 mt-2 mb-1 tracking-widest text-xs flex-shrink-0 whitespace-nowrap"><%= heading %></p>
+            <.nav_link title="Dashboard" to={Routes.home_path(@socket, :index)} socket={@socket} live_action={@live_action} current_user={@current_user} class="text-sm px-4 flex items-center py-2.5 whitespace-nowrap text-base-250 transition-all hover:bg-blue-planning-100" active_class="bg-blue-planning-100 text-black font-bold">
+              <.icon name="home" class="inline-block w-5 h-5 mr-2 text-black shrink-0" />
+              <span>Dashboard</span>
+            </.nav_link>
+            <%= for %{heading: heading, is_default_opened?: is_default_opened?, items: items} <- side_nav(@socket, @current_user), @current_user do %>
+              <details open={is_default_opened?} class="group cursor-pointer">
+                <summary class="flex justify-between items-center uppercase font-bold px-4 py-3 tracking-widest text-xs flex-shrink-0 whitespace-nowrap group cursor-pointer">
+                  <span class="mr-2"><%= heading %></span>
+                  <.icon name="down" class="w-4 h-4 stroke-current stroke-2 text-base flex-shrink-0 group-open:rotate-180" />
+                </summary>
                 <%= for %{title: title, icon: icon, path: path} <- items do %>
                   <.nav_link title={title} to={path} socket={@socket} live_action={@live_action} current_user={@current_user} class="text-sm px-4 flex items-center py-2.5 whitespace-nowrap text-base-250 transition-all hover:bg-blue-planning-100" active_class="bg-blue-planning-100 text-black font-bold">
                     <.icon name={icon} class="text-black inline-block w-5 h-5 mr-2 shrink-0" />
                     <span><%= title %></span>
                   </.nav_link>
                 <% end %>
-              </div>
+              </details>
             <% end %>
+            <.nav_link title="Settings" to={Routes.user_settings_path(@socket, :edit)} socket={@socket} live_action={@live_action} current_user={@current_user} class="text-sm px-4 flex items-center py-2.5 whitespace-nowrap text-base-250 transition-all hover:bg-blue-planning-100" active_class="bg-blue-planning-100 text-black font-bold">
+              <.icon name="settings" class="inline-block w-5 h-5 mr-2 text-black shrink-0" />
+              <span>Settings</span>
+            </.nav_link>
           </nav>
-          <button phx-click="collapse" phx-target={@myself} data-drawer-type="desktop" data-drawer-target="default-sidebar" data-drawer-toggle="default-sidebar" aria-controls="default-sidebar" type="button" class="inline-flex items-center p-2 mt-2 ms-3 text-sm text-gray-500 rounded-lg hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-gray-200 dark:text-gray-400 dark:hover:bg-gray-700 dark:focus:ring-gray-600 sm:block hidden">
-            <span class="sr-only">Open sidebar</span>
-            Collapse
-          </button>
+          <div class="mt-auto">
+            <%= if @current_user && Application.get_env(:picsello, :intercom_id) do %>
+              <.nav_link title="Help" to={"#help"} socket={@socket} live_action={@live_action} current_user={@current_user} class="text-sm px-4 flex items-center py-2.5 whitespace-nowrap text-base-250 transition-all hover:bg-blue-planning-100 open-help" active_class="bg-blue-planning-100 text-black font-bold">
+                <.icon name="question-mark" class="inline-block w-5 h-5 mr-2 text-black shrink-0" />
+                <span>Help</span>
+              </.nav_link>
+            <% end %>
+            <button phx-click="collapse" phx-target={@myself} data-drawer-type="desktop" data-drawer-target="default-sidebar" data-drawer-toggle="default-sidebar" aria-controls="default-sidebar" type="button" class="text-sm px-4 flex items-center py-2.5 whitespace-nowrap text-base-250 transition-all hover:bg-blue-planning-100 w-full">
+              <span class="sr-only">Open sidebar</span>
+              <.icon name="collapse" class="inline-block w-5 h-5 mr-2 text-black shrink-0 transition-all" />
+              <span>Collapse</span>
+            </button>
+          </div>
         </div>
       </aside>
     </div>
@@ -191,27 +211,17 @@ defmodule PicselloWeb.Shared.Sidebar do
     end
   end
 
-  def side_nav(socket, _current_user) do
+  defp side_nav(socket, _current_user) do
     [
       %{
-        heading: "Get Booked",
+        heading: "Monetize",
+        is_default_opened?: true,
         items: [
-          %{
-            title: "Booking Events",
-            icon: "calendar",
-            path: Routes.calendar_booking_events_path(socket, :index)
-          },
           %{title: "Leads", icon: "three-people", path: Routes.job_path(socket, :leads)},
-          %{title: "Marketing", icon: "bullhorn", path: Routes.marketing_path(socket, :index)}
-        ]
-      },
-      %{
-        heading: "Manage",
-        items: [
           %{
-            title: "Clients",
-            icon: "client-icon",
-            path: Routes.clients_path(socket, :index)
+            title: "Jobs",
+            icon: "camera-check",
+            path: Routes.job_path(socket, :jobs)
           },
           %{
             title: "Galleries",
@@ -219,10 +229,21 @@ defmodule PicselloWeb.Shared.Sidebar do
             path: Routes.gallery_path(socket, :galleries)
           },
           %{
-            title: "Jobs",
-            icon: "camera-check",
-            path: Routes.job_path(socket, :jobs)
+            title: "Booking Events",
+            icon: "calendar",
+            path: Routes.calendar_booking_events_path(socket, :index)
           },
+          %{
+            title: "Clients",
+            icon: "client-icon",
+            path: Routes.clients_path(socket, :index)
+          }
+        ]
+      },
+      %{
+        heading: "Manage",
+        is_default_opened?: true,
+        items: [
           %{
             title: "Inbox",
             icon: "envelope",
@@ -232,11 +253,13 @@ defmodule PicselloWeb.Shared.Sidebar do
             title: "Calendar",
             icon: "calendar",
             path: Routes.calendar_index_path(socket, :index)
-          }
+          },
+          %{title: "Marketing", icon: "bullhorn", path: Routes.marketing_path(socket, :index)}
         ]
       },
       %{
-        heading: "Settings",
+        heading: "Admin & Docs",
+        is_default_opened?: false,
         items: [
           %{
             title: "Automations (Beta)",
@@ -257,36 +280,6 @@ defmodule PicselloWeb.Shared.Sidebar do
             title: "Questionnaires",
             icon: "questionnaire",
             path: Routes.questionnaires_index_path(socket, :index)
-          },
-          %{
-            title: "Calendar",
-            icon: "calendar",
-            path: Routes.calendar_settings_path(socket, :settings)
-          },
-          %{
-            title: "Gallery",
-            icon: "gallery-settings",
-            path: Routes.gallery_global_settings_index_path(socket, :edit)
-          },
-          %{
-            title: "Finances",
-            icon: "money-bags",
-            path: Routes.finance_settings_path(socket, :index)
-          },
-          %{
-            title: "Brand",
-            icon: "brand",
-            path: Routes.brand_settings_path(socket, :index)
-          },
-          %{
-            title: "Public Profile",
-            icon: "website",
-            path: Routes.profile_settings_path(socket, :index)
-          },
-          %{
-            title: "Account",
-            icon: "settings",
-            path: Routes.user_settings_path(socket, :edit)
           }
         ]
       }

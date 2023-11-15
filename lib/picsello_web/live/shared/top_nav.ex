@@ -13,7 +13,7 @@ defmodule PicselloWeb.Shared.TopNav do
       nav_link: 1
     ]
 
-  import PicselloWeb.Shared.Sidebar, only: [initials_menu: 1, side_nav: 2]
+  import PicselloWeb.Shared.Sidebar, only: [initials_menu: 1]
 
   @impl true
   def update(assigns, socket) do
@@ -198,8 +198,8 @@ defmodule PicselloWeb.Shared.TopNav do
       },
       %{
         title: "Help",
-        class: "mr-0 ml-auto",
-        path: "https://support.picsello.com",
+        class: "mr-0 ml-auto open-help",
+        path: "#help",
         sub_nav_items: nil,
         id: "help-nav"
       }
@@ -225,6 +225,108 @@ defmodule PicselloWeb.Shared.TopNav do
         </div>
       </div>
     """
+  end
+
+  defp side_nav(socket, _current_user) do
+    [
+      %{
+        heading: "Get Booked",
+        items: [
+          %{
+            title: "Booking Events",
+            icon: "calendar",
+            path: Routes.calendar_booking_events_path(socket, :index)
+          },
+          %{title: "Leads", icon: "three-people", path: Routes.job_path(socket, :leads)},
+          %{title: "Marketing", icon: "bullhorn", path: Routes.marketing_path(socket, :index)}
+        ]
+      },
+      %{
+        heading: "Manage",
+        items: [
+          %{
+            title: "Clients",
+            icon: "client-icon",
+            path: Routes.clients_path(socket, :index)
+          },
+          %{
+            title: "Galleries",
+            icon: "upload",
+            path: Routes.gallery_path(socket, :galleries)
+          },
+          %{
+            title: "Jobs",
+            icon: "camera-check",
+            path: Routes.job_path(socket, :jobs)
+          },
+          %{
+            title: "Inbox",
+            icon: "envelope",
+            path: Routes.inbox_path(socket, :index)
+          },
+          %{
+            title: "Calendar",
+            icon: "calendar",
+            path: Routes.calendar_index_path(socket, :index)
+          }
+        ]
+      },
+      %{
+        heading: "Settings",
+        items: [
+          %{
+            title: "Automations (Beta)",
+            icon: "play-icon",
+            path: Routes.email_automations_index_path(socket, :index)
+          },
+          %{
+            title: "Packages",
+            icon: "package",
+            path: Routes.package_templates_path(socket, :index)
+          },
+          %{
+            title: "Contracts",
+            icon: "contract",
+            path: Routes.contracts_index_path(socket, :index)
+          },
+          %{
+            title: "Questionnaires",
+            icon: "questionnaire",
+            path: Routes.questionnaires_index_path(socket, :index)
+          },
+          %{
+            title: "Calendar",
+            icon: "calendar",
+            path: Routes.calendar_settings_path(socket, :settings)
+          },
+          %{
+            title: "Gallery",
+            icon: "gallery-settings",
+            path: Routes.gallery_global_settings_index_path(socket, :edit)
+          },
+          %{
+            title: "Finances",
+            icon: "money-bags",
+            path: Routes.finance_settings_path(socket, :index)
+          },
+          %{
+            title: "Brand",
+            icon: "brand",
+            path: Routes.brand_settings_path(socket, :index)
+          },
+          %{
+            title: "Public Profile",
+            icon: "website",
+            path: Routes.profile_settings_path(socket, :index)
+          },
+          %{
+            title: "Account",
+            icon: "settings",
+            path: Routes.user_settings_path(socket, :edit)
+          }
+        ]
+      }
+    ]
   end
 
   def top_nav(assigns) do

@@ -340,6 +340,10 @@ canvas {
 
 [data-drawer-open="true"] #default-sidebar {
   @apply w-64;
+
+  [data-drawer-type="desktop"] svg {
+    @apply transform rotate-180;
+  }
 }
 
 [data-drawer-open="false"] {
@@ -347,8 +351,10 @@ canvas {
     @apply transform-none sm:translate-x-0 sm:w-12;
   }
 
-  p {
-    @apply sm:opacity-0;
+  summary {
+    span {
+      @apply sm:opacity-0 sm:hidden;
+    }
   }
 
   span {
