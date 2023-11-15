@@ -12,12 +12,13 @@ defmodule PicselloWeb.Shared.Sidebar do
 
   import PicselloWeb.LiveHelpers,
     only: [
-      testid: 1,
       icon: 1,
       ok: 1,
       noreply: 1,
       nav_link: 1,
-      initials_circle: 1
+      initials_circle: 1,
+      classes: 2,
+      tooltip: 1
     ]
 
   import Picsello.Onboardings, only: [user_update_sidebar_preference_changeset: 2]
@@ -71,6 +72,24 @@ defmodule PicselloWeb.Shared.Sidebar do
   end
 
   @impl true
+  def handle_event(
+        "feature-flag",
+        _unsigned_params,
+        %{assigns: %{current_user: current_user}} = socket
+      ) do
+    if FunWithFlags.enabled?(:sidebar_navigation, for: current_user) do
+      FunWithFlags.disable(:sidebar_navigation, for_actor: current_user)
+    else
+      FunWithFlags.enable(:sidebar_navigation, for_actor: current_user)
+    end
+
+    socket
+    |> put_flash(:success, "Beta feature toggled")
+    |> push_redirect(to: Routes.home_path(socket, :index))
+    |> noreply()
+  end
+
+  @impl true
   def render(assigns) do
     ~H"""
     <div id="sidebar-wrapper" phx-hook="CollapseSidebar" data-drawer-open={"#{@is_drawer_open?}"} data-mobile-drawer-open={"#{@is_mobile_drawer_open?}"} class="z-50" data-target={@myself} phx-update="ignore">
@@ -115,7 +134,7 @@ defmodule PicselloWeb.Shared.Sidebar do
     """
   end
 
-  defp initials_menu(assigns) do
+  def initials_menu(assigns) do
     ~H"""
     <div id="initials-menu" class="relative flex flex-row justify-end cursor-pointer" phx-hook="ToggleContent">
       <%= if @current_user do %>
@@ -126,8 +145,24 @@ defmodule PicselloWeb.Shared.Sidebar do
           <div class="bg-gray-100 rounded-lg shadow-md w-max z-30">
             <%= live_redirect to: Routes.user_settings_path(@socket, :edit), title: "Account", class: "flex items-center px-2 py-2 bg-white" do %>
               <.initials_circle user={@current_user} />
-              <div class="ml-2 font-semibold">Account</div>
+              <div class="ml-2 font-bold">Account</div>
             <% end %>
+
+            <div class="bg-white px-2">
+              <hr class="pt-2" />
+              <p class="font-semibold">Beta features</p>
+              <div class="flex justify-between items-center text-sm pb-2">
+                <p class="text-base-250">Sidebar Navigation <.tooltip id="sidebar-nav" class="" content="Try out an easier to use navigation that is a sidebar rather than a top bar. We'd love your feedback. (You will be directed to your dashboard when toggled.)"/></p>
+                <button type="button" class="cursor-pointer" phx-click="feature-flag" phx-target={@myself}>
+                  <div class="flex">
+                    <div class={classes("rounded-full w-7 p-0.5 flex border border-blue-planning-300", %{"bg-blue-planning-300 justify-end" => FunWithFlags.enabled?(:sidebar_navigation, for: @current_user), "bg-base-100" => !FunWithFlags.enabled?(:sidebar_navigation, for: @current_user)})}>
+                      <div class={classes("rounded-full h-3 w-3", %{"bg-base-100" => FunWithFlags.enabled?(:sidebar_navigation, for: @current_user), "bg-blue-planning-300" => !FunWithFlags.enabled?(:sidebar_navigation, for: @current_user)})}></div>
+                    </div>
+                  </div>
+                </button>
+              </div>
+              <hr />
+            </div>
 
             <%= if Enum.any?(@current_user.onboarding.intro_states) do %>
               <.live_component module={PicselloWeb.Live.RestartTourComponent} id={@tour_id}, current_user={@current_user} />
@@ -143,6 +178,17 @@ defmodule PicselloWeb.Shared.Sidebar do
       <% end %>
     </div>
     """
+  end
+
+  def get_classes_for_main(current_user) do
+    if FunWithFlags.enabled?(:sidebar_navigation, for: current_user) do
+      %{
+        "sm:ml-64" => Map.get(current_user.onboarding, :sidebar_open_preference, true),
+        "sm:ml-12" => !Map.get(current_user.onboarding, :sidebar_open_preference, true)
+      }
+    else
+      %{}
+    end
   end
 
   def side_nav(socket, _current_user) do

@@ -8,7 +8,6 @@ defmodule PicselloWeb.LayoutView do
       testid: 1,
       classes: 2,
       icon: 1,
-      nav_link: 1,
       classes: 1
     ]
 
@@ -16,7 +15,8 @@ defmodule PicselloWeb.LayoutView do
 
   import PicselloWeb.Live.Profile.Shared, only: [photographer_logo: 1]
   import PicselloWeb.Shared.StickyUpload, only: [sticky_upload: 1, gallery_top_banner: 1]
-  import PicselloWeb.Shared.Sidebar, only: [main_header: 1]
+  import PicselloWeb.Shared.Sidebar, only: [main_header: 1, get_classes_for_main: 1]
+  import PicselloWeb.Shared.TopNav, only: [top_nav: 1]
 
   use Phoenix.Component
 
@@ -141,153 +141,6 @@ defmodule PicselloWeb.LayoutView do
     """
   end
 
-  def sub_nav_list(socket, :get_booked),
-    do: [
-      %{
-        title: "Booking Events",
-        icon: "calendar",
-        path: Routes.calendar_booking_events_path(socket, :index)
-      },
-      %{title: "Leads", icon: "three-people", path: Routes.job_path(socket, :leads)},
-      %{title: "Marketing", icon: "bullhorn", path: Routes.marketing_path(socket, :index)}
-    ]
-
-  def sub_nav_list(socket, :settings),
-    do: [
-      %{
-        title: "Automations (Beta)",
-        icon: "play-icon",
-        path: Routes.email_automations_index_path(socket, :index)
-      },
-      %{
-        title: "Packages",
-        icon: "package",
-        path: Routes.package_templates_path(socket, :index)
-      },
-      %{
-        title: "Contracts",
-        icon: "contract",
-        path: Routes.contracts_index_path(socket, :index)
-      },
-      %{
-        title: "Questionnaires",
-        icon: "questionnaire",
-        path: Routes.questionnaires_index_path(socket, :index)
-      },
-      %{
-        title: "Calendar",
-        icon: "calendar",
-        path: Routes.calendar_settings_path(socket, :settings)
-      },
-      %{
-        title: "Gallery",
-        icon: "gallery-settings",
-        path: Routes.gallery_global_settings_index_path(socket, :edit)
-      },
-      %{
-        title: "Finances",
-        icon: "money-bags",
-        path: Routes.finance_settings_path(socket, :index)
-      },
-      %{
-        title: "Brand",
-        icon: "brand",
-        path: Routes.brand_settings_path(socket, :index)
-      },
-      %{
-        title: "Public Profile",
-        icon: "website",
-        path: Routes.profile_settings_path(socket, :index)
-      },
-      %{
-        title: "Account",
-        icon: "settings",
-        path: Routes.user_settings_path(socket, :edit)
-      }
-    ]
-
-  def main_nav(socket) do
-    [
-      %{
-        title: "Get booked",
-        class: "mr-6",
-        path: nil,
-        sub_nav_items: sub_nav_list(socket, :get_booked),
-        id: "get-booked-nav"
-      },
-      %{
-        title: "Clients",
-        class: "mr-6",
-        path: Routes.clients_path(socket, :index),
-        sub_nav_items: nil,
-        id: "clients-nav"
-      },
-      %{
-        title: "Galleries",
-        class: "mr-6",
-        path: Routes.gallery_path(socket, :galleries),
-        sub_nav_items: nil,
-        id: "galleries-nav"
-      },
-      %{
-        title: "Jobs",
-        class: "mr-6",
-        path: Routes.job_path(socket, :jobs),
-        sub_nav_items: nil,
-        id: "jobs-nav"
-      },
-      %{
-        title: "Inbox",
-        class: "pl-4 border-l mr-6",
-        path: Routes.inbox_path(socket, :index),
-        sub_nav_items: nil,
-        id: "inbox-nav"
-      },
-      %{
-        title: "Calendar",
-        class: "mr-6",
-        path: Routes.calendar_index_path(socket, :index),
-        sub_nav_items: nil,
-        id: "calendar-nav"
-      },
-      %{
-        title: "Settings",
-        class: "mr-6",
-        path: nil,
-        sub_nav_items: sub_nav_list(socket, :settings),
-        id: "settings-nav"
-      },
-      %{
-        title: "Help",
-        class: "mr-0 ml-auto",
-        path: "https://support.picsello.com",
-        sub_nav_items: nil,
-        id: "help-nav"
-      }
-    ]
-  end
-
-  def sub_nav(assigns) do
-    ~H"""
-      <div id={@id} class="relative cursor-pointer"  phx-update="ignore" phx-hook="ToggleContent" data-icon="toggle-icon">
-        <div class="absolute left-0 z-10 flex flex-col items-start hidden cursor-default top-10 toggle-content">
-          <nav class="flex flex-col bg-white rounded-lg shadow">
-            <%= for %{title: title, icon: icon, path: path} <- @sub_nav_list, @current_user do %>
-              <.nav_link title={title} to={path} socket={@socket} live_action={@live_action} current_user={@current_user} class="px-2 flex items-center py-2 text-sm whitespace-nowrap hover:bg-blue-planning-100 hover:font-bold" active_class="bg-blue-planning-100 font-bold">
-                <.icon name={icon} class="inline-block w-4 h-4 mr-2 text-blue-planning-300 shrink-0" />
-                <%= title %>
-              </.nav_link>
-            <% end %>
-          </nav>
-        </div>
-
-        <div {testid("subnav-#{@title}")} class="group hidden lg:flex items-center mr-4 transition-all font-bold text-blue-planning-300 hover:opacity-70">
-          <%= @title %> <.icon name="down" class="w-3 h-3 stroke-current stroke-3 ml-2 toggle-icon transition-transform group-hover:rotate-180" />
-        </div>
-      </div>
-    """
-  end
-
   def subscription_ending_soon(%{current_user: current_user} = assigns) do
     subscription = current_user |> Picsello.Subscriptions.subscription_ending_soon_info()
     assigns = Enum.into(assigns, %{subscription: subscription})
@@ -384,13 +237,6 @@ defmodule PicselloWeb.LayoutView do
             </ul>
             <.subscription_ending_soon type="footer" socket={@socket} current_user={@current_user} class="flex ml-auto bg-white text-black rounded px-4 py-2 items-center text-sm"/>
           </nav>
-          <%= if FunWithFlags.enabled?(:footer_feature_flag) do %>
-            <span class="ml-10">You're seeing this because you have enabled feature flag globally</span>
-          <% end %>
-
-          <%= if FunWithFlags.enabled?(:footer_feature_flag_for_specific_user, for: @current_user) do %>
-            <span class="ml-10">You're seeing this because you have enabled feature flag for specific user including you</span>
-          <% end %>
         </div>
         <hr class="my-8 opacity-30" />
         <div class="flex flex-col lg:flex-row">
