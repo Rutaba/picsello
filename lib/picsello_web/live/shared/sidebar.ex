@@ -137,6 +137,9 @@ defmodule PicselloWeb.Shared.Sidebar do
             </.nav_link>
           </nav>
           <div class="mt-auto">
+            <a href="https://form.typeform.com/to/Z89S1Ucx" target="_blank" rel="noreferrer" class="text-sm link px-4 block py-2.5">
+              <span>Submit nav/dashboard feedback</span>
+            </a>
             <%= if @current_user && Application.get_env(:picsello, :intercom_id) do %>
               <.nav_link title="Help" to={"#help"} socket={@socket} live_action={@live_action} current_user={@current_user} class="text-sm px-4 flex items-center py-2.5 whitespace-nowrap text-base-250 transition-all hover:bg-blue-planning-100 open-help" active_class="bg-blue-planning-100 text-black font-bold">
                 <.icon name="question-mark" class="inline-block w-5 h-5 mr-2 text-black shrink-0" />
