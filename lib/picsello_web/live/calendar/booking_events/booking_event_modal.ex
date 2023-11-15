@@ -134,7 +134,7 @@ defmodule PicselloWeb.Live.Calendar.BookingEventModal do
                 <div class="font-bold mb-2 mt-2 md:mt-0">Stop repeating:</div>
                 <div class="flex gap-5 mb-2"><%= radio_button f, :repetition, false, class: "w-5 h-5 radio cursor-pointer mb-1" %> On</div>
                 <div class={classes("pl-10 mb-2", %{"pointer-events-none text-gray-400" => input_value(f, :repetition) === true})}>
-                  <%= input f, :stop_repeating, type: :date_input, min: Date.utc_today(), class: "w-40" %>
+                  <%= input f, :stop_repeating, type: :date_input, disabled: is_nil(@changeset |> current |> Map.get(:date)), min: @changeset |> current |> Map.get(:date), class: "w-40" %>
                 </div>
                 <div class="flex gap-5 mb-2"><%= radio_button f, :repetition, true, class: "w-5 h-5 radio cursor-pointer mb-2" %>After</div>
                 <div class={classes("pl-10 mb-2", %{"pointer-events-none text-gray-400" => input_value(f, :repetition) != true})}>
