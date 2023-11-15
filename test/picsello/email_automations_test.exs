@@ -9,7 +9,9 @@ defmodule Picsello.EmailAutomationsTest do
     EmailAutomationSchedules,
     EmailPresets.EmailPreset,
     Jobs,
-    Galleries
+    Galleries,
+    Repo,
+    EmailAutomations
   }
 
   import Ecto.Query
@@ -54,7 +56,7 @@ defmodule Picsello.EmailAutomationsTest do
     Mox.stub_with(Picsello.MockBambooAdapter, Picsello.Sandbox.BambooAdapter)
 
     EmailAutomationNotifierMock
-    |> Mox.expect(:deliver_automation_email_job, 3, fn _, _, _, _, _ ->
+    |> Mox.stub(:deliver_automation_email_job, fn _, _, _, _, _ ->
       {:ok, {:ok, "Email Sent"}}
     end)
 
@@ -106,6 +108,120 @@ defmodule Picsello.EmailAutomationsTest do
     end
   end
 
+  describe "send_now_email/4 action for shoots" do
+    setup do
+      shoot_organization = insert(:organization)
+      shoot_user = insert(:user, organization: shoot_organization)
+      shoot_client = insert(:client, organization: shoot_organization)
+      shoot_job = insert(:job, client_id: shoot_client.id)
+      insert(:user_currency, user: shoot_user, organization: shoot_organization)
+      [shoot_organization: shoot_organization, shoot_job: shoot_job]
+    end
+
+    test "when the job is still in lead-status", %{shoot_organization: shoot_organization, shoot_job: shoot_job} do
+      shoot = insert(:shoot, job: shoot_job, starts_at: Timex.shift(Timex.now(), days: 1))
+      insert_email_presets("wedding", "job", shoot_organization, "active", 4, "before_shoot", -24, 1)
+      EmailAutomationSchedules.insert_shoot_emails(shoot_job, shoot)
+      assert fetch_all_send_emails_count() == 0
+      Picsello.Workers.ScheduleAutomationEmail.perform(nil)
+      assert fetch_all_shoot_emails_count() == 0
+    end
+
+    test "when the shoot date is tomorrow", %{shoot_organization: shoot_organization, shoot_job: shoot_job} do
+      shoot = insert(:shoot, job: shoot_job, starts_at: Timex.shift(Timex.now(), days: 1))
+      insert(:payment_schedule, job: shoot_job, paid_at: Timex.now())
+      insert_email_presets("wedding", "job", shoot_organization, "active", 1, "before_shoot", -24, 1)
+      insert_email_presets("wedding", "job", shoot_organization, "active", 1, "before_shoot", -168, 7)
+      EmailAutomationSchedules.insert_shoot_emails(shoot_job, shoot)
+      assert fetch_all_send_emails_count() == 0
+      Picsello.Workers.ScheduleAutomationEmail.perform(nil)
+      assert fetch_all_shoot_emails_count() == 1
+    end
+
+    test "when the shoot date is day after tomorrow", %{shoot_organization: shoot_organization, shoot_job: shoot_job} do
+      shoot = insert(:shoot, job: shoot_job, starts_at: Timex.shift(Timex.now(), days: 2))
+      insert(:payment_schedule, job: shoot_job, paid_at: Timex.now())
+      insert_email_presets("wedding", "job", shoot_organization, "active", 1, "before_shoot", -24, 1)
+      insert_email_presets("wedding", "job", shoot_organization, "active", 1, "before_shoot", -168, 7)
+      EmailAutomationSchedules.insert_shoot_emails(shoot_job, shoot)
+      Picsello.Workers.ScheduleAutomationEmail.perform(nil)
+      assert fetch_all_shoot_emails_count() == 0
+    end
+
+    test "when the shoot date is 5 days after", %{shoot_organization: shoot_organization, shoot_job: shoot_job} do
+      shoot = insert(:shoot, job: shoot_job, starts_at: Timex.shift(Timex.now(), days: 5))
+      insert(:payment_schedule, job: shoot_job, paid_at: Timex.now())
+      insert_email_presets("wedding", "job", shoot_organization, "active", 1, "before_shoot", -24, 1)
+      insert_email_presets("wedding", "job", shoot_organization, "active", 1, "before_shoot", -168, 7)
+      EmailAutomationSchedules.insert_shoot_emails(shoot_job, shoot)
+      Picsello.Workers.ScheduleAutomationEmail.perform(nil)
+      assert fetch_all_shoot_emails_count() == 0
+    end
+
+    test "when the shoot date is 6 days after", %{shoot_organization: shoot_organization, shoot_job: shoot_job} do
+      shoot = insert(:shoot, job: shoot_job, starts_at: Timex.shift(Timex.now(), days: 6))
+      insert(:payment_schedule, job: shoot_job, paid_at: Timex.now())
+      insert_email_presets("wedding", "job", shoot_organization, "active", 1, "before_shoot", -24, 1)
+      insert_email_presets("wedding", "job", shoot_organization, "active", 1, "before_shoot", -168, 7)
+      EmailAutomationSchedules.insert_shoot_emails(shoot_job, shoot)
+      Picsello.Workers.ScheduleAutomationEmail.perform(nil)
+      assert fetch_all_shoot_emails_count() == 1
+    end
+
+    test "when the shoot date is 7 days after", %{shoot_organization: shoot_organization, shoot_job: shoot_job} do
+      shoot = insert(:shoot, job: shoot_job, starts_at: Timex.shift(Timex.now(), days: 7))
+      insert(:payment_schedule, job: shoot_job, paid_at: Timex.now())
+      insert_email_presets("wedding", "job", shoot_organization, "active", 1, "before_shoot", -24, 1)
+      insert_email_presets("wedding", "job", shoot_organization, "active", 1, "before_shoot", -168, 7)
+      EmailAutomationSchedules.insert_shoot_emails(shoot_job, shoot)
+      Picsello.Workers.ScheduleAutomationEmail.perform(nil)
+      assert fetch_all_shoot_emails_count() == 1
+    end
+
+    test "when the shoot date is 8 days after", %{shoot_organization: shoot_organization, shoot_job: shoot_job} do
+      shoot = insert(:shoot, job: shoot_job, starts_at: Timex.shift(Timex.now(), days: 8))
+      insert(:payment_schedule, job: shoot_job, paid_at: Timex.now())
+      insert_email_presets("wedding", "job", shoot_organization, "active", 1, "before_shoot", -24, 1)
+      insert_email_presets("wedding", "job", shoot_organization, "active", 1, "before_shoot", -168, 7)
+      EmailAutomationSchedules.insert_shoot_emails(shoot_job, shoot)
+      Picsello.Workers.ScheduleAutomationEmail.perform(nil)
+      assert fetch_all_shoot_emails_count() == 0
+    end
+
+    test "when the shoot date is 3 days before", %{shoot_organization: shoot_organization, shoot_job: shoot_job} do
+      shoot = insert(:shoot, job: shoot_job, starts_at: Timex.shift(Timex.now(), days: -3))
+      insert(:payment_schedule, job: shoot_job, paid_at: Timex.now())
+      insert_email_presets("wedding", "job", shoot_organization, "active", 1, "before_shoot", -24, 1)
+      insert_email_presets("wedding", "job", shoot_organization, "active", 1, "before_shoot", -168, 7)
+      insert_email_presets("wedding", "job", shoot_organization, "active", 1, "shoot_thanks", 24, 1)
+      EmailAutomationSchedules.insert_shoot_emails(shoot_job, shoot)
+      Picsello.Workers.ScheduleAutomationEmail.perform(nil)
+      assert fetch_all_shoot_emails_count() == 0
+    end
+
+    test "when the shoot date is 2 days before", %{shoot_organization: shoot_organization, shoot_job: shoot_job} do
+      shoot = insert(:shoot, job: shoot_job, starts_at: Timex.shift(Timex.now(), days: -2))
+      insert(:payment_schedule, job: shoot_job, paid_at: Timex.now())
+      insert_email_presets("wedding", "job", shoot_organization, "active", 1, "before_shoot", -24, 1)
+      insert_email_presets("wedding", "job", shoot_organization, "active", 1, "before_shoot", -168, 7)
+      insert_email_presets("wedding", "job", shoot_organization, "active", 1, "shoot_thanks", 24, 1)
+      EmailAutomationSchedules.insert_shoot_emails(shoot_job, shoot)
+      Picsello.Workers.ScheduleAutomationEmail.perform(nil)
+      assert fetch_all_shoot_emails_count() == 1
+    end
+
+    test "when the shoot date is 1 day before", %{shoot_organization: shoot_organization, shoot_job: shoot_job} do
+      shoot = insert(:shoot, job: shoot_job, starts_at: Timex.shift(Timex.now(), days: -1))
+      insert(:payment_schedule, job: shoot_job, paid_at: Timex.now())
+      insert_email_presets("wedding", "job", shoot_organization, "active", 1, "before_shoot", -24, 1)
+      insert_email_presets("wedding", "job", shoot_organization, "active", 1, "before_shoot", -168, 7)
+      insert_email_presets("wedding", "job", shoot_organization, "active", 1, "shoot_thanks", 24, 1)
+      EmailAutomationSchedules.insert_shoot_emails(shoot_job, shoot)
+      Picsello.Workers.ScheduleAutomationEmail.perform(nil)
+      assert fetch_all_shoot_emails_count() == 1
+    end
+  end
+
   describe "get_active_email_schedule_count/1 action" do
     setup %{organization: organization} do
       client = insert(:client, organization: organization)
@@ -132,7 +248,7 @@ defmodule Picsello.EmailAutomationsTest do
       new_job: new_job
     } do
       insert(:payment_schedule, job: new_job)
-      insert_email_presets("wedding", "job", organization, "active", 4, "pays_retainer")
+      insert_email_presets("wedding", "job", organization, "active", 4, "pays_retainer", 0, 1)
       EmailAutomationSchedules.insert_job_emails("wedding", organization.id, new_job.id, :job)
       assert EmailAutomationSchedules.get_active_email_schedule_count(new_job.id) == 4
     end
@@ -142,7 +258,7 @@ defmodule Picsello.EmailAutomationsTest do
       new_job: new_job
     } do
       insert(:payment_schedule, job: new_job)
-      insert_email_presets("wedding", "job", organization, "active", 10, "pays_retainer")
+      insert_email_presets("wedding", "job", organization, "active", 10, "pays_retainer", 0, 1)
       EmailAutomationSchedules.insert_job_emails("wedding", organization.id, new_job.id, :job)
       assert EmailAutomationSchedules.get_active_email_schedule_count(new_job.id) == 10
     end
@@ -152,7 +268,7 @@ defmodule Picsello.EmailAutomationsTest do
       new_job: new_job
     } do
       insert(:payment_schedule, job: new_job)
-      insert_email_presets("wedding", "job", organization, "active", 10, "pays_retainer")
+      insert_email_presets("wedding", "job", organization, "active", 10, "pays_retainer", 0, 1)
       EmailAutomationSchedules.insert_job_emails("wedding", organization.id, new_job.id, :job)
       Jobs.archive_job(new_job)
       stop_archived_emails(new_job)
@@ -164,7 +280,7 @@ defmodule Picsello.EmailAutomationsTest do
       new_job: new_job
     } do
       insert(:payment_schedule, job: new_job)
-      insert_email_presets("wedding", "job", organization, "active", 10, "pays_retainer")
+      insert_email_presets("wedding", "job", organization, "active", 10, "pays_retainer", 0, 1)
       EmailAutomationSchedules.insert_job_emails("wedding", organization.id, new_job.id, :job)
       Jobs.unarchive_job(new_job)
       assert EmailAutomationSchedules.get_active_email_schedule_count(new_job.id) == 10
@@ -176,7 +292,7 @@ defmodule Picsello.EmailAutomationsTest do
       new_job: new_job
     } do
       insert(:payment_schedule, job: new_job, paid_at: Timex.now())
-      insert_email_presets("wedding", "job", organization, "active", 10, "pays_retainer")
+      insert_email_presets("wedding", "job", organization, "active", 10, "pays_retainer", 0, 1)
 
       insert_email_presets(
         "wedding",
@@ -184,7 +300,9 @@ defmodule Picsello.EmailAutomationsTest do
         organization,
         "active",
         2,
-        "gallery_expiration_soon"
+        "gallery_expiration_soon",
+        0,
+        1
       )
 
       EmailAutomationSchedules.insert_job_emails("wedding", organization.id, new_job.id, :job)
@@ -225,7 +343,7 @@ defmodule Picsello.EmailAutomationsTest do
            new_job: new_job
          } do
       insert(:payment_schedule, job: new_job)
-      insert_email_presets("wedding", "job", organization, "active", 10, "pays_retainer")
+      insert_email_presets("wedding", "job", organization, "active", 10, "pays_retainer", 0, 1)
 
       insert_email_presets(
         "wedding",
@@ -233,7 +351,9 @@ defmodule Picsello.EmailAutomationsTest do
         organization,
         "active",
         2,
-        "gallery_expiration_soon"
+        "gallery_expiration_soon",
+        0,
+        1
       )
 
       EmailAutomationSchedules.insert_job_emails("wedding", organization.id, new_job.id, :job)
@@ -260,13 +380,19 @@ defmodule Picsello.EmailAutomationsTest do
     |> Enum.count()
   end
 
-  defp insert_email_presets(job_type, type, organization, status, iterator, state) do
-    pipelines = from(p in EmailAutomationPipeline) |> Repo.all()
+  defp fetch_all_shoot_emails_count() do
+    from(esh in EmailScheduleHistory, where: not is_nil(esh.reminded_at) and esh.type == :shoot)
+    |> Repo.all()
+    |> Enum.count()
+  end
 
+  defp insert_email_presets(job_type, type, organization, status, iterator, state, total_hours, count) do
+    pipelines = from(p in EmailAutomationPipeline) |> Repo.all()
+    %{sign: sign} = EmailAutomations.explode_hours(total_hours)
     Enum.map(1..iterator, fn _x ->
       %{
         email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, state),
-        total_hours: 0,
+        total_hours: total_hours,
         status: status,
         job_type: job_type,
         type: type,
@@ -284,6 +410,10 @@ defmodule Picsello.EmailAutomationsTest do
       Map.merge(attrs, %{
         organization_id: organization.id,
         state: Atom.to_string(state),
+        immediately: false,
+        count: count,
+        calendar: "Day",
+        sign: sign,
         inserted_at: Timex.now(),
         updated_at: Timex.now()
       })
