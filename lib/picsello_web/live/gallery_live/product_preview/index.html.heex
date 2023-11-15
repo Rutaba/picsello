@@ -1,10 +1,10 @@
-<div class={classes("flex flex-col photographer-gallery lg:before:bg-gray-100", %{"hidden" => is_nil(@is_mobile)})}>
-  <div class="flex root lg:static relative">
+<div class={classes("flex flex-col photographer-gallery bg-gray-100", %{"hidden" => is_nil(@is_mobile)})}>
+  <div class="flex root lg:static relative min-h-screen h-full">
     <.mobile_gallery_header gallery_name={@gallery.name}/>
-    <div class={classes("lg:flex", %{"hidden" => !@is_mobile})}>
+    <div class={classes("lg:flex bg-white h-full w-full md:w-auto min-h-screen", %{"hidden" => !@is_mobile})}>
       <%= live_component PicselloWeb.GalleryLive.Shared.SideNavComponent, id: @gallery.id, gallery: @gallery, total_progress: @total_progress, photos_error_count: @photos_error_count, arrow_show: "product_previews", album_dropdown_show: false, is_mobile: @is_mobile %>
     </div>
-    <div class={classes("w-full h-full mb-36 lg:mb-20 lg:bg-base-100 bg-white lg:pt-16 pt-24", %{"lg:block hidden" => @is_mobile})}>
+    <div class={classes("w-full h-full mb-36 lg:mb-20 lg:pt-16 pt-24", %{"lg:block hidden" => @is_mobile})}>
       <div class="relative items-center justify-between lg:px-10 pb-10">
         <div class="center-container">
           <div class="flex flex-row lg:px-0 px-6 items-center">

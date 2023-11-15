@@ -195,7 +195,7 @@
           <% end %>
         </div>
       </div>
-      <div class={classes("lg:pt-16 pb-10 pl-10 pr-8", %{"pt-80" => @gallery.type == :finals, "pt-60" => @gallery.type != :finals})}>
+      <div class={classes("lg:pt-16 pb-10 pl-10 pr-8", %{"" => @gallery.type == :finals, "" => @gallery.type != :finals})}>
         <%= if @photos == [] do %>
           <div class={classes(%{"hidden" => @inprogress_photos != [] || @selection_filter || @favorites_filter})}>
             <%= if !@photographer_favorites_filter do %>
