@@ -466,8 +466,17 @@ defmodule PicselloWeb.HomeLive.Index do
       |> noreply()
 
   @impl true
-  def handle_event("change-tab", %{"tab" => tab}, socket) do
+  def handle_event(
+        "change-tab",
+        %{"tab" => tab},
+        %{assigns: %{current_user: current_user}} = socket
+      ) do
+    # reassign user for collapsing sidebar jank
+    # since we are looking at the layout with a class
+    current_user = current_user.id |> Accounts.get_user!() |> Repo.preload(:organization)
+
     socket
+    |> assign(:current_user, current_user)
     |> assign(:tab_active, tab)
     |> assign_tab_data(tab)
     |> noreply()
