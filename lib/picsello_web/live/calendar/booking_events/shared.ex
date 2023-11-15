@@ -801,7 +801,7 @@ defmodule PicselloWeb.Calendar.BookingEvents.Shared do
   end
 
   def assign_events(
-        %{assigns: %{booking_event: %{id: event_id}, current_user: %{organization: organization}}} =
+        %{assigns: %{booking_event: %{id: event_id}, current_user: %{organization: organization}} = assigns} =
           socket
       ) do
     %{package_template: package_template} =
@@ -814,7 +814,8 @@ defmodule PicselloWeb.Calendar.BookingEvents.Shared do
     calendar_date_event =
       case booking_event do
         %{dates: []} -> nil
-        %{dates: [date | _]} -> date
+        %{dates: [date | _]} ->
+          if Map.has_key?(assigns, :calendar_date_event), do: Enum.find(booking_event.dates, &(&1.date == assigns.calendar_date_event.date)), else: date
       end
 
     socket
