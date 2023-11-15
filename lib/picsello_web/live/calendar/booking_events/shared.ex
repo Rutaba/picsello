@@ -223,6 +223,7 @@ defmodule PicselloWeb.Calendar.BookingEvents.Shared do
       confirm_class: "btn-primary",
       dropdown_items: filtered_slots,
       dropdown_label: "Pick a new time",
+      empty_dropdown_description: "Sorry, no slots available for rescheduling now",
       confirm_event: "reschedule_session",
       payload: %{
         booking_event_date_id: booking_event_date_id,
@@ -266,7 +267,7 @@ defmodule PicselloWeb.Calendar.BookingEvents.Shared do
     socket
     |> ConfirmationComponent.open(%{
       title: "Mark block open?",
-      subtitle: "Are you sure you to allow this block to be bookable by clients?",
+      subtitle: "Are you sure you want to allow this block to be bookable by clients?",
       confirm_event: "change_slot_status",
       confirm_class: "btn-primary",
       confirm_label: "Show block",

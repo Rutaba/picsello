@@ -29,7 +29,7 @@ defmodule PicselloWeb.ShootLive.Shared do
           <div class="flex justify-between items-center">
             <%= label_for @f, :location, label: @location_field_title %>
             <%= if @allow_address_toggle && !@address_field do %>
-              <a class="text-xs link" phx-target={@myself} phx-click="address" phx-value-action="add-field">Add an addressss</a>
+              <a class="text-xs link" phx-target={@myself} phx-click="address" phx-value-action="add-field">Add an address</a>
             <% end %>
           </div>
           <%= select_field @f, :location, for(location <- Shoot.locations(), do: {location |> Atom.to_string() |> dyn_gettext(), location }), prompt: "Select below",  disabled: !@is_edit  %>
@@ -45,7 +45,7 @@ defmodule PicselloWeb.ShootLive.Shared do
             <a class="text-xs link" phx-target={@myself} phx-click="address" phx-value-action="remove">Remove address</a>
           <% end %>
         </div>
-        <%= input @f, :address, phx_hook: "PlacesAutocomplete", autocomplete: "off", placeholder: "Enter a location",  disabled: !@is_edit %>
+        <%= input @f, :address, phx_hook: "PlacesAutocomplete", autocomplete: "off", placeholder: "Enter a location", data_event_name: "place_changed", data_target: @myself, disabled: !@is_edit %>
         <div class="relative autocomplete-wrapper" id="auto-complete" phx-update="ignore"></div>
       </div>
     <% end %>
