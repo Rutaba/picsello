@@ -194,7 +194,7 @@ defmodule PicselloWeb.Live.Calendar.BookingEventModal do
   @impl true
   def handle_event(
         "place_changed",
-        %{"formatted_address" => address} = params,
+        %{"formatted_address" => address},
         %{assigns: %{changeset: changeset}} = socket
       ) do
     socket
