@@ -269,4 +269,7 @@ defmodule Picsello.Clients do
       order_by: [asc: c.name, asc: c.email]
     )
   end
+
+  def get_client!(client_id), do: Repo.get!(Client, client_id)
+  def fetch_multiple(client_ids), do: where(Client, [c], c.id in ^client_ids) |> Repo.all()
 end

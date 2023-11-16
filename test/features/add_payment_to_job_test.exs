@@ -1,7 +1,7 @@
 defmodule Picsello.AddPaymentsToJobTest do
   @moduledoc false
   use Picsello.FeatureCase, async: false
-  alias Picsello.Job
+  alias Picsello.{Job, EmailAutomationNotifierMock}
 
   setup :onboarded
   setup :authenticated
@@ -77,6 +77,11 @@ defmodule Picsello.AddPaymentsToJobTest do
   end
 
   feature "modal renders number of payments addeed by photog", %{session: session, job: job} do
+    EmailAutomationNotifierMock
+    |> Mox.expect(:deliver_automation_email_job, 1, fn _, _, _, _, _ ->
+      {:ok, {:ok, "Email Sent"}}
+    end)
+
     session
     |> visit("/jobs/#{job.id}")
     |> click(css("#options"))

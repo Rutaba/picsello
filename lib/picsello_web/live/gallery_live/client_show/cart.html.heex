@@ -18,7 +18,7 @@
               <.continue_summary is_proofing={@is_proofing} checkout_routes={@checkout_routes} order={@order} id="top-summary" socket={@socket} gallery={@gallery} />
             </div>
 
-            <div {testid("line-items")} class="col-span-1 lg:col-span-2">
+            <div {testid("line-items")} class="col-span-1 lg:col-span-2" id="cart_images" phx-hook="DisableRightClick">
               <%= for {%{category: %{whcc_id: whcc_id}} = product, product_lines} <- lines_by_product(@order) do %>
                 <div class="mb-5 border border-base-200 divide-y">
                   <div class="mx-8 mb-4 mt-6">
@@ -94,7 +94,7 @@
                     <% end %>
                     <%= if @order.bundle_price do %>
                     
-                      <div {testid("bundle")} class="flex py-8 mx-8 border-t first:border-t-0" >
+                      <div {testid("bundle")} class="flex py-8 mx-8 border-t first:border-t-0 js-disable-right-click" >
                         <div class="float-left w-48 h-32 mr-4 md:w-72 md:h-48 md:mr-7">
                           <.bundle_image url={cover_photo_url(@gallery)} />
                         </div>
@@ -114,7 +114,7 @@
                     <% end %>
 
                     <%= for digital <- @order.digitals do %>
-                      <div {testid("digital-#{digital.id}")} class="flex py-8 mx-8 border-t first:border-t-0" >
+                      <div {testid("digital-#{digital.id}")} class="flex py-8 mx-8 border-t first:border-t-0 js-disable-right-click" >
                         <img class="float-left object-contain w-48 h-32 mr-4 md:w-72 md:h-48 md:mr-7" src={item_image_url(digital, proofing_client_view?: @is_proofing)}/>
 
                         <div class="py-0 md:py-7">
