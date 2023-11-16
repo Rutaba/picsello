@@ -1,6 +1,6 @@
 defmodule Picsello.BookingEvents do
   @moduledoc "context module for booking events"
-  alias Picsello.{Repo, BookingEvent, Job, Package, EmailAutomationSchedules}
+  alias Picsello.{Repo, BookingEvent, Job, Package, EmailAutomations, EmailAutomationSchedules}
   import Ecto.Query
 
   defmodule Booking do
@@ -591,6 +591,8 @@ defmodule Picsello.BookingEvents do
                :client_contact
              ]
            ),
+         _email_sent <-
+           EmailAutomations.send_email_by_state(job, :abandoned_emails, organization.id),
          {:ok, _} <- Picsello.Jobs.archive_job(job) do
       for %{stripe_session_id: "" <> session_id} <- payment_schedules,
           do:
