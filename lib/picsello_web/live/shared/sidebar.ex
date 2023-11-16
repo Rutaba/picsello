@@ -176,7 +176,7 @@ defmodule PicselloWeb.Shared.Sidebar do
               <hr class="pt-2" />
               <p class="font-semibold">Photo Lab</p>
               <div class="flex justify-between items-center text-sm pb-2">
-                <p class="text-base-250">Sidebar Navigation <.tooltip id="sidebar-nav" class="" content="Try out an easier to use navigation that is a sidebar rather than a top bar. We'd love your feedback. (You will be directed to your dashboard when toggled.)"/></p>
+                <p class="text-base-250">Sidebar Navigation <.tooltip id="sidebar-nav" class="" content="Try out an easier to use navigation. We'd love your feedback. (You will be directed to your dashboard when toggled.)"/></p>
                 <button type="button" class="cursor-pointer" phx-click="feature-flag" phx-target={@myself}>
                   <div class="flex">
                     <div class={classes("rounded-full w-7 p-0.5 flex border border-blue-planning-300", %{"bg-blue-planning-300 justify-end" => FunWithFlags.enabled?(:sidebar_navigation, for: @current_user), "bg-base-100" => !FunWithFlags.enabled?(:sidebar_navigation, for: @current_user)})}>
