@@ -94,7 +94,7 @@ defmodule PicselloWeb.Shared.Sidebar do
     ~H"""
     <div id="sidebar-wrapper" phx-hook="CollapseSidebar" data-drawer-open={"#{@is_drawer_open?}"} data-mobile-drawer-open={"#{@is_mobile_drawer_open?}"} class="z-50" data-target={@myself} phx-update="ignore">
       <div class="sm:hidden bg-white p-2 flex items-center justify-between fixed top-0 left-0 right-0 w-full">
-        <button phx-click="open" phx-target={@myself} data-drawer-type="mobile" data-drawer-target="default-sidebar" data-drawer-toggle="default-sidebar" aria-controls="default-sidebar" type="button" class="inline-flex items-center p-2 mt-2 ms-3 text-sm text-gray-500 rounded-lg hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-gray-200 dark:text-gray-400 dark:hover:bg-gray-700 dark:focus:ring-gray-600">
+        <button phx-click="open" phx-target={@myself} data-drawer-type="mobile" data-drawer-target="default-sidebar" data-drawer-toggle="default-sidebar" aria-controls="default-sidebar" type="button" class="inline-flex items-center p-2 mt-2 ms-3 text-sm text-gray-500 rounded-lg hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-gray-200 ">
           <span class="sr-only">Open sidebar</span>
           <.icon name="hamburger" class="h-4 text-base-300 w-9" />
         </button>
@@ -146,7 +146,7 @@ defmodule PicselloWeb.Shared.Sidebar do
                 <span>Help</span>
               </.nav_link>
             <% end %>
-            <button phx-click="collapse" phx-target={@myself} data-drawer-type="desktop" data-drawer-target="default-sidebar" data-drawer-toggle="default-sidebar" aria-controls="default-sidebar" type="button" class="text-sm px-4 flex items-center py-2.5 whitespace-nowrap text-base-250 transition-all hover:bg-blue-planning-100 w-full">
+            <button phx-click="collapse" phx-target={@myself} data-drawer-type="desktop" data-drawer-target="default-sidebar" data-drawer-toggle="default-sidebar" aria-controls="default-sidebar" type="button" class="text-sm px-4 sm:flex items-center py-2.5 whitespace-nowrap text-base-250 transition-all hover:bg-blue-planning-100 w-full hidden">
               <span class="sr-only">Open sidebar</span>
               <.icon name="collapse" class="inline-block w-5 h-5 mr-2 text-black shrink-0 transition-all" />
               <span>Collapse</span>
@@ -174,7 +174,7 @@ defmodule PicselloWeb.Shared.Sidebar do
 
             <div class="bg-white px-2">
               <hr class="pt-2" />
-              <p class="font-semibold">Beta features</p>
+              <p class="font-semibold">Photo Lab</p>
               <div class="flex justify-between items-center text-sm pb-2">
                 <p class="text-base-250">Sidebar Navigation <.tooltip id="sidebar-nav" class="" content="Try out an easier to use navigation that is a sidebar rather than a top bar. We'd love your feedback. (You will be directed to your dashboard when toggled.)"/></p>
                 <button type="button" class="cursor-pointer" phx-click="feature-flag" phx-target={@myself}>
