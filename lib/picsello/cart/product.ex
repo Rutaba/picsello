@@ -108,4 +108,9 @@ defmodule Picsello.Cart.Product do
   end
 
   def quantity(%__MODULE__{quantity: quantity}), do: quantity
+
+  def total_cost(%{products: products}) do
+    products
+    |> Enum.reduce(Money.new(0), &(&1.unit_price |> Money.multiply(&1.quantity) |> Money.add(&2)))
+  end
 end
