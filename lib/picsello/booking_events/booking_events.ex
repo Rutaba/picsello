@@ -7,12 +7,12 @@ defmodule Picsello.BookingEvents do
     Package,
     BookingEventDate,
     BookingEventDates,
+    EmailAutomations,
     EmailAutomationSchedules
   }
 
   alias Ecto.{Multi, Changeset}
   alias Picsello.Workers.ExpireBooking
-  alias Picsello.{Repo, BookingEvent, Job, Package, EmailAutomations, EmailAutomationSchedules}
   import Ecto.Query
 
   defmodule Booking do
