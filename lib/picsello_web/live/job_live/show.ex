@@ -190,6 +190,7 @@ defmodule PicselloWeb.JobLive.Show do
     {:ok, gallery} =
       Galleries.create_gallery(current_user, %{
         job_id: job.id,
+        from_job?: true,
         type: type,
         parent_id: parent_id,
         client_link_hash: UUID.uuid4(),
