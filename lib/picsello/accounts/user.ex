@@ -13,7 +13,7 @@ defmodule Picsello.Accounts.User do
     Accounts.User.Promotions
   }
 
-  @email_regex ~r/^[^\s]+@[^\s]+\.[^\s]+$/
+  @email_regex ~r/^(?!.*\.\.)(?!^[^\w]+)(?!.*[^\w]$)[^\s]+@[^\s]+\.[^\s]+$/
   @derive {Inspect, except: [:password]}
 
   schema "users" do
