@@ -8,8 +8,7 @@ defmodule PicselloWeb.LayoutView do
       testid: 1,
       classes: 2,
       icon: 1,
-      classes: 1,
-      noreply: 1
+      classes: 1
     ]
 
   import Picsello.Profiles, only: [public_url: 1]
