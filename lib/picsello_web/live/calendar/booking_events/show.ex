@@ -49,13 +49,6 @@ defmodule PicselloWeb.Live.Calendar.BookingEvents.Show do
     |> assign(:booking_event, BookingEvents.get_booking_event!(organization_id, event_id))
     |> BEShared.assign_events()
     |> assign_changeset(%{})
-    |> then(fn %{assigns: %{booking_event: booking_event}} = socket ->
-      socket
-      |> assign(
-        :booking_slot_tab_active,
-        if(booking_event.is_repeating, do: "calendar", else: "list")
-      )
-    end)
     |> assign(:booking_slot_tabs, booking_slot_tabs())
     |> noreply()
   end
