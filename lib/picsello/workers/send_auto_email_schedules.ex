@@ -9,10 +9,9 @@ defmodule Picsello.Workers.ScheduleAutomationEmail do
     EmailAutomations,
     EmailAutomationSchedules,
     ClientMessage,
-    Organization,
     Galleries.Gallery,
     Job,
-    Repo
+    Subscriptions
   }
 
   alias PicselloWeb.EmailAutomationLive.Shared
@@ -280,7 +279,7 @@ defmodule Picsello.Workers.ScheduleAutomationEmail do
   end
 
   defp get_all_organizations() do
-    Repo.all(Organization) |> Enum.map(& &1.id)
+    Subscriptions.organizations_with_active_subscription() |> Enum.map(& &1.id)
   end
 
   defp is_job_emails?(%Job{
