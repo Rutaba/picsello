@@ -588,6 +588,9 @@ defmodule PicselloWeb.EmailAutomationLive.Shared do
         payment_date = payment_schedules |> List.first() |> Map.get(:inserted_at)
         get_date_for_schedule(last_completed_email, payment_date)
 
+      PaymentSchedules.all_paid?(job) ->
+        get_date_for_schedule(last_completed_email, DateTime.utc_now())
+
       true ->
         nil
     end

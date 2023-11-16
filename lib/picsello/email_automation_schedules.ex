@@ -635,10 +635,20 @@ defmodule Picsello.EmailAutomationSchedules do
   """
   def job_emails(type, organization_id, job_id, category_type, skip_states \\ []) do
     job = Jobs.get_job_by_id(job_id) |> Repo.preload([:job_status])
+    now = DateTime.utc_now() |> DateTime.truncate(:second)
+
+    payment_states = [
+      :offline_payment,
+      :balance_due,
+      :paid_offline_full,
+      :paid_full,
+      :pays_retainer_offline,
+      :pays_retainer
+    ]
 
     shoot_skip_states = [:before_shoot, :shoot_thanks]
-    all_skip_states = skip_states ++ shoot_skip_states
-    now = DateTime.utc_now() |> DateTime.truncate(:second)
+    skip_payment_states = if PaymentSchedules.all_paid?(job), do: payment_states, else: []
+    all_skip_states = skip_states ++ shoot_skip_states ++ skip_payment_states
 
     emails =
       EmailAutomations.get_emails_for_schedule(organization_id, type, category_type)
@@ -669,17 +679,10 @@ defmodule Picsello.EmailAutomationSchedules do
 
     previous_emails_history = get_emails_by_job(EmailScheduleHistory, job_id, category_type)
 
-    cond do
-      job.job_status.is_lead and Enum.empty?(previous_emails_schedules) and
-          Enum.empty?(previous_emails_history) ->
-        emails
-
-      Enum.empty?(previous_emails_schedules) and Enum.empty?(previous_emails_history) and
-          !PaymentSchedules.all_paid?(job) ->
-        emails
-
-      true ->
-        []
+    if Enum.empty?(previous_emails_schedules) and Enum.empty?(previous_emails_history) do
+      emails
+    else
+      []
     end
   end
 

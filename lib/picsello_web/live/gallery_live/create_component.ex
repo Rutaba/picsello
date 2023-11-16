@@ -34,6 +34,10 @@ defmodule PicselloWeb.GalleryLive.CreateComponent do
 
   @steps [:choose_type, :details, :pricing]
 
+  @default_assigns %{
+    from_job?: false
+  }
+
   @impl true
   def update(
         %{
@@ -48,6 +52,8 @@ defmodule PicselloWeb.GalleryLive.CreateComponent do
         } = assigns,
         socket
       ) do
+    assigns = assigns |> Enum.into(@default_assigns)
+
     socket
     |> assign(assigns)
     |> assign(global_settings: GlobalSettings.get(organization_id))
@@ -181,7 +187,8 @@ defmodule PicselloWeb.GalleryLive.CreateComponent do
             current_user: current_user,
             selected_client: selected_client,
             searched_client: searched_client,
-            gallery_type: gallery_type
+            gallery_type: gallery_type,
+            from_job?: from_job?
           }
         } = socket
       ) do
@@ -218,6 +225,7 @@ defmodule PicselloWeb.GalleryLive.CreateComponent do
           name: client.name <> " " <> type,
           job_id: job_id,
           status: :active,
+          from_job?: from_job?,
           client_link_hash: UUID.uuid4(),
           password: Gallery.generate_password(),
           expired_at: expired_at(current_user.organization_id),
