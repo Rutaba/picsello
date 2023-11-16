@@ -501,7 +501,7 @@ defmodule PicselloWeb.Live.Calendar.BookingEvents.Show do
           <%= for booking_event_date <- @booking_event_dates do %>
             <div class={classes("mt-10 p-3 border rounded-lg border-base-200", %{"border-red-sales-300" => is_nil(booking_event_date.date)})}>
               <div class="flex mb-1">
-                <p class="text-2xl font-bold"> <%= if booking_event_date.date, do: date_formatter(booking_event_date.date, :day), else: "Add date" %> </p>
+                <p class={classes("text-2xl font-bold", %{"text-red-sales-300" => is_nil(booking_event_date.date)})}> <%= if booking_event_date.date, do: date_formatter(booking_event_date.date, :day), else: "Select Day" %> </p>
                 <button class="flex text-blue-planning-300 ml-auto items-center justify-center whitespace-nowrap hover:opacity-75" phx-click="toggle-section" phx-value-section_id={booking_event_date.id}>
                   View details
                   <.icon name={if Enum.member?(@collapsed_sections, booking_event_date.id), do: "up", else: "down"} class="mt-1.5 md:mt-1 w-4 h-4 ml-2 stroke-current stroke-3 text-blue-planning-300"/>
