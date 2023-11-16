@@ -114,25 +114,31 @@ defmodule PicselloWeb.Shared.Sidebar do
           </div>
           <nav class="flex flex-col">
             <.nav_link title="Dashboard" to={Routes.home_path(@socket, :index)} socket={@socket} live_action={@live_action} current_user={@current_user} class="text-sm px-4 flex items-center py-2.5 whitespace-nowrap text-base-250 transition-all hover:bg-blue-planning-100" active_class="bg-blue-planning-100 text-black font-bold">
-              <.icon name="home" class="inline-block w-5 h-5 mr-2 text-black shrink-0" />
+              <div class="inline" phx-hook="Tooltip" data-hint="Dashboard" data-position="right" id="tippydashboard">
+                <.icon name="home" class="inline-block w-5 h-5 mr-2 text-black shrink-0" />
+              </div>
               <span>Dashboard</span>
             </.nav_link>
-            <%= for %{heading: heading, is_default_opened?: is_default_opened?, items: items} <- side_nav(@socket, @current_user), @current_user do %>
+            <%= for {%{heading: heading, is_default_opened?: is_default_opened?, items: items}, primary_index} <- Enum.with_index(side_nav(@socket, @current_user)), @current_user do %>
               <details open={is_default_opened?} class="group cursor-pointer">
                 <summary class="flex justify-between items-center uppercase font-bold px-4 py-3 tracking-widest text-xs flex-shrink-0 whitespace-nowrap group cursor-pointer">
                   <span class="mr-2"><%= heading %></span>
                   <.icon name="down" class="w-4 h-4 stroke-current stroke-2 text-base flex-shrink-0 group-open:rotate-180" />
                 </summary>
-                <%= for %{title: title, icon: icon, path: path} <- items do %>
+                <%= for {%{title: title, icon: icon, path: path}, secondary_index} <- Enum.with_index(items) do %>
                   <.nav_link title={title} to={path} socket={@socket} live_action={@live_action} current_user={@current_user} class="text-sm px-4 flex items-center py-2.5 whitespace-nowrap text-base-250 transition-all hover:bg-blue-planning-100" active_class="bg-blue-planning-100 text-black font-bold">
-                    <.icon name={icon} class="text-black inline-block w-5 h-5 mr-2 shrink-0" />
+                    <div class="inline" phx-hook="Tooltip" data-hint={title} data-position="right" id={"tippy#{primary_index}#{secondary_index}"}>
+                      <.icon name={icon} class="text-black inline-block w-5 h-5 mr-2 shrink-0"  />
+                    </div>
                     <span><%= title %></span>
                   </.nav_link>
                 <% end %>
               </details>
             <% end %>
             <.nav_link title="Settings" to={Routes.user_settings_path(@socket, :edit)} socket={@socket} live_action={@live_action} current_user={@current_user} class="text-sm px-4 flex items-center py-2.5 whitespace-nowrap text-base-250 transition-all hover:bg-blue-planning-100" active_class="bg-blue-planning-100 text-black font-bold">
-              <.icon name="settings" class="inline-block w-5 h-5 mr-2 text-black shrink-0" />
+              <div class="inline" phx-hook="Tooltip" data-hint="Settings" data-position="right" id="tippysettings">
+                <.icon name="settings" class="inline-block w-5 h-5 mr-2 text-black shrink-0" />
+              </div>
               <span>Settings</span>
             </.nav_link>
           </nav>
@@ -142,13 +148,17 @@ defmodule PicselloWeb.Shared.Sidebar do
             </a>
             <%= if @current_user && Application.get_env(:picsello, :intercom_id) do %>
               <.nav_link title="Help" to={"#help"} socket={@socket} live_action={@live_action} current_user={@current_user} class="text-sm px-4 flex items-center py-2.5 whitespace-nowrap text-base-250 transition-all hover:bg-blue-planning-100 open-help" active_class="bg-blue-planning-100 text-black font-bold">
-                <.icon name="question-mark" class="inline-block w-5 h-5 mr-2 text-black shrink-0" />
+                <div class="inline" phx-hook="Tooltip" data-hint="Help" data-position="right" id="tippyhelp">
+                  <.icon name="question-mark" class="inline-block w-5 h-5 mr-2 text-black shrink-0" />
+                </div>
                 <span>Help</span>
               </.nav_link>
             <% end %>
             <button phx-click="collapse" phx-target={@myself} data-drawer-type="desktop" data-drawer-target="default-sidebar" data-drawer-toggle="default-sidebar" aria-controls="default-sidebar" type="button" class="text-sm px-4 sm:flex items-center py-2.5 whitespace-nowrap text-base-250 transition-all hover:bg-blue-planning-100 w-full hidden">
               <span class="sr-only">Open sidebar</span>
-              <.icon name="collapse" class="inline-block w-5 h-5 mr-2 text-black shrink-0 transition-all" />
+              <div class="inline" phx-hook="Tooltip" data-hint="Collapse" data-position="right" id="tippycollapse">
+                <.icon name="collapse" class="inline-block w-5 h-5 mr-2 text-black shrink-0 transition-all" />
+              </div>
               <span>Collapse</span>
             </button>
           </div>

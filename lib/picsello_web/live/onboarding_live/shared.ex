@@ -202,6 +202,14 @@ defmodule PicselloWeb.OnboardingLive.Shared do
           {:error, "Couldn't assign default email presets"}
       end
     end)
+    |> Multi.run(:user_temp_navbar, fn _repo, %{user: user} ->
+      # temporarily add enable for all net new users
+      # we are doing this to A/B cohort test the new navbar
+      # and see if it helps with retention/ease of use
+      FunWithFlags.enable(:sidebar_navigation, for_actor: user)
+
+      {:ok, nil}
+    end)
     |> Multi.run(:user_final, fn _repo, %{user: user} ->
       with _ <- Onboardings.complete!(user) do
         {:ok, nil}
