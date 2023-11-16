@@ -53,6 +53,86 @@ defmodule Picsello.AccountsTest do
   end
 
   describe "register_user/1" do
+    @invalid_emails [
+      "..@test.com",
+      "picsello@test..com",
+      "picsello@..test.com",
+      "picsello..testing@test.com"
+    ]
+    test "throws email is invalid error when there's any consecutive dots in the email" do
+      Enum.each(@invalid_emails, fn email ->
+        {:error, changeset} = Accounts.register_user(%{email: email})
+        assert %{email: ["is invalid"]} = errors_on(changeset)
+      end)
+    end
+
+    @invalid_emails [
+      "@picsello@test.com",
+      "#picsello@test.com",
+      "!picsello@test.com",
+      "$picsello@test.com",
+      "%picsello@test.com",
+      "^picsello@test.com",
+      "&picsello@test.com",
+      "*picsello@test.com",
+      "(picsello@test.com",
+      ")picsello@test.com",
+      "+picsello@test.com"
+    ]
+    test "throws email is invalid error when a email starts with a special character" do
+      Enum.each(@invalid_emails, fn email ->
+        {:error, changeset} = Accounts.register_user(%{email: email})
+        assert %{email: ["is invalid"]} = errors_on(changeset)
+      end)
+    end
+
+    test "throws email is invalid error when a email starts with a dot" do
+      {:error, changeset} = Accounts.register_user(%{email: ".picsello@test.com"})
+      assert %{email: ["is invalid"]} = errors_on(changeset)
+    end
+
+    test "throws email is invalid error when a email ends with a dot" do
+      {:error, changeset} = Accounts.register_user(%{email: "picsello@test.com."})
+      assert %{email: ["is invalid"]} = errors_on(changeset)
+    end
+
+    @invalid_emails [
+      "picsello@test.com@",
+      "picsello@test.com#",
+      "picsello@test.com!",
+      "picsello@test.com$",
+      "picsello@test.com%",
+      "picsello@test.com^",
+      "picsello@test.com&",
+      "picsello@test.com*",
+      "picsello@test.com(",
+      "picsello@test.com)",
+      "picsello@test.com+"
+    ]
+    test "throws email is invalid error when a email ends with a special character" do
+      Enum.each(@invalid_emails, fn email ->
+        {:error, changeset} = Accounts.register_user(%{email: email})
+        assert %{email: ["is invalid"]} = errors_on(changeset)
+      end)
+    end
+
+    @valid_emails [
+      "user@example.com",
+      "john.doe@example.co.uk",
+      "alice.smith123@example.org",
+      "bob@example-xyz.com",
+      "jane_doe@example.travel",
+      "contact@mywebsite.net",
+      "support@company-name.biz",
+      "info123@example123.info"
+    ]
+    test "doesn't throw any email error when they're valid" do
+      Enum.each(@valid_emails, fn email ->
+        {:error, changeset} = Accounts.register_user(%{email: email})
+        assert %{email: ["is invalid"]} != errors_on(changeset)
+      end)
+    end
+
     test "requires email and password to be set" do
       {:error, changeset} = Accounts.register_user(%{})
 
