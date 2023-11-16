@@ -16,7 +16,7 @@ defmodule PicselloWeb.Live.ClientLive.Index do
     ]
 
   alias Ecto.Changeset
-  alias Picsello.{Repo, Clients, ClientTag, PreferredFilters}
+  alias Picsello.{Repo, Clients, ClientTag, PreferredFilter}
   alias PicselloWeb.JobLive.{NewComponent, ImportWizard, Shared}
 
   alias PicselloWeb.{
@@ -606,7 +606,7 @@ defmodule PicselloWeb.Live.ClientLive.Index do
   defp assign_preferred_filters(
          %{assigns: %{current_user: %{organization_id: organization_id}}} = socket
        ) do
-    case PreferredFilters.load_preferred_filters(organization_id, "clients") do
+    case PreferredFilter.load_preferred_filters(organization_id, "clients") do
       nil ->
         socket
         |> assign(:job_status, "all")

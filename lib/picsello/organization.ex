@@ -17,7 +17,7 @@ defmodule Picsello.Organization do
     Profiles.Profile,
     GlobalSettings.GalleryProduct,
     Address,
-    PreferredFilters
+    PreferredFilter
   }
 
   defmodule EmailSignature do
@@ -124,7 +124,7 @@ defmodule Picsello.Organization do
     has_one(:global_setting, Picsello.GlobalSettings.Gallery)
     has_one(:user, User)
     has_one(:address, Address, on_replace: :update)
-    has_one(:preferred_filters, PreferredFilters, on_replace: :update)
+    has_one(:preferred_filters, PreferredFilter, on_replace: :update)
 
     timestamps()
   end

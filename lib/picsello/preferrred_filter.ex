@@ -1,4 +1,4 @@
-defmodule Picsello.PreferredFilters do
+defmodule Picsello.PreferredFilter do
   @moduledoc false
   use Ecto.Schema
   import Ecto.Changeset
@@ -38,11 +38,13 @@ defmodule Picsello.PreferredFilters do
     timestamps()
   end
 
+  @fields ~w(type organization_id)a
+
   def changeset(preferred_filter, attrs \\ %{}) do
     preferred_filter
-    |> cast(attrs, [:type, :organization_id])
+    |> cast(attrs, @fields)
     |> cast_embed(:filters)
-    |> validate_required([:type, :organization_id])
+    |> validate_required(@fields)
   end
 
   def load_preferred_filters(organization_id, type),

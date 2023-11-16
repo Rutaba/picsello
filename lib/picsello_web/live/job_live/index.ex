@@ -16,7 +16,7 @@ defmodule PicselloWeb.JobLive.Index do
   import PicselloWeb.Live.Shared, only: [save_filters: 3]
 
   alias Ecto.Changeset
-  alias Picsello.{Job, Jobs, Repo, Payments, Package, PreferredFilters}
+  alias Picsello.{Job, Jobs, Repo, Payments, Package, PreferredFilter}
   alias PicselloWeb.{JobLive}
 
   @default_pagination_limit 12
@@ -455,7 +455,7 @@ defmodule PicselloWeb.JobLive.Index do
          %{assigns: %{live_action: :jobs, current_user: %{organization_id: organization_id}}} =
            socket
        ) do
-    case PreferredFilters.load_preferred_filters(organization_id, "jobs") do
+    case PreferredFilter.load_preferred_filters(organization_id, "jobs") do
       nil ->
         default_filters(socket, "shoot_date", :starts_at)
 
@@ -483,7 +483,7 @@ defmodule PicselloWeb.JobLive.Index do
          %{assigns: %{live_action: :leads, current_user: %{organization_id: organization_id}}} =
            socket
        ) do
-    case PreferredFilters.load_preferred_filters(organization_id, "leads") do
+    case PreferredFilter.load_preferred_filters(organization_id, "leads") do
       nil ->
         default_filters(socket, "newest_lead", :inserted_at)
 

@@ -5,7 +5,7 @@ defmodule PicselloWeb.Live.Calendar.BookingEvents do
   import PicselloWeb.Live.Calendar.Shared, only: [back_button: 1]
   import PicselloWeb.ClientBookingEventLive.Shared, only: [blurred_thumbnail: 1]
   import PicselloWeb.Live.Shared, only: [save_filters: 3]
-  alias Picsello.{Payments, BookingEvents, PreferredFilters}
+  alias Picsello.{Payments, BookingEvents, PreferredFilter}
 
   @impl true
   def mount(_params, _session, %{assigns: %{current_user: current_user}} = socket) do
@@ -29,7 +29,7 @@ defmodule PicselloWeb.Live.Calendar.BookingEvents do
   defp assign_preferred_filters(
          %{assigns: %{current_user: %{organization_id: organization_id}}} = socket
        ) do
-    case PreferredFilters.load_preferred_filters(organization_id, "booking_events") do
+    case PreferredFilter.load_preferred_filters(organization_id, "booking_events") do
       nil ->
         socket
         |> assign(:event_status, "all")
@@ -60,7 +60,7 @@ defmodule PicselloWeb.Live.Calendar.BookingEvents do
   defp assign_sort_col(socket, sort_by, _default_sort_col),
     do:
       socket
-      |> assign(:sort_col, Enum.find(sort_options(), fn op -> op.id == sort_by end).column)
+      |> assign(:sort_col, Enum.find(sort_options(), &(&1.id == sort_by)).column)
 
   @impl true
   def handle_params(

@@ -31,7 +31,7 @@ defmodule PicselloWeb.Live.Shared do
     Jobs,
     Client,
     Package,
-    PreferredFilters,
+    PreferredFilter,
     Repo,
     BookingProposal,
     Workers.CleanStore,
@@ -760,9 +760,9 @@ defmodule PicselloWeb.Live.Shared do
         type,
         filters
       ) do
-    case PreferredFilters.load_preferred_filters(organization_id, type) do
+    case PreferredFilter.load_preferred_filters(organization_id, type) do
       nil ->
-        PreferredFilters.changeset(%PreferredFilters{}, %{
+        PreferredFilter.changeset(%PreferredFilter{}, %{
           organization_id: organization_id,
           type: type,
           filters: filters
@@ -770,7 +770,7 @@ defmodule PicselloWeb.Live.Shared do
         |> Repo.insert_or_update()
 
       preferred_filters ->
-        PreferredFilters.changeset(preferred_filters, %{
+        PreferredFilter.changeset(preferred_filters, %{
           organization_id: organization_id,
           type: type,
           filters: filters
