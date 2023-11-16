@@ -19,7 +19,7 @@ defmodule PicselloWeb.WelcomeComponent do
       <.close_x close_event="close_event" myself={@myself} />
       <%= if Enum.member?(@current_user.onboarding_flow_source, "mastermind") do %>
         <h1 class="welcome-text text-3xl font-bold mb-4 pr-8">Welcome to Picsello’s Mastermind!</h1>
-        <h2>Here are some notes for you:</h2>
+        <h2>Start your journey with these steps:</h2>
         <ul class="list-disc space-y-1 list-inside pl-5">
           <li><a href="https://www.facebook.com/groups/picsellobusinessmastermind" class="underline text-blue-planning-300" target="_blank" rel="noopener noreferrer">Join the Private Facebook Group</a> for resources and schedule of events</li>
           <li>You get Picsello as a part of Mastermind Subscription. Take a look around!</li>
