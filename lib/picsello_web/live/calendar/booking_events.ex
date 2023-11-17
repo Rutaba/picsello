@@ -38,19 +38,22 @@ defmodule PicselloWeb.Live.Calendar.BookingEvents do
         }
       } ->
         socket
-        |> assign(:event_status, event_status || "all")
-        |> assign(:sort_by, sort_by || "name")
-        |> assign(:sort_direction, sort_direction || "asc")
+        |> assign_default_filters(event_status, sort_by, sort_direction)
         |> assign_sort_col(sort_by, "name")
 
       _ ->
         socket
-        |> assign(:event_status, "all")
-        |> assign(:sort_by, "name")
-        |> assign(:sort_direction, "asc")
+        |> assign_default_filters("all", "name", "asc")
         |> assign(:sort_col, "name")
     end
   end
+
+  defp assign_default_filters(socket, event_status, sort_by, sort_direction),
+    do:
+      socket
+      |> assign(:event_status, event_status || "all")
+      |> assign(:sort_by, sort_by || "name")
+      |> assign(:sort_direction, sort_direction || "asc")
 
   defp assign_sort_col(socket, nil, default_sort_col),
     do:
@@ -251,7 +254,7 @@ defmodule PicselloWeb.Live.Calendar.BookingEvents do
         </div>
         <%= if @title == "Sort" do%>
           <div class="items-center flex border rounded-r-lg border-grey p-2">
-            <button phx-click="switch_sort">
+            <button phx-click="switch-sort">
               <.icon name={if @sort_direction == "asc", do: "sort-vector", else: "sort-vector-2"} {testid("edit-link-button")} class="blue-planning-300 w-5 h-5" />
             </button>
           </div>
@@ -366,7 +369,7 @@ defmodule PicselloWeb.Live.Calendar.BookingEvents do
 
   @impl true
   def handle_event(
-        "switch_sort",
+        "switch-sort",
         _,
         %{
           assigns: %{

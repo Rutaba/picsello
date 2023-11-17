@@ -491,8 +491,7 @@ defmodule PicselloWeb.JobLive.Index do
          default_sort_col
        ) do
     socket
-    |> assign(:job_status, job_status || "all")
-    |> assign(:job_type, job_type || "all")
+    |> assign_default_filters(job_status, job_type)
     |> assign(:sort_by, sort_by || default_sort_by)
     |> assign_sort_col(sort_by, default_sort_col)
     |> assign_sort_direction(sort_by, sort_direction)
@@ -542,12 +541,17 @@ defmodule PicselloWeb.JobLive.Index do
 
   defp default_filters(socket, sort_by, sort_col) do
     socket
-    |> assign(:job_status, "all")
-    |> assign(:job_type, "all")
+    |> assign_default_filters("all", "all")
     |> assign(:sort_by, sort_by)
     |> assign(:sort_direction, :desc)
     |> assign(:sort_col, sort_col)
   end
+
+  defp assign_default_filters(socket, job_status, job_type),
+    do:
+      socket
+      |> assign(:job_status, job_status || "all")
+      |> assign(:job_type, job_type || "all")
 
   defp assign_type_strings(%{assigns: %{live_action: live_action}} = socket) do
     if live_action == :jobs,

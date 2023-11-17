@@ -615,21 +615,24 @@ defmodule PicselloWeb.Live.ClientLive.Index do
         }
       } ->
         socket
-        |> assign(:job_status, job_status || "all")
-        |> assign(:job_type, job_type || "all")
-        |> assign(:sort_by, sort_by || "name")
+        |> assign_default_filters(job_status, job_type, sort_by)
         |> assign_sort_direction(sort_by, "asc")
         |> assign_sort_col(sort_by, "name")
 
       _ ->
         socket
-        |> assign(:job_status, "all")
-        |> assign(:job_type, "all")
-        |> assign(:sort_by, "name")
+        |> assign_default_filters("all", "all", "name")
         |> assign(:sort_direction, "asc")
         |> assign(:sort_col, "name")
     end
   end
+
+  defp assign_default_filters(socket, job_status, job_type, sort_by),
+    do:
+      socket
+      |> assign(:job_status, job_status || "all")
+      |> assign(:job_type, job_type || "all")
+      |> assign(:sort_by, sort_by || "name")
 
   defp assign_sort_col(socket, nil, default_sort_col),
     do:

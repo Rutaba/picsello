@@ -6,14 +6,15 @@ defmodule Picsello.PreferredFilterTest do
     PreferredFilter,
     PreferredFilter.Filters
   }
+
   import PicselloWeb.Live.Shared, only: [save_filters: 3]
   alias Ecto.Changeset
 
   setup do
-   org = insert(:organization)
-   filters = %{sort_by: "name", job_type: "wedding", job_status: "active", sort_direction: "asc"}
+    org = insert(:organization)
+    filters = %{sort_by: "name", job_type: "wedding", job_status: "active", sort_direction: "asc"}
 
-   %{organization: org, filters: filters}
+    %{organization: org, filters: filters}
   end
 
   test "changeset for embeded schema of filter", %{filters: filters} do
@@ -34,13 +35,11 @@ defmodule Picsello.PreferredFilterTest do
     assert get_change(changeset, :type) == "jobs"
   end
 
-
   test "insert in prefered filters", %{organization: org, filters: filters} do
     {:ok, preferd_filter} = save_filters(org.id, "clients", filters)
 
     assert preferd_filter.organization_id == org.id
   end
-
 
   test "update prefered filters record", %{organization: org} do
     insert(:prefer_filter, organization: org, type: "clients")
@@ -53,7 +52,7 @@ defmodule Picsello.PreferredFilterTest do
 
   test "get filter", %{organization: org} do
     insert(:prefer_filter, organization: org, type: "booking_events")
-    filter =  PreferredFilter.load_preferred_filters(org.id, "booking_events")
+    filter = PreferredFilter.load_preferred_filters(org.id, "booking_events")
 
     assert filter.organization_id == org.id
   end
