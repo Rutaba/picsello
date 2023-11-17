@@ -473,7 +473,10 @@ defmodule PicselloWeb.HomeLive.Index do
       ) do
     # reassign user for collapsing sidebar jank
     # since we are looking at the layout with a class
-    current_user = current_user.id |> Accounts.get_user!() |> Repo.preload(:organization)
+    current_user =
+      current_user.id
+      |> Accounts.get_user!()
+      |> Repo.preload(organization: [:organization_job_types])
 
     socket
     |> assign(:current_user, current_user)
