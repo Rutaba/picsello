@@ -1,4 +1,6 @@
 defmodule Picsello.Pack do
+  require Logger
+
   @moduledoc """
   context module for creating a zip of an order's digitals
   """
@@ -179,9 +181,11 @@ defmodule Picsello.Pack do
         |> do_upload(path(album), opts)
 
       {:error, %Ecto.NoResultsError{}} ->
+        Logger.error("No photos to pack for album: #{album.id}")
         {:error, :empty}
 
       error ->
+        Logger.error("Error packing album: #{album.id}: #{inspect(error)}")
         error
     end
   end
