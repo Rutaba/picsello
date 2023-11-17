@@ -82,8 +82,10 @@ defmodule PicselloWeb.BookingProposalLive.InvoiceComponent do
   end
 
   @impl true
-  def handle_event("submit", %{}, %{assigns: %{job: job}} = socket) do
+  def handle_event("submit", %{}, %{assigns: %{job: job, organization: organization}} = socket) do
     handle_checkout(socket, job)
+    insert_job_emails(job.type, organization.id, job.id, :job, [])
+    socket |> noreply()
   end
 
   def handle_event(
