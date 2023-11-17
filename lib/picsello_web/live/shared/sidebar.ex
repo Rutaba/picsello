@@ -182,21 +182,23 @@ defmodule PicselloWeb.Shared.Sidebar do
               <div class="ml-2 font-bold">Account</div>
             <% end %>
 
-            <div class="bg-white px-2">
-              <hr class="pt-2" />
-              <p class="font-semibold">Photo Lab</p>
-              <div class="flex justify-between items-center text-sm pb-2">
-                <p class="text-base-250">Sidebar Navigation <.tooltip id="sidebar-nav" class="" content="Try out an easier to use navigation. We'd love your feedback. (You will be directed to your dashboard when toggled.)"/></p>
-                <button type="button" class="cursor-pointer" phx-click="feature-flag" phx-target={@myself}>
-                  <div class="flex">
-                    <div class={classes("rounded-full w-7 p-0.5 flex border border-blue-planning-300", %{"bg-blue-planning-300 justify-end" => FunWithFlags.enabled?(:sidebar_navigation, for: @current_user), "bg-base-100" => !FunWithFlags.enabled?(:sidebar_navigation, for: @current_user)})}>
-                      <div class={classes("rounded-full h-3 w-3", %{"bg-base-100" => FunWithFlags.enabled?(:sidebar_navigation, for: @current_user), "bg-blue-planning-300" => !FunWithFlags.enabled?(:sidebar_navigation, for: @current_user)})}></div>
+            <%= if FunWithFlags.enabled?(:photo_lab) do %>
+              <div class="bg-white px-2">
+                <hr class="pt-2" />
+                <p class="font-semibold">Photo Lab</p>
+                <div class="flex justify-between items-center text-sm pb-2">
+                  <p class="text-base-250">Sidebar Navigation <.tooltip id="sidebar-nav" class="" content="Try out an easier to use navigation. We'd love your feedback. (You will be directed to your dashboard when toggled.)"/></p>
+                  <button type="button" class="cursor-pointer" phx-click="feature-flag" phx-target={@myself}>
+                    <div class="flex">
+                      <div class={classes("rounded-full w-7 p-0.5 flex border border-blue-planning-300", %{"bg-blue-planning-300 justify-end" => FunWithFlags.enabled?(:sidebar_navigation, for: @current_user), "bg-base-100" => !FunWithFlags.enabled?(:sidebar_navigation, for: @current_user)})}>
+                        <div class={classes("rounded-full h-3 w-3", %{"bg-base-100" => FunWithFlags.enabled?(:sidebar_navigation, for: @current_user), "bg-blue-planning-300" => !FunWithFlags.enabled?(:sidebar_navigation, for: @current_user)})}></div>
+                      </div>
                     </div>
-                  </div>
-                </button>
+                  </button>
+                </div>
+                <hr />
               </div>
-              <hr />
-            </div>
+            <% end %>
 
             <%= if Enum.any?(@current_user.onboarding.intro_states) do %>
               <.live_component module={PicselloWeb.Live.RestartTourComponent} id={@tour_id}, current_user={@current_user} />
