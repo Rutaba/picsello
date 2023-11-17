@@ -607,14 +607,6 @@ defmodule PicselloWeb.Live.ClientLive.Index do
          %{assigns: %{current_user: %{organization_id: organization_id}}} = socket
        ) do
     case PreferredFilter.load_preferred_filters(organization_id, "clients") do
-      nil ->
-        socket
-        |> assign(:job_status, "all")
-        |> assign(:job_type, "all")
-        |> assign(:sort_by, "name")
-        |> assign(:sort_direction, "asc")
-        |> assign(:sort_col, "name")
-
       %{
         filters: %{
           job_type: job_type,
@@ -628,6 +620,14 @@ defmodule PicselloWeb.Live.ClientLive.Index do
         |> assign(:sort_by, sort_by || "name")
         |> assign_sort_direction(sort_by, "asc")
         |> assign_sort_col(sort_by, "name")
+
+      _ ->
+        socket
+        |> assign(:job_status, "all")
+        |> assign(:job_type, "all")
+        |> assign(:sort_by, "name")
+        |> assign(:sort_direction, "asc")
+        |> assign(:sort_col, "name")
     end
   end
 

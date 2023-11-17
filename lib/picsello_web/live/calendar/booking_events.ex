@@ -30,13 +30,6 @@ defmodule PicselloWeb.Live.Calendar.BookingEvents do
          %{assigns: %{current_user: %{organization_id: organization_id}}} = socket
        ) do
     case PreferredFilter.load_preferred_filters(organization_id, "booking_events") do
-      nil ->
-        socket
-        |> assign(:event_status, "all")
-        |> assign(:sort_by, "name")
-        |> assign(:sort_direction, "asc")
-        |> assign(:sort_col, "name")
-
       %{
         filters: %{
           event_status: event_status,
@@ -49,6 +42,13 @@ defmodule PicselloWeb.Live.Calendar.BookingEvents do
         |> assign(:sort_by, sort_by || "name")
         |> assign(:sort_direction, sort_direction || "asc")
         |> assign_sort_col(sort_by, "name")
+
+      _ ->
+        socket
+        |> assign(:event_status, "all")
+        |> assign(:sort_by, "name")
+        |> assign(:sort_direction, "asc")
+        |> assign(:sort_col, "name")
     end
   end
 

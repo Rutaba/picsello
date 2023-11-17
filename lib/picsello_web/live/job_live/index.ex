@@ -36,13 +36,7 @@ defmodule PicselloWeb.JobLive.Index do
         %{assigns: %{live_action: live_action, current_user: %{organization_id: organization_id}}} =
           socket
       ) do
-    case live_action do
-      :leads ->
-        save_filters(organization_id, "leads", %{job_status: status})
-
-      :jobs ->
-        save_filters(organization_id, "jobs", %{job_status: status})
-    end
+    save_preferred_filters(live_action, organization_id, %{job_status: status})
 
     socket
     |> assign(:job_status, status)
@@ -56,13 +50,7 @@ defmodule PicselloWeb.JobLive.Index do
         %{assigns: %{live_action: live_action, current_user: %{organization_id: organization_id}}} =
           socket
       ) do
-    case live_action do
-      :leads ->
-        save_filters(organization_id, "leads", %{job_type: type})
-
-      :jobs ->
-        save_filters(organization_id, "jobs", %{job_type: type})
-    end
+    save_preferred_filters(live_action, organization_id, %{job_type: type})
 
     socket
     |> assign(:job_type, type)
@@ -76,13 +64,7 @@ defmodule PicselloWeb.JobLive.Index do
         %{assigns: %{live_action: live_action, current_user: %{organization_id: organization_id}}} =
           socket
       ) do
-    case live_action do
-      :leads ->
-        save_filters(organization_id, "leads", %{sort_by: sort_by})
-
-      :jobs ->
-        save_filters(organization_id, "jobs", %{sort_by: sort_by})
-    end
+    save_preferred_filters(live_action, organization_id, %{sort_by: sort_by})
 
     socket
     |> assign(:sort_by, sort_by)
@@ -114,13 +96,9 @@ defmodule PicselloWeb.JobLive.Index do
       ) do
     sort_direction = if(sort_direction == :asc, do: :desc, else: :asc)
 
-    case live_action do
-      :leads ->
-        save_filters(organization_id, "leads", %{sort_direction: to_string(sort_direction)})
-
-      :jobs ->
-        save_filters(organization_id, "jobs", %{sort_direction: to_string(sort_direction)})
-    end
+    save_preferred_filters(live_action, organization_id, %{
+      sort_direction: to_string(sort_direction)
+    })
 
     socket
     |> assign(:sort_direction, sort_direction)
@@ -346,6 +324,16 @@ defmodule PicselloWeb.JobLive.Index do
     """
   end
 
+  defp save_preferred_filters(live_action, organization_id, filter) do
+    case live_action do
+      :leads ->
+        save_filters(organization_id, "leads", filter)
+
+      :jobs ->
+        save_filters(organization_id, "jobs", filter)
+    end
+  end
+
   defp assign_stripe_status(%{assigns: %{current_user: current_user}} = socket) do
     socket |> assign(stripe_status: Payments.status(current_user))
   end
@@ -456,26 +444,18 @@ defmodule PicselloWeb.JobLive.Index do
            socket
        ) do
     case PreferredFilter.load_preferred_filters(organization_id, "jobs") do
-      nil ->
-        default_filters(socket, "shoot_date", :starts_at)
-
       %{
-        filters: %{
-          sort_by: sort_by,
-          job_type: job_type,
-          job_status: job_status,
-          sort_direction: sort_direction
-        }
+        filters: filters
       } ->
         loaded_filters(
           socket,
-          sort_by,
-          job_type,
-          job_status,
-          sort_direction,
+          filters,
           "shoot_date",
           :starts_at
         )
+
+      _ ->
+        default_filters(socket, "shoot_date", :starts_at)
     end
   end
 
@@ -484,35 +464,29 @@ defmodule PicselloWeb.JobLive.Index do
            socket
        ) do
     case PreferredFilter.load_preferred_filters(organization_id, "leads") do
-      nil ->
-        default_filters(socket, "newest_lead", :inserted_at)
-
       %{
-        filters: %{
-          sort_by: sort_by,
-          job_type: job_type,
-          job_status: job_status,
-          sort_direction: sort_direction
-        }
+        filters: filters
       } ->
         loaded_filters(
           socket,
-          sort_by,
-          job_type,
-          job_status,
-          sort_direction,
+          filters,
           "newest_lead",
           :inserted_at
         )
+
+      _ ->
+        default_filters(socket, "newest_lead", :inserted_at)
     end
   end
 
   defp loaded_filters(
          socket,
-         sort_by,
-         job_type,
-         job_status,
-         sort_direction,
+         %{
+           sort_by: sort_by,
+           job_type: job_type,
+           job_status: job_status,
+           sort_direction: sort_direction
+         },
          default_sort_by,
          default_sort_col
        ) do
