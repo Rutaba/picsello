@@ -88,9 +88,7 @@ defmodule Picsello.EmailAutomations do
       # Retrieve all email automation sub-categories
       Picsello.EmailAutomations.get_sub_categories()
   """
-  def get_sub_categories() do
-    from(EmailAutomationSubCategory) |> Repo.all()
-  end
+  def get_sub_categories(), do: from(EmailAutomationSubCategory) |> Repo.all()
 
   @doc """
   Retrieves an email automation pipeline by its ID.
@@ -111,15 +109,11 @@ defmodule Picsello.EmailAutomations do
       # Retrieve an email automation pipeline by its ID
       Picsello.EmailAutomations.get_pipeline_by_id(123)
   """
-  def get_pipeline_by_id(id) do
-    from(eap in EmailAutomationPipeline, where: eap.id == ^id)
-    |> Repo.one()
-  end
+  def get_pipeline_by_id(id),
+    do: from(eap in EmailAutomationPipeline, where: eap.id == ^id) |> Repo.one()
 
-  def get_pipelines_by_states(states) do
-    from(eap in EmailAutomationPipeline, where: eap.state in ^states)
-    |> Repo.all()
-  end
+  def get_pipelines_by_states(states),
+    do: from(eap in EmailAutomationPipeline, where: eap.state in ^states) |> Repo.all()
 
   @doc """
   Retrieves an email automation pipeline by its state.
@@ -140,10 +134,8 @@ defmodule Picsello.EmailAutomations do
       # Retrieve an email automation pipeline by its state
       Picsello.EmailAutomations.get_pipeline_by_state(:active)
   """
-  def get_pipeline_by_state(state) do
-    from(eap in EmailAutomationPipeline, where: eap.state == ^state)
-    |> Repo.one()
-  end
+  def get_pipeline_by_state(state),
+    do: from(eap in EmailAutomationPipeline, where: eap.state == ^state) |> Repo.one()
 
   @doc """
   Updates the status of email presets associated with a specific email automation pipeline.

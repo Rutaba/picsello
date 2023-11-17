@@ -229,11 +229,9 @@ defmodule PicselloWeb.EmailAutomationLive.Shared do
   defp get_pipeline_status(subcategory) do
     updated_pipelines =
       Enum.map(subcategory.pipelines, fn pipeline ->
-        if Enum.any?(pipeline.emails, &(&1.status == :active)) do
-          Map.put(pipeline, :status, "active")
-        else
-          Map.put(pipeline, :status, "disabled")
-        end
+        if Enum.any?(pipeline.emails, &(&1.status == :active)),
+          do: Map.put(pipeline, :status, "active"),
+          else: Map.put(pipeline, :status, "disabled")
       end)
 
     Map.put(subcategory, :pipelines, updated_pipelines)
@@ -266,9 +264,7 @@ defmodule PicselloWeb.EmailAutomationLive.Shared do
 
   def validate?(false, _), do: false
 
-  def validate?(true, job_types) do
-    Enum.any?(job_types, &Map.get(&1, :selected, false))
-  end
+  def validate?(true, job_types), do: Enum.any?(job_types, &Map.get(&1, :selected, false))
 
   defp get_email_schedule_name(0, _index, _state, name), do: name
 
@@ -286,13 +282,8 @@ defmodule PicselloWeb.EmailAutomationLive.Shared do
 
   defp get_email_schedule_name(_hours, _index, _state, name), do: name
 
-  def get_email_schedule_text(0, state, _, index, _job_type, _organization_id) do
-    if state?(state) && index == 0 do
-      "Photographer Sends"
-    else
-      "Send email immediately"
-    end
-  end
+  def get_email_schedule_text(0, state, _, index, _job_type, _organization_id),
+    do: if(state?(state) && index == 0, do: "Photographer Sends", else: "Send email immediately")
 
   def get_email_schedule_text(hours, state, emails, index, job_type, _organization_id) do
     %{calendar: calendar, count: count, sign: sign} =
@@ -373,9 +364,7 @@ defmodule PicselloWeb.EmailAutomationLive.Shared do
 
   defp hours_to_days(hours), do: hours / 24
 
-  def is_state_manually_trigger(state) do
-    String.starts_with?(to_string(state), "manual")
-  end
+  def is_state_manually_trigger(state), do: String.starts_with?(to_string(state), "manual")
 
   @doc """
     if state is manual then fetch reminded_at of last email which is sent
@@ -399,13 +388,15 @@ defmodule PicselloWeb.EmailAutomationLive.Shared do
         __MODULE__
       )
 
-    if is_state_manually_trigger(state) do
-      case last_completed_email do
-        nil -> nil
-        schedule -> schedule.reminded_at
-      end
-    else
-      fetch_date_for_state(state, email, last_completed_email, job, gallery, order)
+    cond do
+      is_state_manually_trigger(state) and is_nil(last_completed_email) ->
+        nil
+
+      is_state_manually_trigger(state) ->
+        last_completed_email.reminded_at
+
+      true ->
+        fetch_date_for_state(state, email, last_completed_email, job, gallery, order)
     end
   end
 
@@ -772,34 +763,14 @@ defmodule PicselloWeb.EmailAutomationLive.Shared do
   end
 
   @doc """
-  Takes the html body and split it on the basis of search_param
-  and flattens the html body to plain-text.
-
-  Returns a string
-  """
-  def get_plain_text(html_text, to_search) do
-    if html_text |> String.contains?(to_search) do
-      html_text
-      |> String.split("{{##{to_search}}}")
-      |> Enum.at(1)
-      |> String.split("{{/#{to_search}}}")
-      |> Enum.at(0)
-      |> HtmlSanitizeEx.strip_tags()
-    end
-  end
-
-  @doc """
   Takes the step and steps assigns and return what would be the next step
 
   Returns an atom, i.e. :edit_email or :preview_email
   """
-  def next_step(%{step: step, steps: steps}) do
-    Enum.at(steps, Enum.find_index(steps, &(&1 == step)) + 1)
-  end
+  def next_step(%{step: step, steps: steps}),
+    do: Enum.at(steps, Enum.find_index(steps, &(&1 == step)) + 1)
 
-  defp today_timezone(timezone) do
-    DateTime.utc_now() |> DateTime.shift_zone!(timezone)
-  end
+  defp today_timezone(timezone), do: DateTime.utc_now() |> DateTime.shift_zone!(timezone)
 
   defp get_date_for_schedule(nil, date), do: date
   defp get_date_for_schedule(email, _date), do: email.reminded_at
@@ -815,4 +786,14 @@ defmodule PicselloWeb.EmailAutomationLive.Shared do
   defp get_gallery_id(gallery, _order) when is_map(gallery), do: gallery.id
   defp get_gallery_id(_gallery, order) when is_map(order), do: order.gallery.id
   defp get_gallery_id(_gallery, _order), do: nil
+
+  def step_valid?(assigns),
+    do:
+      Enum.all?(
+        [
+          assigns.email_preset_changeset
+        ],
+        & &1.valid?
+      )
+      |> validate?(assigns.job_types)
 end

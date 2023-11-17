@@ -12,7 +12,7 @@ defmodule Picsello.EmailAutomation.EmailAutomationPipeline do
 
   @states_by_type %{
     lead:
-      ~w(manual_thank_you_lead offline_payment client_contact booking_proposal_sent manual_booking_proposal_sent abandoned_emails lead)a,
+      ~w(manual_thank_you_lead client_contact booking_proposal_sent manual_booking_proposal_sent abandoned_emails lead)a,
     job:
       ~w(job post_shoot shoot_thanks balance_due_offline offline_payment paid_full paid_offline_full balance_due before_shoot thanks_booking thanks_job pays_retainer pays_retainer_offline booking_proposal payment_confirmation_client shoot_reminder)a,
     gallery:

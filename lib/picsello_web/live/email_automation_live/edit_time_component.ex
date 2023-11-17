@@ -5,9 +5,9 @@ defmodule PicselloWeb.EmailAutomationLive.EditTimeComponent do
   import PicselloWeb.LiveModal, only: [close_x: 1, footer: 1]
   import PicselloWeb.PackageLive.Shared, only: [current: 1]
 
-  alias Ecto.Changeset
-  alias Picsello.{Repo, EmailPresets.EmailPreset, EmailAutomations}
   alias PicselloWeb.EmailAutomationLive.Shared
+  alias Picsello.{Repo, EmailPresets.EmailPreset, EmailAutomations}
+  alias Ecto.Changeset
 
   @impl true
   def update(
@@ -36,15 +36,6 @@ defmodule PicselloWeb.EmailAutomationLive.EditTimeComponent do
     |> assign_new(:show_enable_setting?, fn -> true end)
     |> ok()
   end
-
-  defp step_valid?(assigns),
-    do:
-      Enum.all?(
-        [
-          assigns.changeset
-        ],
-        & &1.valid?
-      )
 
   @impl true
   def handle_event(
@@ -220,7 +211,7 @@ defmodule PicselloWeb.EmailAutomationLive.EditTimeComponent do
           </div>
 
           <.footer class="pt-10">
-            <button class="btn-primary" title="Save" disabled={!step_valid?(assigns)} type="submit" phx-disable-with="Save">
+            <button class="btn-primary" title="Save" disabled={!Shared.step_valid?(assigns)} type="submit" phx-disable-with="Save">
               Save
             </button>
             <button class="btn-secondary" title="cancel" type="button" phx-click="modal" phx-value-action="close">

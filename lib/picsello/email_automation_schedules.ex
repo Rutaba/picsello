@@ -24,7 +24,7 @@ defmodule Picsello.EmailAutomationSchedules do
   This module helps manage and retrieve email automation schedules for various organizational tasks.
   """
   import Ecto.Query
-  alias Ecto.{Multi}
+  alias Ecto.Multi
 
   alias Picsello.{
     Repo,
@@ -37,9 +37,7 @@ defmodule Picsello.EmailAutomationSchedules do
     Galleries
   }
 
-  def get_schedule_by_id_query(id) do
-    from(es in EmailSchedule, where: es.id == ^id)
-  end
+  def get_schedule_by_id_query(id), do: from(es in EmailSchedule, where: es.id == ^id)
 
   @doc """
   Retrieves an email automation schedule by its ID.
@@ -64,10 +62,10 @@ defmodule Picsello.EmailAutomationSchedules do
   # If found, the `schedule` variable will contain the email schedule details, otherwise, it will be `nil`.
   """
 
-  def get_schedule_by_id(id) do
-    get_schedule_by_id_query(id)
-    |> Repo.one()
-  end
+  def get_schedule_by_id(id),
+    do:
+      get_schedule_by_id_query(id)
+      |> Repo.one()
 
   @doc """
   Get emails associated with a specific gallery.
@@ -81,10 +79,10 @@ defmodule Picsello.EmailAutomationSchedules do
 
   A list of emails associated with the specified gallery.
   """
-  def get_emails_by_gallery(table, gallery_id, type) do
-    from(es in table, where: es.gallery_id == ^gallery_id and es.type == ^type)
-    |> Repo.all()
-  end
+  def get_emails_by_gallery(table, gallery_id, type),
+    do:
+      from(es in table, where: es.gallery_id == ^gallery_id and es.type == ^type)
+      |> Repo.all()
 
   @doc """
   Get emails associated with a specific order.
@@ -98,10 +96,10 @@ defmodule Picsello.EmailAutomationSchedules do
 
   A list of emails associated with the specified order.
   """
-  def get_emails_by_order(table, order_id, type) do
-    from(es in table, where: es.order_id == ^order_id and es.type == ^type)
-    |> Repo.all()
-  end
+  def get_emails_by_order(table, order_id, type),
+    do:
+      from(es in table, where: es.order_id == ^order_id and es.type == ^type)
+      |> Repo.all()
 
   @doc """
   Get emails associated with a specific job.
@@ -115,15 +113,15 @@ defmodule Picsello.EmailAutomationSchedules do
 
   A list of emails associated with the specified job.
   """
-  def get_emails_by_job(table, job_id, type) do
-    from(es in table, where: es.job_id == ^job_id and es.type == ^type)
-    |> Repo.all()
-  end
+  def get_emails_by_job(table, job_id, type),
+    do:
+      from(es in table, where: es.job_id == ^job_id and es.type == ^type)
+      |> Repo.all()
 
-  def get_emails_by_shoot(table, shoot_id, type) do
-    from(es in table, where: es.shoot_id == ^shoot_id and es.type == ^type)
-    |> Repo.all()
-  end
+  def get_emails_by_shoot(table, shoot_id, type),
+    do:
+      from(es in table, where: es.shoot_id == ^shoot_id and es.type == ^type)
+      |> Repo.all()
 
   @doc """
   Get the count of active email schedules for a specific job.
@@ -362,12 +360,12 @@ defmodule Picsello.EmailAutomationSchedules do
       |> Map.merge(params)
 
     multi_schedule =
-      Ecto.Multi.new()
-      |> Ecto.Multi.insert(
+      Multi.new()
+      |> Multi.insert(
         :email_schedule_history,
         EmailScheduleHistory.changeset(history_params)
       )
-      |> Ecto.Multi.delete(:delete_email_schedule, schedule)
+      |> Multi.delete(:delete_email_schedule, schedule)
       |> Repo.transaction()
 
     with {:ok, multi} <- multi_schedule,
@@ -737,11 +735,9 @@ defmodule Picsello.EmailAutomationSchedules do
 
     previous_emails_history = get_emails_by_job(EmailScheduleHistory, job_id, category_type)
 
-    if Enum.empty?(previous_emails_schedules) and Enum.empty?(previous_emails_history) do
-      emails
-    else
-      []
-    end
+    if Enum.empty?(previous_emails_schedules) and Enum.empty?(previous_emails_history),
+      do: emails,
+      else: []
   end
 
   def shoot_emails(job, shoot) do
@@ -794,11 +790,9 @@ defmodule Picsello.EmailAutomationSchedules do
 
     previous_emails_history = get_emails_by_shoot(EmailScheduleHistory, shoot.id, category_type)
 
-    if Enum.empty?(previous_emails_schedules) and Enum.empty?(previous_emails_history) do
-      emails
-    else
-      []
-    end
+    if Enum.empty?(previous_emails_schedules) and Enum.empty?(previous_emails_history),
+      do: emails,
+      else: []
   end
 
   def insert_shoot_emails(job, shoot) do
@@ -873,11 +867,7 @@ defmodule Picsello.EmailAutomationSchedules do
         do: get_emails_by_order(EmailScheduleHistory, order.id, category_type),
         else: get_emails_by_gallery(EmailScheduleHistory, gallery.id, category_type)
 
-    if Enum.empty?(previous_emails) and Enum.empty?(previous_emails_history) do
-      emails
-    else
-      []
-    end
+    if Enum.empty?(previous_emails) and Enum.empty?(previous_emails_history), do: emails, else: []
   end
 
   def insert_gallery_order_emails(gallery, order) do
