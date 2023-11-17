@@ -181,7 +181,7 @@ defmodule Picsello.Pack do
         |> do_upload(path(album), opts)
 
       {:error, %Ecto.NoResultsError{}} ->
-        Logger.info("No photos to pack for album: #{album.id}")
+        Logger.error("No photos to pack for album: #{album.id}")
         {:error, :empty}
 
       error ->
