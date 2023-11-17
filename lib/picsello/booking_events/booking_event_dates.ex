@@ -553,9 +553,9 @@ defmodule Picsello.BookingEventDates do
             }
           end
 
-        slot_trunc = slot_end |> Time.truncate(:second) |> IO.inspect(label: "Slot trunc")
+        slot_trunc = slot_end |> Time.truncate(:second)
         time = duration * -1
-        end_trunc = end_time |> Time.add(time) |> Time.truncate(:second) |> IO.inspect(label: "End Trunc")
+        end_trunc = end_time |> Time.add(time) |> Time.truncate(:second)
 
         if slot_trunc > end_trunc do
           {:halt, [%SlotBlock{slot_start: slot_time, slot_end: slot_trunc} | acc]}

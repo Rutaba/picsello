@@ -119,6 +119,7 @@ defmodule PicselloWeb.Live.Calendar.BookingEvents.Show do
         booking_date
         |> BEShared.update_slots_for_edit()
       )
+      |> BEShared.update_repeat_settings_for_edit()
 
     socket
     |> open_wizard(%{booking_date: edit_booking_date, title: "Edit Date"})

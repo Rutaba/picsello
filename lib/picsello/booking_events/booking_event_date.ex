@@ -341,10 +341,16 @@ defmodule Picsello.BookingEventDate do
     %{day: "sat", active: false}
   ]
   defp set_default_repeat_on(changeset) do
-    if changeset |> get_field(:repeat_on) |> Enum.empty?() do
-      put_change(changeset, :repeat_on, @default_values)
-    else
-      changeset
+    repeat_on = changeset |> get_field(:repeat_on)
+    cond do
+      repeat_on |> Enum.empty? ->
+        put_change(changeset, :repeat_on, @default_values)
+
+      repeat_on |> Enum.any?(& &1.active) ->
+        changeset
+
+      true ->
+        add_error(changeset, :repeat_on, "must be selected")
     end
   end
 
@@ -353,7 +359,7 @@ defmodule Picsello.BookingEventDate do
     selected_days = get_field(changeset, :repeat_on) |> Enum.map(&Map.from_struct(&1))
 
     changeset
-    |> Ecto.Changeset.apply_changes()
+    |> apply_changes()
     |> BookingEvents.calculate_dates(selected_days)
   end
 

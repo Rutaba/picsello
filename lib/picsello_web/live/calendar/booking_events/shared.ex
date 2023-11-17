@@ -800,6 +800,10 @@ defmodule PicselloWeb.Calendar.BookingEvents.Shared do
     end)
   end
 
+  def update_repeat_settings_for_edit(booking_date) do
+    if booking_date.occurences > 0, do: Map.replace(booking_date, :repetition, true), else: booking_date
+  end
+
   def assign_events(
         %{assigns: %{booking_event: %{id: event_id}, current_user: %{organization: organization}} = assigns} =
           socket

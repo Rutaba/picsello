@@ -941,6 +941,18 @@ defmodule Picsello.BookingEvents do
 
   defp date_valid?(_date, _stopped_date), do: false
 
+  defp calculate_dates(
+         booking_date,
+         stopped_date,
+         occurences,
+         calendar,
+         repeat_interval,
+         selected_days,
+         acc_dates
+       ) when selected_days == [] do
+        []
+  end
+
   # Recursively calculates a list of dates based on specified criteria.
   defp calculate_dates(
          booking_date,
@@ -950,7 +962,7 @@ defmodule Picsello.BookingEvents do
          repeat_interval,
          selected_days,
          acc_dates
-       ) do
+       ) when selected_days != [] do
     recursive_cond? =
       if occurences > 0,
         do: Enum.count(acc_dates) <= occurences,
