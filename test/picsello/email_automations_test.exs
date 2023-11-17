@@ -11,7 +11,8 @@ defmodule Picsello.EmailAutomationsTest do
     Jobs,
     Galleries,
     Repo,
-    EmailAutomations
+    EmailAutomations,
+    Accounts.User
   }
 
   import Ecto.Query
@@ -23,7 +24,14 @@ defmodule Picsello.EmailAutomationsTest do
       |> List.first()
 
     organization = insert(:organization)
-    user = insert(:user, organization: organization)
+
+    user =
+      insert(:user, organization: organization)
+      |> User.assign_stripe_customer_changeset("general_customer")
+      |> Repo.update!()
+
+    plan = insert(:subscription_plan)
+    insert(:subscription_event, user: user, subscription_plan: plan, status: "active")
     client = insert(:client, organization: organization)
     job = insert(:job, client_id: client.id)
     insert(:payment_schedule, job: job)
@@ -66,7 +74,8 @@ defmodule Picsello.EmailAutomationsTest do
       email_3: email_3,
       job: job,
       organization: organization,
-      user: user
+      user: user,
+      plan: plan
     ]
   end
 
@@ -109,9 +118,15 @@ defmodule Picsello.EmailAutomationsTest do
   end
 
   describe "send_now_email/4 action for shoots" do
-    setup do
+    setup %{plan: plan} do
       shoot_organization = insert(:organization)
-      shoot_user = insert(:user, organization: shoot_organization)
+
+      shoot_user =
+        insert(:user, organization: shoot_organization)
+        |> User.assign_stripe_customer_changeset("shoot_customer")
+        |> Repo.update!()
+
+      insert(:subscription_event, user: shoot_user, subscription_plan: plan, status: "active")
       shoot_client = insert(:client, organization: shoot_organization)
       shoot_job = insert(:job, client_id: shoot_client.id)
       insert(:user_currency, user: shoot_user, organization: shoot_organization)
@@ -255,11 +270,15 @@ defmodule Picsello.EmailAutomationsTest do
   end
 
   describe "send_now_email/4 action for shoots with timezone Pacific/Niue" do
-    setup do
+    setup %{plan: plan} do
       timezone_organization = insert(:organization)
 
       timezone_user =
         insert(:user, organization: timezone_organization, time_zone: "Pacific/Niue")
+        |> User.assign_stripe_customer_changeset("niue_customer")
+        |> Repo.update!()
+
+      insert(:subscription_event, user: timezone_user, subscription_plan: plan, status: "active")
 
       timezone_client = insert(:client, organization: timezone_organization)
       timezone_job = insert(:job, client_id: timezone_client.id)
@@ -323,11 +342,15 @@ defmodule Picsello.EmailAutomationsTest do
   end
 
   describe "send_now_email/4 action for shoots with timezone Pacific/Kiritimati" do
-    setup do
+    setup %{plan: plan} do
       timezone_organization = insert(:organization)
 
       timezone_user =
         insert(:user, organization: timezone_organization, time_zone: "Pacific/Kiritimati")
+        |> User.assign_stripe_customer_changeset("kiritimati_customer")
+        |> Repo.update!()
+
+      insert(:subscription_event, user: timezone_user, subscription_plan: plan, status: "active")
 
       timezone_client = insert(:client, organization: timezone_organization)
       timezone_job = insert(:job, client_id: timezone_client.id)
