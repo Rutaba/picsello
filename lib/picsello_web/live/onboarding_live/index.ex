@@ -46,7 +46,6 @@ defmodule PicselloWeb.OnboardingLive.Index do
 
   @impl true
   def handle_event("validate", %{"user" => params}, socket) do
-    IO.inspect(params, label: "checkhere")
     socket |> assign_changeset(params) |> noreply()
   end
 

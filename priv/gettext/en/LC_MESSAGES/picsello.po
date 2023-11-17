@@ -85,9 +85,6 @@ msgstr "Event"
 msgid "portrait"
 msgstr "Portrait"
 
-msgid "other"
-msgstr "Other"
-
 msgid "global"
 msgstr "Global"
 
