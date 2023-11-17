@@ -36,20 +36,20 @@ defmodule PicselloWeb.ContractTemplateComponent do
         <div class="flex bg-base-200 items-center rounded-lg">
           <div class="flex gap-4 items-center">
             <div class={classes("cursor-pointer text-blue-planning-300 font-bold text-lg border-b-4 transition-all shrink-0", %{"opacity-100 border-b-blue-planning-300" => @edit_contract?, "border-b-transparent hover:opacity-100" => !@edit_contract?})}>
-              <div phx-click="show_edit_contract" phx-target={@myself} class={classes("p-2 flex items-center text-sm font-semibold", %{"text-blue-planning-300" => @edit_contract?, "text-base-250" => !@edit_contract?})}>
+              <div phx-click="show-edit-contract" phx-target={@myself} class={classes("p-2 flex items-center text-sm font-semibold", %{"text-blue-planning-300" => @edit_contract?, "text-base-250" => !@edit_contract?})}>
                 <.icon name="pencil" class="inline-block w-3.5 h-3.5 mx-2 fill-current mt-1" />
                 <span>Edit</span>
               </div>
             </div>
             <div class={classes("cursor-pointer text-blue-planning-300 font-bold text-lg border-b-4 transition-all shrink-0", %{"opacity-100 border-b-blue-planning-300" => @client_preview?, "border-b-transparent hover:opacity-100" => !@client_preview?})}>
-              <div phx-click="show_client_preview" phx-target={@myself} class={classes("p-2 flex items-center text-sm font-semibold", %{"text-blue-planning-300" => @client_preview?, "text-base-250" => !@client_preview?})}>
+              <div phx-click="show-client-preview" phx-target={@myself} class={classes("p-2 flex items-center text-sm font-semibold", %{"text-blue-planning-300" => @client_preview?, "text-base-250" => !@client_preview?})}>
                 <.icon name="eye" class="inline-block w-4 h-4 mx-1 fill-current mt-1" />
                 <span>Client Preview</span>
               </div>
             </div>
           </div>
-          <%= if input_value(f, :job_type) do %>
-            <% job_type = input_value(f, :job_type) %>
+          <% job_type = input_value(f, :job_type) %>
+          <%= if job_type do %>
             <div class="ml-auto flex px-3">
               <div class="flex items-center justify-center w-7 h-7 ml-1 mr-3 rounded-full flex-shrink-0 text-white bg-blue-planning-300">
                 <.icon name={job_type} class="fill-current" width="14" height="14" />
@@ -70,8 +70,8 @@ defmodule PicselloWeb.ContractTemplateComponent do
           <div class={classes(%{"grid gap-3" => @state == :edit_lead})}>
             <%= if @state == :edit_lead do %>
               <%= labeled_input f, :name, label: "Contract Internal Name", disabled: is_nil(@state) %>
-            <% else %>
-              <%= labeled_input f, :name, label: "Contract Internal Name", disabled: is_nil(@state) %>
+              <% else %>
+                <%= labeled_input f, :name, label: "Contract Internal Name", disabled: is_nil(@state) %>
             <% end %>
           </div>
 
@@ -105,20 +105,17 @@ defmodule PicselloWeb.ContractTemplateComponent do
                 <h1 class="text-3xl font-medium">
                   Contract for {{client_name}}
                 </h1>
-
                 <p class="text-base-250 mt-2">Accepted on {{date}}</p>
-
                 <p class="mt-2 text-base-250">{{package price}} USD</p>
                 <p class="text-base-250 mt-2">{{photo_information}}</p>
-
                 <hr class="mb-4 mt-8" />
                 <div class="mt-2 mb-4">
                   <div class="mb-4">
                     {{package_description}}
                   </div>
-                  <button class="flex items-center font-light text-base-250 view_more_click" type="button">
+                  <div class="flex items-center font-light text-base-250 view_more_click">
                     <span>See more</span> <.icon name="down" class="text-base-250 h-3 w-3 stroke-current stroke-2 ml-2 mt-1 transition-transform" />
-                  </button>
+                  </div>
                 </div>
               </div>
               <div>
@@ -130,9 +127,7 @@ defmodule PicselloWeb.ContractTemplateComponent do
                 </div>
               </div>
             </div>
-
             <hr class="mt-8 mb-8" />
-
             <div class="mt-4 grid grid-cols-2 sm:grid-cols-[2fr,2fr] gap-4 sm:gap-6">
               <div class="modal-banner uppercase font-light py-2 bg-base-200 grid grid-cols-[2fr,2fr] gap-4 col-span-2">
                 <h2>Item</h2>
@@ -286,14 +281,14 @@ defmodule PicselloWeb.ContractTemplateComponent do
     |> noreply()
   end
 
-  def handle_event("show_edit_contract", _params, socket) do
+  def handle_event("show-edit-contract", _params, socket) do
     socket
     |> assign(:edit_contract?, true)
     |> assign(:client_preview?, false)
     |> noreply()
   end
 
-  def handle_event("show_client_preview", _params, socket) do
+  def handle_event("show-client-preview", _params, socket) do
     socket
     |> assign(:edit_contract?, false)
     |> assign(:client_preview?, true)
