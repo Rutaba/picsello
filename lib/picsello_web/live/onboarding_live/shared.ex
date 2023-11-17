@@ -206,7 +206,9 @@ defmodule PicselloWeb.OnboardingLive.Shared do
       # temporarily add enable for all net new users
       # we are doing this to A/B cohort test the new navbar
       # and see if it helps with retention/ease of use
-      FunWithFlags.enable(:sidebar_navigation, for_actor: user)
+      if FunWithFlags.enabled?(:photo_lab) do
+        FunWithFlags.enable(:photo_lab, for_actor: user)
+      end
 
       {:ok, nil}
     end)
