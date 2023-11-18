@@ -688,6 +688,21 @@ defmodule Picsello.EmailAutomations do
 
   defp make_positive_number(no), do: if(no > 0, do: no, else: -1 * no)
 
+  def send_schedule_email(job, state) do
+    pipeline = get_pipeline_by_state(state)
+
+    email_schedule =
+      get_email_from_schedule(
+        job.id,
+        pipeline.id,
+        state,
+        PicselloWeb.EmailAutomationLive.Shared
+      )
+      |> preload_email()
+
+    send_automation_email(email_schedule, nil, job, state)
+  end
+
   def send_pays_retainer(job, state, organization_id) do
     state_full_paid = if state == :pays_retainer_offline, do: :paid_offline_full, else: :paid_full
 

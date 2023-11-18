@@ -337,13 +337,28 @@ defmodule Picsello.PaymentSchedules do
       ) do
     with %BookingProposal{job: %{client: client, job_status: job_status}} = proposal <-
            Repo.get(BookingProposal, proposal_id)
-           |> Repo.preload(job: [:job_status, client: :organization]),
+           |> Repo.preload(job: [:booking_event, :job_status, client: :organization]),
          %PaymentSchedule{paid_at: nil} = payment_schedule <-
            Repo.get(PaymentSchedule, payment_schedule_id),
          {:ok, payment_schedule} <-
            payment_schedule
            |> PaymentSchedule.paid_changeset()
            |> Repo.update() do
+      # insert emails when client books a slot
+      skip_states =
+        if is_nil(proposal.job.booking_event), do: ["thanks_booking"], else: ["thanks_job"]
+
+      EmailAutomationSchedules.insert_job_emails(
+        proposal.job.type,
+        client.organization.id,
+        proposal.job.id,
+        :job,
+        skip_states
+      )
+
+      state = if is_nil(proposal.job.booking_event), do: :thanks_job, else: :thanks_booking
+      EmailAutomations.send_schedule_email(proposal.job, state)
+
       if job_status.is_lead do
         UserNotifier.deliver_lead_converted_to_job(proposal, helpers)
       end
@@ -351,7 +366,7 @@ defmodule Picsello.PaymentSchedules do
       %{
         job: %{
           shoots: shoots,
-          client: %{organization: %{user: %{nylas_detail: nylas_detail}} = organization}
+          client: %{organization: %{user: %{nylas_detail: nylas_detail}}}
         }
       } =
         Repo.preload(payment_schedule,
@@ -364,15 +379,6 @@ defmodule Picsello.PaymentSchedules do
         |> Enum.map(&CalendarEvent.new(%{type: :insert, shoot_id: &1.id}))
         |> Oban.insert_all()
       end
-
-      # insert emails when client books a slot
-      EmailAutomationSchedules.insert_job_emails(
-        proposal.job.type,
-        organization.id,
-        proposal.job.id,
-        :job,
-        []
-      )
 
       # insert job shoots
       _inserted_shhots =

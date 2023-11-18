@@ -226,10 +226,18 @@ defmodule Mix.Tasks.ImportEmailAutomationPipelines do
       %{
         name: "Thank You for Booking",
         state: "thanks_booking",
-        description: "Sent when the questionnaire, contract is signed and retainer is paid",
+        description: "Sent when the client books an event",
         email_automation_sub_category_id: automation_response.id,
         email_automation_category_id: email_automation_job.id,
         position: 7.0
+      },
+      %{
+        name: "Thank You for Booking Job",
+        state: "thanks_job",
+        description: "Sent when the questionnaire, contract is signed and retainer is paid",
+        email_automation_sub_category_id: automation_response.id,
+        email_automation_category_id: email_automation_job.id,
+        position: 7.5
       },
       %{
         name: "Balance Due",

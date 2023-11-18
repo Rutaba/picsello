@@ -752,13 +752,24 @@ defmodule Picsello.EmailAutomationSchedules do
   end
 
   def insert_job_emails_from_gallery(gallery, type) do
+    skip_states = [
+      :thanks_booking,
+      :thanks_job,
+      :pays_retainer,
+      :pays_retainer_offline,
+      :balance_due,
+      :offline_payment,
+      :paid_full,
+      :paid_offline_full
+    ]
+
     gallery =
       gallery
       |> Repo.preload([:job, organization: [organization_job_types: :jobtype]], force: true)
 
     job_type = gallery.job.type
     organization_id = gallery.organization.id
-    job_emails(job_type, organization_id, gallery.job.id, type)
+    job_emails(job_type, organization_id, gallery.job.id, type, skip_states)
   end
 
   @doc """
