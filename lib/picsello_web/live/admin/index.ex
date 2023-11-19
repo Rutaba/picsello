@@ -36,6 +36,8 @@ defmodule PicselloWeb.Live.Admin.Index do
 
         <li><%= live_redirect "Manage Shipment Details", to: Routes.admin_shippment_index_path(@socket, :index), class: @class %></li>
 
+        <li><%= live_redirect "Automations Report Index", to: Routes.admin_automations_report_index_path(@socket, :index), class: @class %></li>
+
         <li>
           <div class="grid border flex items-center justify-center rounded-lg py-4 px-8">
             Current photo Uploaders

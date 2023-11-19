@@ -115,6 +115,8 @@ defmodule PicselloWeb.Router do
       :index
     )
 
+    live("/automations", Live.Admin.AutomationsReportIndex, :index)
+    live("/automations/sent-today-report", Live.Admin.AutomationsSentTodayReport, :index)
     live("/product_pricing", Live.Admin.ProductPricing, :index)
     live("/product_pricing/:id", Live.Admin.ProductPricing, :show)
     live("/user", Live.Admin.User.Index, :index)
