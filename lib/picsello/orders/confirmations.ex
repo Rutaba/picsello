@@ -22,7 +22,6 @@ defmodule Picsello.Orders.Confirmations do
     EmailAutomationSchedules
   }
 
-  alias Picsello.WHCC.Order.Created, as: WHCCOrder
   import Picsello.Zapier.GalleryOrders, only: [gallery_order_whcc_update: 1]
 
   import Ecto.Query, only: [from: 2]

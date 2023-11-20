@@ -1,7 +1,6 @@
 defmodule Picsello.Notifiers.UserNotifier do
   @moduledoc false
-  alias Picsello.{Repo, Cart, Accounts.User, Job, Cart.Product}
-  alias Picsello.WHCC.Order.Created, as: WHCCOrder
+  alias Picsello.{Repo, Cart, Accounts.User, Job}
   use Picsello.Notifiers
   require Logger
 
