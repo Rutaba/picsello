@@ -676,10 +676,10 @@ defmodule PicselloWeb.Live.Calendar.BookingEvents.Show do
 
     ~H"""
       <div class={classes("flex items-center md:ml-auto w-full md:w-auto left-3 sm:left-8", %{"pointer-events-none opacity-40" => @disabled?})} data-placement="bottom-end" phx-hook="Select" id={"slot-#{@slot_index}"}}>
-        <button title="Manage" class={"btn-tertiary px-2 py-1 flex items-center gap-3 xl:w-auto w-full #{@main_button_class}"}>
+        <button title="Manage" class={"btn-tertiary px-2 py-1 flex items-center gap-4 xl:w-auto w-full #{@main_button_class}"}>
           Actions
-          <.icon name="down" class="w-4 h-4 ml-auto mr-1 stroke-current stroke-3 text-blue-planning-300 open-icon" />
-          <.icon name="up" class="hidden w-4 h-4 ml-auto mr-1 stroke-current stroke-3 text-blue-planning-300 close-icon" />
+          <.icon name="down" class="w-4 h-4 ml-auto mr-1 mt-2 stroke-current stroke-3 text-blue-planning-300 open-icon" />
+          <.icon name="up" class="hidden w-4 h-4 ml-auto mr-1 mt-2 stroke-current stroke-3 text-blue-planning-300 close-icon" />
         </button>
 
         <div class="z-10 flex hidden flex-col w-auto bg-white border rounded-lg shadow-lg popover-content">
@@ -767,13 +767,11 @@ defmodule PicselloWeb.Live.Calendar.BookingEvents.Show do
           <% end %>
           <div class="flex flex-col mb-3 items-start">
             <%= if package_description_length_long?(@description) do %>
-                <div class="break-all">
-                <%= if !Enum.member?(@collapsed_sections, "Read more") do %>
-                  <%= @description |> slice_description() |> raw() %>
-                <% else %>
-                  <%= @description %>
-                <% end %>
-                </div>
+              <%= if !Enum.member?(@collapsed_sections, "Read more") do %>
+                <%= @description |> slice_description() |> raw() %>
+              <% else %>
+                <%= @description %>
+              <% end %>
               <button class="mt-2 flex text-base-250 items-center justify-center" phx-click="toggle-section" phx-value-section_id="Read more">
                 <%= if Enum.member?(@collapsed_sections, "Read more") do %>
                   Read less <.icon name="up" class="mt-1 w-4 h-4 ml-2 stroke-current stroke-3 text-base-250"/>
