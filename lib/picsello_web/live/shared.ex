@@ -31,6 +31,7 @@ defmodule PicselloWeb.Live.Shared do
     Jobs,
     Client,
     Package,
+    PreferredFilter,
     Repo,
     BookingProposal,
     Workers.CleanStore,
@@ -752,6 +753,30 @@ defmodule PicselloWeb.Live.Shared do
       {:error, _} ->
         socket
     end)
+  end
+
+  def save_filters(
+        organization_id,
+        type,
+        filters
+      ) do
+    case PreferredFilter.load_preferred_filters(organization_id, type) do
+      nil ->
+        PreferredFilter.changeset(%PreferredFilter{}, %{
+          organization_id: organization_id,
+          type: type,
+          filters: filters
+        })
+        |> Repo.insert_or_update()
+
+      preferred_filters ->
+        PreferredFilter.changeset(preferred_filters, %{
+          organization_id: organization_id,
+          type: type,
+          filters: filters
+        })
+        |> Repo.insert_or_update()
+    end
   end
 
   defp get_client(selected_client, searched_client, client) do
