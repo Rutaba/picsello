@@ -13,8 +13,9 @@ defmodule Picsello.Repo.Migrations.AddThanksJobEmailsInPresets do
   alias Mix.Tasks.ImportEmailPresets, as: Presets
 
   def change do
-    pipelines = from(p in EmailAutomationPipeline) |> Repo.all()
     _pipeline = insert_state()
+    pipelines = from(p in EmailAutomationPipeline) |> Repo.all()
+
     organizations = from(o in Organization, select: %{id: o.id}) |> Repo.all()
 
     pipeline = EmailAutomations.get_pipeline_by_state(:thanks_job)
@@ -59,17 +60,21 @@ defmodule Picsello.Repo.Migrations.AddThanksJobEmailsInPresets do
   defp insert_state() do
     pipeline = EmailAutomations.get_pipeline_by_state(:thanks_booking)
 
-    %{
-      name: "Thank You for Booking Job",
-      state: "thanks_job",
-      description: "Sent when the questionnaire, contract is signed and retainer is paid",
-      email_automation_sub_category_id: pipeline.email_automation_sub_category_id,
-      email_automation_category_id: pipeline.email_automation_category_id,
-      position: 7.5,
-      inserted_at: NaiveDateTime.utc_now() |> NaiveDateTime.truncate(:second),
-      updated_at: NaiveDateTime.utc_now() |> NaiveDateTime.truncate(:second)
-    }
-    |> EmailAutomationPipeline.changeset()
-    |> Repo.insert!()
+    pipeline_thanks_job = EmailAutomations.get_pipeline_by_state(:thanks_job)
+
+    if is_nil(pipeline_thanks_job) do
+      %{
+        name: "Thank You for Booking Job",
+        state: "thanks_job",
+        description: "Sent when the questionnaire, contract is signed and retainer is paid",
+        email_automation_sub_category_id: pipeline.email_automation_sub_category_id,
+        email_automation_category_id: pipeline.email_automation_category_id,
+        position: 7.5,
+        inserted_at: NaiveDateTime.utc_now() |> NaiveDateTime.truncate(:second),
+        updated_at: NaiveDateTime.utc_now() |> NaiveDateTime.truncate(:second)
+      }
+      |> EmailAutomationPipeline.changeset()
+      |> Repo.insert!()
+    end
   end
 end
