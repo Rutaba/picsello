@@ -359,7 +359,7 @@ defmodule PicselloWeb.Live.Calendar.BookingEventModal do
     event = current(changeset)
 
     slots = event |> BookingEventDates.available_slots(booking_event)
-    # open_slots = Enum.count(slots, &(&1.status == :open))
+    open_slots = Enum.count(slots, &(&1.status == :open))
 
     slots =
       slots
@@ -367,7 +367,7 @@ defmodule PicselloWeb.Live.Calendar.BookingEventModal do
 
     params = Map.put(params, "slots", slots)
     changeset = booking_date |> BookingEventDate.changeset(params) |> Map.put(:action, action)
-    socket |> assign(changeset: changeset, open_slots: 2)
+    socket |> assign(changeset: changeset, open_slots: open_slots)
   end
 
   defp hidden_time?(:hidden), do: true

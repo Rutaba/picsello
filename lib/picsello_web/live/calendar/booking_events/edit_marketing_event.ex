@@ -30,7 +30,7 @@ defmodule PicselloWeb.Live.Calendar.EditMarketingEvent do
         <div class="flex flex-col mt-4">
           <div class="grid sm:grid-cols-2 gap-7 mt-2">
             <div class="flex flex-col">
-              <label for={input_name(f, :thumbnail_url)} class="input-label">Thumbnail</label>
+              <label for={input_name(f, :thumbnail_url)} class="input-label font-bold">Thumbnail</label>
               <.image_upload_input
                 current_user={@current_user}
                 upload_folder="booking_event_image"
@@ -45,8 +45,8 @@ defmodule PicselloWeb.Live.Calendar.EditMarketingEvent do
               <.toggle_visibility title="Show event on my Public Profile?" event="toggle_visibility" myself={@myself} show_on_public_profile?={@show_on_public_profile?}/>
             </div>
             <div class="flex flex-col">
-              <%= labeled_input f, :name, label: "Name", placeholder: "Fall Mini-sessions", wrapper_class: "sm:col-span-2" %>
-              <label for={input_name(f, :description)} class="input-label mt-6">Description</label>
+              <%= labeled_input f, :name, label: "Name", placeholder: "Fall Mini-sessions", wrapper_class: "sm:col-span-2", label_class: "font-bold" %>
+              <label for={input_name(f, :description)} class="input-label mt-6 font-bold">Description</label>
               <.quill_input
                 f={f}
                 html_field={:description}
@@ -148,7 +148,7 @@ defmodule PicselloWeb.Live.Calendar.EditMarketingEvent do
           <div class="text-sm font-bold lg:text-normal text-black"><%= @title %></div>
           <label class="relative ml-3 cursor-pointer">
             <input type="checkbox" class="sr-only" phx-click={@event} phx-target={@myself}>
-            <div class={"block h-6 border rounded-full w-12 border-blue-planning-300 #{@class_1}"}></div>
+            <div class={"block h-6 border rounded-full w-10 border-blue-planning-300 #{@class_1}"}></div>
             <div class={"absolute w-4 h-4 rounded-full dot top-1 bg-blue-planning-300 transition #{@class_2}"}></div>
           </label>
         </div>

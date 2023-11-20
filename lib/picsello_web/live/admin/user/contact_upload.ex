@@ -66,7 +66,7 @@ defmodule PicselloWeb.Live.Admin.User.ContactUpload do
         </thead>
         <tbody class="flex-1 sm:flex-none">
             <%= for client <- @clients do %>
-              <tr class="flex flex-col mb-2 flex-no wrap sm:table-row sm:mb-0">
+              <tr class="flex flex-col mb-2 flex-no-wrap sm:table-row sm:mb-0">
                 <td class="p-3 truncate border border-grey-light sm:border-none"><%= client.name || "-" %></td>
                 <td class="p-3 truncate border border-grey-light sm:border-none"><%= client.email || "-" %></td>
               </tr>
