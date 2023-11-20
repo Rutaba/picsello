@@ -164,7 +164,7 @@ defmodule PicselloWeb.InboxLive.Index do
                       <.view_link name="View job" route={Routes.job_path(@socket, :jobs, @id)} />
                     <% end %>
                   <% :campaign -> %>
-                    <.icon name="marketing" class="text-blue-planning-300 w-6 h-6 mr-2" />
+                    <.icon name="marketing-inbox" class="text-blue-planning-300 w-6 h-6 mr-2" />
                     <.view_link name="View marketing campaign" route={Routes.marketing_path(@socket, :show, @id)} />
                 <% end %>
               </div>
