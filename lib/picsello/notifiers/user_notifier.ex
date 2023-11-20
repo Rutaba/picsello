@@ -1,6 +1,6 @@
 defmodule Picsello.Notifiers.UserNotifier do
   @moduledoc false
-  alias Picsello.{Repo, Cart, Accounts.User, Job}
+  alias Picsello.{Repo, Cart, Accounts.User, Job, Cart.Product}
   alias Picsello.WHCC.Order.Created, as: WHCCOrder
   use Picsello.Notifiers
   require Logger
@@ -384,13 +384,13 @@ defmodule Picsello.Notifiers.UserNotifier do
     end
   end
 
-  defp print_cost(%{whcc_order: nil}), do: %{}
+  defp print_cost(%{products: []}), do: %{}
 
-  defp print_cost(%{whcc_order: whcc_order}) do
+  defp print_cost(%{products: _products} = order) do
     %{
       print_cost:
-        whcc_order
-        |> WHCCOrder.total()
+        order
+        |> Cart.Product.total_cost()
         |> Money.neg()
     }
   end
@@ -413,7 +413,7 @@ defmodule Picsello.Notifiers.UserNotifier do
       if is_nil(whcc_order) do
         zero_price
       else
-        WHCCOrder.total(whcc_order)
+        Cart.Product.total_cost(order)
       end
       |> Money.add(Picsello.Cart.total_shipping(order))
 

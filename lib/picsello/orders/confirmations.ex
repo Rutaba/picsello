@@ -9,6 +9,7 @@ defmodule Picsello.Orders.Confirmations do
 
   alias Picsello.{
     Cart.Order,
+    Cart.Product,
     Cart.OrderNumber,
     Galleries,
     Intents,
@@ -253,9 +254,9 @@ defmodule Picsello.Orders.Confirmations do
     end
   end
 
-  defp calculate_total_costs(%{whcc_order: whcc_order} = order) do
-    whcc_order
-    |> WHCCOrder.total()
+  defp calculate_total_costs(order) do
+    order
+    |> Product.total_cost()
     |> Money.add(Picsello.Cart.total_shipping(order))
   end
 
