@@ -546,7 +546,7 @@ defmodule PicselloWeb.Live.Calendar.BookingEvents.Show do
             <%= if @calendar_date_event do %>
               <div class="flex">
                 <div class="flex text-2xl font-bold"><%= date_formatter(@calendar_date_event.date) %></div>
-                <div class="flex justify-end ml-auto gap-1">
+                <div class="flex items-start ml-auto gap-1">
                   <%= for %{action: action, icon: icon, disabled: disabled?} <- date_actions(@booking_slot_tab_active, @booking_event, @calendar_date_event) do %>
                     <.icon_button icon={icon} phx-click={action} phx-value-id={@calendar_date_event.id} disabled={disabled?} class="px-2 py-2" text_color={"text-black"} color={if icon == "trash", do: "red-sales-300", else: "blue-planning-300"}/>
                   <% end %>
@@ -625,14 +625,14 @@ defmodule PicselloWeb.Live.Calendar.BookingEvents.Show do
           <div class="flex flex-col">
             <p class="mb-1 font-bold text-black text-lg">
               <%= if @slot.status in [:booked, :reserved] do %>
-                <button class="text-blue-planning-300 underline"><%= slot_time_formatter(@slot) %></button>
+                <button phx-click="open-job" phx-value-slot-job-id={@slot.job_id} class="text-blue-planning-300 underline"><%= slot_time_formatter(@slot) %></button>
               <% else %>
               <%= slot_time_formatter(@slot) %>
               <% end %>
             </p>
             <p class="text-blue-planning-300 underline">
               <%= if @slot.client_id && @slot.status in [:booked, :reserved] do %>
-                <button class="text-blue-planning-300 underline"><%= "Booked with " <> String.capitalize(@client.name) %></button>
+                <button phx-click="open-client" phx-value-client-id={@client.id} class="text-blue-planning-300 underline cursor-pointer"><%= String.capitalize(@client.name) %></button>
               <% else %>
                 <p class={classes(%{"text-base-250" => @slot.status == :hidden})}><%= String.capitalize(to_string(@slot.status)) %></p>
               <% end %>
