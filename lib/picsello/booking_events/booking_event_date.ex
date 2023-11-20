@@ -342,8 +342,9 @@ defmodule Picsello.BookingEventDate do
   ]
   defp set_default_repeat_on(changeset) do
     repeat_on = changeset |> get_field(:repeat_on)
+
     cond do
-      repeat_on |> Enum.empty? ->
+      repeat_on |> Enum.empty?() ->
         put_change(changeset, :repeat_on, @default_values)
 
       repeat_on |> Enum.any?(& &1.active) ->

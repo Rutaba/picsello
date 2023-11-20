@@ -567,20 +567,6 @@ defmodule Picsello.BookingEventDates do
     else
       []
     end
-    # Enum.reduce_while(slot, [], fn x, acc ->
-    #   duration = if x != available_slots, do: duration_buffer, else: duration
-
-    #   {slot_start, slot_end} =
-    #     {Time.add(start_time, duration * x), Time.add(start_time, duration * (x + 1))}
-
-    #   slot_trunc = slot_end |> Time.truncate(:second)
-    #   time = duration * -1
-    #   end_trunc = end_time |> Time.add(time) |> Time.truncate(:second)
-
-    #   flag_type = if slot_trunc > end_trunc, do: :halt, else: :cont
-    #   {flag_type, [%SlotBlock{slot_start: slot_start, slot_end: slot_end} | acc]}
-    # end)
-    # |> Enum.reverse()
   end
 
   # Returns slots with status open or book

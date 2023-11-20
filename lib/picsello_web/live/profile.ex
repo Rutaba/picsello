@@ -361,8 +361,8 @@ defmodule PicselloWeb.Live.Profile do
 
       Map.merge(booking_event, %{dates: date_structs})
     end)
-    |> Enum.reject( fn
-      %{dates:  []} -> true
+    |> Enum.reject(fn
+      %{dates: []} -> true
       _ -> false
     end)
     |> Enum.filter(fn %{dates: dates} ->

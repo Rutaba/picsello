@@ -32,7 +32,8 @@ defmodule PicselloWeb.Live.Calendar.BookingEventModal do
         })
 
       %{assigns: %{booking_event: booking_event, booking_date: booking_date}} = socket ->
-        socket |> assign_changeset(%{"is_repeat" => booking_event.is_repeating && booking_date.calendar})
+        socket
+        |> assign_changeset(%{"is_repeat" => booking_event.is_repeating && booking_date.calendar})
     end
     |> then(fn %{assigns: %{booking_date: %{date: date, booking_event_id: booking_event_id}}} =
                  socket ->
@@ -235,7 +236,13 @@ defmodule PicselloWeb.Live.Calendar.BookingEventModal do
 
   @impl true
   def handle_event("validate", %{"booking_event_date" => params, "_target" => target}, socket) do
-    if Map.has_key?(params, "slots") and target not in [["booking_event_date", "session_gap"], ["booking_event_date", "session_length"] , ["booking_event_date", "time_blocks", "0", "start_time"], ["booking_event_date", "time_blocks", "0", "end_time"]] do
+    if Map.has_key?(params, "slots") and
+         target not in [
+           ["booking_event_date", "session_gap"],
+           ["booking_event_date", "session_length"],
+           ["booking_event_date", "time_blocks", "0", "start_time"],
+           ["booking_event_date", "time_blocks", "0", "end_time"]
+         ] do
       socket |> assign_changeset_with_existing_slots(params, :validate)
     else
       socket |> assign_changeset_with_slots(params, :validate)
@@ -319,7 +326,7 @@ defmodule PicselloWeb.Live.Calendar.BookingEventModal do
 
   defp assign_changeset(
          %{assigns: %{booking_date: booking_date}} = socket,
-          params,
+         params,
          action \\ nil
        ) do
     changeset =

@@ -165,7 +165,15 @@ defmodule PicselloWeb.LiveHelpers do
   end
 
   def button_simple(assigns) do
-    assigns = assigns |> Enum.into(%{class: "", color: "blue-planning-300", icon_class: "", inner_block: nil, disabled: false})
+    assigns =
+      assigns
+      |> Enum.into(%{
+        class: "",
+        color: "blue-planning-300",
+        icon_class: "",
+        inner_block: nil,
+        disabled: false
+      })
 
     ~H"""
     <button type="button" class={classes("flex items-center px-2 py-1 font-sans hover:opacity-75 #{@class}", %{"opacity-50 hover:opacity-30 hover:cursor-not-allowed" => @disabled})}} disabled={@disabled}>
