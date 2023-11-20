@@ -1046,11 +1046,11 @@ defmodule Picsello.Factory do
     }
   end
 
-  def job_factory() do
+  def job_factory(attrs) do
     %Picsello.Job{
-      type: "wedding",
-      client_id: 2
+      type: "wedding"
     }
+    |> merge_attributes(attrs)
   end
 
   def image_url(),

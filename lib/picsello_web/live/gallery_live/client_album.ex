@@ -183,9 +183,7 @@ defmodule PicselloWeb.GalleryLive.ClientAlbum do
       album_favorites_count: Galleries.gallery_album_favorites_count(gallery, album.id),
       favorites_count: Galleries.gallery_favorites_count(gallery)
     )
-    |> assign(:update_mode, "replace")
-    |> assign_photos(@per_page)
-    |> push_event("reload_grid", %{})
+    |> update_grid_photos(favorites_filter)
     |> noreply()
   end
 

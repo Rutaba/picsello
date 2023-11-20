@@ -39,6 +39,7 @@ defmodule PicselloWeb.GalleryLive.Shared do
   alias PicselloWeb.Router.Helpers, as: Routes
 
   @card_blank "/images/card_gray.png"
+  @per_page 12
 
   def handle_event(
         "client-link",
@@ -1119,6 +1120,14 @@ defmodule PicselloWeb.GalleryLive.Shared do
     ~H"""
       <span class="lg:ml-[54px] sm:ml-0 inline-block mt-2 border rounded-md bg-base-200 px-2 pb-0.5 text-base-250 font-bold text-base"><%= Utils.capitalize_all_words(@type) %></span>
     """
+  end
+
+  def update_grid_photos(socket, false), do: socket
+
+  def update_grid_photos(socket, _favorites_filter) do
+    socket
+    |> assign_photos(@per_page)
+    |> push_event("reload_grid", %{})
   end
 
   def clip_board(socket, gallery) do

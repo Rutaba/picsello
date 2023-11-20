@@ -108,16 +108,16 @@ defmodule PicselloWeb.UserRegisterLive do
           <br />
           <span class="underline underline-offset-1 text-decoration-blue-planning-300">Business Mastermind</span>
         </h2>
-        <p class="text-xl text-center">Build a strong foundation for every part of your business so it supports growth and sustainable profit.</p>
+        <p class="text-xl text-center">Experts, community, and support to help you grow a sustainable and profitable business.</p>
         <div class="max-w-md mx-auto my-8">
           <.signup_deal original_price={Money.new(35000, :USD)} price={Money.new(20000, :USD)} expires_at={@black_friday_timer_end} />
         </div>
         <ul class="mb-8 space-y-2">
-          <li class="flex gap-2"><.icon name="checkcircle" class="h-4 w-4 flex-shrink-0 mt-1.5" /> 1 x a month expert session with Q&As</li>
-          <li class="flex gap-2"><.icon name="checkcircle" class="h-4 w-4 flex-shrink-0 mt-1.5" /> 1 x a month hot seat - ask Jane anything</li>
-          <li class="flex gap-2"><.icon name="checkcircle" class="h-4 w-4 flex-shrink-0 mt-1.5" /> Private community where you can connect with photographers who have shared experiences</li>
-          <li class="flex gap-2"><.icon name="checkcircle" class="h-4 w-4 flex-shrink-0 mt-1.5" /> 1:1 access to Jane and the Picsello coaches</li>
-          <li class="flex gap-2"><.icon name="checkcircle" class="h-4 w-4 flex-shrink-0 mt-1.5" /> 1 year of the entire Picsello Platform</li>
+          <li class="flex gap-2"><.icon name="checkcircle" class="h-4 w-4 flex-shrink-0 mt-1.5" /> Monthly Expert Series (plus access to previous Experts)</li>
+          <li class="flex gap-2"><.icon name="checkcircle" class="h-4 w-4 flex-shrink-0 mt-1.5" /> Private supportive photographer community </li>
+          <li class="flex gap-2"><.icon name="checkcircle" class="h-4 w-4 flex-shrink-0 mt-1.5" /> Access to Picsello coaches</li>
+          <li class="flex gap-2"><.icon name="checkcircle" class="h-4 w-4 flex-shrink-0 mt-1.5" /> 1 year full access to Picsello</li>
+          <li class="flex gap-2"><.icon name="checkcircle" class="h-4 w-4 flex-shrink-0 mt-1.5" /> Monthly live expert series (plus access to previous lives)</li>
         </ul>
         <img src={Routes.static_path(@socket, "/images/mastermind-hero.png")} loading="lazy" alt="Images of the Picsello App" />
         <:right_panel>

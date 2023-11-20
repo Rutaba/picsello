@@ -565,6 +565,8 @@ defmodule Picsello.Galleries do
 
   @products_currency Utils.products_currency()
   def create_gallery_multi(user, attrs) do
+    from_job? = Map.get(attrs, :from_job?, false)
+
     Multi.new()
     |> Multi.insert(:gallery, Gallery.create_changeset(%Gallery{}, attrs))
     |> Multi.insert_all(:gallery_clients, GalleryClient, fn %{gallery: gallery} ->
@@ -626,7 +628,9 @@ defmodule Picsello.Galleries do
       |> check_watermark(user)
     end)
     |> Multi.insert_all(:email_automation_job, EmailSchedule, fn %{gallery: gallery} ->
-      EmailAutomationSchedules.insert_job_emails_from_gallery(gallery, :job)
+      if from_job?,
+        do: [],
+        else: EmailAutomationSchedules.insert_job_emails_from_gallery(gallery, :job)
     end)
     |> Multi.insert_all(:email_automation, EmailSchedule, fn %{gallery: gallery} ->
       EmailAutomationSchedules.gallery_order_emails(gallery, nil)
