@@ -198,6 +198,9 @@ defmodule Picsello.Clients do
           "leads" ->
             filter_leads(dynamic)
 
+          "archived_leads" ->
+            filter_archived_leads(dynamic)
+
           _ ->
             dynamic
         end
@@ -231,6 +234,14 @@ defmodule Picsello.Clients do
       [client, jobs, job_status],
       ^dynamic and client.id == jobs.client_id and job_status.is_lead and
         is_nil(jobs.archived_at)
+    )
+  end
+
+  defp filter_archived_leads(dynamic) do
+    dynamic(
+      [client, jobs, job_status],
+      ^dynamic and client.id == jobs.client_id and job_status.is_lead and
+        not is_nil(jobs.archived_at)
     )
   end
 

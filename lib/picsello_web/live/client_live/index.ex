@@ -488,10 +488,10 @@ defmodule PicselloWeb.Live.ClientLive.Index do
           <.icon name="down" class="flex-shrink-0 w-3 h-3 ml-auto lg:mr-2 mr-1 stroke-current stroke-2 open-icon" />
           <.icon name="up" class="flex-shrink-0 hidden w-3 h-3 ml-auto lg:mr-2 mr-1 stroke-current stroke-2 close-icon" />
       </div>
-      <ul class="absolute z-30 hidden w-full md:w-32 mt-2 bg-white toggle rounded-md popover-content border shadow-lg">
+      <ul class="absolute z-30 hidden w-full md:w-44 mt-2 bg-white toggle rounded-md popover-content border shadow-lg">
         <%= for option <- @options_list do %>
           <li id={option.id} target-class="toggle-it" parent-class="toggle" toggle-type="selected-active" phx-hook="ToggleSiblings"
-          class="flex items-center py-1.5 hover:bg-blue-planning-100 hover:rounded-md" phx-click={"apply-filter-#{@id}"} phx-value-option={option.id}>
+          class="flex items-center justify-between py-1.5 hover:bg-blue-planning-100 hover:rounded-md" phx-click={"apply-filter-#{@id}"} phx-value-option={option.id}>
             <button id={option.id} class="album-select"><%= option.title %></button>
             <%= if option.id == @selected_option do %>
               <.icon name="tick" class="w-6 h-5 mr-1 toggle-it text-blue-planning-300" />
@@ -751,7 +751,8 @@ defmodule PicselloWeb.Live.ClientLive.Index do
       %{title: "All", id: "all"},
       %{title: "Active Jobs", id: "active_jobs"},
       %{title: "Past Jobs", id: "past_jobs"},
-      %{title: "Leads", id: "leads"}
+      %{title: "Leads", id: "leads"},
+      %{title: "Archived Leads", id: "archived_leads"}
     ]
   end
 
