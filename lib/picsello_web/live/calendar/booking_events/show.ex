@@ -49,13 +49,6 @@ defmodule PicselloWeb.Live.Calendar.BookingEvents.Show do
     |> assign(:booking_event, BookingEvents.get_booking_event!(organization_id, event_id))
     |> BEShared.assign_events()
     |> assign_changeset(%{})
-    |> then(fn %{assigns: %{booking_event: booking_event}} = socket ->
-      socket
-      |> assign(
-        :booking_slot_tab_active,
-        if(booking_event.is_repeating, do: "calendar", else: "list")
-      )
-    end)
     |> assign(:booking_slot_tabs, booking_slot_tabs())
     |> noreply()
   end
@@ -501,7 +494,7 @@ defmodule PicselloWeb.Live.Calendar.BookingEvents.Show do
           <%= for booking_event_date <- @booking_event_dates do %>
             <div class={classes("mt-10 p-3 border rounded-lg border-base-200", %{"border-red-sales-300" => is_nil(booking_event_date.date)})}>
               <div class="flex mb-1">
-                <p class="text-2xl font-bold"> <%= if booking_event_date.date, do: date_formatter(booking_event_date.date), else: "Add date" %> </p>
+                <p class={classes("text-2xl font-bold", %{"text-red-sales-300" => is_nil(booking_event_date.date)})}> <%= if booking_event_date.date, do: date_formatter(booking_event_date.date, :day), else: "Select Day" %> </p>
                 <button class="flex text-blue-planning-300 ml-auto items-center justify-center whitespace-nowrap hover:opacity-75" phx-click="toggle-section" phx-value-section_id={booking_event_date.id}>
                   View details
                   <.icon name={if Enum.member?(@collapsed_sections, booking_event_date.id), do: "up", else: "down"} class="mt-1.5 md:mt-1 w-4 h-4 ml-2 stroke-current stroke-3 text-blue-planning-300"/>
@@ -665,7 +658,7 @@ defmodule PicselloWeb.Live.Calendar.BookingEvents.Show do
       Map.merge(
         %{
           archive_option: true,
-          main_button_class: "text-black",
+          main_button_class: "text-blue-planning-300",
           slot_index: -1,
           slot_client_id: -1,
           slot_job_id: -1,
@@ -682,7 +675,7 @@ defmodule PicselloWeb.Live.Calendar.BookingEvents.Show do
 
     ~H"""
       <div class={classes("flex items-center md:ml-auto w-full md:w-auto left-3 sm:left-8", %{"pointer-events-none opacity-40" => @disabled?})} data-placement="bottom-end" phx-hook="Select" id={"slot-#{@slot_index}"}}>
-        <button title="Manage" class={"btn-tertiary px-2 py-1 flex items-center gap-3 xl:w-auto w-full text-blue-planning-300 #{@main_button_class}"}>
+        <button title="Manage" class={"btn-tertiary px-2 py-1 flex items-center gap-3 xl:w-auto w-full #{@main_button_class}"}>
           Actions
           <.icon name="down" class="w-4 h-4 ml-auto mr-1 stroke-current stroke-3 text-blue-planning-300 open-icon" />
           <.icon name="up" class="hidden w-4 h-4 ml-auto mr-1 stroke-current stroke-3 text-blue-planning-300 close-icon" />
@@ -951,6 +944,6 @@ defmodule PicselloWeb.Live.Calendar.BookingEvents.Show do
     end
   end
 
-  defp slot_status(:hidden), do: "Break (hidden)"
+  defp slot_status(:hidden), do: "Booked (hidden)"
   defp slot_status(s), do: s |> to_string()
 end

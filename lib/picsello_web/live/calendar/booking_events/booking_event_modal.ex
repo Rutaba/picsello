@@ -134,7 +134,7 @@ defmodule PicselloWeb.Live.Calendar.BookingEventModal do
                 <div class="font-bold mb-2 mt-2 md:mt-0">Stop repeating:</div>
                 <div class="flex gap-5 mb-2"><%= radio_button f, :repetition, false, class: "w-5 h-5 radio cursor-pointer mb-1" %> On</div>
                 <div class={classes("pl-10 mb-2", %{"pointer-events-none text-gray-400" => input_value(f, :repetition) === true})}>
-                  <%= input f, :stop_repeating, type: :date_input, min: Date.utc_today(), class: "w-40" %>
+                  <%= input f, :stop_repeating, type: :date_input, disabled: is_nil(@changeset |> current |> Map.get(:date)), min: @changeset |> current |> Map.get(:date), class: "w-40" %>
                 </div>
                 <div class="flex gap-5 mb-2"><%= radio_button f, :repetition, true, class: "w-5 h-5 radio cursor-pointer mb-2" %>After</div>
                 <div class={classes("pl-10 mb-2", %{"pointer-events-none text-gray-400" => input_value(f, :repetition) != true})}>
@@ -193,6 +193,17 @@ defmodule PicselloWeb.Live.Calendar.BookingEventModal do
 
   @impl true
   def handle_event(
+        "place_changed",
+        %{"formatted_address" => address},
+        %{assigns: %{changeset: changeset}} = socket
+      ) do
+    socket
+    |> assign(:changeset, changeset |> Ecto.Changeset.put_change(:address, address))
+    |> noreply()
+  end
+
+  @impl true
+  def handle_event(
         "validate",
         %{
           "booking_event_date" => params,
@@ -223,8 +234,8 @@ defmodule PicselloWeb.Live.Calendar.BookingEventModal do
   end
 
   @impl true
-  def handle_event("validate", %{"booking_event_date" => params}, socket) do
-    if Map.has_key?(params, "slots") do
+  def handle_event("validate", %{"booking_event_date" => params, "_target" => target}, socket) do
+    if Map.has_key?(params, "slots") and target not in [["booking_event_date", "session_gap"], ["booking_event_date", "session_length"] , ["booking_event_date", "time_blocks", "0", "start_time"], ["booking_event_date", "time_blocks", "0", "end_time"]] do
       socket |> assign_changeset_with_existing_slots(params, :validate)
     else
       socket |> assign_changeset_with_slots(params, :validate)
@@ -308,7 +319,7 @@ defmodule PicselloWeb.Live.Calendar.BookingEventModal do
 
   defp assign_changeset(
          %{assigns: %{booking_date: booking_date}} = socket,
-         params,
+          params,
          action \\ nil
        ) do
     changeset =
@@ -341,7 +352,7 @@ defmodule PicselloWeb.Live.Calendar.BookingEventModal do
     event = current(changeset)
 
     slots = event |> BookingEventDates.available_slots(booking_event)
-    open_slots = Enum.count(slots, &(&1.status == :open))
+    # open_slots = Enum.count(slots, &(&1.status == :open))
 
     slots =
       slots
@@ -349,7 +360,7 @@ defmodule PicselloWeb.Live.Calendar.BookingEventModal do
 
     params = Map.put(params, "slots", slots)
     changeset = booking_date |> BookingEventDate.changeset(params) |> Map.put(:action, action)
-    socket |> assign(changeset: changeset, open_slots: open_slots)
+    socket |> assign(changeset: changeset, open_slots: 2)
   end
 
   defp hidden_time?(:hidden), do: true

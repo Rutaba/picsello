@@ -312,11 +312,10 @@ defmodule PicselloWeb.Live.EmailAutomations.Index do
                       </span>
                     <% end %>
                   </div>
-                  <% IO.inspect(@subcategory_slug) %>
                   <%= if @subcategory_slug != "order_confirmation_emails" do %>
-                    <.icon_button_simple class={classes("flex items-center px-2 py-1 btn-tertiary text-blue-planning-300 hover:border-blue-planning-300 mr-2 whitespace-nowrap", %{"hidden" => is_state_manually_trigger(@pipeline.state) and index == 0})} phx-click="edit-time-popup" phx-value-index={index} phx-value-subcategory_slug={@subcategory_slug} phx-value-email_id={email.id} phx-value-pipeline_id={@pipeline.id} icon_class="inline-block w-4 h-4 mr-3" color="blue-planning-300" icon="settings">Edit time</.icon_button_simple>
+                    <.button_simple class={classes("flex items-center px-2 py-1 btn-tertiary text-blue-planning-300 hover:border-blue-planning-300 mr-2 whitespace-nowrap", %{"hidden" => is_state_manually_trigger(@pipeline.state) and index == 0})} phx-click="edit-time-popup" phx-value-index={index} phx-value-subcategory_slug={@subcategory_slug} phx-value-email_id={email.id} phx-value-pipeline_id={@pipeline.id} icon_class="inline-block w-4 h-4 mr-3" color="blue-planning-300" icon="settings">Edit time</.button_simple>
                   <% end %>
-                  <.icon_button_simple class="flex items-center px-2 py-1 btn-tertiary bg-blue-planning-300 text-white hover:bg-blue-planning-300/75 whitespace-nowrap" phx-click="edit-email-popup" phx-value-index={index} phx-value-email_id={email.id} phx-value-pipeline_id={@pipeline.id} icon_class="inline-block w-4 h-4 mr-3" color="white" icon="pencil">Edit email</.icon_button_simple>
+                  <.button_simple class="flex items-center px-2 py-1 btn-tertiary bg-blue-planning-300 text-white hover:bg-blue-planning-300/75 whitespace-nowrap" phx-click="edit-email-popup" phx-value-index={index} phx-value-email_id={email.id} phx-value-pipeline_id={@pipeline.id} icon_class="inline-block w-4 h-4 mr-3" color="white" icon="pencil">Edit email</.button_simple>
                 </div>
               </div>
               <hr class="md:ml-8 ml-6" />

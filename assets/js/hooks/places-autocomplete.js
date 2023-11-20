@@ -18,7 +18,11 @@ const PlacesAutocomplete = {
 
       if (eventName)
         autocomplete.addListener('place_changed', () => {
-          this.pushEvent(eventName, autocomplete.getPlace());
+          if (input.dataset.target) {
+            this.pushEventTo(input.dataset.target, eventName, autocomplete.getPlace())
+          } else {
+          this.pushEvent(eventName, autocomplete.getPlace())
+          };
         });
 
       setTimeout(() => {

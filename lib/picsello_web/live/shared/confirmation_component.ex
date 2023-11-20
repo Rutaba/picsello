@@ -16,6 +16,7 @@ defmodule PicselloWeb.Shared.ConfirmationComponent do
     dropdown?: false,
     dropdown_label: nil,
     dropdown_items: [],
+    empty_dropdown_description: "No items available for selection",
     copy_btn_label: nil,
     copy_btn_event: nil,
     copy_btn_value: nil
@@ -65,10 +66,16 @@ defmodule PicselloWeb.Shared.ConfirmationComponent do
   defp section(%{dropdown?: true} = assigns) do
     ~H"""
       <.form :let={f} for={%{}} as={:dropdown} phx-submit={@confirm_event} phx-target={@myself} class="mt-2">
-        <h1 class="font-extrabold text-sm"><%= @dropdown_label %></h1>
-        <%= select(f, :item_id, @dropdown_items, class: "w-full px-2 py-3 border border-slate-400 rounded-md mt-1 cursor-pointer") %>
+        <%= if Enum.any?(@dropdown_items) do %>
+          <h1 class="font-extrabold text-sm"><%= @dropdown_label %></h1>
+          <%= select(f, :item_id, @dropdown_items, class: "w-full px-2 py-3 border border-slate-400 rounded-md mt-1 cursor-pointer") %>
+        <% else %>
+          <div>
+            <%= @empty_dropdown_description %>
+          </div>
+        <% end %>
 
-        <button class="w-full btn-primary text-center mt-6" phx-disable-with="Saving&hellip;">
+        <button class="w-full btn-primary text-center mt-6" disabled={Enum.empty?(@dropdown_items)} phx-disable-with="Saving&hellip;">
           <%= @confirm_label %>
         </button>
 

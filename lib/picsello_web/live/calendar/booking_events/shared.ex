@@ -223,6 +223,7 @@ defmodule PicselloWeb.Calendar.BookingEvents.Shared do
       confirm_class: "btn-primary",
       dropdown_items: filtered_slots,
       dropdown_label: "Pick a new time",
+      empty_dropdown_description: "Sorry, no slots available for rescheduling now",
       confirm_event: "reschedule_session",
       payload: %{
         booking_event_date_id: booking_event_date_id,
@@ -266,7 +267,7 @@ defmodule PicselloWeb.Calendar.BookingEvents.Shared do
     socket
     |> ConfirmationComponent.open(%{
       title: "Mark block open?",
-      subtitle: "Are you sure you to allow this block to be bookable by clients?",
+      subtitle: "Are you sure you want to allow this block to be bookable by clients?",
       confirm_event: "change_slot_status",
       confirm_class: "btn-primary",
       confirm_label: "Show block",
@@ -800,7 +801,7 @@ defmodule PicselloWeb.Calendar.BookingEvents.Shared do
   end
 
   def assign_events(
-        %{assigns: %{booking_event: %{id: event_id}, current_user: %{organization: organization}}} =
+        %{assigns: %{booking_event: %{id: event_id}, current_user: %{organization: organization}} = assigns} =
           socket
       ) do
     %{package_template: package_template} =
@@ -813,7 +814,8 @@ defmodule PicselloWeb.Calendar.BookingEvents.Shared do
     calendar_date_event =
       case booking_event do
         %{dates: []} -> nil
-        %{dates: [date | _]} -> date
+        %{dates: [date | _]} ->
+          if Map.has_key?(assigns, :calendar_date_event), do: Enum.find(booking_event.dates, &(&1.date == assigns.calendar_date_event.date)), else: date
       end
 
     socket
@@ -821,6 +823,7 @@ defmodule PicselloWeb.Calendar.BookingEvents.Shared do
     |> assign(:package, package_template)
     |> assign(:payments_description, payments_description(booking_event))
     |> assign(:calendar_date_event, calendar_date_event)
+    |> assign(:booking_slot_tab_active, (if booking_event.is_repeating, do: "calendar", else: "list"))
   end
 
   def assign_events(%{assigns: %{booking_events: _booking_events}} = socket),
