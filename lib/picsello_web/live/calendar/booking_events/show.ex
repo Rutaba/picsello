@@ -119,6 +119,7 @@ defmodule PicselloWeb.Live.Calendar.BookingEvents.Show do
         booking_date
         |> BEShared.update_slots_for_edit()
       )
+      |> BEShared.update_repeat_settings_for_edit()
 
     socket
     |> open_wizard(%{booking_date: edit_booking_date, title: "Edit Date"})
@@ -162,7 +163,7 @@ defmodule PicselloWeb.Live.Calendar.BookingEvents.Show do
   def handle_event("confirm-delete-date", %{"id" => date_id}, socket) do
     socket
     |> PicselloWeb.ConfirmationComponent.open(%{
-      close_label: "No! Get me out of here",
+      close_label: "Cancel",
       confirm_event: "delete-date-" <> date_id,
       confirm_label: "Yes, delete",
       icon: "warning-orange",

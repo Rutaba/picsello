@@ -31,8 +31,8 @@ defmodule PicselloWeb.Live.Calendar.BookingEventModal do
           "is_repeat" => booking_event.is_repeating
         })
 
-      %{assigns: %{booking_event: booking_event}} = socket ->
-        socket |> assign_changeset(%{"is_repeat" => booking_event.is_repeating})
+      %{assigns: %{booking_event: booking_event, booking_date: booking_date}} = socket ->
+        socket |> assign_changeset(%{"is_repeat" => booking_event.is_repeating && booking_date.calendar})
     end
     |> then(fn %{assigns: %{booking_date: %{date: date, booking_event_id: booking_event_id}}} =
                  socket ->

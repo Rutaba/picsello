@@ -180,7 +180,7 @@ defmodule PicselloWeb.Calendar.BookingEvents.Shared do
         "Are you sure you want to cancel this session? You'll have to refund them through Stripe or whatever payment method you use previously",
       confirm_event: "cancel_session",
       confirm_label: "Yes, cancel",
-      close_label: "No, go back",
+      close_label: "Cancel",
       icon: "warning-orange",
       payload: %{
         booking_event_date_id: String.to_integer(booking_event_date_id),
@@ -798,6 +798,10 @@ defmodule PicselloWeb.Calendar.BookingEvents.Shared do
     Enum.map(slots, fn s ->
       if s.status == :hidden, do: %{s | is_hide: true}, else: s
     end)
+  end
+
+  def update_repeat_settings_for_edit(booking_date) do
+    if booking_date.occurences > 0, do: Map.replace(booking_date, :repetition, true), else: booking_date
   end
 
   def assign_events(
