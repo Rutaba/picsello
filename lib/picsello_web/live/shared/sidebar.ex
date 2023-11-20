@@ -185,7 +185,7 @@ defmodule PicselloWeb.Shared.Sidebar do
             <%= if FunWithFlags.enabled?(:photo_lab) do %>
               <div class="bg-white px-2">
                 <hr class="pt-2" />
-                <p class="font-semibold">Photo Lab</p>
+                <p class="font-semibold">Beta Features</p>
                 <div class="flex justify-between items-center text-sm pb-2">
                   <p class="text-base-250">Sidebar Navigation <.tooltip id="sidebar-nav" class="" content="Try out an easier to use navigation. We'd love your feedback. (You will be directed to your dashboard when toggled.)"/></p>
                   <button type="button" class="cursor-pointer" phx-click="feature-flag" phx-target={@myself}>
