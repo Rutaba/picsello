@@ -428,7 +428,7 @@ defmodule PicselloWeb.EmailAutomationLive.Shared do
   def fetch_date_for_state(:cart_abandoned, _email, last_completed_email, _job, gallery, _order) do
     card_abandoned? =
       Enum.any?(gallery.orders, fn order ->
-        order = Repo.preload(order, [:digitals])
+        order = Repo.preload(order, [:digitals, :intent])
         is_nil(order.placed_at) and is_nil(order.intent) and Enum.any?(order.digitals)
       end)
 
