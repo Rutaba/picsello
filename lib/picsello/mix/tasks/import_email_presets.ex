@@ -388,7 +388,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         """
       },
       %{
-        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "offline_payment"),
+        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "balance_due_offline"),
         total_hours: 0,
         status: "disabled",
         job_type: "wedding",
@@ -1236,7 +1236,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         """
       },
       %{
-        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "offline_payment"),
+        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "balance_due_offline"),
         total_hours: 0,
         status: "disabled",
         job_type: "newborn",
@@ -2084,7 +2084,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         """
       },
       %{
-        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "offline_payment"),
+        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "balance_due_offline"),
         total_hours: 0,
         status: "disabled",
         job_type: "family",
@@ -2928,7 +2928,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         """
       },
       %{
-        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "offline_payment"),
+        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "balance_due_offline"),
         total_hours: 0,
         status: "disabled",
         job_type: "mini",
@@ -3760,7 +3760,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         """
       },
       %{
-        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "offline_payment"),
+        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "balance_due_offline"),
         total_hours: 0,
         status: "disabled",
         job_type: "headshot",
@@ -4592,7 +4592,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         """
       },
       %{
-        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "offline_payment"),
+        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "balance_due_offline"),
         total_hours: 0,
         status: "disabled",
         job_type: "portrait",
@@ -5423,7 +5423,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         """
       },
       %{
-        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "offline_payment"),
+        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "balance_due_offline"),
         total_hours: 0,
         status: "disabled",
         job_type: "boudoir",
@@ -6252,7 +6252,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         """
       },
       %{
-        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "offline_payment"),
+        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "balance_due_offline"),
         total_hours: 0,
         status: "disabled",
         job_type: "other",
@@ -7084,7 +7084,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         """
       },
       %{
-        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "offline_payment"),
+        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "balance_due_offline"),
         total_hours: 0,
         status: "disabled",
         job_type: "maternity",
@@ -7910,7 +7910,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         """
       },
       %{
-        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "offline_payment"),
+        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "balance_due_offline"),
         total_hours: 0,
         status: "disabled",
         job_type: "event",

@@ -103,7 +103,7 @@ defmodule PicselloWeb.EmailAutomationLive.Shared do
 
   The sign options are determined as follows:
       - If the `state` is "before_shoot" or "gallery_expiration_soon", it returns options for "Before" and "After".
-      - If the `state` is "balance_due" or "offline_payment", it returns options for "Before" and "After" with the "After" option enabled.
+      - If the `state` is "balance_due" or "balance_due_offline", it returns options for "Before" and "After" with the "After" option enabled.
       - For any other `state`, it returns options for "Before" and "After" with the "Before" option disabled.
 
   ## Parameters
@@ -123,7 +123,7 @@ defmodule PicselloWeb.EmailAutomationLive.Shared do
       state in ["before_shoot", "gallery_expiration_soon"] ->
         [[key: "Before", value: "-"], [key: "After", value: "+", disabled: true]]
 
-      state in ["balance_due", "offline_payment"] ->
+      state in ["balance_due", "balance_due_offline"] ->
         [[key: "Before", value: "-"], [key: "After", value: "+"]]
 
       true ->
@@ -627,7 +627,14 @@ defmodule PicselloWeb.EmailAutomationLive.Shared do
     end
   end
 
-  def fetch_date_for_state(:offline_payment, _email, last_completed_email, job, _gallery, _order) do
+  def fetch_date_for_state(
+        :blance_due_offline,
+        _email,
+        last_completed_email,
+        job,
+        _gallery,
+        _order
+      ) do
     invoiced_due_date = PaymentSchedules.remainder_due_on(job)
 
     offline_dues =

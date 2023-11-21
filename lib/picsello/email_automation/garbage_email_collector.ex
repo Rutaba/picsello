@@ -98,7 +98,7 @@ defmodule Picsello.EmailAutomation.GarbageEmailCollector do
       "pays_retainer",
       "pays_retainer_offline",
       "balance_due",
-      "offline_payment",
+      "balance_due_offline",
       "paid_full",
       "paid_offline_full"
     ]

@@ -67,7 +67,7 @@ defmodule Mix.Tasks.ImportEmailForAlreadyCreatedJobs do
     skip_payment_states =
       if is_payment_states_keep?(job.payment_schedules) or Enum.empty?(job.payment_schedules),
         do: [],
-        else: [:balance_due, :offline_payment, :paid_full, :paid_offline_full]
+        else: [:balance_due, :blance_due_offline, :paid_full, :paid_offline_full]
 
     skip_shoot_states = skipping_actions_for_shoots(job.shoots)
 

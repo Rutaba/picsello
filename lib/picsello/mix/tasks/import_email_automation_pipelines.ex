@@ -249,7 +249,7 @@ defmodule Mix.Tasks.ImportEmailAutomationPipelines do
       },
       %{
         name: "Balance Due (Offline)",
-        state: "offline_payment",
+        state: "balance_due_offline",
         description: "Triggered when a payment is due within a payment schedule that is offline",
         email_automation_sub_category_id: automation_reminder.id,
         email_automation_category_id: email_automation_job.id,
