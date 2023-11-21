@@ -772,7 +772,7 @@ defmodule PicselloWeb.Live.Calendar.BookingEvents.Show do
               <% else %>
                 <%= @description %>
               <% end %>
-              <button class="mt-2 flex text-base-250 items-center justify-center" phx-click="toggle-section" phx-value-section_id="Read more">
+              <button class="mt-2 flex text-base-250 items-center" phx-click="toggle-section" phx-value-section_id="Read more">
                 <%= if Enum.member?(@collapsed_sections, "Read more") do %>
                   Read less <.icon name="up" class="mt-1 w-4 h-4 ml-2 stroke-current stroke-3 text-base-250"/>
                 <% else %>
