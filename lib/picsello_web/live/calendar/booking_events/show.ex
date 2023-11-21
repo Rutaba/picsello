@@ -921,6 +921,16 @@ defmodule PicselloWeb.Live.Calendar.BookingEvents.Show do
     ]
   end
 
+  defp check_slot_status_for_dates(booking_event) do
+    booking_event.dates
+    |> Enum.reject(fn
+      %{date: nil} -> true
+      _ -> false
+    end)
+    |> Enum.map(fn %{date: date} -> date end)
+    |> BookingEventDates.is_booked_any_date?(booking_event.id)
+  end
+
   defp slot_time_formatter(slot),
     do: Time.to_string(slot.slot_start) <> " - " <> Time.to_string(slot.slot_end)
 
