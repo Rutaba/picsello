@@ -34,7 +34,7 @@ defmodule Picsello.EmailAutomationsTest do
     insert(:subscription_event, user: user, subscription_plan: plan, status: "active")
     client = insert(:client, organization: organization)
     job = insert(:job, client_id: client.id)
-    insert(:payment_schedule, job: job)
+    insert(:payment_schedule, job: job, paid_at: Timex.now())
     insert(:user_currency, user: user, organization: organization)
 
     email_1 =
@@ -67,6 +67,13 @@ defmodule Picsello.EmailAutomationsTest do
     |> Mox.stub(:deliver_automation_email_job, fn _, _, _, _, _ ->
       {:ok, {:ok, "Email Sent"}}
     end)
+    |> Mox.stub(:deliver_automation_email_gallery, fn _, _, _, _, _ ->
+      {:ok, {:ok, "Email Sent"}}
+    end)
+
+    Picsello.PhotoStorageMock
+    |> Mox.stub(:path_to_url, & &1)
+    |> Mox.stub(:get, &{:ok, %{name: &1}})
 
     [
       email_1: email_1,
@@ -413,6 +420,521 @@ defmodule Picsello.EmailAutomationsTest do
     end
   end
 
+  describe "send_now_email/4 action for follow-up emails" do
+    setup %{plan: plan} do
+      follow_up_organization = insert(:organization)
+
+      follow_up_user =
+        insert(:user, organization: follow_up_organization, time_zone: "Pacific/Kiritimati")
+        |> User.assign_stripe_customer_changeset("follow_up_customer")
+        |> Repo.update!()
+
+      insert(:subscription_event, user: follow_up_user, subscription_plan: plan, status: "active")
+      follow_up_client = insert(:client, organization: follow_up_organization)
+      follow_up_job = insert(:job, client_id: follow_up_client.id)
+      insert(:user_currency, user: follow_up_user, organization: follow_up_organization)
+
+      insert_email_presets(
+        "wedding",
+        "lead",
+        follow_up_organization,
+        "active",
+        1,
+        "manual_thank_you_lead",
+        0,
+        1
+      )
+
+      insert_email_presets(
+        "wedding",
+        "lead",
+        follow_up_organization,
+        "active",
+        1,
+        "manual_thank_you_lead",
+        72,
+        3
+      )
+
+      insert_email_presets(
+        "wedding",
+        "lead",
+        follow_up_organization,
+        "active",
+        1,
+        "manual_thank_you_lead",
+        96,
+        4
+      )
+
+      insert_email_presets(
+        "wedding",
+        "lead",
+        follow_up_organization,
+        "active",
+        1,
+        "manual_thank_you_lead",
+        120,
+        5
+      )
+
+      [follow_up_organization: follow_up_organization, follow_up_job: follow_up_job]
+    end
+
+    test "when the difference is 2 days", %{
+      follow_up_job: follow_up_job,
+      follow_up_organization: follow_up_organization
+    } do
+      EmailAutomationSchedules.insert_job_emails(
+        "wedding",
+        follow_up_organization.id,
+        follow_up_job.id,
+        :lead
+      )
+
+      email = Repo.all(from(es in EmailSchedule, where: es.job_id == ^follow_up_job.id)) |> hd()
+
+      EmailAutomations.send_now_email(
+        :lead,
+        email,
+        follow_up_job,
+        :manual_thank_you_lead
+      )
+
+      assert fetch_all_send_emails_count() == 1
+      update_schedule_history(Timex.shift(Timex.now(), days: -2) |> DateTime.truncate(:second))
+      Picsello.Workers.ScheduleAutomationEmail.perform(nil)
+      assert fetch_all_send_emails_count() == 1 + 3
+    end
+
+    test "when email is to be sent 3 days after", %{
+      follow_up_job: follow_up_job,
+      follow_up_organization: follow_up_organization
+    } do
+      EmailAutomationSchedules.insert_job_emails(
+        "wedding",
+        follow_up_organization.id,
+        follow_up_job.id,
+        :lead
+      )
+
+      email = Repo.all(from(es in EmailSchedule, where: es.job_id == ^follow_up_job.id)) |> hd()
+
+      EmailAutomations.send_now_email(
+        :lead,
+        email,
+        follow_up_job,
+        :manual_thank_you_lead
+      )
+
+      assert fetch_all_send_emails_count() == 1
+      update_schedule_history(Timex.shift(Timex.now(), days: -3) |> DateTime.truncate(:second))
+      Picsello.Workers.ScheduleAutomationEmail.perform(nil)
+      assert fetch_all_send_emails_count() == 2 + 3
+    end
+
+    test "when email is to be sent 4 days after", %{
+      follow_up_job: follow_up_job,
+      follow_up_organization: follow_up_organization
+    } do
+      EmailAutomationSchedules.insert_job_emails(
+        "wedding",
+        follow_up_organization.id,
+        follow_up_job.id,
+        :lead
+      )
+
+      email = Repo.all(from(es in EmailSchedule, where: es.job_id == ^follow_up_job.id)) |> hd()
+
+      EmailAutomations.send_now_email(
+        :lead,
+        email,
+        follow_up_job,
+        :manual_thank_you_lead
+      )
+
+      assert fetch_all_send_emails_count() == 1
+      update_schedule_history(Timex.shift(Timex.now(), days: -4) |> DateTime.truncate(:second))
+      Picsello.Workers.ScheduleAutomationEmail.perform(nil)
+      assert fetch_all_send_emails_count() == 2 + 3
+    end
+
+    test "when email is to be sent 5 days after", %{
+      follow_up_job: follow_up_job,
+      follow_up_organization: follow_up_organization
+    } do
+      EmailAutomationSchedules.insert_job_emails(
+        "wedding",
+        follow_up_organization.id,
+        follow_up_job.id,
+        :lead
+      )
+
+      email = Repo.all(from(es in EmailSchedule, where: es.job_id == ^follow_up_job.id)) |> hd()
+
+      EmailAutomations.send_now_email(
+        :lead,
+        email,
+        follow_up_job,
+        :manual_thank_you_lead
+      )
+
+      assert fetch_all_send_emails_count() == 1
+      update_schedule_history(Timex.shift(Timex.now(), days: -5) |> DateTime.truncate(:second))
+      Picsello.Workers.ScheduleAutomationEmail.perform(nil)
+      assert fetch_all_send_emails_count() == 2 + 3
+    end
+
+    test "when the difference is 6 days", %{
+      follow_up_job: follow_up_job,
+      follow_up_organization: follow_up_organization
+    } do
+      EmailAutomationSchedules.insert_job_emails(
+        "wedding",
+        follow_up_organization.id,
+        follow_up_job.id,
+        :lead
+      )
+
+      email = Repo.all(from(es in EmailSchedule, where: es.job_id == ^follow_up_job.id)) |> hd()
+
+      EmailAutomations.send_now_email(
+        :lead,
+        email,
+        follow_up_job,
+        :manual_thank_you_lead
+      )
+
+      assert fetch_all_send_emails_count() == 1
+      update_schedule_history(Timex.shift(Timex.now(), days: -6) |> DateTime.truncate(:second))
+      Picsello.Workers.ScheduleAutomationEmail.perform(nil)
+      assert fetch_all_send_emails_count() == 1 + 3
+    end
+  end
+
+  describe "send_now_email/4 action for cart-abandoned emails" do
+    setup %{plan: plan} do
+      cart_organization = insert(:organization)
+
+      cart_user =
+        insert(:user, organization: cart_organization, time_zone: "Pacific/Kiritimati")
+        |> User.assign_stripe_customer_changeset("cart_customer")
+        |> Repo.update!()
+
+      insert(:subscription_event, user: cart_user, subscription_plan: plan, status: "active")
+      cart_client = insert(:client, organization: cart_organization)
+      cart_job = insert(:job, client_id: cart_client.id, type: "wedding")
+      insert(:user_currency, user: cart_user, organization: cart_organization)
+
+      insert_email_presets(
+        "wedding",
+        "gallery",
+        cart_organization,
+        "active",
+        1,
+        "cart_abandoned",
+        1,
+        1
+      )
+
+      insert_email_presets(
+        "wedding",
+        "gallery",
+        cart_organization,
+        "active",
+        1,
+        "cart_abandoned",
+        24,
+        1
+      )
+
+      insert_email_presets(
+        "wedding",
+        "gallery",
+        cart_organization,
+        "active",
+        1,
+        "cart_abandoned",
+        48,
+        2
+      )
+
+      [cart_organization: cart_organization, cart_job: cart_job]
+    end
+
+    test "when the difference is less than 1 hour (doesn't sends the email)", %{
+      cart_job: cart_job,
+      cart_organization: cart_organization
+    } do
+      gallery =
+        insert(:gallery,
+          job: cart_job,
+          organization: cart_organization
+        )
+
+      EmailAutomationSchedules.insert_gallery_order_emails(
+        gallery,
+        nil
+      )
+
+      gallery_client =
+        insert(:gallery_client, gallery: gallery, email: "galleryclient@picsello.com")
+
+      order =
+        insert(:order,
+          gallery: gallery,
+          placed_at: nil,
+          intent: nil,
+          gallery_client: gallery_client,
+          inserted_at: Timex.shift(Timex.now(), seconds: -360)
+        )
+
+      insert(:digital, order: order)
+
+      assert fetch_all_send_emails_count() == 0
+      Picsello.Workers.ScheduleAutomationEmail.perform(nil)
+      assert fetch_all_send_emails_count() == 3
+    end
+
+    test "when the difference is 1 hour (sends the email)", %{
+      cart_job: cart_job,
+      cart_organization: cart_organization
+    } do
+      gallery =
+        insert(:gallery,
+          job: cart_job,
+          organization: cart_organization
+        )
+
+      EmailAutomationSchedules.insert_gallery_order_emails(
+        gallery,
+        nil
+      )
+
+      gallery_client =
+        insert(:gallery_client, gallery: gallery, email: "galleryclient@picsello.com")
+
+      order =
+        insert(:order,
+          gallery: gallery,
+          placed_at: nil,
+          intent: nil,
+          gallery_client: gallery_client,
+          inserted_at: Timex.shift(Timex.now(), hours: -1)
+        )
+
+      insert(:digital, order: order)
+
+      assert fetch_all_send_emails_count() == 0
+      Picsello.Workers.ScheduleAutomationEmail.perform(nil)
+      assert fetch_all_send_emails_count() == 4
+    end
+
+    test "when the difference is 3 hour (sends the email)", %{
+      cart_job: cart_job,
+      cart_organization: cart_organization
+    } do
+      gallery =
+        insert(:gallery,
+          job: cart_job,
+          organization: cart_organization
+        )
+
+      EmailAutomationSchedules.insert_gallery_order_emails(
+        gallery,
+        nil
+      )
+
+      gallery_client =
+        insert(:gallery_client, gallery: gallery, email: "galleryclient@picsello.com")
+
+      order =
+        insert(:order,
+          gallery: gallery,
+          placed_at: nil,
+          intent: nil,
+          gallery_client: gallery_client,
+          inserted_at: Timex.shift(Timex.now(), hours: -3)
+        )
+
+      insert(:digital, order: order)
+
+      assert fetch_all_send_emails_count() == 0
+      Picsello.Workers.ScheduleAutomationEmail.perform(nil)
+      assert fetch_all_send_emails_count() == 4
+    end
+
+    test "when the difference is 4 hour (doesn't sends the email)", %{
+      cart_job: cart_job,
+      cart_organization: cart_organization
+    } do
+      gallery =
+        insert(:gallery,
+          job: cart_job,
+          organization: cart_organization
+        )
+
+      EmailAutomationSchedules.insert_gallery_order_emails(
+        gallery,
+        nil
+      )
+
+      gallery_client =
+        insert(:gallery_client, gallery: gallery, email: "galleryclient@picsello.com")
+
+      order =
+        insert(:order,
+          gallery: gallery,
+          placed_at: nil,
+          intent: nil,
+          gallery_client: gallery_client,
+          inserted_at: Timex.shift(Timex.now(), hours: -4)
+        )
+
+      insert(:digital, order: order)
+
+      assert fetch_all_send_emails_count() == 0
+      Picsello.Workers.ScheduleAutomationEmail.perform(nil)
+      assert fetch_all_send_emails_count() == 3
+    end
+
+    test "when the difference is 1 day (sends the email)", %{
+      cart_job: cart_job,
+      cart_organization: cart_organization
+    } do
+      gallery =
+        insert(:gallery,
+          job: cart_job,
+          organization: cart_organization
+        )
+
+      EmailAutomationSchedules.insert_gallery_order_emails(
+        gallery,
+        nil
+      )
+
+      gallery_client =
+        insert(:gallery_client, gallery: gallery, email: "galleryclient@picsello.com")
+
+      order =
+        insert(:order,
+          gallery: gallery,
+          placed_at: nil,
+          intent: nil,
+          gallery_client: gallery_client,
+          inserted_at: Timex.shift(Timex.now(), hours: -24)
+        )
+
+      insert(:digital, order: order)
+
+      assert fetch_all_send_emails_count() == 0
+      Picsello.Workers.ScheduleAutomationEmail.perform(nil)
+      assert fetch_all_send_emails_count() == 4
+    end
+
+    test "when the difference is 2 day (sends the email)", %{
+      cart_job: cart_job,
+      cart_organization: cart_organization
+    } do
+      gallery =
+        insert(:gallery,
+          job: cart_job,
+          organization: cart_organization
+        )
+
+      EmailAutomationSchedules.insert_gallery_order_emails(
+        gallery,
+        nil
+      )
+
+      gallery_client =
+        insert(:gallery_client, gallery: gallery, email: "galleryclient@picsello.com")
+
+      order =
+        insert(:order,
+          gallery: gallery,
+          placed_at: nil,
+          intent: nil,
+          gallery_client: gallery_client,
+          inserted_at: Timex.shift(Timex.now(), hours: -48)
+        )
+
+      insert(:digital, order: order)
+
+      assert fetch_all_send_emails_count() == 0
+      Picsello.Workers.ScheduleAutomationEmail.perform(nil)
+      assert fetch_all_send_emails_count() == 4
+    end
+
+    test "when the difference is 3 day (doesn't sends the email)", %{
+      cart_job: cart_job,
+      cart_organization: cart_organization
+    } do
+      gallery =
+        insert(:gallery,
+          job: cart_job,
+          organization: cart_organization
+        )
+
+      EmailAutomationSchedules.insert_gallery_order_emails(
+        gallery,
+        nil
+      )
+
+      gallery_client =
+        insert(:gallery_client, gallery: gallery, email: "galleryclient@picsello.com")
+
+      order =
+        insert(:order,
+          gallery: gallery,
+          placed_at: nil,
+          intent: nil,
+          gallery_client: gallery_client,
+          inserted_at: Timex.shift(Timex.now(), hours: -72)
+        )
+
+      insert(:digital, order: order)
+
+      assert fetch_all_send_emails_count() == 0
+      Picsello.Workers.ScheduleAutomationEmail.perform(nil)
+      assert fetch_all_send_emails_count() == 3
+    end
+
+    test "when the difference is 4 day (doesn't sends the email)", %{
+      cart_job: cart_job,
+      cart_organization: cart_organization
+    } do
+      gallery =
+        insert(:gallery,
+          job: cart_job,
+          organization: cart_organization
+        )
+
+      EmailAutomationSchedules.insert_gallery_order_emails(
+        gallery,
+        nil
+      )
+
+      gallery_client =
+        insert(:gallery_client, gallery: gallery, email: "galleryclient@picsello.com")
+
+      order =
+        insert(:order,
+          gallery: gallery,
+          placed_at: nil,
+          intent: nil,
+          gallery_client: gallery_client,
+          inserted_at: Timex.shift(Timex.now(), hours: -96)
+        )
+
+      insert(:digital, order: order)
+
+      assert fetch_all_send_emails_count() == 0
+      Picsello.Workers.ScheduleAutomationEmail.perform(nil)
+      assert fetch_all_send_emails_count() == 3
+    end
+  end
+
   describe "get_active_email_schedule_count/1 action" do
     setup %{organization: organization} do
       client = insert(:client, organization: organization)
@@ -611,9 +1133,9 @@ defmodule Picsello.EmailAutomationsTest do
       Map.merge(attrs, %{
         organization_id: organization.id,
         state: Atom.to_string(state),
-        immediately: false,
+        immediately: if(total_hours == 0, do: true, else: false),
         count: count,
-        calendar: "Day",
+        calendar: if(total_hours == 1, do: "Hour", else: "Day"),
         sign: sign,
         inserted_at: Timex.now(),
         updated_at: Timex.now()
@@ -648,5 +1170,11 @@ defmodule Picsello.EmailAutomationsTest do
       email_schedules_query,
       :archived
     )
+  end
+
+  defp update_schedule_history(reminded_at) do
+    history = from(esh in EmailScheduleHistory) |> Repo.all() |> hd()
+    history = Ecto.Changeset.change(history, reminded_at: reminded_at)
+    Repo.update(history)
   end
 end
