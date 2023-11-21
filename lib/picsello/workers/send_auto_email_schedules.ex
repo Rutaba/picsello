@@ -234,8 +234,8 @@ defmodule Picsello.Workers.ScheduleAutomationEmail do
     before_after_send_time(sign, hours_diff, abs(total_hours))
   end
 
-  ## This will only trigger when time is strictly matching + buffer i.e. if the email was to be sent 1 hours after
-  ## then it will handle it upto 3 hours buffer
+  ## This will only trigger when time is strictly matching + 2 hour buffer i.e.
+  ## if the email was to be sent 1 hours after then it will handle it upto 3 hours buffer
   defp before_after_send_time("+", hours_diff, hours_to_compare),
     do: hours_diff >= hours_to_compare && hours_diff <= hours_to_compare + 2
 
