@@ -120,7 +120,7 @@
                                         <hr class="my-3 block md:hidden">
                                         <div class="flex items-center md:flex-col xl:flex-row gap-3 ml-auto">
                                             <.icon_button phx-click="add-package" icon="pencil" color="white" class="px-2 py-1 mr-1 w-full bg-blue-planning-300 hover:bg-blue-planning-300/75">Edit</.icon_button>
-                                            <.actions id="package" booking_event={@booking_event} button_actions={package_actions()} />
+                                            <.actions id="package" booking_event={@booking_event} button_actions={package_actions()} disabled?={check_slot_status_for_dates(@booking_event)} />
                                         </div>
                                     </div>
                                 </div>
