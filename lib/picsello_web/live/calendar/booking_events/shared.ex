@@ -207,10 +207,10 @@ defmodule PicselloWeb.Calendar.BookingEvents.Shared do
 
     filtered_slots =
       booking_event_dates.slots
-      |> Enum.filter(&(&1.status == :open))
       |> Enum.with_index(fn slot, slot_index ->
         {"#{slot.slot_start} - #{slot.slot_end}", slot_index}
       end)
+      |> List.delete_at(slot_index)
 
     socket
     |> make_popup(
