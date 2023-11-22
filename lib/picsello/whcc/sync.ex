@@ -8,6 +8,7 @@ defmodule Picsello.WHCC.Sync do
 
   alias Picsello.{Repo, WHCC.Adapter}
 
+  @press_printed_card_id "7sXPek95CQ6f6N5Hu"
   @doc """
     fetch latest from whcc api
     upsert changes into db records
@@ -87,6 +88,10 @@ defmodule Picsello.WHCC.Sync do
     products
     |> Enum.map(&Map.get(&1, :category))
     |> Enum.uniq()
+    |> Enum.map(fn
+      %{id: @press_printed_card_id} = category -> %{category | name: "Greeting Cards"}
+      category -> category
+    end)
     |> sync_table(Picsello.Category, fn %{name: name} -> %{name: name, icon: "book"} end)
   end
 

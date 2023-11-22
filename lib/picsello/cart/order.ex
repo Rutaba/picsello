@@ -158,11 +158,13 @@ defmodule Picsello.Cart.Order do
         order
         |> cast(
           %{
-            products: update_prices(products, opts)
+            products: update_prices(products, opts),
+            whcc_order: nil
           },
           []
         )
         |> cast_assoc(:products)
+        |> cast_embed(:whcc_order)
 
       {[digital_id: digital_id], %{digitals: digitals}} when is_list(digitals) ->
         order_credit_count = Enum.count(digitals, & &1.is_credit)
