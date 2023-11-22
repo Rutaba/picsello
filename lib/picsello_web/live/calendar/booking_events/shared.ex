@@ -163,6 +163,7 @@ defmodule PicselloWeb.Calendar.BookingEvents.Shared do
       close_label: "Cancel",
       icon: "warning-orange"
     })
+    |> noreply()
   end
 
   def handle_event(
