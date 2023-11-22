@@ -1349,6 +1349,10 @@ defmodule PicselloWeb.PackageLive.WizardComponent do
     |> maybe_assign_custom(payment_params)
     |> then(fn %{assigns: %{changeset: changeset, payments_changeset: payments_changeset}} =
                  socket ->
+      changeset =
+        changeset
+        |> Changeset.put_change(:is_template, true)
+
       case Packages.insert_or_update_package(
              update_package_changeset(changeset, payments_changeset),
              Map.get(params, "contract"),
