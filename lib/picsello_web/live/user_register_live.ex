@@ -104,19 +104,20 @@ defmodule PicselloWeb.UserRegisterLive do
     ~H"""
       <.signup_container {assigns} step={1} step_total={length(@steps)} step_title="Let’s get to know you" left_classes="p-8 pb-0 bg-purple-marketing-300 text-white">
         <h2 class="text-3xl md:text-4xl font-bold text-center mb-2">
-          Join Picsello’s
+          Sign up for Picsello’s
           <br />
-          <span class="underline underline-offset-1 text-decoration-blue-planning-300">Business Mastermind</span>
+          <span class="underline underline-offset-1 text-decoration-blue-planning-300">all-in-one</span>  Business Platform
         </h2>
-        <p class="text-xl text-center">Experts, community, and support to help you grow a sustainable and profitable business.</p>
+        <h3 class="text-2xl text-center mb-4 italic">and get 12 months of the Mastermind</h3>
+        <p class="text-center">All-in-one software plus expert, community, and support to help you grow a profitable business</p>
         <div class="max-w-md mx-auto my-8">
           <.signup_deal original_price={Money.new(35000, :USD)} price={Money.new(20000, :USD)} expires_at={@black_friday_timer_end} />
         </div>
         <ul class="mb-8 space-y-2">
+          <li class="flex gap-2 font-bold font-italic"><.icon name="checkcircle" class="h-4 w-4 flex-shrink-0 mt-1.5" /> 1 year full access to Picsello</li>
           <li class="flex gap-2"><.icon name="checkcircle" class="h-4 w-4 flex-shrink-0 mt-1.5" /> Monthly Expert Series (plus access to previous Experts)</li>
           <li class="flex gap-2"><.icon name="checkcircle" class="h-4 w-4 flex-shrink-0 mt-1.5" /> Private supportive photographer community </li>
           <li class="flex gap-2"><.icon name="checkcircle" class="h-4 w-4 flex-shrink-0 mt-1.5" /> Access to Picsello coaches</li>
-          <li class="flex gap-2"><.icon name="checkcircle" class="h-4 w-4 flex-shrink-0 mt-1.5" /> 1 year full access to Picsello</li>
           <li class="flex gap-2"><.icon name="checkcircle" class="h-4 w-4 flex-shrink-0 mt-1.5" /> Monthly live expert series (plus access to previous lives)</li>
         </ul>
         <img src={Routes.static_path(@socket, "/images/mastermind-hero.png")} loading="lazy" alt="Images of the Picsello App" />
@@ -158,6 +159,10 @@ defmodule PicselloWeb.UserRegisterLive do
             disabled: !@changeset.valid?,
             phx_disable_with: "Saving..."
           %>
+        </div>
+        <div class="flex items-center justify-center mt-4 gap-2">
+          <a class="link" href="/users/register">Looking for monthly subscription?</a> <span class="text-base-200">|</span>
+          <a class="link" href="/users/log_in">Login</a>
         </div>
       </.form>
     """
