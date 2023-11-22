@@ -693,7 +693,8 @@ defmodule PicselloWeb.PackageLive.Shared do
         "All images"
 
       _ ->
-        ngettext("%{count} image", "%{count} images", get_digitals_count(download_changeset))
+        count = get_digitals_count(download_changeset)
+        ngettext("%{count} image", "%{count} images", if(count >= 0, do: count, else: 0))
     end
   end
 
