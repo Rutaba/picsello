@@ -16,7 +16,7 @@ defmodule PicselloWeb.JobLive.Index do
   import PicselloWeb.Live.Shared, only: [save_filters: 3]
 
   alias Ecto.Changeset
-  alias Picsello.{Job, Jobs, Repo, Payments, Package, PreferredFilter}
+  alias Picsello.{Job, Jobs, Repo, Utils, Payments, Package, PreferredFilter}
   alias PicselloWeb.{JobLive}
 
   @default_pagination_limit 12
