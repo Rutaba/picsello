@@ -184,7 +184,7 @@ defmodule PicselloWeb.PackageLive.PackagesSearchComponent do
 
   defp sort_packages_templates(templates, %{sort_by: "name", sort_direction: sort_direction}) do
     sort_direction = String.to_atom(sort_direction)
-    templates |> Enum.sort_by(& &1.name, sort_direction)
+    templates |> Enum.sort_by(&String.downcase(&1.name), sort_direction)
   end
 
   defp sort_packages_templates(templates, %{sort_by: "price", sort_direction: sort_direction}) do
