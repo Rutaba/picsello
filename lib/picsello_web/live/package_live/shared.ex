@@ -333,8 +333,8 @@ defmodule PicselloWeb.PackageLive.Shared do
           <%= label_for @form, :turnaround_weeks, label: "Image Turnaround Time" %>
           <div>
             <%= input @form, :turnaround_weeks, type: :number_input, phx_debounce: "500", class: "w-1/3 text-center pl-6 mr-4", min: 1, max: 52 %>
-
-            <%= ngettext("week", "weeks", Ecto.Changeset.get_field(@form.source, :turnaround_weeks)) %>
+            <% count = Ecto.Changeset.get_field(@form.source, :turnaround_weeks) %>
+            <%= ngettext("week", "weeks", if(count >= 1, do: count, else: 1)) %>
           </div>
         </div>
       </div>

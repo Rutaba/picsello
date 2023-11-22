@@ -138,7 +138,7 @@ defmodule Picsello.Package do
     )
     |> validate_required(~w[name job_type organization_id shoot_count turnaround_weeks]a)
     |> validate_number(:shoot_count, less_than_or_equal_to: 10)
-    |> validate_number(:turnaround_weeks, greater_than_or_equal_to: 1)
+    |> validate_number(:turnaround_weeks, greater_than_or_equal_to: 1, message: "must be greater or equal to 1")
     |> then(fn changeset ->
       if Keyword.get(opts, :skip_description) do
         changeset
