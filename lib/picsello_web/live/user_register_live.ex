@@ -160,6 +160,10 @@ defmodule PicselloWeb.UserRegisterLive do
             phx_disable_with: "Saving..."
           %>
         </div>
+        <div class="flex items-center justify-center mt-4 gap-2">
+          <a class="link" href="/users/register">Looking for monthly subscription?</a> <span class="text-base-200">|</span>
+          <a class="link" href="/users/log_in">Login</a>
+        </div>
       </.form>
     """
   end
