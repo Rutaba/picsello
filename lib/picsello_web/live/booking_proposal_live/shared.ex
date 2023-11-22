@@ -330,7 +330,7 @@ defmodule PicselloWeb.BookingProposalLive.Shared do
         <% :phone -> %>
           <dd class="mt-2">
             <%= hidden_input :question_index, :value, value:  @question_index%>
-            <.live_component module={LivePhone} id={"question_#{@question_index}"}  form={:Phone} field={:value} tabindex={0} preferred={["US", "CA"]} value={List.first(@answer)} disable?={@disable?} />
+            <.live_component module={LivePhone} id={"question_#{@question_index}"}  form={:Phone} field={:value} tabindex={0} preferred={["US", "CA"]} value={phone_value(List.first(@answer))} disable?={@disable?} />
           </dd>
 
         <% :email -> %>
@@ -401,6 +401,10 @@ defmodule PicselloWeb.BookingProposalLive.Shared do
       |> noreply()
     end
   end
+
+  #When we have empty phonevalue for disable live_phone
+  defp phone_value(nil), do: "+12515551234"
+  defp phone_value(value), do: value
 
   def formatted_date(%Job{shoots: [shoot | _]}, photographer) do
     strftime(photographer.time_zone, shoot.starts_at, "%A, %B %-d @ %-I:%M %P")
