@@ -190,7 +190,7 @@ defmodule PicselloWeb.OnboardingLive.Mastermind.Index do
   defp step(%{step: 2} = assigns) do
     ~H"""
       <.signup_container {assigns} show_logout?={true}>
-        <h2 class="text-3xl md:text-4xl font-bold text-center mb-8">Picsello’s <span class="underline underline-offset-1 text-decoration-blue-planning-300">Business Mastermind</span> is here to help you achieve success on your terms</h2>
+        <h2 class="text-3xl md:text-4xl font-bold text-center mb-8">Picsello’s <span class="underline underline-offset-1 text-decoration-blue-planning-300">Platform & Business Mastermind</span> is here to help you achieve success on your terms</h2>
         <blockqoute class="max-w-lg mt-auto mx-auto py-8 lg:py-12">
           <p class="mb-4 text-white border-solid border-l-4 border-white pl-4">
             "Jane has been a wonderful mentor! With her help I’ve learned the importance of believing in myself and my work. She has taught me that it is imperative to be profitable at every stage of my photography journey to ensure I’m set up for lasting success. Jane has also given me the tools I need to make sure I’m charging enough to be profitable. She is always there to answer my questions and cheer me on. Jane has played a key role in my growth as a photographer and business owner! I wouldn’t be where I am without her!”
