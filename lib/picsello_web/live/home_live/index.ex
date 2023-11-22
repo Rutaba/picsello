@@ -80,7 +80,6 @@ defmodule PicselloWeb.HomeLive.Index do
     |> assign(:tabs, tabs_list(socket))
     |> assign(:tab_active, "todo")
     |> assign(:index, false)
-    |> assign_promotion_code_changeset()
     |> subscribe_inbound_messages()
     |> assign_inbox_threads()
     |> maybe_show_success_subscription(params)
@@ -91,6 +90,7 @@ defmodule PicselloWeb.HomeLive.Index do
         else: nil
       )
     )
+    |> assign_promotion_code_changeset()
     |> ok()
   end
 
@@ -1639,7 +1639,7 @@ defmodule PicselloWeb.HomeLive.Index do
                     button_class="btn-tertiary"
                     subscription_plan={subscription_plan}
                     headline="Monthly"
-                    price={"#{subscription_plan.price |> Money.to_string(fractional_unit: false)} monthly subscription"}
+                    price={"#{subscription_plan.price |> Money.to_string(fractional_unit: false)} monthly"}
                     price_secondary={"(#{subscription_plan.price |> Money.multiply(12) |> Money.to_string(fractional_unit: false)}/year)"}
                     interval={subscription_plan.recurring_interval}
                     body="You get everything in the monthly plan PLUS exclusive access to Picsello’s Business Mastermind with classes and so much more"
@@ -1649,10 +1649,10 @@ defmodule PicselloWeb.HomeLive.Index do
                     class="bg-blue-planning-300 text-white"
                     subscription_plan={subscription_plan}
                     headline="Yearly"
-                    price={"#{subscription_plan.price |> Money.to_string(fractional_unit: false)} yearly subscription"}
-                    price_secondary={"(#{subscription_plan.price |> Money.divide(12) |> Enum.at(1) |> Money.to_string(fractional_unit: false)}/month)"}
+                    price={"#{subscription_plan.price |> Money.subtract(15_000) |> Money.to_string(fractional_unit: false)} yearly"}
+                    price_secondary={"(Originally #{subscription_plan.price |> Money.to_string(fractional_unit: false)}—save $150!)"}
                     interval={subscription_plan.recurring_interval}
-                    body="You get everything in the monthly plan PLUS exclusive access to Picsello’s Business Mastermind with classes and so much more"
+                    body="BLACK FRIDAY SALE! SAVE $150. You get everything in the monthly plan PLUS exclusive access to Picsello’s Business Mastermind with classes and so much more"
                   />
                 <% _ -> %>
               <% end %>
@@ -1834,7 +1834,13 @@ defmodule PicselloWeb.HomeLive.Index do
     |> Map.put(:action, action)
   end
 
-  defp assign_promotion_code_changeset(socket, params \\ %{}) do
+  defp assign_promotion_code_changeset(
+         socket,
+         params \\ %{}
+       ) do
+    params =
+      Enum.into(params, %{"promotion_code" => Map.get(socket.assigns, :promotion_code, nil)})
+
     socket
     |> assign(
       :promotion_code_changeset,
