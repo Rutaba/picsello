@@ -433,44 +433,43 @@ defmodule PicselloWeb.Live.Calendar.BookingEvents.Index do
   end
 
   defp assign_preferred_filters(
-    %{assigns: %{current_user: %{organization_id: organization_id}}} = socket
-  ) do
+         %{assigns: %{current_user: %{organization_id: organization_id}}} = socket
+       ) do
     case PreferredFilter.load_preferred_filters(organization_id, "booking_events") do
-    %{
-      filters: %{
-        event_status: event_status,
-        sort_by: sort_by,
-        sort_direction: sort_direction
-      }
-    } ->
-      socket
-      |> assign_default_filters(event_status, sort_by, sort_direction)
-      |> assign_sort_col(sort_by, "name")
+      %{
+        filters: %{
+          event_status: event_status,
+          sort_by: sort_by,
+          sort_direction: sort_direction
+        }
+      } ->
+        socket
+        |> assign_default_filters(event_status, sort_by, sort_direction)
+        |> assign_sort_col(sort_by, "name")
 
-    _ ->
-      socket
-      |> assign_default_filters("all", "name", "asc")
-      |> assign(:sort_col, "name")
+      _ ->
+        socket
+        |> assign_default_filters("all", "name", "asc")
+        |> assign(:sort_col, "name")
     end
   end
 
   defp assign_default_filters(socket, event_status, sort_by, sort_direction),
-  do:
-    socket
-    |> assign(:event_status, event_status || "all")
-    |> assign(:sort_by, sort_by || "name")
-    |> assign(:sort_direction, sort_direction || "asc")
+    do:
+      socket
+      |> assign(:event_status, event_status || "all")
+      |> assign(:sort_by, sort_by || "name")
+      |> assign(:sort_direction, sort_direction || "asc")
 
   defp assign_sort_col(socket, nil, default_sort_col),
-  do:
-    socket
-    |> assign(:sort_col, default_sort_col)
+    do:
+      socket
+      |> assign(:sort_col, default_sort_col)
 
   defp assign_sort_col(socket, sort_by, _default_sort_col),
-  do:
-    socket
-    |> assign(:sort_col, Enum.find(sort_options(), &(&1.id == sort_by)).column)
-
+    do:
+      socket
+      |> assign(:sort_col, Enum.find(sort_options(), &(&1.id == sort_by)).column)
 
   def assign_booking_events(
         %{
