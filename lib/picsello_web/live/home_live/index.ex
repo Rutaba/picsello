@@ -1835,11 +1835,15 @@ defmodule PicselloWeb.HomeLive.Index do
   end
 
   defp assign_promotion_code_changeset(
-         socket,
+         %{assigns: %{promotion_code: promotion_code}} = socket,
          params \\ %{}
        ) do
     params =
-      Enum.into(params, %{"promotion_code" => Map.get(socket.assigns, :promotion_code, nil)})
+      Enum.into(params, %{
+        "onboarding" => %{
+          "promotion_code" => promotion_code
+        }
+      })
 
     socket
     |> assign(

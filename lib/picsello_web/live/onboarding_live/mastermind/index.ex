@@ -18,7 +18,11 @@ defmodule PicselloWeb.OnboardingLive.Mastermind.Index do
       save_multi: 3,
       assign_changeset: 3,
       org_job_inputs: 1,
-      most_interested_select: 0
+      most_interested_select: 0,
+      country_info: 1,
+      countries: 0,
+      states_or_province: 1,
+      field_for: 1
     ]
 
   @impl true
@@ -190,7 +194,7 @@ defmodule PicselloWeb.OnboardingLive.Mastermind.Index do
   defp step(%{step: 2} = assigns) do
     ~H"""
       <.signup_container {assigns} show_logout?={true}>
-        <h2 class="text-3xl md:text-4xl font-bold text-center mb-8">Picsello’s <span class="underline underline-offset-1 text-decoration-blue-planning-300">Platform & Business Mastermind</span> is here to help you achieve success on your terms</h2>
+        <h2 class="text-3xl md:text-4xl font-bold text-center mb-8">Picsello’s <span class="underline underline-offset-1 text-decoration-blue-planning-300">Business Mastermind</span> is here to help you achieve success on your terms</h2>
         <blockqoute class="max-w-lg mt-auto mx-auto py-8 lg:py-12">
           <p class="mb-4 text-white border-solid border-l-4 border-white pl-4">
             "Jane has been a wonderful mentor! With her help I’ve learned the importance of believing in myself and my work. She has taught me that it is imperative to be profitable at every stage of my photography journey to ensure I’m set up for lasting success. Jane has also given me the tools I need to make sure I’m charging enough to be profitable. She is always there to answer my questions and cheer me on. Jane has played a key role in my growth as a photographer and business owner! I wouldn’t be where I am without her!”
@@ -258,7 +262,6 @@ defmodule PicselloWeb.OnboardingLive.Mastermind.Index do
             </.form_field>
           <% end %>
           <%= for onboarding <- inputs_for(@f, :onboarding) do %>
-            <%= hidden_input onboarding, :state, value: @state %>
             <%= hidden_input onboarding, :promotion_code, value: @promotion_code %>
             <.form_field label="Are you a full-time or part-time photographer?" error={:schedule} f={onboarding} >
               <%= select onboarding, :schedule, %{"Full-time" => :full_time, "Part-time" => :part_time}, class: "select #{@input_class}" %>
@@ -269,7 +272,6 @@ defmodule PicselloWeb.OnboardingLive.Mastermind.Index do
             </.form_field>
 
             <%= hidden_input onboarding, :welcome_count, value: 0 %>
-            <%= hidden_input onboarding, :country, value: @country %>
 
             <.form_field
               label="What are you most interested in using Picsello for?"
@@ -281,6 +283,36 @@ defmodule PicselloWeb.OnboardingLive.Mastermind.Index do
                 class: "select #{@input_class} truncate pr-8"
               ) %>
             </.form_field>
+
+            <%= if is_nil(@country) || is_nil(@state) do %>
+              <% info = country_info(input_value(onboarding, :country)) %>
+              <div class={classes("grid gap-4 mb-8", %{"sm:grid-cols-2" => Map.has_key?(info, :state_label)})}>
+                <.form_field label="What’s your country?" error={:country} f={onboarding}>
+                  <%= select(onboarding, :country, [{"United States", :US}] ++ countries(),
+                    class: "select #{@input_class}"
+                  ) %>
+                </.form_field>
+
+                <%= if Map.has_key?(info, :state_label) do %>
+                  <.form_field label={info.state_label} error={:state} f={onboarding}>
+                    <%= select(
+                      onboarding,
+                      field_for(input_value(onboarding, :country)),
+                      [{"select one", nil}] ++ states_or_province(input_value(onboarding, :country)),
+                      class: "select #{@input_class}"
+                    ) %>
+                  </.form_field>
+                <% end %>
+              </div>
+            <% else %>
+              <%= if @country == "CA" do %>
+                <%= hidden_input onboarding, :province, value: @state %>
+              <% else %>
+                <%= hidden_input onboarding, :state, value: @state %>
+              <% end %>
+              <%= hidden_input onboarding, :country, value: @country %>
+            <% end %>
+
           <% end %>
           <.step_footer {assigns} />
         </:right_panel>
