@@ -289,4 +289,40 @@ defmodule PicselloWeb.OnboardingLive.Shared do
       {"Other", :other}
     ]
   end
+
+  def country_info("US"), do: %{state_label: "What’s your state?"}
+  def country_info("CA"), do: %{state_label: "What’s your province?"}
+  def country_info(nil), do: %{state_label: "What's your state?"}
+  def country_info(_), do: %{}
+
+  def countries() do
+    Picsello.Country.all() |> Enum.reject(&(&1.code == "US")) |> Enum.map(&{&1.name, &1.code})
+  end
+
+  def states_or_province("CA"), do: canadian_provinces()
+  def states_or_province(_), do: states()
+
+  def field_for("CA"), do: :province
+  def field_for(_), do: :state
+
+  def canadian_provinces() do
+    [
+      {"Alberta", :alberta},
+      {"Atlantic Canada", :atlantic_canada},
+      {"British Columbia", :british_columbia},
+      {"Manitoba", :manitoba},
+      {"New Brunswick", :new_brunswick},
+      {"Newfoundland and Labrador", :newfoundland_and_labrador},
+      {"Northwest Territories", :northwest_territories},
+      {"Nova Scotia", :nova_scotia},
+      {"Nunavut", :nunavut},
+      {"Ontario", :ontario},
+      {"Prince Edward Island", :prince_edward_island},
+      {"Quebec", :quebec},
+      {"Saskatchewan", :saskatchewan},
+      {"Yukon", :yukon}
+    ]
+  end
+
+  defdelegate states(), to: Onboardings, as: :state_options
 end

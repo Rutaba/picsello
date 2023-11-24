@@ -12,12 +12,16 @@ defmodule PicselloWeb.OnboardingLive.Index do
       assign_changeset: 1,
       assign_changeset: 2,
       org_job_inputs: 1,
-      most_interested_select: 0
+      most_interested_select: 0,
+      country_info: 1,
+      countries: 0,
+      states_or_province: 1,
+      field_for: 1
     ]
 
   require Logger
 
-  alias Picsello.{Onboardings, Subscriptions}
+  alias Picsello.{Subscriptions}
 
   @impl true
   def mount(_params, _session, socket) do
@@ -328,40 +332,4 @@ defmodule PicselloWeb.OnboardingLive.Index do
     end)
     |> noreply()
   end
-
-  defp country_info("US"), do: %{state_label: "What’s your state?"}
-  defp country_info("CA"), do: %{state_label: "What’s your province?"}
-  defp country_info(nil), do: %{state_label: "What's your state?"}
-  defp country_info(_), do: %{}
-
-  defp countries() do
-    Picsello.Country.all() |> Enum.reject(&(&1.code == "US")) |> Enum.map(&{&1.name, &1.code})
-  end
-
-  defp states_or_province("CA"), do: canadian_provinces()
-  defp states_or_province(_), do: states()
-
-  defp field_for("CA"), do: :province
-  defp field_for(_), do: :state
-
-  defp canadian_provinces() do
-    [
-      {"Alberta", :alberta},
-      {"Atlantic Canada", :atlantic_canada},
-      {"British Columbia", :british_columbia},
-      {"Manitoba", :manitoba},
-      {"New Brunswick", :new_brunswick},
-      {"Newfoundland and Labrador", :newfoundland_and_labrador},
-      {"Northwest Territories", :northwest_territories},
-      {"Nova Scotia", :nova_scotia},
-      {"Nunavut", :nunavut},
-      {"Ontario", :ontario},
-      {"Prince Edward Island", :prince_edward_island},
-      {"Quebec", :quebec},
-      {"Saskatchewan", :saskatchewan},
-      {"Yukon", :yukon}
-    ]
-  end
-
-  defdelegate states(), to: Onboardings, as: :state_options
 end

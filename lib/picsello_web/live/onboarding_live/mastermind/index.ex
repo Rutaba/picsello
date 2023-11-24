@@ -18,7 +18,11 @@ defmodule PicselloWeb.OnboardingLive.Mastermind.Index do
       save_multi: 3,
       assign_changeset: 3,
       org_job_inputs: 1,
-      most_interested_select: 0
+      most_interested_select: 0,
+      country_info: 1,
+      countries: 0,
+      states_or_province: 1,
+      field_for: 1
     ]
 
   @impl true
@@ -258,7 +262,6 @@ defmodule PicselloWeb.OnboardingLive.Mastermind.Index do
             </.form_field>
           <% end %>
           <%= for onboarding <- inputs_for(@f, :onboarding) do %>
-            <%= hidden_input onboarding, :state, value: @state %>
             <%= hidden_input onboarding, :promotion_code, value: @promotion_code %>
             <.form_field label="Are you a full-time or part-time photographer?" error={:schedule} f={onboarding} >
               <%= select onboarding, :schedule, %{"Full-time" => :full_time, "Part-time" => :part_time}, class: "select #{@input_class}" %>
@@ -269,7 +272,6 @@ defmodule PicselloWeb.OnboardingLive.Mastermind.Index do
             </.form_field>
 
             <%= hidden_input onboarding, :welcome_count, value: 0 %>
-            <%= hidden_input onboarding, :country, value: @country %>
 
             <.form_field
               label="What are you most interested in using Picsello for?"
@@ -281,6 +283,36 @@ defmodule PicselloWeb.OnboardingLive.Mastermind.Index do
                 class: "select #{@input_class} truncate pr-8"
               ) %>
             </.form_field>
+
+            <%= if is_nil(@country) || is_nil(@state) do %>
+              <% info = country_info(input_value(onboarding, :country)) %>
+              <div class={classes("grid gap-4 mb-8", %{"sm:grid-cols-2" => Map.has_key?(info, :state_label)})}>
+                <.form_field label="What’s your country?" error={:country} f={onboarding}>
+                  <%= select(onboarding, :country, [{"United States", :US}] ++ countries(),
+                    class: "select #{@input_class}"
+                  ) %>
+                </.form_field>
+
+                <%= if Map.has_key?(info, :state_label) do %>
+                  <.form_field label={info.state_label} error={:state} f={onboarding}>
+                    <%= select(
+                      onboarding,
+                      field_for(input_value(onboarding, :country)),
+                      [{"select one", nil}] ++ states_or_province(input_value(onboarding, :country)),
+                      class: "select #{@input_class}"
+                    ) %>
+                  </.form_field>
+                <% end %>
+              </div>
+            <% else %>
+              <%= if @country == "CA" do %>
+                <%= hidden_input onboarding, :province, value: @state %>
+              <% else %>
+                <%= hidden_input onboarding, :state, value: @state %>
+              <% end %>
+              <%= hidden_input onboarding, :country, value: @country %>
+            <% end %>
+
           <% end %>
           <.step_footer {assigns} />
         </:right_panel>

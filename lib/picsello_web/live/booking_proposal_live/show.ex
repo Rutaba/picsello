@@ -74,7 +74,12 @@ defmodule PicselloWeb.BookingProposalLive.Show do
   def handle_event("open-compose", %{}, socket), do: open_compose(socket)
 
   @impl true
-  def handle_event("handle_checkout", %{}, %{assigns: %{job: job}} = socket) do
+  def handle_event(
+        "handle_checkout",
+        %{},
+        %{assigns: %{job: job, organization: organization}} = socket
+      ) do
+    insert_job_emails(job.type, organization.id, job.id, :job, [])
     handle_checkout(socket, job)
   end
 
