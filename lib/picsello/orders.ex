@@ -9,7 +9,6 @@ defmodule Picsello.Orders do
     Galleries.Photo,
     Intents,
     Invoices.Invoice,
-    Photos,
     Repo
   }
 
@@ -160,7 +159,11 @@ defmodule Picsello.Orders do
       %{
         organization: get_organization!(gallery_hash),
         photos:
-          from(photo in Photos.active_photos(), where: photo.gallery_id == ^gallery.id) |> some!()
+          from(photo in Photo,
+            where: photo.gallery_id == ^gallery.id,
+            where: photo.active == true
+          )
+          |> some!()
       }
     else
       raise Ecto.NoResultsError, queryable: Gallery
@@ -237,6 +240,7 @@ defmodule Picsello.Orders do
   def get_order_photos(%Order{bundle_price: %Money{}} = order) do
     from(photo in Photo,
       where: photo.gallery_id == ^order.gallery_id,
+      where: photo.active == true,
       order_by: [asc: photo.inserted_at]
     )
   end
@@ -247,6 +251,7 @@ defmodule Picsello.Orders do
       join: photo in assoc(digital, :photo),
       where: order.id == ^order_id,
       order_by: [asc: photo.inserted_at],
+      where: photo.active == true,
       select: photo
     )
   end
