@@ -42,17 +42,16 @@ defmodule PicselloWeb.Live.Profile.Settings do
 
       <div class="mx-0 mt-2 sm:mt-4 pb-32 sm:pb-0 grid grid-cols-1 lg:grid-cols-2 gap-x-9 gap-y-6">
         <.card title="Share your profile">
-          <fieldset class={"flex flex-col #{unless Profiles.enabled?(@organization), do: "text-base-250" }"}>
-            <div {testid("url")} class={"mt-4 font-bold text-input #{if Profiles.enabled?(@organization), do: "select-all", else: "select-none"}"}>
+          <div class={"flex flex-col #{unless Profiles.enabled?(@organization), do: "text-base-250" }"}>
+            <div class={"font-bold rounded-lg border border-base-200 text-center py-2 #{if Profiles.enabled?(@organization), do: "select-all", else: "select-none"}"}>
               <%= @profile_url %>
             </div>
-
             <button disabled={!Profiles.enabled?(@organization)} type="button" class={"self-auto w-auto py-3 mt-4 text-lg font-semibold border disabled:border-base-200 rounded-lg sm:self-end border-base-300 sm:w-36"} id="copy-public-profile-link" data-clipboard-text={@profile_url} phx-hook="Clipboard">
-              <div class="hidden p-1 mt-1 text-sm rounded shadow bg-base-100" role="tooltip">Copied!</div>
+                <div class="hidden p-1 mt-1 text-sm rounded shadow bg-base-100" role="tooltip">Copied!</div>
 
-              Copy Link
+                Copy Link
             </button>
-          </fieldset>
+          </div>
         </.card>
 
         <.card title="Embed your lead form" class="intro-lead-form">
