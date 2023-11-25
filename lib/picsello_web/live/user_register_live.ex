@@ -125,7 +125,7 @@ defmodule PicselloWeb.UserRegisterLive do
           <.signup_hooks />
           <.signup_form {assigns} form_classes="flex-grow" />
           <div class="flex items-center justify-center mt-4 gap-2">
-            <a class="link" href="/users/register">Looking for monthly subscription?</a> <span class="text-base-200">|</span>
+            <a class="link" href="/users/register">Looking for a free trial?</a> <span class="text-base-200">|</span>
             <a class="link" href="/users/log_in">Login</a>
           </div>
         </:right_panel>

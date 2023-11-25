@@ -193,8 +193,8 @@ defmodule PicselloWeb.OnboardingLive.Mastermind.Index do
 
   defp step(%{step: 2} = assigns) do
     ~H"""
-      <.signup_container {assigns} show_logout?={true}>
-        <h2 class="text-3xl md:text-4xl font-bold text-center mb-8">Picsello’s <span class="underline underline-offset-1 text-decoration-blue-planning-300">Business Mastermind</span> is here to help you achieve success on your terms</h2>
+      <.signup_container {assigns} show_logout?={true} left_classes="p-8 bg-purple-marketing-300 text-white order-2 sm:order-1">
+        <h2 class="text-3xl md:text-4xl font-bold text-center mb-8">Picsello is here to help you achieve success on your terms</h2>
         <blockqoute class="max-w-lg mt-auto mx-auto py-8 lg:py-12">
           <p class="mb-4 text-white border-solid border-l-4 border-white pl-4">
             "Jane has been a wonderful mentor! With her help I’ve learned the importance of believing in myself and my work. She has taught me that it is imperative to be profitable at every stage of my photography journey to ensure I’m set up for lasting success. Jane has also given me the tools I need to make sure I’m charging enough to be profitable. She is always there to answer my questions and cheer me on. Jane has played a key role in my growth as a photographer and business owner! I wouldn’t be where I am without her!”
@@ -216,6 +216,7 @@ defmodule PicselloWeb.OnboardingLive.Mastermind.Index do
         <% end %>
         <:right_panel>
           <.signup_deal original_price={Money.new(35000, :USD)} price={Money.new(20000, :USD)} expires_at={@black_friday_timer_end} />
+          <p class="text-md text-gray-400 italic text-center mt-2">Your card will be charged the discounted annual subscription price</p>
           <div
             phx-update="ignore"
             class="my-6"
@@ -239,9 +240,9 @@ defmodule PicselloWeb.OnboardingLive.Mastermind.Index do
     assigns = assign(assigns, input_class: "p-4")
 
     ~H"""
-      <.signup_container {assigns} show_logout?={true}>
+      <.signup_container {assigns} show_logout?={true} left_classes="p-8 bg-purple-marketing-300 text-white order-2 sm:order-1">
         <div class="flex justify-center mt-12">
-          <img src={Routes.static_path(@socket, "/images/mastermind-clientbooking.png")} loading="lazy" alt="Picsello Client booking feature" />
+          <img src={Routes.static_path(@socket, "/images/mastermind-clientbooking.png")} loading="lazy" alt="Picsello Client booking feature" class="max-w-full" />
         </div>
         <blockqoute class="max-w-lg mt-auto mx-auto py-8 lg:py-12">
           <p class="mb-4 text-white border-solid border-l-4 border-white pl-4">
@@ -322,7 +323,7 @@ defmodule PicselloWeb.OnboardingLive.Mastermind.Index do
 
   defp step(%{step: 4} = assigns) do
     ~H"""
-      <.signup_container {assigns} show_logout?={true} left_classes="p-8 pb-0 pr-0 bg-purple-marketing-300 text-white">
+      <.signup_container {assigns} show_logout?={true} left_classes="p-8 pb-0 pr-0 bg-purple-marketing-300 text-white order-2 sm:order-1">
         <h2 class="text-3xl md:text-4xl font-bold text-center mb-8">Your <span class="underline underline-offset-1 text-decoration-blue-planning-300">all-in-one</span> photography business software with coaching included.</h2>
         <img src={Routes.static_path(@socket, "/images/mastermind-dashboard.png")} loading="lazy" alt="Picsello Client booking feature" />
         <:right_panel>
