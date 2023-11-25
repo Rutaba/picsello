@@ -65,7 +65,7 @@ defmodule PicselloWeb.OnboardingLive.Shared do
           <.icon name="logo-shoot-higher" class="w-32 h-12 sm:h-20 sm:w-48" />
         </div>
         <div class="grid sm:grid-cols-2 bg-white rounded-lg">
-          <div class={"order-2 sm:order-1 sm:rounded-l-lg #{@left_classes}"}>
+          <div class={"sm:rounded-l-lg #{@left_classes}"}>
             <%= render_slot(@inner_block) %>
           </div>
           <div class={"#{@right_classes} order-1 sm:order-2 flex flex-col"}>
