@@ -638,7 +638,7 @@ defmodule Picsello.EmailAutomationSchedules do
     now = DateTime.utc_now() |> DateTime.truncate(:second)
 
     payment_states = [
-      :blance_due_offline,
+      :balance_due_offline,
       :balance_due,
       :paid_offline_full,
       :paid_full,
@@ -758,7 +758,7 @@ defmodule Picsello.EmailAutomationSchedules do
       :pays_retainer,
       :pays_retainer_offline,
       :balance_due,
-      :blance_due_offline,
+      :balance_due_offline,
       :paid_full,
       :paid_offline_full
     ]

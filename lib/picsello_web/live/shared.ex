@@ -34,12 +34,10 @@ defmodule PicselloWeb.Live.Shared do
     PreferredFilter,
     Repo,
     BookingProposal,
-    PaymentSchedules,
     Workers.CleanStore,
     Packages.Download,
     Packages.PackagePricing,
     EmailAutomation.EmailSchedule,
-    EmailAutomations,
     EmailAutomationSchedules
   }
 
@@ -731,7 +729,8 @@ defmodule PicselloWeb.Live.Shared do
                                                                     }
                                                                   } ->
       EmailAutomationSchedules.job_emails(type, current_user.organization_id, job_id, :job, [
-        :thanks_booking
+        :thanks_booking,
+        :thanks_job
       ])
     end)
     |> Repo.transaction()
@@ -754,8 +753,6 @@ defmodule PicselloWeb.Live.Shared do
             socket |> push_navigate(to: Routes.client_path(socket, :job_history, job.client_id))
           end
 
-        # when job create with zero package then send thanks_job email
-        if PaymentSchedules.free?(job), do: EmailAutomations.send_schedule_email(job, :thanks_job)
         socket
 
       {:error, _} ->

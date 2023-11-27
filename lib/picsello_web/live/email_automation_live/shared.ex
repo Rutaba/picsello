@@ -628,7 +628,7 @@ defmodule PicselloWeb.EmailAutomationLive.Shared do
   end
 
   def fetch_date_for_state(
-        :blance_due_offline,
+        :balance_due_offline,
         _email,
         last_completed_email,
         job,

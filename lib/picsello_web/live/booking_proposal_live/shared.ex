@@ -402,7 +402,7 @@ defmodule PicselloWeb.BookingProposalLive.Shared do
       Notifiers.UserNotifier.deliver_paying_by_invoice(proposal)
 
       # Send immediately balance due offline Automations email
-      EmailAutomations.send_schedule_email(job, :blance_due_offline)
+      EmailAutomations.send_schedule_email(job, :balance_due_offline)
 
       send(self(), {:update_offline_payment_schedules})
 
