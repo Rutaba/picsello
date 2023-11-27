@@ -516,4 +516,19 @@ defmodule PicselloWeb.LiveHelpers do
         "#{Timex.month_name(date.month)} #{date.day}, #{date.year}"
     end
   end
+
+  @doc """
+  Format datetime as per given type, it aslo accepts timezone to convert datetime accordingly
+  """
+  def format_datetime_via_type(%DateTime{} = datetime, time_zone, type \\ "MM DD, YY") do
+    datetime = DateTime.shift_zone!(datetime, time_zone)
+    date = DateTime.to_date(datetime)
+
+    time =
+      datetime
+      |> DateTime.to_time()
+      |> Calendar.strftime("%I:%M %p")
+
+    format_date_via_type(date, type) <> " @ #{time}"
+  end
 end

@@ -44,20 +44,21 @@ defmodule Picsello.Jobs do
     |> Repo.all()
   end
 
+  def count(query) do
+    query
+    |> exclude(:group_by)
+    |> distinct([q], q.id)
+    |> Repo.aggregate(:count)
+  end
+
   def get_jobs(query, %{sort_by: sort_by, sort_direction: sort_direction} = opts) do
+    fields = %{job_id: shoot_dynamic(), starts_at: shoot_dynamic(sort_direction)}
+    shoot_query = from s in Shoot, group_by: s.job_id, select: ^fields
+
     from(j in query,
       as: :j,
-      left_join: shoots in assoc(j, :shoots),
-      # inner_lateral_join:
-      #   sorted_shoot in subquery(
-      #     from Shoot,
-      #       as: :s,
-      #       where: [job_id: parent_as(:j).id],
-      #       order_by: [{^sort_direction, field(as(:s), :starts_at)}],
-      #       limit: 1,
-      #       select: [:id, :starts_at, :job_id]
-      #   ),
-      # on: sorted_shoot.id == shoots.id,
+      left_join: shoots in subquery(shoot_query),
+      on: j.id == shoots.job_id,
       left_join: package in assoc(j, :package),
       left_join: payment_schedules in assoc(j, :payment_schedules),
       where: ^filters_where(opts),
@@ -66,6 +67,10 @@ defmodule Picsello.Jobs do
     )
     |> group_by_clause(sort_by)
   end
+
+  defp shoot_dynamic(:asc), do: dynamic([s], min(s.starts_at))
+  defp shoot_dynamic(:desc), do: dynamic([s], max(s.starts_at))
+  defp shoot_dynamic(), do: dynamic([s], s.job_id)
 
   def get_jobs_by_pagination(
         query,

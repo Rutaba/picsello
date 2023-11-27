@@ -24,9 +24,30 @@ defmodule PicselloWeb.JobLive.Index do
   @impl true
   def mount(_params, _session, socket) do
     socket
+    |> assign(collapsed_shoots: [])
     |> assign_defaults()
     |> assign_stripe_status()
     |> ok()
+  end
+
+  @impl true
+  def handle_event(
+        "toggle-shoots",
+        %{"job_id" => job_id},
+        %{assigns: %{collapsed_shoots: collapsed_shoots}} = socket
+      ) do
+    job_id = String.to_integer(job_id)
+
+    collapsed_shoots =
+      if Enum.member?(collapsed_shoots, job_id) do
+        Enum.filter(collapsed_shoots, &(&1 != job_id))
+      else
+        collapsed_shoots ++ [job_id]
+      end
+
+    socket
+    |> assign(:collapsed_shoots, collapsed_shoots)
+    |> noreply()
   end
 
   @impl true
@@ -366,13 +387,7 @@ defmodule PicselloWeb.JobLive.Index do
     jobs =
       current_user
       |> Job.for_user()
-      |> then(fn query ->
-        case type.plural do
-          # |> Job.not_booking() #Remove this because on leads when job abondoned we have to show
-          "leads" -> query |> Job.leads()
-          "jobs" -> query |> Job.not_leads()
-        end
-      end)
+      |> process_query(type)
       |> Jobs.get_jobs_by_pagination(
         %{
           status: status,
@@ -397,6 +412,9 @@ defmodule PicselloWeb.JobLive.Index do
     })
   end
 
+  defp process_query(query, %{plural: "leads"}), do: query |> Job.leads()
+  defp process_query(query, %{plural: "jobs"}), do: query |> Job.not_leads()
+
   defp job_count(%{
          assigns: %{
            type: type,
@@ -410,12 +428,7 @@ defmodule PicselloWeb.JobLive.Index do
        }) do
     user
     |> Job.for_user()
-    |> then(fn query ->
-      case type.plural do
-        "leads" -> query |> Job.leads() |> Job.not_booking()
-        "jobs" -> query |> Job.not_leads()
-      end
-    end)
+    |> process_query(type)
     |> Jobs.get_jobs(%{
       status: status,
       type: job_type,
@@ -423,8 +436,7 @@ defmodule PicselloWeb.JobLive.Index do
       sort_direction: sort_direction,
       search_phrase: search_phrase
     })
-    |> Repo.all()
-    |> Enum.count()
+    |> Jobs.count()
   end
 
   defp assign_defaults(socket) do
@@ -687,5 +699,14 @@ defmodule PicselloWeb.JobLive.Index do
   defp capitalize_per_word(string) do
     String.split(string)
     |> Enum.map_join(" ", &String.capitalize/1)
+  end
+
+  defp get_shoots(sort_direction, shoots, collapse?) do
+    shoots
+    |> Enum.sort_by(&DateTime.to_date(&1.starts_at), {sort_direction, Date})
+    |> then(fn
+      shoots when collapse? == false -> Enum.take(shoots, 3)
+      shoots -> shoots
+    end)
   end
 end
