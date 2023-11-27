@@ -53,14 +53,21 @@ defmodule PicselloWeb.StripeWebhooksController do
     :ok
   end
 
-  defp handle_webhook(:connect, %{
-         type: "payment_intent.canceled",
-         data: %{object: payment_intent}
-       }) do
+  defp handle_webhook(
+         :connect,
+         %{
+           type: "payment_intent.canceled",
+           data: %{object: payment_intent}
+         } = object
+       ) do
     {:ok, _} =
       payment_intent
       |> Orders.handle_intent()
       |> OrderNotifier.deliver_order_cancelation_emails(PicselloWeb.Helpers)
+
+    message = "Payment intent is cancelled, #{inspect(object)}"
+    Sentry.capture_message(message)
+    Logger.info(message)
 
     :ok
   end
