@@ -51,12 +51,12 @@ defmodule PicselloWeb.Live.Admin.AutomationsSentTodayReport do
         <thead>
           <tr class="border-2 text-left">
             <th>Row # / Id</th>
+            <th>Photog Sub Status</th>
             <th>Photog Email</th>
             <th>Photog Name</th>
-            <th>Photog Sub Status</th>
-            <th>Job Id</th>
-            <th>Schedule Name</th>
             <th>Client Email</th>
+            <th>Job Id</th>
+            <th>Email Name</th>
             <th>ESH Inserted At—UTC</th>
             <th>Photog Timezone</th>
           </tr>
@@ -65,12 +65,12 @@ defmodule PicselloWeb.Live.Admin.AutomationsSentTodayReport do
           <%= for({%{email: email, user_name: user_name, job_id: job_id, name: name, subscription_status: subscription_status, inserted_at: inserted_at, id: id, user_time_zone: user_time_zone, client_email: client_email}, index} <- @emails |> Enum.with_index()) do %>
             <tr class="w-full ">
               <td class="py-1"><%= index %> - <%= id %></td>
+              <td class="py-1"><%= subscription_status %></td>
               <td class="py-1"><%= email %></td>
               <td class="py-1"><%= user_name %></td>
-              <td class="py-1"><%= subscription_status %></td>
+              <td class="py-1"><%= client_email %></td>
               <td class="py-1"><%= job_id %></td>
               <td class="py-1"><%= name %></td>
-              <td class="py-1"><%= client_email %></td>
               <td class="py-1"><%= inserted_at %></td>
               <td class="py-1"><%= user_time_zone %></td>
             </tr>
