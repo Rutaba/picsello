@@ -386,7 +386,7 @@ defmodule PicselloWeb.Live.Calendar.BookingEvents.Show do
         socket
       ) do
     socket
-    |> assign(:booking_event, booking_event)
+    |> BEShared.assign_events()
     |> put_flash(:success, "Marketing details updated")
     |> noreply()
   end
@@ -738,7 +738,7 @@ defmodule PicselloWeb.Live.Calendar.BookingEvents.Show do
           </div>
         <% end %>
         <div class="grid grid-cols-1">
-          <div class="text-3xl font-bold">
+          <div class="text-3xl font-bold mb-2 mt-2">
             <%= @booking_event.name %>
           </div>
           <%= if @package do %>
@@ -748,10 +748,13 @@ defmodule PicselloWeb.Live.Calendar.BookingEvents.Show do
             <div class="text-base-250 text-md">
               <%= if @package.download_count < 1, do: "No digital", else: @package.download_count %> images included <%= if Enum.any?(@booking_event.dates), do: "| #{session_info(@booking_event)} min session" %>
             </div>
-            <hr class="my-3">
+          <% else %>
+            <div class="text-base-250 text-md">
+              Pick a package to get pricing details
+            </div>
           <% end %>
+          <hr class="my-3">
         </div>
-        <%= if @package do %>
           <%= if Enum.any?(@booking_event.dates) do %>
             <div class="flex flex-col">
               <div class="flex items-center">
@@ -783,11 +786,6 @@ defmodule PicselloWeb.Live.Calendar.BookingEvents.Show do
               <%= @description %>
             <% end %>
           </div>
-        <% else %>
-          <div class="text-base-250 mt-2 mb-4">
-            <p>Pick a package and update your marketing details to get started</p>
-          </div>
-        <% end %>
         <button phx-click="edit-marketing-event" phx-value-event-id={@booking_event.id} class="p-2 px-4 w-fit bg-base-250/20 font-bold rounded-lg">
             Edit marketing details
         </button>
@@ -939,8 +937,9 @@ defmodule PicselloWeb.Live.Calendar.BookingEvents.Show do
       dates
       |> Enum.map(& &1.session_length)
       |> Enum.sort()
+      |> Enum.uniq()
 
-    "#{List.first(session_list)} - #{List.last(session_list)}"
+    if length(session_list) > 1, do: "#{List.first(session_list)} - #{List.last(session_list)}", else: "#{List.first(session_list)}"
   end
 
   defp date_passed?(date), do: Date.compare(date, Date.utc_today()) == :lt
