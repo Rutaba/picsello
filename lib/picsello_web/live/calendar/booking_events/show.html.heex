@@ -70,6 +70,10 @@
                             <div class="mr-2 flex items-center gap-3">
                                 <.icon name="package" class="inline-block w-5 h-5 text-blue-planning-300 mt-1" />
                                 <div class="text-2xl font-bold">Package</div>
+
+                                <button phx-click="add-package" class="ml-auto mt-1 btn-primary px-4 h-8 py-0.5 flex gap-3 text-white bg-black">
+                                    Choose
+                                </button>
                             </div>
                             <%= if @package do %>
                                 <div>
@@ -112,13 +116,13 @@
                                         </div>
                                         <div class="flex flex-col md:flex-row justify-start my-3 md:my-0">
                                             <div class="text-md text-base-250 font-bold mb-2 block md:hidden">Payment Schedule</div>
-                                            <div class="mr-2 flex items-center md:items-start md:pt-2">
+                                            <div class="mr-2 flex items-center md:items-start">
                                                 <.icon name="money-bags" class="inline-block w-6 h-6 text-blue-planning-300 mt-0.5 md:mt-0" />
                                                 <div class="ml-2 flex text-base-250"><%= @payments_description %></div>
                                             </div>
                                         </div>
                                         <hr class="my-3 block md:hidden">
-                                        <div class="flex items-center md:flex-col xl:flex-row gap-3 ml-auto">
+                                        <div class="flex items-start md:flex-col xl:flex-row gap-3 ml-auto">
                                             <.icon_button phx-click="add-package" icon="pencil" color="white" class="px-2 py-1 mr-1 w-full bg-blue-planning-300 hover:bg-blue-planning-300/75">Edit</.icon_button>
                                             <.actions id="package" booking_event={@booking_event} button_actions={package_actions()} disabled?={check_slot_status_for_dates(@booking_event)} />
                                         </div>
@@ -128,11 +132,6 @@
                                 <div class="text-base-250 pr-2">Looks like you need to choose a package</div>
                             <% end %>
                         </div>
-                        <%= unless @package do %>
-                            <button phx-click="add-package" class="ml-auto mt-1 btn-primary px-4 h-8 py-0.5 flex gap-3 text-white bg-black">
-                            Choose
-                            </button>
-                        <% end %>
                     </div>
 
                     <div class={classes("mt-10 p-3 flex border items-center rounded-lg", %{"border-base-200" => @package, "border-red-sales-300" => !@package})}>

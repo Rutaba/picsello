@@ -659,7 +659,7 @@ defmodule PicselloWeb.Live.Calendar.BookingEvents.Show do
       Map.merge(
         %{
           archive_option: true,
-          main_button_class: "text-blue-planning-300",
+          main_button_class: "",
           slot_index: -1,
           slot_client_id: -1,
           slot_job_id: -1,
