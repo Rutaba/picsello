@@ -592,7 +592,7 @@ defmodule Picsello.BookingEvents do
              ]
            ),
          _email_sent <-
-           EmailAutomations.send_email_by_state(job, :abandoned_emails, organization.id),
+           EmailAutomations.send_email_by_state(job, :abandoned_emails, organization.id, :lead),
          {:ok, _} <- Picsello.Jobs.archive_job(job) do
       for %{stripe_session_id: "" <> session_id} <- payment_schedules,
           do:
