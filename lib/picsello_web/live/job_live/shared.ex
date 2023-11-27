@@ -110,6 +110,12 @@ defmodule PicselloWeb.JobLive.Shared do
     |> noreply()
   end
 
+  def handle_event("view-client", %{"client_id" => id}, socket),
+    do:
+      socket
+      |> push_redirect(to: Routes.client_path(socket, :show, id))
+      |> noreply()
+
   def handle_event(
         "open-compose",
         %{"client_id" => client_id, "is_thanks" => "true"},
@@ -1052,7 +1058,7 @@ defmodule PicselloWeb.JobLive.Shared do
             <% end %>
           </div>
 
-          <button class="ml-auto mt-auto h-8 flex content-center items-center px-2 py-1 btn-tertiary text-blue-planning-300  hover:border-blue-planning-300 mr-2 whitespace-nowrap" phx-click="open-compose" phx-value-client_id={@job.client_id}>
+          <button class="ml-auto mt-auto h-8 flex content-center items-center px-2 py-1 btn-tertiary text-blue-planning-300  hover:border-blue-planning-300 mr-2 whitespace-nowrap" phx-click="view-client" phx-value-client_id={@job.client_id}>
             <span class="flex w-8 h-8 justify-center items-center">
             <.icon name="eye" class="text-blue-planning-300 mr-2 w-6 h-6" />
             </span>
