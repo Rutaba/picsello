@@ -15,7 +15,7 @@
           back_path={Routes.calendar_booking_events_index_path(@socket, :index)}
         />
         <div class="flex gap-4 md:ml-auto py-2">
-            <.actions id="header" main_button_class="h-10 px-4 text-base-300" archive_option={false} booking_event={@booking_event} button_actions={header_actions(@booking_event)} />
+            <.actions id={"header-#{@booking_event.id}"} main_button_class="h-10 px-4 text-base-300" archive_option={false} booking_event={@booking_event} button_actions={header_actions(@booking_event)} />
             <.icon_button icon="eye" color="blue-planning-300" text_color={"text-base-300"} class="h-10" disabled={BEShared.incomplete_status?(@booking_event)} href={@booking_event.url} target="_blank" rel="noopener noreferrer"><span class="mr-1">Client</span> <span>preview</span></.icon_button>
              <button id={"copy-event-link-#{@booking_event.id}"} class={"btn-primary whitespace-nowrap h-10 py-1.5 items-center"} data-clipboard-text={@booking_event.url} phx-hook="Clipboard" disabled={BEShared.incomplete_status?(@booking_event)}>
                 Copy Link
@@ -124,7 +124,7 @@
                                         <hr class="my-3 block md:hidden">
                                         <div class="flex items-start md:flex-col xl:flex-row gap-3 ml-auto">
                                             <.icon_button phx-click="add-package" icon="pencil" color="white" class="px-2 py-1 mr-1 w-full bg-blue-planning-300 hover:bg-blue-planning-300/75">Edit</.icon_button>
-                                            <.actions id="package" booking_event={@booking_event} button_actions={package_actions()} disabled?={check_slot_status_for_dates(@booking_event)} />
+                                            <.actions id={"package-#{@package.id}"} booking_event={@booking_event} button_actions={package_actions()} disabled?={check_slot_status_for_dates(@booking_event)} />
                                         </div>
                                     </div>
                                 </div>

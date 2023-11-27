@@ -50,6 +50,13 @@ defmodule PicselloWeb.Live.Calendar.BookingEvents.Show do
     |> BEShared.assign_events()
     |> assign_changeset(%{})
     |> assign(:booking_slot_tabs, booking_slot_tabs())
+    |> then(fn %{assigns: %{booking_event: booking_event}} = socket ->
+      socket
+      |> assign_new(
+      :booking_slot_tab_active,
+      fn -> if(booking_event.is_repeating, do: "calendar", else: "list") end
+      )
+    end)
     |> noreply()
   end
 
@@ -534,7 +541,7 @@ defmodule PicselloWeb.Live.Calendar.BookingEvents.Show do
       <% "calendar" -> %>
         <div class="mt-10 flex flex-col xl:flex-row gap-8">
           <div class="flex xl:w-1/2 flex-col">
-            <div phx-hook="BookingEventCalendar" phx-update="replace" id="booking_event_calendar" data-time-zone={@current_user.time_zone} data-feed-path={Routes.calendar_feed_path(@socket, :show, @booking_event.id)}/>
+            <div phx-hook="BookingEventCalendar" phx-update="replace" id={"booking_event_calendar-#{if @calendar_date_event, do: @calendar_date_event.id, else: @booking_event.id}"} data-time-zone={@current_user.time_zone} data-feed-path={Routes.calendar_feed_path(@socket, :show, @booking_event.id)}/>
           </div>
           <div class="xl:h-[600px] flex flex-col flex-grow">
             <%= if @calendar_date_event do %>
@@ -685,7 +692,7 @@ defmodule PicselloWeb.Live.Calendar.BookingEvents.Show do
         <div class="z-10 flex hidden flex-col w-auto bg-white border rounded-lg shadow-lg popover-content">
           <%= for %{title: title, action: action, icon: icon} <- @button_actions do %>
             <%= if icon == "anchor" && BookingProposal.url(@proposal.id) do %>
-              <.button icon={icon} title={title} class="text-base-300 mt-0" text_color={"text-black"} color="blue-planning" id="copy-calendar-link" phx-click={action} data-clipboard-text={BookingProposal.url(@proposal.id)} phx-hook="Clipboard" />
+              <.button icon={icon} title={title} class="text-base-300 mt-0" text_color={"text-black"} color="blue-planning" id={"copy-booking-link-#{@proposal.id}"} phx-click={action} data-clipboard-text={BookingProposal.url(@proposal.id)} phx-hook="Clipboard" />
             <% else %>
               <.button icon={icon} title={title} phx-click={action} phx-value-booking_event_date_id={@booking_event_date_id} phx-value-slot_client_id={@slot_client_id} phx-value-slot_job_id={@slot_job_id} phx-value-slot_index={@slot_index} text_color={"text-black"} color={if title in ["Archive", "Disable"], do: "red-sales", else: "blue-planning"} />
             <% end %>
