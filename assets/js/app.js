@@ -84,6 +84,7 @@ import StripeElements from './hooks/stripe-elements';
 import Timer from './hooks/timer';
 import LivePhone from 'live_phone';
 import ViewProposal from './hooks/view_proposal';
+import CollapseSidebar from './hooks/collapse-sidebar';
 
 const Modal = {
   mounted() {
@@ -284,6 +285,7 @@ const Hooks = {
   Timer,
   LivePhone,
   ViewProposal,
+  CollapseSidebar,
 };
 
 window.addEventListener(`phx:download`, (event) => {

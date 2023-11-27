@@ -562,6 +562,24 @@ defmodule PicselloWeb.Live.User.Settings do
   end
 
   @impl true
+  def handle_event(
+        "feature-flag",
+        _unsigned_params,
+        %{assigns: %{current_user: current_user}} = socket
+      ) do
+    if FunWithFlags.enabled?(:sidebar_navigation, for: current_user) do
+      FunWithFlags.disable(:sidebar_navigation, for_actor: current_user)
+    else
+      FunWithFlags.enable(:sidebar_navigation, for_actor: current_user)
+    end
+
+    socket
+    |> put_flash(:success, "Beta feature toggled")
+    |> push_redirect(to: Routes.home_path(socket, :index))
+    |> noreply()
+  end
+
+  @impl true
   def handle_info(
         {:confirm_event, "change-name"},
         %{assigns: %{organization_name_changeset: changeset}} = socket

@@ -228,8 +228,7 @@ defmodule PicselloWeb.LiveHelpers do
     assigns =
       assigns
       |> Enum.into(%{
-        active_class: nil,
-        intercom_or_external_link: %{target: "_blank", rel: "noopener noreferrer"}
+        active_class: nil
       })
 
     ~H"""
@@ -239,7 +238,7 @@ defmodule PicselloWeb.LiveHelpers do
             <%= render_slot(@inner_block, active) %>
           <% end %>
         <% else %>
-          <a href={@to} class={@class} {@intercom_or_external_link}>
+          <a href={@to} class={@class}>
             <%= render_slot(@inner_block, active) %>
           </a>
         <% end %>

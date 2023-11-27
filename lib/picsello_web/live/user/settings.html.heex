@@ -80,6 +80,31 @@
       </.card>
   <% end %>
 
+  <%= if FunWithFlags.enabled?(:photo_lab) do %>
+    <.card title="Beta Features" class="mt-10">
+      <p class="text-base-250 sm:mr-32">Picsello's Beta Features gives you early access to new features before they’re available to everyone. We welcome your feedback to help us continuously improve Picsello. Experimental features are works-in-progress, so you may find some bugs along the way.</p>
+      <hr class="my-4" />
+      <div class="max-w-md">
+        <div class="flex items-center gap-4">
+          <p class=" font-bold text-xl">Sidebar Navigation</p>
+          <button type="button" class="cursor-pointer flex items-center gap-2" phx-click="feature-flag">
+            <div class="flex">
+              <div class={classes("rounded-full w-7 p-0.5 flex border border-blue-planning-300", %{"bg-blue-planning-300 justify-end" => FunWithFlags.enabled?(:sidebar_navigation, for: @current_user), "bg-base-100" => !FunWithFlags.enabled?(:sidebar_navigation, for: @current_user)})}>
+                <div class={classes("rounded-full h-3 w-3", %{"bg-base-100" => FunWithFlags.enabled?(:sidebar_navigation, for: @current_user), "bg-blue-planning-300" => !FunWithFlags.enabled?(:sidebar_navigation, for: @current_user)})}></div>
+              </div>
+            </div>
+            <%= if FunWithFlags.enabled?(:sidebar_navigation, for: @current_user) do %>
+              Disable
+            <% else %>
+              Enable
+            <% end %>
+          </button>
+        </div>
+        <p class="text-sm text-base-250">Try out an easier to use navigation. We'd love your <a href="https://form.typeform.com/to/Z89S1Ucx" target="_blank" rel="noreferrer" class="link">feedback</a>. (You will be directed to your dashboard when toggled.)</p>
+      </div>
+    </.card>
+  <% end %>
+
   <div class="grid gap-10 grid-cols-1 sm:grid-cols-2 mt-10" phx-hook="BeforeUnload" id="setting-alert" data-is-save={@is_save_settings} >
     <.card title="Edit your business name">
       <.form :let={f} for={@organization_name_changeset} phx-change="validate" phx-submit="save" id="name_form">

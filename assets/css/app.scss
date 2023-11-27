@@ -337,3 +337,65 @@ canvas {
 .fc .fc-header-toolbar .fc-timeGridWeek-button {
   @apply hidden sm:block;
 }
+
+#default-sidebar {
+  summary {
+    @apply list-none;
+
+    &::-webkit-details-marker {
+      @apply hidden;
+    }
+  }
+}
+
+[data-drawer-open="true"] #default-sidebar {
+  @apply w-64;
+
+  [data-drawer-type="desktop"] svg {
+    @apply transform rotate-180;
+  }
+
+  .logo-badge {
+    @apply hidden;
+  }
+
+  .logo-full {
+    @apply block;
+  }
+}
+
+[data-drawer-open="false"] {
+  #default-sidebar {
+    @apply transform-none sm:translate-x-0 sm:w-12;
+  }
+
+  span {
+    @apply sm:opacity-0;
+  }
+
+  .logo-badge {
+    @apply block;
+  }
+
+  .logo-full {
+    @apply hidden;
+  }
+}
+
+[data-mobile-drawer-open="false"] {
+  #default-sidebar {
+    @apply -translate-x-full sm:translate-x-0;
+  }
+}
+
+[data-mobile-drawer-open="true"] {
+  @apply flex items-center justify-center w-full h-full bg-base-300/90 sm:bg-transparent z-50 fixed sm:static transition-opacity ease-in-out opacity-100 bottom-0 top-0;
+
+  > div {
+    @apply opacity-0 pointer-events-none sm:pointer-events-auto sm:opacity-100;
+  }
+
+  #default-sidebar {
+    @apply transform-none w-64;
+  }
+}

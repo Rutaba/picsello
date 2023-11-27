@@ -62,6 +62,7 @@ defmodule Picsello.Onboardings do
       field(:province, :string)
       field(:interested_in, :string)
       field(:welcome_count, :integer)
+      field(:sidebar_open_preference, :boolean, default: true)
       field(:promotion_code, :string, default: nil)
       embeds_many(:intro_states, IntroState, on_replace: :delete)
 
@@ -76,6 +77,7 @@ defmodule Picsello.Onboardings do
               province: String.t(),
               interested_in: String.t(),
               welcome_count: integer(),
+              sidebar_open_preference: boolean(),
               promotion_code: String.t(),
               intro_states: [IntroState.t()]
             }
@@ -110,6 +112,11 @@ defmodule Picsello.Onboardings do
       onboarding
       |> cast(attrs, [:promotion_code])
       |> validate_change(:promotion_code, &valid_promotion_codes/2)
+    end
+
+    def sidebar_preference_changeset(%__MODULE__{} = onboarding, attrs) do
+      onboarding
+      |> cast(attrs, [:sidebar_open_preference])
     end
 
     def welcome_count_changeset(%__MODULE__{} = onboarding, attrs) do
@@ -243,6 +250,12 @@ defmodule Picsello.Onboardings do
     current_user
     |> cast(attrs, [])
     |> cast_embed(:onboarding, with: &Onboarding.promotion_code_changeset(&1, &2))
+  end
+
+  def user_update_sidebar_preference_changeset(current_user, attrs) do
+    current_user
+    |> cast(attrs, [])
+    |> cast_embed(:onboarding, with: &Onboarding.sidebar_preference_changeset(&1, &2))
   end
 
   def increase_welcome_count!(%{onboarding: %{welcome_count: count}} = current_user) do

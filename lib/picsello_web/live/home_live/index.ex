@@ -466,8 +466,20 @@ defmodule PicselloWeb.HomeLive.Index do
       |> noreply()
 
   @impl true
-  def handle_event("change-tab", %{"tab" => tab}, socket) do
+  def handle_event(
+        "change-tab",
+        %{"tab" => tab},
+        %{assigns: %{current_user: current_user}} = socket
+      ) do
+    # reassign user for collapsing sidebar jank
+    # since we are looking at the layout with a class
+    current_user =
+      current_user.id
+      |> Accounts.get_user!()
+      |> Repo.preload(organization: [:organization_job_types])
+
     socket
+    |> assign(:current_user, current_user)
     |> assign(:tab_active, tab)
     |> assign_tab_data(tab)
     |> noreply()
@@ -979,22 +991,24 @@ defmodule PicselloWeb.HomeLive.Index do
       })
 
     ~H"""
-    <div class="rounded-lg bg-white p-6 grow flex flex-col items-start">
+    <div class="rounded-lg border p-4 grow flex flex-col items-start">
       <div class="flex justify-between items-center mb-2 w-full gap-4">
         <h3 class="text-2xl font-bold flex items-center gap-2">
           <%= @title %>
           <.notification_bubble notification_count={@notification_count} />
         </h3>
-        <%= if @button_action && @button_text do %>
-          <button class="btn-tertiary py-2 px-4 mt-2 md:mt-0 flex-wrap whitespace-nowrap flex-shrink-0" type="button" phx-click={@button_action}><%= @button_text %></button>
-        <% end %>
       </div>
       <div class={"mb-2 #{@inner_block_classes}"}>
         <%= render_slot(@inner_block) %>
       </div>
-      <%= if @link_action && @link_text do %>
-        <button class="underline text-blue-planning-300 mt-auto inline-block" type="button" phx-click={@link_action} phx-value-tab={@link_value} phx-value-to={@redirect_route}><%= @link_text %></button>
-      <% end %>
+      <div class="flex items-center gap-4 mt-auto">
+        <%= if @button_action && @button_text do %>
+          <button class="btn-tertiary border border-base-300/25 py-2 px-4 md:mt-0 flex-wrap whitespace-nowrap flex-shrink-0 text-sm" type="button" phx-click={@button_action}><%= @button_text %></button>
+        <% end %>
+        <%= if @link_action && @link_text do %>
+          <button class="underline text-blue-planning-300 inline-block text-sm" type="button" phx-click={@link_action} phx-value-tab={@link_value} phx-value-to={@redirect_route}><%= @link_text %></button>
+        <% end %>
+      </div>
     </div>
     """
   end
@@ -1008,7 +1022,7 @@ defmodule PicselloWeb.HomeLive.Index do
 
     ~H"""
     <%= if @notification_count && @notification_count !== 0 do %>
-      <span {testid("badge")} class={"text-xs bg-red-sales-300 text-white w-5 h-5 leading-none rounded-full flex items-center justify-center pb-0.5 #{@classes}"}><%= @notification_count %></span>
+      <span {testid("badge")} class={"text-xs bg-red-sales-300 text-white leading-none rounded-full flex items-center justify-center px-2 pt-0.5 pb-1 #{@classes}"}><%= @notification_count %></span>
     <% end %>
     """
   end
