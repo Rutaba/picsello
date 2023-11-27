@@ -143,7 +143,7 @@ defmodule PicselloWeb.Shared.Sidebar do
             </.nav_link>
           </nav>
           <div class="mt-auto">
-            <a href="https://form.typeform.com/to/Z89S1Ucx" target="_blank" rel="noreferrer" class="text-sm link px-4 block py-2.5">
+            <a href="https://form.typeform.com/to/vZiH7yCy" target="_blank" rel="noreferrer" class="text-sm link px-4 block py-2.5">
               <span>Submit nav/dashboard feedback</span>
             </a>
             <%= if @current_user && Application.get_env(:picsello, :intercom_id) do %>
