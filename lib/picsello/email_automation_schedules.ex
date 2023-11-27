@@ -239,7 +239,7 @@ defmodule Picsello.EmailAutomationSchedules do
   end
 
   @doc """
-  Retrieve all email schedules associated with the specified organizations.
+  Retrieve all email schedules associated with the specified organizations which have approval_required always :false.
 
   This function queries the database to fetch all email schedules that belong to the provided organizations.
   It also preloads the associated email automation pipeline and categories for each schedule.
@@ -253,7 +253,9 @@ defmodule Picsello.EmailAutomationSchedules do
   A list of email schedules, each including preloaded data for email automation pipelines and categories.
   """
   def get_all_emails_schedules(organizations) do
-    from(es in EmailSchedule, where: es.organization_id in ^organizations)
+    from(es in EmailSchedule,
+      where: es.organization_id in ^organizations and es.approval_required == false
+    )
     |> preload(email_automation_pipeline: [:email_automation_category])
     |> Repo.all()
   end
@@ -667,6 +669,7 @@ defmodule Picsello.EmailAutomationSchedules do
             subject_template: email_data.subject_template,
             private_name: email_data.private_name,
             email_automation_pipeline_id: email_data.email_automation_pipeline_id,
+            approval_required: false,
             organization_id: organization_id,
             inserted_at: now,
             updated_at: now
@@ -722,6 +725,7 @@ defmodule Picsello.EmailAutomationSchedules do
             name: email_data.name,
             subject_template: email_data.subject_template,
             private_name: email_data.private_name,
+            approval_required: false,
             email_automation_pipeline_id: email_data.email_automation_pipeline_id,
             organization_id: organization_id,
             inserted_at: now,
@@ -849,6 +853,7 @@ defmodule Picsello.EmailAutomationSchedules do
           condition: email_data.condition,
           body_template: email_data.body_template,
           name: email_data.name,
+          approval_required: false,
           subject_template: email_data.subject_template,
           private_name: email_data.private_name,
           email_automation_pipeline_id: email_data.email_automation_pipeline_id,
