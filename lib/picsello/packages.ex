@@ -685,8 +685,12 @@ defmodule Picsello.Packages do
 
           Contracts.insert_contract_multi(package, contract_params)
 
-        _ ->
-          Multi.new()
+        package ->
+          if Map.get(opts, :contract_params) do
+            Contracts.insert_contract_multi(package, opts.contract_params)
+          else
+            Multi.new()
+          end
       end
     end)
   end

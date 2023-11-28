@@ -1122,6 +1122,20 @@ defmodule PicselloWeb.PackageLive.WizardComponent do
   end
 
   @impl true
+  def handle_event(
+        "validate",
+        %{
+          "package" => %{"questionnaire_template_id" => id},
+          "_target" => ["contract", "contract_template_id"]
+        },
+        socket
+      ) do
+    socket
+    |> assign(:questionnaire_template_id, String.to_integer(id))
+    |> noreply()
+  end
+
+  @impl true
   def handle_event("validate", %{"contract" => contract} = params, socket) do
     contract = contract |> Map.put_new("edited", Map.get(contract, "quill_source") == "user")
 
@@ -1159,13 +1173,14 @@ defmodule PicselloWeb.PackageLive.WizardComponent do
         },
         %{assigns: assigns} = socket
       ) do
+    package = find_template(socket, package_template_id)
+
     questionnaire =
-      find_template(socket, package_template_id)
+      package
       |> Questionnaire.for_package()
 
     package_payment_schedules =
-      socket
-      |> find_template(package_template_id)
+      package
       |> Repo.preload(:package_payment_schedules, force: true)
       |> Map.get(:package_payment_schedules)
 
@@ -1177,10 +1192,19 @@ defmodule PicselloWeb.PackageLive.WizardComponent do
         schedule |> Map.from_struct() |> Map.drop([:package_payment_preset_id])
       end)
 
+    default_contract = Contracts.default_contract(package)
+
+    contract_params = %{
+      "content" => Contracts.contract_content(default_contract, package, PicselloWeb.Helpers),
+      "contract_template_id" => default_contract.id,
+      "name" => default_contract.name
+    }
+
     opts = %{
       payment_schedules: payment_schedules,
       action: :insert,
-      questionnaire: questionnaire
+      questionnaire: questionnaire,
+      contract_params: contract_params
     }
 
     job = Map.get(assigns, :job)
@@ -1281,7 +1305,10 @@ defmodule PicselloWeb.PackageLive.WizardComponent do
   @impl true
   def handle_event(
         "submit",
-        %{"step" => "payment", "custom_payments" => payment_params},
+        %{
+          "step" => "payment",
+          "custom_payments" => payment_params
+        } = params,
         %{
           assigns:
             %{
@@ -1290,7 +1317,11 @@ defmodule PicselloWeb.PackageLive.WizardComponent do
             } = assigns
         } = socket
       ) do
-    questionnaire = Questionnaire.for_package(package)
+    questionnaire =
+      Questionnaire.for_package(%{
+        package
+        | questionnaire_template_id: Map.get(assigns, :questionnaire_template_id)
+      })
 
     socket
     |> maybe_assign_custom(payment_params)
@@ -1324,7 +1355,7 @@ defmodule PicselloWeb.PackageLive.WizardComponent do
           socket,
           package_changeset,
           assigns.booking_event,
-          opts
+          opts |> Map.put(:contract_params, Map.get(params, "contract"))
         )
       end
     end)
