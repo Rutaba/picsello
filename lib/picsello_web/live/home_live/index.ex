@@ -872,7 +872,7 @@ defmodule PicselloWeb.HomeLive.Index do
                         "#{package.name |> String.slice(0..40)} ..."
                       end %>
                   </p>
-                  <div class="grid grid-cols-2 justify-between text-gray-400 font-normal text-sm break-all gap-2">
+                  <div class="flex flex-col sm:grid sm:grid-cols-2 justify-between text-gray-400 font-normal text-sm break-all gap-1 sm:gap-2">
                     <span>Package price: <%= package |> Package.price() %></span>
                     <span>Digital price: <%= if Money.zero?(package.download_each_price) do %>--<% else %><%= package.download_each_price %> <% end %></span>
                   </div>

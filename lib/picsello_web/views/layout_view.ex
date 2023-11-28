@@ -236,7 +236,7 @@ defmodule PicselloWeb.LayoutView do
               <li><a class="ml-10" href="https://www.picsello.com/blog" target="_blank" rel="noopener noreferrer">Blog</a></li>
             </ul>
 
-            <.icon name="logo-shoot-higher" class="w-32 h-12 sm:h-20 sm:w-48 ml-auto" />
+            <.icon name="logo-shoot-higher" class="w-24 h-10 sm:h-20 sm:w-32 sm:ml-auto mt-4 md:mt-0" />
 
             <.subscription_ending_soon type="footer" socket={@socket} current_user={@current_user} class="flex ml-auto bg-white text-black rounded px-4 py-2 items-center text-sm"/>
           </nav>
