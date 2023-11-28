@@ -58,8 +58,7 @@ defmodule PicselloWeb.Live.EmailAutomations.Index do
   defp assign_global_automation_settings(%{assigns: %{current_user: current_user}} = socket) do
     user = Packages.get_current_user(current_user.id)
 
-    global_automation_enabled? =
-      user.organization.global_automation_enabled
+    global_automation_enabled? = user.organization.global_automation_enabled
 
     socket
     |> assign(:global_automation_enabled, global_automation_enabled?)
@@ -212,7 +211,6 @@ defmodule PicselloWeb.Live.EmailAutomations.Index do
         {:close_event, "cancel_toggle"},
         socket
       ) do
-
     socket
     |> close_modal()
     |> assign_global_automation_settings()

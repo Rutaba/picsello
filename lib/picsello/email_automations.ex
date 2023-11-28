@@ -360,7 +360,9 @@ defmodule Picsello.EmailAutomations do
       :organization_update,
       update_organization_global_automation_changeset(organization_id, true)
     )
-    |> Multi.append(EmailAutomationSchedules.pull_back_email_schedules_multi(schedule_history_query))
+    |> Multi.append(
+      EmailAutomationSchedules.pull_back_email_schedules_multi(schedule_history_query)
+    )
     |> Repo.transaction()
   end
 

@@ -557,7 +557,8 @@ defmodule PicselloWeb.Live.EmailAutomations.Show do
     "gallery_already_shared_because_order_placed" => "Gallery has already been shared",
     "archived" => "Archived",
     "completed" => "Completed",
-    "lead_converted_to_job" => "Lead has been converted to job"
+    "lead_converted_to_job" => "Lead has been converted to job",
+    "globally_stopped" => "Globally Stopped"
   }
   def stop_reason_text(status), do: Map.get(@status_texts, status, "")
 end
