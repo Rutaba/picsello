@@ -752,7 +752,7 @@ defmodule PicselloWeb.Live.ClientLive.Index do
       %{title: "Active Jobs", id: "active_jobs"},
       %{title: "Past Jobs", id: "past_jobs"},
       %{title: "Leads", id: "leads"},
-      %{title: "Archived Clients", id: "archived_clients"}
+      %{title: "Archived", id: "archived_clients"}
     ]
   end
 
