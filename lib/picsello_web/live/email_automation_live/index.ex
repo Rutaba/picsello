@@ -57,7 +57,9 @@ defmodule PicselloWeb.Live.EmailAutomations.Index do
 
   defp assign_global_automation_settings(%{assigns: %{current_user: current_user}} = socket) do
     user = Packages.get_current_user(current_user.id)
-    global_automation_enabled? = user.organization.global_automation_enabled |> IO.inspect(label: "globally===>")
+
+    global_automation_enabled? =
+      user.organization.global_automation_enabled
 
     socket
     |> assign(:global_automation_enabled, global_automation_enabled?)
@@ -187,15 +189,16 @@ defmodule PicselloWeb.Live.EmailAutomations.Index do
   def handle_event(
         "toggle_global",
         %{"active" => active},
-        %{assigns: %{selected_job_type: _selected_job_type, current_user: %{organization: organization}}} = socket
+        socket
       ) do
-    message = if active == "true", do: "disabled", else: "enabled"
+    message = if active == "true", do: "disable", else: "enable"
+
     socket
     |> ConfirmationComponent.open(%{
       title: "Are you sure you want to #{message} all the automation",
-      subtitle:
-        "Are you sure you want to #{message} all the automation",
+      subtitle: "Are you sure you want to #{message} all the automation",
       confirm_event: "confirm-toggle-global-#{active}",
+      close_event: "cancel_toggle",
       confirm_label: "Yes",
       close_label: "Cancel",
       icon: "warning-orange"
@@ -203,6 +206,19 @@ defmodule PicselloWeb.Live.EmailAutomations.Index do
     |> assign_global_automation_settings()
     |> noreply()
   end
+
+  @impl true
+  def handle_info(
+        {:close_event, "cancel_toggle"},
+        socket
+      ) do
+
+    socket
+    |> close_modal()
+    |> assign_global_automation_settings()
+    |> noreply()
+  end
+
   @impl true
   def handle_info(
         {:confirm_event, "confirm-toggle-global-" <> active},
@@ -213,12 +229,15 @@ defmodule PicselloWeb.Live.EmailAutomations.Index do
     case EmailAutomations.update_globally_automations_emails(organization.id, status) do
       {:ok, _} ->
         socket
-        |> put_flash(:success, "Email template successfully deleted")
+        |> assign_global_automation_settings()
+        |> put_flash(
+          :success,
+          "Email template successfully #{status}"
+        )
 
-      error ->
-        IO.inspect(error, label: "error")
+      _error ->
         socket
-        |> put_flash(:success, "Failed to delete the email template")
+        |> put_flash(:success, "Failed to process template enabling/disabling")
     end
     |> close_modal()
     |> assign_automation_pipelines()

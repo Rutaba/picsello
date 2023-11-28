@@ -26,6 +26,8 @@ defmodule Picsello.EmailAutomations do
     EmailAutomationSubCategory
   }
 
+  alias Ecto.Multi
+
   @doc """
   Retrieves email presets for scheduling based on the provided organization, job type,
   email automation type, and optional skip sub-categories.
@@ -324,48 +326,54 @@ defmodule Picsello.EmailAutomations do
       ])
 
   def update_globally_automations_emails(organization_id, "disabled") do
-    email_schedules_query = EmailAutomationSchedules.get_all_emails_schedules([organization_id])
-    Repo.transaction(
-      fn ->
-        update_automation_settings(organization_id, "disabled")
-        EmailAutomationSchedules.delete_and_insert_schedules_by(
-          email_schedules_query,
-          :globally_stopped
-        )
-        update_organization_global_automation(organization_id, false)
-      end
+    email_schedules_query =
+      EmailAutomationSchedules.get_all_emails_schedules_query([organization_id])
+
+    Multi.new()
+    |> Multi.update_all(:settings_update, update_automation_settings_query(organization_id),
+      set: [status: "disabled"]
     )
+    |> Multi.update(
+      :organization_update,
+      update_organization_global_automation_changeset(organization_id, false)
+    )
+    |> Multi.append(
+      EmailAutomationSchedules.delete_and_insert_schedules_by_multi(
+        email_schedules_query,
+        :globally_stopped
+      )
+    )
+    |> Repo.transaction()
   end
 
-  def update_globally_automations_emails(organization_id, "active") do
+  def update_globally_automations_emails(organization_id, "enabled") do
     schedule_history_query =
       from(esh in EmailScheduleHistory,
         where: esh.organization_id == ^organization_id and esh.stopped_reason == :globally_stopped
       )
 
-      Repo.transaction(
-        fn ->
-          update_automation_settings(organization_id, "active")
-          EmailAutomationSchedules.pull_back_email_schedules(schedule_history_query)
-          update_organization_global_automation(organization_id, true)
-        end
-      )
+    Multi.new()
+    |> Multi.update_all(:settings_update, update_automation_settings_query(organization_id),
+      set: [status: "active"]
+    )
+    |> Multi.update(
+      :organization_update,
+      update_organization_global_automation_changeset(organization_id, true)
+    )
+    |> Multi.append(EmailAutomationSchedules.pull_back_email_schedules_multi(schedule_history_query))
+    |> Repo.transaction()
   end
 
-  def update_automation_settings(organization_id, status) do
+  def update_automation_settings_query(organization_id) do
     from(es in EmailPreset,
-      where: es.organization_id == ^organization_id,
-      update: [set: [status: ^status]]
+      where: es.organization_id == ^organization_id
     )
-    |> Repo.update_all([])
   end
 
-  defp update_organization_global_automation(organization_id, enabled) do
-    from(o in Picsello.Organization,
-      where: o.id == ^organization_id,
-      update: [set: [global_automation_enabled: ^enabled]]
-    )
-    |> Repo.update()
+  defp update_organization_global_automation_changeset(organization_id, enabled) do
+    from(o in Organization, where: o.id == ^organization_id)
+    |> Repo.one()
+    |> Ecto.Changeset.change(global_automation_enabled: enabled)
   end
 
   @doc """

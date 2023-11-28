@@ -9,7 +9,7 @@ defmodule Picsello.Repo.Migrations.AddGlobalAutomationEnabledFieldForOrganizatio
 
   def down do
     alter table(:organizations) do
-     remove(:global_automation_enabled)
+      remove(:global_automation_enabled)
     end
   end
 end

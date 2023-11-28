@@ -215,10 +215,14 @@ defmodule PicselloWeb.Live.EmailAutomations.Show do
     id = String.to_integer(id)
     schedule_query = EmailAutomationSchedules.get_schedule_by_id_query(id)
 
-    case EmailAutomationSchedules.delete_and_insert_schedules_by(
-           schedule_query,
-           :photographer_stopped
-         ) do
+    multi =
+      EmailAutomationSchedules.delete_and_insert_schedules_by_multi(
+        schedule_query,
+        :photographer_stopped
+      )
+      |> Repo.transaction()
+
+    case multi do
       {:ok, _} -> socket |> put_flash(:success, "Email Stopped Successfully")
       _ -> socket |> put_flash(:error, "Error in Updating Email")
     end

@@ -148,7 +148,8 @@ defmodule Picsello.Jobs do
         where: esh.job_id == ^job.id and esh.stopped_reason == :archived
       )
 
-    EmailAutomationSchedules.pull_back_email_schedules(schedule_history_query)
+    EmailAutomationSchedules.pull_back_email_schedules_multi(schedule_history_query)
+    |> Repo.transaction()
   end
 
   def maybe_upsert_client(%Multi{} = multi, client, current_user) do

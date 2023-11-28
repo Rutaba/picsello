@@ -238,6 +238,9 @@ defmodule Picsello.EmailAutomationSchedules do
     })
   end
 
+  def get_all_emails_schedules_query(organizations),
+    do: from(es in EmailSchedule, where: es.organization_id in ^organizations)
+
   @doc """
   Retrieve all email schedules associated with the specified organizations.
 
@@ -253,7 +256,7 @@ defmodule Picsello.EmailAutomationSchedules do
   A list of email schedules, each including preloaded data for email automation pipelines and categories.
   """
   def get_all_emails_schedules(organizations) do
-    from(es in EmailSchedule, where: es.organization_id in ^organizations)
+    get_all_emails_schedules_query(organizations)
     |> preload(email_automation_pipeline: [:email_automation_category])
     |> Repo.all()
   end
@@ -516,19 +519,19 @@ defmodule Picsello.EmailAutomationSchedules do
     all_proposal_active_emails_query =
       get_all_emails_active_by_job_pipeline(:lead, job_id, pipeline.id)
 
-    delete_and_insert_schedules_by(
+    delete_and_insert_schedules_by_multi(
       all_proposal_active_emails_query,
       :proposal_accepted
     )
+    |> Repo.transaction()
   end
 
-  def delete_and_insert_schedules_by(email_schedule_query, stopped_reason) do
+  def delete_and_insert_schedules_by_multi(email_schedule_query, stopped_reason) do
     schedule_history_params = make_schedule_history_params(email_schedule_query, stopped_reason)
 
     Multi.new()
     |> Multi.delete_all(:proposal_emails, email_schedule_query)
     |> Multi.insert_all(:schedule_history, EmailScheduleHistory, schedule_history_params)
-    |> Repo.transaction()
   end
 
   def make_schedule_history_params(query, stopped_reason) do
@@ -561,13 +564,12 @@ defmodule Picsello.EmailAutomationSchedules do
     end)
   end
 
-  def pull_back_email_schedules(schedule_history_query) do
+  def pull_back_email_schedules_multi(schedule_history_query) do
     email_schedule_params = make_schedule_params(schedule_history_query)
 
     Multi.new()
     |> Multi.delete_all(:schedule_history, schedule_history_query)
     |> Multi.insert_all(:email_schedule, EmailSchedule, email_schedule_params)
-    |> Repo.transaction()
   end
 
   defp make_schedule_params(query) do
