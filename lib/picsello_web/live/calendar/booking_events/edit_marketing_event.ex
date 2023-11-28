@@ -25,7 +25,7 @@ defmodule PicselloWeb.Live.Calendar.EditMarketingEvent do
     ~H"""
     <div class="modal">
       <.close_x />
-      <h1 class="mt-2 mb-4 text-xl"><strong class="font-bold">Edit Marketing Details</strong></h1>
+      <h1 class="mt-2 mb-4 text-xl"><strong class="font-bold">Edit marketing details</strong></h1>
       <.form for={@changeset} :let={f} phx-change="validate" phx-submit="submit" phx-target={@myself}>
         <div class="flex flex-col mt-4">
           <div class="grid sm:grid-cols-2 gap-7 mt-2">
@@ -50,6 +50,8 @@ defmodule PicselloWeb.Live.Calendar.EditMarketingEvent do
               <.quill_input
                 f={f}
                 html_field={:description}
+                enable_size={true}
+                enable_image={true}
                 current_user={@current_user}
                 class="aspect-[3/2] mt-2"
                 editor_class="h-[20rem]"
@@ -62,8 +64,8 @@ defmodule PicselloWeb.Live.Calendar.EditMarketingEvent do
           <button class="btn-primary" title="Save" type="submit" disabled={!@changeset.valid?} phx-disable-with="Save">
             Save
           </button>
-          <button class="btn-secondary" title="cancel" type="button" phx-click="modal" phx-value-action="close">
-            Cancel
+          <button class="btn-secondary" title="Close" type="button" phx-click="modal" phx-value-action="close">
+            Close
           </button>
         </.footer>
       </.form>
@@ -138,18 +140,18 @@ defmodule PicselloWeb.Live.Calendar.EditMarketingEvent do
   end
 
   defp toggle_visibility(%{show_on_public_profile?: show_on_public_profile?} = assigns) do
-    class_1 = if show_on_public_profile?, do: ~s(bg-blue-planning-100), else: ~s(bg-white)
-    class_2 = if show_on_public_profile?, do: ~s(right-1), else: ~s(left-1)
+    class_1 = if show_on_public_profile?, do: ~s(bg-blue-planning-300), else: ~s(bg-white)
+    class_2 = if show_on_public_profile?, do: ~s(right-1 bg-white), else: ~s(left-1 bg-blue-planning-300)
     assigns = assign(assigns, class_1: class_1, class_2: class_2)
 
     ~H"""
       <div class="flex mt-4 lg:mt-8">
         <div class="flex items-center">
           <div class="text-sm font-bold lg:text-normal text-black"><%= @title %></div>
-          <label class="relative ml-3 cursor-pointer">
+          <label class="relative ml-4 cursor-pointer">
             <input type="checkbox" class="sr-only" phx-click={@event} phx-target={@myself}>
-            <div class={"block h-6 border rounded-full w-10 border-blue-planning-300 #{@class_1}"}></div>
-            <div class={"absolute w-4 h-4 rounded-full dot top-1 bg-blue-planning-300 transition #{@class_2}"}></div>
+            <div class={"block border rounded-full h-6 w-10 border-blue-planning-300 #{@class_1}"}></div>
+            <div class={"absolute w-4 h-4 rounded-full dot top-1 transition #{@class_2}"}></div>
           </label>
         </div>
       </div>

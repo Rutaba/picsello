@@ -837,10 +837,6 @@ defmodule PicselloWeb.Calendar.BookingEvents.Shared do
     |> assign(:package, package_template)
     |> assign(:payments_description, payments_description(booking_event))
     |> assign(:calendar_date_event, calendar_date_event)
-    |> assign(
-      :booking_slot_tab_active,
-      if(booking_event.is_repeating, do: "calendar", else: "list")
-    )
   end
 
   def assign_events(%{assigns: %{booking_events: _booking_events}} = socket),

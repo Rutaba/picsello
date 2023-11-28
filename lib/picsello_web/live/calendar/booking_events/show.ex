@@ -50,6 +50,13 @@ defmodule PicselloWeb.Live.Calendar.BookingEvents.Show do
     |> BEShared.assign_events()
     |> assign_changeset(%{})
     |> assign(:booking_slot_tabs, booking_slot_tabs())
+    |> then(fn %{assigns: %{booking_event: booking_event}} = socket ->
+      socket
+      |> assign_new(
+      :booking_slot_tab_active,
+      fn -> if(booking_event.is_repeating, do: "calendar", else: "list") end
+      )
+    end)
     |> noreply()
   end
 
@@ -386,7 +393,7 @@ defmodule PicselloWeb.Live.Calendar.BookingEvents.Show do
         socket
       ) do
     socket
-    |> assign(:booking_event, booking_event)
+    |> BEShared.assign_events()
     |> put_flash(:success, "Marketing details updated")
     |> noreply()
   end
@@ -534,7 +541,7 @@ defmodule PicselloWeb.Live.Calendar.BookingEvents.Show do
       <% "calendar" -> %>
         <div class="mt-10 flex flex-col xl:flex-row gap-8">
           <div class="flex xl:w-1/2 flex-col">
-            <div phx-hook="BookingEventCalendar" phx-update="replace" id="booking_event_calendar" data-time-zone={@current_user.time_zone} data-feed-path={Routes.calendar_feed_path(@socket, :show, @booking_event.id)}/>
+            <div phx-hook="BookingEventCalendar" phx-update="replace" id={"booking_event_calendar-#{if @calendar_date_event, do: @calendar_date_event.id, else: @booking_event.id}"} data-time-zone={@current_user.time_zone} data-feed-path={Routes.calendar_feed_path(@socket, :show, @booking_event.id)}/>
           </div>
           <div class="xl:h-[600px] flex flex-col flex-grow">
             <%= if @calendar_date_event do %>
@@ -659,7 +666,7 @@ defmodule PicselloWeb.Live.Calendar.BookingEvents.Show do
       Map.merge(
         %{
           archive_option: true,
-          main_button_class: "text-blue-planning-300",
+          main_button_class: "",
           slot_index: -1,
           slot_client_id: -1,
           slot_job_id: -1,
@@ -685,7 +692,7 @@ defmodule PicselloWeb.Live.Calendar.BookingEvents.Show do
         <div class="z-10 flex hidden flex-col w-auto bg-white border rounded-lg shadow-lg popover-content">
           <%= for %{title: title, action: action, icon: icon} <- @button_actions do %>
             <%= if icon == "anchor" && BookingProposal.url(@proposal.id) do %>
-              <.button icon={icon} title={title} class="text-base-300 mt-0" text_color={"text-black"} color="blue-planning" id="copy-calendar-link" phx-click={action} data-clipboard-text={BookingProposal.url(@proposal.id)} phx-hook="Clipboard" />
+              <.button icon={icon} title={title} class="text-base-300 mt-0" text_color={"text-black"} color="blue-planning" id={"copy-booking-link-#{@proposal.id}"} phx-click={action} data-clipboard-text={BookingProposal.url(@proposal.id)} phx-hook="Clipboard" />
             <% else %>
               <.button icon={icon} title={title} phx-click={action} phx-value-booking_event_date_id={@booking_event_date_id} phx-value-slot_client_id={@slot_client_id} phx-value-slot_job_id={@slot_job_id} phx-value-slot_index={@slot_index} text_color={"text-black"} color={if title in ["Archive", "Disable"], do: "red-sales", else: "blue-planning"} />
             <% end %>
@@ -738,7 +745,7 @@ defmodule PicselloWeb.Live.Calendar.BookingEvents.Show do
           </div>
         <% end %>
         <div class="grid grid-cols-1">
-          <div class="text-3xl font-bold">
+          <div class="text-3xl font-bold mb-2 mt-2">
             <%= @booking_event.name %>
           </div>
           <%= if @package do %>
@@ -748,10 +755,13 @@ defmodule PicselloWeb.Live.Calendar.BookingEvents.Show do
             <div class="text-base-250 text-md">
               <%= if @package.download_count < 1, do: "No digital", else: @package.download_count %> images included <%= if Enum.any?(@booking_event.dates), do: "| #{session_info(@booking_event)} min session" %>
             </div>
-            <hr class="my-3">
+          <% else %>
+            <div class="text-base-250 text-md">
+              Pick a package to get pricing details
+            </div>
           <% end %>
+          <hr class="my-3">
         </div>
-        <%= if @package do %>
           <%= if Enum.any?(@booking_event.dates) do %>
             <div class="flex flex-col">
               <div class="flex items-center">
@@ -783,11 +793,6 @@ defmodule PicselloWeb.Live.Calendar.BookingEvents.Show do
               <%= @description %>
             <% end %>
           </div>
-        <% else %>
-          <div class="text-base-250 mt-2 mb-4">
-            <p>Pick a package and update your marketing details to get started</p>
-          </div>
-        <% end %>
         <button phx-click="edit-marketing-event" phx-value-event-id={@booking_event.id} class="p-2 px-4 w-fit bg-base-250/20 font-bold rounded-lg">
             Edit marketing details
         </button>
@@ -939,8 +944,9 @@ defmodule PicselloWeb.Live.Calendar.BookingEvents.Show do
       dates
       |> Enum.map(& &1.session_length)
       |> Enum.sort()
+      |> Enum.uniq()
 
-    "#{List.first(session_list)} - #{List.last(session_list)}"
+    if length(session_list) > 1, do: "#{List.first(session_list)} - #{List.last(session_list)}", else: "#{List.first(session_list)}"
   end
 
   defp date_passed?(date), do: Date.compare(date, Date.utc_today()) == :lt
