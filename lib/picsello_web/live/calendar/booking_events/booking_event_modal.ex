@@ -137,10 +137,12 @@ defmodule PicselloWeb.Live.Calendar.BookingEventModal do
                 <div class={classes("pl-10 mb-2", %{"pointer-events-none text-gray-400" => input_value(f, :repetition) === true})}>
                   <%= input f, :stop_repeating, type: :date_input, disabled: is_nil(@changeset |> current |> Map.get(:date)), min: @changeset |> current |> Map.get(:date), class: "w-40" %>
                 </div>
+                <div><%= error_tag(f, :stop_repeating, class: "text-red-sales-300 text-sm mb-2") %></div>
                 <div class="flex gap-5 mb-2"><%= radio_button f, :repetition, true, class: "w-5 h-5 radio cursor-pointer mb-2" %>After</div>
                 <div class={classes("pl-10 mb-2", %{"pointer-events-none text-gray-400" => input_value(f, :repetition) != true})}>
                   <%= select f, :occurences, occurence_options(), class: "select w-40 cursor-pointer" %>
                 </div>
+                <div><%= error_tag(f, :occurences, class: "text-red-sales-300 text-sm mb-2") %></div>
               </div>
             </div>
           </div>
@@ -180,6 +182,7 @@ defmodule PicselloWeb.Live.Calendar.BookingEventModal do
           <% end %>
         </div>
         <.footer class="pt-16">
+          <% IO.inspect(@changeset) %>
           <button class="btn-primary" title="Save" type="submit" disabled={!@changeset.valid? || Enum.empty?(@changeset.changes)} phx-disable-with="Save">
               Save
           </button>
