@@ -22,6 +22,27 @@
           <p>Email automation sequences scheduled to send globally for all your Leads, Jobs and Galleries. “Set and forget” these sequences globally here to increase your productivity and make sure communications to your client are sent when you want and need them to be.</p>
         </div>
     </div>
+
+    <div class="flex flex-row">
+      <.form :let={_} for={%{}} as={:toggle} phx-click="toggle_global" phx-value-active={@global_automation_enabled |> to_string}>
+      <label class="flex">
+        <input type="checkbox" class="peer hidden" checked={@global_automation_enabled}/>
+        <div testid={"enable-global"} class="hidden peer-checked:flex cursor-pointer">
+          <div class="rounded-full bg-blue-planning-300 border border-base-100 w-16 p-1 flex justify-end mr-4">
+            <div class="rounded-full h-5 w-5 bg-base-100"></div>
+          </div>
+          Enable Global Automation
+        </div>
+        <div testid={"disable-global"} class="flex peer-checked:hidden cursor-pointer">
+          <div class="rounded-full w-16 p-1 flex mr-4 border border-blue-planning-300">
+            <div class="rounded-full h-5 w-5 bg-blue-planning-300"></div>
+          </div>
+          Disable Global Automation
+        </div>
+      </label>
+      </.form>
+    </div>
+
   </div>
 </div>
 

@@ -12,8 +12,10 @@ defmodule Picsello.EmailAutomations do
     Galleries,
     Orders,
     EmailAutomationSchedules,
+    EmailAutomation.EmailScheduleHistory,
     Notifiers.EmailAutomationNotifier,
     EmailPresets,
+    Organization,
     PaymentSchedule,
     PaymentSchedules
   }
@@ -320,6 +322,51 @@ defmodule Picsello.EmailAutomations do
         :job_status,
         client: :organization
       ])
+
+  def update_globally_automations_emails(organization_id, "disabled") do
+    email_schedules_query = EmailAutomationSchedules.get_all_emails_schedules([organization_id])
+    Repo.transaction(
+      fn ->
+        update_automation_settings(organization_id, "disabled")
+        EmailAutomationSchedules.delete_and_insert_schedules_by(
+          email_schedules_query,
+          :globally_stopped
+        )
+        update_organization_global_automation(organization_id, false)
+      end
+    )
+  end
+
+  def update_globally_automations_emails(organization_id, "active") do
+    schedule_history_query =
+      from(esh in EmailScheduleHistory,
+        where: esh.organization_id == ^organization_id and esh.stopped_reason == :globally_stopped
+      )
+
+      Repo.transaction(
+        fn ->
+          update_automation_settings(organization_id, "active")
+          EmailAutomationSchedules.pull_back_email_schedules(schedule_history_query)
+          update_organization_global_automation(organization_id, true)
+        end
+      )
+  end
+
+  def update_automation_settings(organization_id, status) do
+    from(es in EmailPreset,
+      where: es.organization_id == ^organization_id,
+      update: [set: [status: ^status]]
+    )
+    |> Repo.update_all([])
+  end
+
+  defp update_organization_global_automation(organization_id, enabled) do
+    from(o in Picsello.Organization,
+      where: o.id == ^organization_id,
+      update: [set: [global_automation_enabled: ^enabled]]
+    )
+    |> Repo.update()
+  end
 
   @doc """
   Resolves variables in email content for a given EmailSchedule.

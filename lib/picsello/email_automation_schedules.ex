@@ -561,6 +561,45 @@ defmodule Picsello.EmailAutomationSchedules do
     end)
   end
 
+  def pull_back_email_schedules(schedule_history_query) do
+    email_schedule_params = make_schedule_params(schedule_history_query)
+
+    Multi.new()
+    |> Multi.delete_all(:schedule_history, schedule_history_query)
+    |> Multi.insert_all(:email_schedule, EmailSchedule, email_schedule_params)
+    |> Repo.transaction()
+  end
+
+  defp make_schedule_params(query) do
+    query
+    |> Repo.all()
+    |> Enum.map(fn schedule ->
+      schedule
+      |> Map.take([
+        :total_hours,
+        :condition,
+        :type,
+        :body_template,
+        :name,
+        :subject_template,
+        :private_name,
+        :reminded_at,
+        :email_automation_pipeline_id,
+        :job_id,
+        :shoot_id,
+        :gallery_id,
+        :order_id,
+        :organization_id,
+        :inserted_at,
+        :updated_at
+      ])
+      |> Map.merge(%{
+        stopped_at: nil,
+        stopped_reason: nil
+      })
+    end)
+  end
+
   def get_stopped_emails_text(job_id, state, helper) do
     pipeline = EmailAutomations.get_pipeline_by_state(state)
 

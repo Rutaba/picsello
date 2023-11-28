@@ -15,7 +15,7 @@ defmodule PicselloWeb.Live.EmailAutomations.Index do
       get_email_name: 4
     ]
 
-  alias Picsello.{EmailAutomations, Repo}
+  alias Picsello.{EmailAutomations, Packages, Repo}
   alias PicselloWeb.ConfirmationComponent
   alias PicselloWeb.EmailAutomationLive.{EditTimeComponent, EditEmailComponent, AddEmailComponent}
 
@@ -34,6 +34,7 @@ defmodule PicselloWeb.Live.EmailAutomations.Index do
     socket
     |> assign_job_types()
     |> assign_automation_pipelines()
+    |> assign_global_automation_settings()
     |> assign_collapsed_sections()
   end
 
@@ -52,6 +53,14 @@ defmodule PicselloWeb.Live.EmailAutomations.Index do
     |> assign(:current_user, current_user)
     |> assign(:job_types, job_types)
     |> assign(:selected_job_type, selected_job_type)
+  end
+
+  defp assign_global_automation_settings(%{assigns: %{current_user: current_user}} = socket) do
+    user = Packages.get_current_user(current_user.id)
+    global_automation_enabled? = user.organization.global_automation_enabled |> IO.inspect(label: "globally===>")
+
+    socket
+    |> assign(:global_automation_enabled, global_automation_enabled?)
   end
 
   def handle_event("back_to_navbar", _, %{assigns: %{is_mobile: is_mobile}} = socket) do
@@ -170,6 +179,48 @@ defmodule PicselloWeb.Live.EmailAutomations.Index do
         socket
         |> put_flash(:error, "Failed to update email template status")
     end
+    |> assign_automation_pipelines()
+    |> noreply()
+  end
+
+  @impl true
+  def handle_event(
+        "toggle_global",
+        %{"active" => active},
+        %{assigns: %{selected_job_type: _selected_job_type, current_user: %{organization: organization}}} = socket
+      ) do
+    message = if active == "true", do: "disabled", else: "enabled"
+    socket
+    |> ConfirmationComponent.open(%{
+      title: "Are you sure you want to #{message} all the automation",
+      subtitle:
+        "Are you sure you want to #{message} all the automation",
+      confirm_event: "confirm-toggle-global-#{active}",
+      confirm_label: "Yes",
+      close_label: "Cancel",
+      icon: "warning-orange"
+    })
+    |> assign_global_automation_settings()
+    |> noreply()
+  end
+  @impl true
+  def handle_info(
+        {:confirm_event, "confirm-toggle-global-" <> active},
+        %{assigns: %{current_user: %{organization: organization}}} = socket
+      ) do
+    status = if active == "true", do: "disabled", else: "enabled"
+
+    case EmailAutomations.update_globally_automations_emails(organization.id, status) do
+      {:ok, _} ->
+        socket
+        |> put_flash(:success, "Email template successfully deleted")
+
+      error ->
+        IO.inspect(error, label: "error")
+        socket
+        |> put_flash(:success, "Failed to delete the email template")
+    end
+    |> close_modal()
     |> assign_automation_pipelines()
     |> noreply()
   end

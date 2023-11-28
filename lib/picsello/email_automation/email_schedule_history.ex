@@ -8,7 +8,7 @@ defmodule Picsello.EmailAutomation.EmailScheduleHistory do
   }
 
   @types ~w(lead job shoot gallery order)a
-  @stopped_reason_values ~w(photographer_stopped proposal_accepted already_paid_full shoot_starts_at_passed gallery_already_shared_because_order_placed archived completed lead_converted_to_job)a
+  @stopped_reason_values ~w(photographer_stopped proposal_accepted already_paid_full shoot_starts_at_passed gallery_already_shared_because_order_placed archived completed lead_converted_to_job globally_stopped)a
   alias Picsello.{Job, Shoot, Galleries.Gallery, Cart.Order, Organization}
 
   schema "email_schedules_history" do
