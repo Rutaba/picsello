@@ -257,7 +257,7 @@ defmodule PicselloWeb.BookingProposalLive.Show do
     inner_title =
       if Money.zero?(package_price),
         do:
-          "You can save a refer back to your client portal for shoot details and to contact me.",
+          "You can save and refer back to your client portal for shoot details and to contact me.",
         else:
           "If you opted to pay via cash or check, please arrange for payment at your earliest convenience. You can save and refer back to your client portal for shoot details, if additional payments are due, and to contact me."
 
