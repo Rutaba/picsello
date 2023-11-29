@@ -51,12 +51,16 @@ defmodule PicselloWeb.Live.Admin.AutomatedEmails do
                       <.icon name="play-icon" class="w-5 h-5 text-blue-planning-300" />
                   </div>
                   <span class="flex items-center text-blue-planning-300 text-xl font-bold ml-2">
-                    <%= organization.name %>
+                    Organization name: <%= organization.name %>
                     <span class="text-base-300 ml-2 rounded-md bg-white px-2 text-sm font-bold whitespace-nowrap"><%= organization.emails |> Enum.count() %></span>
                   </span>
                 </div>
                 <p class="text:xs text-base-250 lg:text-base ml-10">
                   Open the dropdown to see and send the ready-emails for this organization
+                  <br />
+                  Org id: <%= organization.id %>
+                  <br />
+                  Photographer email: <%= organization.photographer_email %>
                 </p>
               </div>
 
@@ -82,7 +86,11 @@ defmodule PicselloWeb.Live.Admin.AutomatedEmails do
                     <div class="flex flex-col ml-8 h-max">
                       <div class="flex gap-2 font-bold items-center">
                         <.icon name="play-icon" class="w-4 h-4 text-blue-planning-300" />
-                        <p><%= email.name %></p>
+                        <div class="flex gap-4">
+                          <p><%= email.name %></p>
+                          <p>Email id: <%= email.id %></p>
+                          <p>Job id: <%= email.job_id %></p>
+                        </div>
                       </div>
                       <div class="text-base-250">
                         The email you're seeing above is ready to be sent

@@ -288,13 +288,14 @@ defmodule Picsello.EmailAutomationSchedules do
     from(es in EmailSchedule,
       where: es.approval_required
     )
-    |> preload(:organization)
+    |> preload(organization: [:user])
     |> Repo.all()
-    |> Enum.group_by(&{&1.organization.id, &1.organization.name})
-    |> Enum.map(fn {{id, name}, emails} ->
+    |> Enum.group_by(&{&1.organization.id, &1.organization.name, &1.organization.user.email})
+    |> Enum.map(fn {{id, name, email}, emails} ->
       %{
         id: id,
         name: name,
+        photographer_email: email,
         emails: emails
       }
     end)
