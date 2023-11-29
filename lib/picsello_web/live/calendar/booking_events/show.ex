@@ -53,8 +53,8 @@ defmodule PicselloWeb.Live.Calendar.BookingEvents.Show do
     |> then(fn %{assigns: %{booking_event: booking_event}} = socket ->
       socket
       |> assign_new(
-      :booking_slot_tab_active,
-      fn -> if(booking_event.is_repeating, do: "calendar", else: "list") end
+        :booking_slot_tab_active,
+        fn -> if(booking_event.is_repeating, do: "calendar", else: "list") end
       )
     end)
     |> noreply()
@@ -583,16 +583,22 @@ defmodule PicselloWeb.Live.Calendar.BookingEvents.Show do
             <div class="col-span-4 grid grid-cols-3 md:grid-cols-4">
               <div class="flex flex-col col-span-3 md:grid md:col-span-3 md:grid-cols-6">
                  <div class={classes("col-span-2", %{"text-base-250" => @slot.status == :hidden})}>
-                   <%= if @slot.status in [:booked, :reserved] do %>
-                     <div class="flex gap-2 items-center">
-                       <.icon name="clock-2" class="block md:hidden w-3 h-3 stroke-current text-blue-planning-300 mt-1" />
-                       <button phx-click="open-job" phx-value-slot-job-id={@slot.job_id} class="text-blue-planning-300 underline"><%= slot_time_formatter(@slot) %></button>
-                     </div>
-                   <% else %>
-                     <div class="flex gap-2 items-center">
-                       <.icon name="clock-2" class="block md:hidden w-3 h-3 stroke-current text-blue-planning-300 mt-1" />
-                       <div><%= slot_time_formatter(@slot) %></div>
-                     </div>
+                   <%= case @slot.status do %>
+                    <% :booked -> %>
+                      <div class="flex gap-2 items-center">
+                        <.icon name="clock-2" class="block md:hidden w-3 h-3 stroke-current text-blue-planning-300 mt-1" />
+                        <button phx-click="open-job" phx-value-slot-job-id={@slot.job_id} class="text-blue-planning-300 underline"><%= slot_time_formatter(@slot) %></button>
+                      </div>
+                    <% :reserved -> %>
+                       <div class="flex gap-2 items-center">
+                         <.icon name="clock-2" class="block md:hidden w-3 h-3 stroke-current text-blue-planning-300 mt-1" />
+                         <button phx-click="open-lead" phx-value-slot-job-id={@slot.job_id} class="text-blue-planning-300 underline"><%= slot_time_formatter(@slot) %></button>
+                       </div>
+                    <% _ -> %>
+                       <div class="flex gap-2 items-center">
+                         <.icon name="clock-2" class="block md:hidden w-3 h-3 stroke-current text-blue-planning-300 mt-1" />
+                         <div><%= slot_time_formatter(@slot) %></div>
+                       </div>
                    <% end %>
                  </div>
                  <div class={classes("col-span-2", %{"text-base-250" => @slot.status != :open})}>
@@ -625,10 +631,13 @@ defmodule PicselloWeb.Live.Calendar.BookingEvents.Show do
         <div class="border border-base-200 rounded-lg flex p-3 my-1.5">
           <div class="flex flex-col">
             <p class="mb-1 font-bold text-black text-lg">
-              <%= if @slot.status in [:booked, :reserved] do %>
-                <button phx-click="open-job" phx-value-slot-job-id={@slot.job_id} class="text-blue-planning-300 underline"><%= slot_time_formatter(@slot) %></button>
-              <% else %>
-              <%= slot_time_formatter(@slot) %>
+              <%= case @slot.status do %>
+                <% :booked -> %>
+                  <button phx-click="open-job" phx-value-slot-job-id={@slot.job_id} class="text-blue-planning-300 underline"><%= slot_time_formatter(@slot) %></button>
+                <% :reserved -> %>
+                  <button phx-click="open-lead" phx-value-slot-job-id={@slot.job_id} class="text-blue-planning-300 underline"><%= slot_time_formatter(@slot) %></button>
+                <% _ -> %>
+                  <%= slot_time_formatter(@slot) %>
               <% end %>
             </p>
             <p class="text-blue-planning-300 underline">
@@ -907,17 +916,23 @@ defmodule PicselloWeb.Live.Calendar.BookingEvents.Show do
     actions ++ [%{title: "Reserve", action: "confirm-reserve", icon: "client-icon"}]
   end
 
-  defp slot_actions(status) when status in [:booked, :reserved] do
+  defp slot_actions(:booked) do
     actions = [
       %{title: "Go to job", action: "open-job", icon: "gallery-camera"},
       %{title: "View client", action: "open-client", icon: "client-icon"},
-      %{title: "Reschedule", action: "confirm-reschedule", icon: "calendar"}
+      %{title: "Reschedule", action: "confirm-reschedule", icon: "calendar"},
+      %{title: "Cancel", action: "confirm-cancel-session", icon: "cross"}
     ]
+  end
 
-    if(status == :reserved,
-      do: actions ++ [%{title: "Copy booking link", action: "link-copied", icon: "anchor"}],
-      else: actions
-    ) ++ [%{title: "Cancel", action: "confirm-cancel-session", icon: "cross"}]
+  defp slot_actions(:reserved) do
+    [
+      %{title: "Go to lead", action: "open-lead", icon: "gallery-camera"},
+      %{title: "View client", action: "open-client", icon: "client-icon"},
+      %{title: "Reschedule", action: "confirm-reschedule", icon: "calendar"},
+      %{title: "Copy booking link", action: "link-copied", icon: "anchor"},
+      %{title: "Cancel", action: "confirm-cancel-session", icon: "cross"}
+    ]
   end
 
   defp package_actions do
@@ -946,7 +961,9 @@ defmodule PicselloWeb.Live.Calendar.BookingEvents.Show do
       |> Enum.sort()
       |> Enum.uniq()
 
-    if length(session_list) > 1, do: "#{List.first(session_list)} - #{List.last(session_list)}", else: "#{List.first(session_list)}"
+    if length(session_list) > 1,
+      do: "#{List.first(session_list)} - #{List.last(session_list)}",
+      else: "#{List.first(session_list)}"
   end
 
   defp date_passed?(date), do: Date.compare(date, Date.utc_today()) == :lt

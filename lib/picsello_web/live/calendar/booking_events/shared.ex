@@ -312,7 +312,26 @@ defmodule PicselloWeb.Calendar.BookingEvents.Shared do
 
       job_id ->
         socket
-        |> redirect(to: "/leads/#{to_integer(job_id)}")
+        |> redirect(to: "/jobs/#{to_integer(job_id)}")
+    end
+    |> noreply()
+  end
+
+  def handle_event(
+        "open-lead",
+        params,
+        socket
+      ) do
+    params
+    |> Map.get("slot-job-id", nil)
+    |> case do
+      nil ->
+        socket
+        |> put_flash(:error, "There is no lead assigned. Please set a lead first.")
+
+      lead_id ->
+        socket
+        |> redirect(to: "/leads/#{to_integer(lead_id)}")
     end
     |> noreply()
   end
