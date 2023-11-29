@@ -109,7 +109,7 @@
                                             </div>
                                             <div class="flex items-center">
                                                 <div class="mr-2">
-                                                <.icon name="add-photos" class="inline-block w-4 h-4 text-blue-planning-300" />
+                                                <.icon name="add-photos" class="-ml-1 inline-block w-4 h-4 text-blue-planning-300" />
                                                 </div>
                                                 <div class="text-base-250"><%= if @package.download_count < 1, do: "No digital images inclulded", else: "#{@package.download_count} #{ngettext("image included", "images included", @package.download_count)}" %></div>
                                             </div>
@@ -117,7 +117,7 @@
                                         <div class="flex flex-col md:flex-row justify-start my-3 md:my-0">
                                             <div class="text-md text-base-250 font-bold mb-2 block md:hidden">Payment Schedule</div>
                                             <div class="mr-2 flex items-center md:items-start">
-                                                <.icon name="money-bags" class="inline-block w-6 h-6 text-blue-planning-300 mt-0.5 md:mt-0" />
+                                                <.icon name="money-bags" class="inline-block w-3.5 h-3.5 text-blue-planning-300 mt-2" />
                                                 <div class="ml-2 flex text-base-250"><%= @payments_description %></div>
                                             </div>
                                         </div>
@@ -192,7 +192,7 @@
             <div class="bg-base-200 flex flex-col col-span-3">
                 <.marketing_preview {assigns} />
                 <%= if @package do %>
-                    <div class="rounded-lg border border-gray-300 flex flex-col p-3 mt-6">
+                    <div class="hidden rounded-lg border border-gray-300 flex flex-col p-3 mt-6">
                         <div class="flex mb-4 items-center">
                             <div class="mr-2">
                                 <.icon name="package" class="inline-block w-5 h-5 text-blue-planning-300" />

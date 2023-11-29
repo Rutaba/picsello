@@ -664,7 +664,7 @@ defmodule PicselloWeb.Live.Calendar.BookingEvents.Show do
 
     ~H"""
       <button title={@title} type="button" class={"flex items-center px-3 py-2 rounded-lg text-left hover:bg-#{@color}-100 hover:font-bold #{@hidden}"} disabled={@disabled} {@rest}>
-        <.icon name={@icon} class={"inline-block w-4 h-4 mr-3 fill-current text-#{@color}-300"} />
+        <.icon name={@icon} class={"inline-block w-5 h-5 mr-3 fill-current text-#{@color}-300"} />
         <%= @title %>
       </button>
     """

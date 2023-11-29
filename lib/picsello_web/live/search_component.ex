@@ -67,7 +67,7 @@ defmodule PicselloWeb.SearchComponent do
           <div class="flex flex-col mt-6 mb-6">
             <div class="flex items-center">
               <.icon name={@icon} class="w-7 h-7 text-blue-planning-300" />
-              <p class="text-sm font-semibold ml-2">
+              <p class="text-sm font-semibold ml-1">
                 <%= date_formatter(@payload.booking_event_date.date, :day) %>
               </p>
             </div>

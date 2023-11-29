@@ -350,6 +350,7 @@ defmodule PicselloWeb.Calendar.BookingEvents.Shared do
     socket
     |> assign(:clients, clients)
     |> SearchComponent.open(%{
+      close_label: "Cancel",
       change_event: :change_client,
       submit_event: :reserve_session,
       save_label: "Reserve",
