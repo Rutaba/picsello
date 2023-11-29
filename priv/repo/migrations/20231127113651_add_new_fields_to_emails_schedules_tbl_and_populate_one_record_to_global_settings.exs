@@ -5,7 +5,9 @@ defmodule Picsello.Repo.Migrations.AddNewFieldsToEmailsSchedulesTblAndPopulateOn
   import Ecto.Query
 
   def up do
-    populate_automation_setting_to_admin_global_settings()
+    execute("""
+      INSERT INTO admin_global_settings VALUES (#{7}, 'Automation Setting', 'Global Settings for the email-automation feature', 'approval_required', 'false', 'active', now(), now());
+    """)
 
     alter table(:email_schedules) do
       add(:approval_required, :boolean, default: false)
@@ -27,18 +29,6 @@ defmodule Picsello.Repo.Migrations.AddNewFieldsToEmailsSchedulesTblAndPopulateOn
       remove(:approval_required)
     end
   end
-
-  defp populate_automation_setting_to_admin_global_settings(),
-    do:
-      Repo.insert(
-        AdminGlobalSetting.changeset(%AdminGlobalSetting{}, %{
-          title: "Automation Setting",
-          slug: "approval_required",
-          description: "Global Settings for the email-automation feature",
-          value: "false",
-          status: :active
-        })
-      )
 
   defp remove_automation_setting_from_admin_global_settings(),
     do:

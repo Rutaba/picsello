@@ -1,15 +1,14 @@
 defmodule PicselloWeb.Live.Admin.AutomatedEmails do
   @moduledoc false
-  use PicselloWeb, live_view: [layout: false]
+  use PicselloWeb, live_view: [layout: :admin]
   import PicselloWeb.LiveHelpers
 
-  alias Picsello.{Repo, Organization, EmailAutomation.EmailSchedule}
-  import Ecto.Query
+  alias Picsello.{EmailAutomationSchedules}
 
   @impl true
   def mount(_params, _session, socket) do
     socket
-    |> assign_organizations()
+    |> assign_defaults()
     |> assign_collapsed_sections()
     |> ok()
   end
@@ -36,14 +35,14 @@ defmodule PicselloWeb.Live.Admin.AutomatedEmails do
           </button>
         </div>
       </div>
-      <.pipeline_section organizations={@organizations} collapsed_sections={@collapsed_sections}/>
+      <.pipeline_section organization_emails={@organization_emails} collapsed_sections={@collapsed_sections}/>
     """
   end
 
   defp pipeline_section(assigns) do
     ~H"""
       <div class="flex flex-col px-32">
-        <%= Enum.map(@organizations, fn organization -> %>
+        <%= Enum.map(@organization_emails, fn organization -> %>
           <div testid="pipeline-section" class="mb-3 md:mr-4 border border-base-200 rounded-lg">
             <div class="flex bg-base-200 pl-2 pr-7 py-3 items-center cursor-pointer" phx-click="toggle-section" phx-value-organization_id={organization.id}>
               <div class="flex flex-col">
@@ -53,7 +52,7 @@ defmodule PicselloWeb.Live.Admin.AutomatedEmails do
                   </div>
                   <span class="flex items-center text-blue-planning-300 text-xl font-bold ml-2">
                     <%= organization.name %>
-                    <span class="text-base-300 ml-2 rounded-md bg-white px-2 text-sm font-bold whitespace-nowrap"><%= email_schedules_by_id(organization.id) |> Enum.count() %></span>
+                    <span class="text-base-300 ml-2 rounded-md bg-white px-2 text-sm font-bold whitespace-nowrap"><%= organization.emails |> Enum.count() %></span>
                   </span>
                 </div>
                 <p class="text:xs text-base-250 lg:text-base ml-10">
@@ -62,7 +61,7 @@ defmodule PicselloWeb.Live.Admin.AutomatedEmails do
               </div>
 
               <div class="flex items-center ml-auto">
-                <%= if email_schedules_by_id(organization.id) |> Enum.count() > 0 do %>
+                <%= if Enum.any?(organization.emails) do %>
                   <button class="h-8 flex items-center px-2 py-1 bg-blue-planning-300 text-white font-bold mr-2 whitespace-nowrap rounded-md hover:opacity-75" phx-click="confirm-send-all-emails" phx-value-organization_id={organization.id}>
                     Send All
                   </button>
@@ -76,7 +75,7 @@ defmodule PicselloWeb.Live.Admin.AutomatedEmails do
             </div>
 
             <div class="flex flex-col">
-              <% emails = email_schedules_by_id(organization.id) %>
+              <% emails = organization.emails %>
               <%= if !Enum.member?(@collapsed_sections, organization.id) do %>
                 <%= Enum.map(emails, fn email -> %>
                   <div class="flex flex-col md:flex-row pl-2 pr-7 md:items-center justify-between p-6">
@@ -154,7 +153,7 @@ defmodule PicselloWeb.Live.Admin.AutomatedEmails do
     |> PicselloWeb.ConfirmationComponent.open(%{
       title: "Are you sure you want to send all emails of this organization?",
       subtitle: "This will send all of your ready-to-send emails for this specific organization",
-      confirm_event: {"send-all-emails-#{organization_id}"},
+      confirm_event: "send-all-emails-#{organization_id}",
       confirm_label: "Yes, send them",
       close_label: "Cancel",
       icon: "warning-orange"
@@ -172,7 +171,7 @@ defmodule PicselloWeb.Live.Admin.AutomatedEmails do
     |> PicselloWeb.ConfirmationComponent.open(%{
       title: "Are you sure your want to send this email?",
       subtitle: "This will send only this specific selected email for this organization",
-      confirm_event: {"send-now-#{email_id}"},
+      confirm_event: "send-now-#{email_id}",
       confirm_label: "Yes, send it",
       close_label: "Cancel",
       icon: "warning-orange"
@@ -189,6 +188,7 @@ defmodule PicselloWeb.Live.Admin.AutomatedEmails do
     socket
     |> close_modal()
     |> put_flash(:message, "Emails have been sent globally!")
+    |> assign_defaults()
     |> noreply()
   end
 
@@ -201,6 +201,7 @@ defmodule PicselloWeb.Live.Admin.AutomatedEmails do
     socket
     |> close_modal()
     |> put_flash(:message, "All emails have been sent for the organization!")
+    |> assign_defaults()
     |> noreply()
   end
 
@@ -208,29 +209,34 @@ defmodule PicselloWeb.Live.Admin.AutomatedEmails do
         {:confirm_event, "send-now-" <> email_id},
         socket
       ) do
-    _email_id = String.to_integer(email_id)
-    # SEND NOW
-    socket
+    email_id = String.to_integer(email_id)
+
+    EmailAutomationSchedules.send_email_sechedule(email_id)
+    |> case do
+      {:ok, _} ->
+        socket
+        |> put_flash(:success, "Email Sent Successfully")
+
+      _ ->
+        socket
+        |> put_flash(:error, "Error in Sending Email")
+    end
     |> close_modal()
-    |> put_flash(:message, "Email has been sent successfully!")
+    |> assign_defaults()
     |> noreply()
   end
 
-  defp assign_organizations(socket) do
-    organizations = from(o in Organization) |> Repo.all()
+  defp assign_defaults(socket) do
+    organization_emails = EmailAutomationSchedules.get_all_emails_for_approval()
 
     socket
-    |> assign(organizations: organizations)
+    |> assign(organization_emails: organization_emails)
   end
 
-  defp assign_collapsed_sections(socket) do
-    organizations = from(o in Organization) |> Repo.all() |> Enum.map(fn x -> x.id end)
+  defp assign_collapsed_sections(%{assigns: %{organization_emails: organization_emails}} = socket) do
+    collapsed_sections = organization_emails |> Enum.map(fn x -> x.id end)
 
     socket
-    |> assign(:collapsed_sections, organizations)
-  end
-
-  defp email_schedules_by_id(organization_id) do
-    from(es in EmailSchedule, where: es.organization_id == ^organization_id) |> Repo.all()
+    |> assign(:collapsed_sections, collapsed_sections)
   end
 end

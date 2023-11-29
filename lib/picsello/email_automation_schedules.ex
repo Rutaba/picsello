@@ -29,6 +29,7 @@ defmodule Picsello.EmailAutomationSchedules do
   alias Picsello.{
     Repo,
     Jobs,
+    Orders,
     PaymentSchedules,
     EmailAutomations,
     EmailAutomation.EmailSchedule,
@@ -252,12 +253,51 @@ defmodule Picsello.EmailAutomationSchedules do
 
   A list of email schedules, each including preloaded data for email automation pipelines and categories.
   """
+
+  def send_all_emails_of_organization(organization_id) do
+    email_ids =
+      from(es in EmailSchedule,
+        where: es.organization_id == ^organization_id and es.approval_required == true
+      )
+      |> Repo.all()
+      |> Enum.map(& &1.id)
+
+    email_ids |> Enum.map(fn id -> send_email_sechedule(id) end)
+  end
+
+  def send_all_global_emails() do
+    email_ids =
+      from(es in EmailSchedule,
+        where: es.approval_required == true
+      )
+      |> Repo.all()
+      |> Enum.map(& &1.id)
+
+    email_ids |> Enum.map(fn id -> send_email_sechedule(id) end)
+  end
+
   def get_all_emails_schedules(organizations) do
     from(es in EmailSchedule,
       where: es.organization_id in ^organizations and es.approval_required == false
     )
     |> preload(email_automation_pipeline: [:email_automation_category])
     |> Repo.all()
+  end
+
+  def get_all_emails_for_approval() do
+    from(es in EmailSchedule,
+      where: es.approval_required
+    )
+    |> preload(:organization)
+    |> Repo.all()
+    |> Enum.group_by(&{&1.organization.id, &1.organization.name})
+    |> Enum.map(fn {{id, name}, emails} ->
+      %{
+        id: id,
+        name: name,
+        emails: emails
+      }
+    end)
   end
 
   @doc """
@@ -830,6 +870,62 @@ defmodule Picsello.EmailAutomationSchedules do
       {count, nil} -> {:ok, count}
       _ -> {:error, "error insertion"}
     end
+  end
+
+  def send_email_sechedule(email_id) do
+    email =
+      get_schedule_by_id(email_id)
+      |> Repo.preload(email_automation_pipeline: [:email_automation_category])
+
+    pipeline = email.email_automation_pipeline
+
+    case email.gallery_id do
+      nil ->
+        job =
+          Jobs.get_job_by_id(email.job_id)
+          |> Repo.preload([:payment_schedules, :job_status, client: :organization])
+
+        send_email(:job, pipeline.email_automation_category.type, email, job, pipeline.state, nil)
+
+      id ->
+        gallery = Galleries.get_gallery!(id)
+
+        send_email(
+          :gallery,
+          pipeline.email_automation_category.type,
+          email,
+          gallery,
+          pipeline.state,
+          email.order_id
+        )
+    end
+  end
+
+  defp send_email(:job, category_type, email, job, state, _order_id) do
+    EmailAutomations.send_now_email(
+      category_type,
+      email,
+      job,
+      state
+    )
+  end
+
+  defp send_email(:gallery, _category_type, email, gallery, state, _order_id)
+       when state in [
+              :manual_gallery_send_link,
+              :manual_send_proofing_gallery,
+              :manual_send_proofing_gallery_finals,
+              :cart_abandoned,
+              :gallery_expiration_soon,
+              :gallery_password_changed,
+              :after_gallery_send_feedback
+            ] do
+    EmailAutomations.send_now_email(:gallery, email, gallery, state)
+  end
+
+  defp send_email(:gallery, _category_type, email, _gallery, state, order_id) do
+    order = Orders.get_order(order_id)
+    EmailAutomations.send_now_email(:order, email, order, state)
   end
 
   defp email_mapping(data, gallery, category_type, order_id) do
