@@ -56,7 +56,7 @@ defmodule PicselloWeb.ConfirmationComponent do
       <% end %>
 
       <%= if @confirm_event do %>
-        <button class={"w-full mt-6 " <> @confirm_class} title={@confirm_label} type="button" phx-click={@confirm_event} phx-disable-with={"#{@confirm_label}&hellip;"} phx-target={@myself}>
+        <button class={"w-full mt-6 " <> @confirm_class} title={@confirm_label} type="button" phx-click={@confirm_event} phx-disable-with={"#{@confirm_label}..."} phx-target={@myself}>
           <%= @confirm_label %>
         </button>
       <% end %>
