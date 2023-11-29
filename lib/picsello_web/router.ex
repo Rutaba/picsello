@@ -122,6 +122,7 @@ defmodule PicselloWeb.Router do
     live("/workers", Live.Admin.Workers, :index)
     live("/", Live.Admin.Index, :index)
     live("/global_settings", Live.Admin.GlobalSettings, :index)
+    live("/automated-emails", Live.Admin.AutomatedEmails, :index)
 
     post("/users/log_in", UserAdminSessionController, :create)
   end

@@ -319,13 +319,13 @@ defmodule Picsello.Workers.ScheduleAutomationEmail do
   defp update_email_schedule(schedule) do
     email_schedule = Ecto.Changeset.change(schedule, approval_required: true)
 
-      case Repo.update(email_schedule) do
-        {:ok, _struct} ->
-          Logger.info("Email Updated: #{schedule.name}} to approval_required: 'true'")
+    case Repo.update(email_schedule) do
+      {:ok, _struct} ->
+        Logger.info("Email Updated: #{schedule.name}} to approval_required: 'true'")
 
-        {:error, changeset} ->
-          Logger.error("Email #{schedule.name} #{changeset}")
-      end
+      {:error, changeset} ->
+        Logger.error("Email #{schedule.name} #{changeset}")
+    end
   end
 
   defp get_all_organizations() do
