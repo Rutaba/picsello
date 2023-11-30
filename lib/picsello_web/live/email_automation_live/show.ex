@@ -26,7 +26,6 @@ defmodule PicselloWeb.Live.EmailAutomations.Show do
     Galleries,
     Job,
     Jobs,
-    Orders,
     EmailAutomations,
     EmailAutomationSchedules,
     Repo,
@@ -162,40 +161,41 @@ defmodule PicselloWeb.Live.EmailAutomations.Show do
   end
 
   @impl true
-  def handle_info(
-        {:confirm_event, "send-email-now-" <> param},
-        %{assigns: %{job_id: job_id}} = socket
-      ) do
-    [id, pipeline_id] = String.split(param, "-")
+  def handle_info({:confirm_event, "send-email-now-" <> param}, socket) do
+    [id, _pipeline_id] = String.split(param, "-")
     id = to_integer(id)
-    pipeline_id = to_integer(pipeline_id)
 
-    email =
-      EmailAutomationSchedules.get_schedule_by_id(id)
-      |> Repo.preload(email_automation_pipeline: [:email_automation_category])
+    # TODO: Needs to remove after verfiy send emails manually
+    # pipeline_id = to_integer(pipeline_id)
 
-    pipeline = get_pipline(pipeline_id)
+    # email =
+    #   EmailAutomationSchedules.get_schedule_by_id(id)
+    #   |> Repo.preload(email_automation_pipeline: [:email_automation_category])
+    # pipeline = email.email_automation_pipeline
+    # # pipeline = get_pipline(email.email_automation_pipeline_id)
 
-    case email.gallery_id do
-      nil ->
-        job =
-          Jobs.get_job_by_id(job_id)
-          |> Repo.preload([:payment_schedules, :job_status, client: :organization])
+    # case email.gallery_id do
+    #   nil ->
+    #     job =
+    #       Jobs.get_job_by_id(job_id)
+    #       |> Repo.preload([:payment_schedules, :job_status, client: :organization])
 
-        send_email(:job, pipeline.email_automation_category.type, email, job, pipeline.state, nil)
+    #     send_email(:job, pipeline.email_automation_category.type, email, job, pipeline.state, nil)
 
-      id ->
-        gallery = Galleries.get_gallery!(id)
+    #   id ->
+    #     gallery = Galleries.get_gallery!(id)
 
-        send_email(
-          :gallery,
-          pipeline.email_automation_category.type,
-          email,
-          gallery,
-          pipeline.state,
-          email.order_id
-        )
-    end
+    #     send_email(
+    #       :gallery,
+    #       pipeline.email_automation_category.type,
+    #       email,
+    #       gallery,
+    #       pipeline.state,
+    #       email.order_id
+    #     )
+    # end
+
+    EmailAutomationSchedules.send_email_sechedule(id)
     |> case do
       {:ok, _} ->
         socket
@@ -495,32 +495,34 @@ defmodule PicselloWeb.Live.EmailAutomations.Show do
     end
   end
 
-  defp send_email(:job, category_type, email, job, state, _order_id) do
-    EmailAutomations.send_now_email(
-      category_type,
-      email,
-      job,
-      state
-    )
-  end
+  # TODO: Needs to remove after verfiy send emails manually
 
-  defp send_email(:gallery, _category_type, email, gallery, state, _order_id)
-       when state in [
-              :manual_gallery_send_link,
-              :manual_send_proofing_gallery,
-              :manual_send_proofing_gallery_finals,
-              :cart_abandoned,
-              :gallery_expiration_soon,
-              :gallery_password_changed,
-              :after_gallery_send_feedback
-            ] do
-    EmailAutomations.send_now_email(:gallery, email, gallery, state)
-  end
+  # defp send_email(:job, category_type, email, job, state, _order_id) do
+  #   EmailAutomations.send_now_email(
+  #     category_type,
+  #     email,
+  #     job,
+  #     state
+  #   )
+  # end
 
-  defp send_email(:gallery, _category_type, email, _gallery, state, order_id) do
-    order = Orders.get_order(order_id)
-    EmailAutomations.send_now_email(:order, email, order, state)
-  end
+  # defp send_email(:gallery, _category_type, email, gallery, state, _order_id)
+  #      when state in [
+  #             :manual_gallery_send_link,
+  #             :manual_send_proofing_gallery,
+  #             :manual_send_proofing_gallery_finals,
+  #             :cart_abandoned,
+  #             :gallery_expiration_soon,
+  #             :gallery_password_changed,
+  #             :after_gallery_send_feedback
+  #           ] do
+  #   EmailAutomations.send_now_email(:gallery, email, gallery, state)
+  # end
+
+  # defp send_email(:gallery, _category_type, email, _gallery, state, order_id) do
+  #   order = Orders.get_order(order_id)
+  #   EmailAutomations.send_now_email(:order, email, order, state)
+  # end
 
   defp disable_pipeline?(_emails, _state, 0), do: false
 

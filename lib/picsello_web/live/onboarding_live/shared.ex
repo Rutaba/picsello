@@ -65,7 +65,7 @@ defmodule PicselloWeb.OnboardingLive.Shared do
           <.icon name="logo-shoot-higher" class="w-32 h-12 sm:h-20 sm:w-48" />
         </div>
         <div class="grid sm:grid-cols-2 bg-white rounded-lg">
-          <div class={"order-2 sm:order-1 sm:rounded-l-lg #{@left_classes}"}>
+          <div class={"sm:rounded-l-lg #{@left_classes}"}>
             <%= render_slot(@inner_block) %>
           </div>
           <div class={"#{@right_classes} order-1 sm:order-2 flex flex-col"}>
@@ -201,6 +201,16 @@ defmodule PicselloWeb.OnboardingLive.Shared do
         {:error, _} ->
           {:error, "Couldn't assign default email presets"}
       end
+    end)
+    |> Multi.run(:user_temp_navbar, fn _repo, %{user: user} ->
+      # temporarily add enable for all net new users
+      # we are doing this to A/B cohort test the new navbar
+      # and see if it helps with retention/ease of use
+      if FunWithFlags.enabled?(:photo_lab) do
+        FunWithFlags.enable(:sidebar_navigation, for_actor: user)
+      end
+
+      {:ok, nil}
     end)
     |> Multi.run(:user_final, fn _repo, %{user: user} ->
       with _ <- Onboardings.complete!(user) do

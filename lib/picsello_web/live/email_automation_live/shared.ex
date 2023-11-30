@@ -763,7 +763,7 @@ defmodule PicselloWeb.EmailAutomationLive.Shared do
       get_and_update_in(
         params,
         ["status"],
-        &{&1, if(&1 in ["true", "active"], do: :active, else: :disabled)}
+        &{&1, if(&1 in ["true", "active", nil], do: :active, else: :disabled)}
       )
 
     params

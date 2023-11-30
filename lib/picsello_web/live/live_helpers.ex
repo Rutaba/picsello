@@ -228,8 +228,7 @@ defmodule PicselloWeb.LiveHelpers do
     assigns =
       assigns
       |> Enum.into(%{
-        active_class: nil,
-        intercom_or_external_link: %{target: "_blank", rel: "noopener noreferrer"}
+        active_class: nil
       })
 
     ~H"""
@@ -239,7 +238,7 @@ defmodule PicselloWeb.LiveHelpers do
             <%= render_slot(@inner_block, active) %>
           <% end %>
         <% else %>
-          <a href={@to} class={@class} {@intercom_or_external_link}>
+          <a href={@to} class={@class}>
             <%= render_slot(@inner_block, active) %>
           </a>
         <% end %>
@@ -516,5 +515,20 @@ defmodule PicselloWeb.LiveHelpers do
       _ ->
         "#{Timex.month_name(date.month)} #{date.day}, #{date.year}"
     end
+  end
+
+  @doc """
+  Format datetime as per given type, it aslo accepts timezone to convert datetime accordingly
+  """
+  def format_datetime_via_type(%DateTime{} = datetime, time_zone, type \\ "MM DD, YY") do
+    datetime = DateTime.shift_zone!(datetime, time_zone)
+    date = DateTime.to_date(datetime)
+
+    time =
+      datetime
+      |> DateTime.to_time()
+      |> Calendar.strftime("%I:%M %p")
+
+    format_date_via_type(date, type) <> " @ #{time}"
   end
 end
