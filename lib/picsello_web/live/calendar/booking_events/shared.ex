@@ -204,14 +204,30 @@ defmodule PicselloWeb.Calendar.BookingEvents.Shared do
     [booking_event_date_id, slot_client_id, slot_index] =
       to_integer([booking_event_date_id, slot_client_id, slot_index])
 
-    booking_event_dates = get_booking_date(booking_event, booking_event_date_id)
+    dates_with_slots =
+    booking_event.dates
+    |> Enum.map(fn date ->
+      date_slots =
+        date.slots
+        |> Enum.with_index(fn slot, slot_index ->
+          {"#{slot.slot_start} - #{slot.slot_end}", slot_index}
+        end)
 
-    filtered_slots =
-      booking_event_dates.slots
-      |> Enum.with_index(fn slot, slot_index ->
-        {"#{slot.slot_start} - #{slot.slot_end}", slot_index}
-      end)
-      |> List.delete_at(slot_index)
+      %{id: date.id, date: date_formatter(date.date, :day), slots: date_slots}
+    end)
+    |> Enum.map(fn
+      %{id: ^booking_event_date_id} = date_slots ->
+        updated_slots =
+          date_slots
+          |> Map.get(:slots, [])
+          |> Enum.reject(fn {_, index} -> index == slot_index end)
+
+        date_slots |> Map.put(:slots, updated_slots)
+
+      rest ->
+        rest
+    end)
+
 
     socket
     |> make_popup(
@@ -222,7 +238,6 @@ defmodule PicselloWeb.Calendar.BookingEvents.Shared do
       title: "Reschedule session",
       confirm_label: "Reschedule",
       confirm_class: "btn-primary",
-      dropdown_items: filtered_slots,
       dropdown_label: "Pick a new time",
       empty_dropdown_description: "Sorry, no slots available for rescheduling now",
       confirm_event: "reschedule_session",
@@ -231,7 +246,8 @@ defmodule PicselloWeb.Calendar.BookingEvents.Shared do
         slot_index: slot_index,
         slot_client_id: slot_client_id,
         client_name: slot_client_name(current_user, slot_client_id),
-        client_icon: "client-icon"
+        client_icon: "client-icon",
+        dates_with_slots: dates_with_slots
       }
     )
   end

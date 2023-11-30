@@ -1,6 +1,5 @@
 defmodule PicselloWeb.Shared.ConfirmationComponent do
   @moduledoc false
-
   use PicselloWeb, :live_component
 
   @default_assigns %{
@@ -21,6 +20,25 @@ defmodule PicselloWeb.Shared.ConfirmationComponent do
     copy_btn_event: nil,
     copy_btn_value: nil
   }
+  @impl true
+  def update(
+        %{
+          payload: %{
+            booking_event_date_id: date_id,
+            dates_with_slots: dates_with_slots
+          }
+        } = assigns,
+        socket
+      ) do
+    socket
+    |> assign(Enum.into(assigns, @default_assigns))
+    |> assign(
+      :date_labels,
+      dates_with_slots |> Enum.map(fn %{id: id, date: date} -> {date, id} end)
+    )
+    |> assign(:dropdown_items, get_date_slots(dates_with_slots, date_id))
+    |> ok()
+  end
 
   @impl true
   def update(assigns, socket) do
@@ -65,7 +83,9 @@ defmodule PicselloWeb.Shared.ConfirmationComponent do
 
   defp section(%{dropdown?: true} = assigns) do
     ~H"""
-      <.form :let={f} for={%{}} as={:dropdown} phx-submit={@confirm_event} phx-target={@myself} class="mt-2">
+      <.form :let={f} for={%{}} as={:dropdown} phx-submit={@confirm_event} phx-target={@myself} phx-change="validate" class="mt-2">
+        <h1 class="font-extrabold text-sm">Pick a date</h1>
+        <%= select(f, :date_id, @date_labels, class: "w-full px-2 py-3 border border-slate-400 rounded-md mt-1 cursor-pointer") %>
         <%= if Enum.any?(@dropdown_items) do %>
           <h1 class="font-extrabold text-sm"><%= @dropdown_label %></h1>
           <%= select(f, :item_id, @dropdown_items, class: "w-full px-2 py-3 border border-slate-400 rounded-md mt-1 cursor-pointer") %>
@@ -117,13 +137,30 @@ defmodule PicselloWeb.Shared.ConfirmationComponent do
     """
   end
 
+  def handle_event(
+        "validate",
+        %{"_target" => ["dropdown", "date_id"], "dropdown" => %{"date_id" => id}},
+        %{assigns: %{payload: %{dates_with_slots: dates_with_slots} = payload}} = socket
+      ) do
+    id = String.to_integer(id)
+
+    socket
+    |> assign(:payload, Map.put(payload, :booking_event_date_id, id))
+    |> assign(:dropdown_items, get_date_slots(dates_with_slots, id))
+    |> noreply()
+  end
+
   @impl true
   def handle_event(
-        event,
-        %{"dropdown" => %{"item_id" => item_id}},
+        "reschedule_session",
+        %{"dropdown" => %{"date_id" => date_id, "item_id" => item_id}},
         %{assigns: %{parent_pid: parent_pid, payload: payload}} = socket
       ) do
-    send(parent_pid, {:confirm_event, event, Map.put(payload, :item_id, item_id)})
+    send(
+      parent_pid,
+      {:confirm_event, "reschedule_session",
+       Map.put(payload, :item_id, item_id) |> Map.put(:booking_event_date_id, date_id)}
+    )
 
     socket |> noreply()
   end
@@ -141,6 +178,13 @@ defmodule PicselloWeb.Shared.ConfirmationComponent do
 
     socket |> noreply()
   end
+
+  defp get_date_slots(dates, date_id),
+    do:
+      dates
+      |> Enum.filter(fn %{id: id} -> id == date_id end)
+      |> hd()
+      |> Map.get(:slots)
 
   @spec open(Phoenix.LiveView.Socket.t(), %{
           optional(:close_label) => binary,

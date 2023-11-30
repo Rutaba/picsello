@@ -389,7 +389,7 @@ defmodule PicselloWeb.Live.Calendar.BookingEvents.Show do
 
   @impl true
   def handle_info(
-        {:update, %{booking_event: booking_event}},
+        {:update, %{booking_event: _booking_event}},
         socket
       ) do
     socket
@@ -917,7 +917,7 @@ defmodule PicselloWeb.Live.Calendar.BookingEvents.Show do
   end
 
   defp slot_actions(:booked) do
-    actions = [
+    [
       %{title: "Go to job", action: "open-job", icon: "gallery-camera"},
       %{title: "View client", action: "open-client", icon: "client-icon"},
       %{title: "Reschedule", action: "confirm-reschedule", icon: "calendar"},
