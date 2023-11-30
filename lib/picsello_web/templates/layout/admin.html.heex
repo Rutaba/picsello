@@ -1,0 +1,6 @@
+<%= live_render @socket, PicselloWeb.LiveModal, id: "with_out_layout" %>
+<main role="main" class={"#{dynamic_background_class(assigns)}"}>
+    <%= flash(@flash) %>
+    <%= @inner_content %>
+</main>
+  

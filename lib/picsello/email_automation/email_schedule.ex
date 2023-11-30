@@ -23,6 +23,7 @@ defmodule Picsello.EmailAutomation.EmailSchedule do
     field :stopped_at, :utc_datetime, default: nil
     field :reminded_at, :utc_datetime, default: nil
     field :stopped_reason, :string
+    field :approval_required, :boolean, default: false
 
     belongs_to(:email_automation_pipeline, EmailAutomationPipeline)
     belongs_to(:job, Job)
@@ -38,7 +39,7 @@ defmodule Picsello.EmailAutomation.EmailSchedule do
     email_preset
     |> cast(
       attrs,
-      ~w[email_automation_pipeline_id name type private_name subject_template body_template total_hours condition job_id gallery_id shoot_id order_id organization_id]a
+      ~w[email_automation_pipeline_id name type private_name subject_template body_template total_hours condition job_id gallery_id shoot_id order_id organization_id approval_required]a
     )
     |> validate_required(~w[email_automation_pipeline_id type subject_template body_template]a)
   end
