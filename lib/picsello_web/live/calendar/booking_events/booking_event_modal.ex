@@ -135,7 +135,7 @@ defmodule PicselloWeb.Live.Calendar.BookingEventModal do
                 <div class="font-bold mb-2 mt-2 md:mt-0">Stop repeating:</div>
                 <div class="flex gap-5 mb-2"><%= radio_button f, :repetition, false, class: "w-5 h-5 radio cursor-pointer mb-1" %> On</div>
                 <div class={classes("pl-10 mb-2", %{"pointer-events-none text-gray-400" => input_value(f, :repetition) === true})}>
-                  <%= input f, :stop_repeating, type: :date_input, disabled: is_nil(@changeset |> current |> Map.get(:date)), min: @changeset |> current |> Map.get(:date), class: "w-40" %>
+                  <%= input f, :stop_repeating, type: :date_input, disabled: is_nil(@changeset |> current |> Map.get(:date)), min: min_date_stop_repeating(@changeset), class: "w-40" %>
                 </div>
                 <div><%= error_tag(f, :stop_repeating, class: "text-red-sales-300 text-sm mb-2") %></div>
                 <div class="flex gap-5 mb-2"><%= radio_button f, :repetition, true, class: "w-5 h-5 radio cursor-pointer mb-2" %>After</div>
@@ -302,6 +302,18 @@ defmodule PicselloWeb.Live.Calendar.BookingEventModal do
     selected_days = get_field(changeset, :repeat_on) |> Enum.map(&Map.from_struct(&1))
     booking_event_date = current(changeset)
     BookingEvents.calculate_dates(booking_event_date, selected_days)
+  end
+
+  defp min_date_stop_repeating(changeset) do
+    if get_field(changeset, :date) do
+      selected_days = get_field(changeset, :repeat_on) |> Enum.map(&Map.from_struct(&1))
+      selected_days_no = selected_days |> Enum.filter(& &1.active) |> length()
+      booking_event_date =
+        changeset
+        |> current()
+        |> Map.put(:occurences, selected_days_no)
+      BookingEvents.calculate_dates(booking_event_date, selected_days) |> Enum.take(selected_days_no) |> List.last()
+    end
   end
 
   defp successfull_save(socket, booking_event_date) do
