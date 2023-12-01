@@ -251,8 +251,8 @@ defmodule PicselloWeb.OnboardingLive.ThreeMonth.Index do
   defp step(%{step: 2} = assigns) do
     ~H"""
       <.signup_container {assigns} show_logout?={true} left_classes="p-8 bg-purple-marketing-300 text-white order-2 sm:order-1">
-        <h2 class="text-3xl md:text-4xl font-bold text-center mb-8">THREE MONTH Picsello is here to help you achieve success on your terms</h2>
-        <blockqoute class="max-w-lg mt-auto mx-auto py-8 lg:py-12">
+        <h2 class="text-3xl md:text-4xl font-bold text-center mb-8">Picsello is here to help you achieve success on your terms</h2>
+        <blockqoute class="max-w-lg mt-auto mx-auto block mt-8">
           <p class="mb-4 text-white border-solid border-l-4 border-white pl-4">
             "Jane has been a wonderful mentor! With her help I’ve learned the importance of believing in myself and my work. She has taught me that it is imperative to be profitable at every stage of my photography journey to ensure I’m set up for lasting success. Jane has also given me the tools I need to make sure I’m charging enough to be profitable. She is always there to answer my questions and cheer me on. Jane has played a key role in my growth as a photographer and business owner! I wouldn’t be where I am without her!”
           </p>
@@ -260,6 +260,16 @@ defmodule PicselloWeb.OnboardingLive.ThreeMonth.Index do
             <img src={Routes.static_path(@socket, "/images/mastermind-quote.png")} loading="lazy" alt="Logo for Jess Allen Photography" class="w-12 h-12 object-contain" />
             <cite class="normal not-italic text-white"><span class="block font-bold not-italic">Jess Allen</span>
               jessallenphotography.com</cite>
+          </div>
+        </blockqoute>
+        <blockqoute class="max-w-lg mx-auto mt-6 block">
+          <p class="mb-4 text-white border-solid border-l-4 border-white pl-4">
+            "The mobile design on Picsello is GENIUS! I can operate it fully from my phone in a mobile friendly version - no more ‘this is not supported by the app at this time!’”
+          </p>
+          <div class="flex items-center gap-4">
+            <img src="https://assets-global.website-files.com/61147776bffed57ff3e884ef/629e8d41780f4f5411f43fc9_adrienne.webp" loading="lazy" alt="Logo for Adrienne DeMarco" class="w-12 h-12 object-contain rounded-full" />
+            <cite class="normal not-italic text-white"><span class="block font-bold not-italic">Adrienne DeMarco</span>
+              apdphotography.com</cite>
           </div>
         </blockqoute>
         <%= if @stripe_elements_loading do %>
@@ -300,7 +310,6 @@ defmodule PicselloWeb.OnboardingLive.ThreeMonth.Index do
           <img src={Routes.static_path(@socket, "/images/mastermind-clientbooking.png")} loading="lazy" alt="Picsello Client booking feature" class="max-w-full" />
         </div>
         <blockqoute class="max-w-lg mt-auto mx-auto py-8 lg:py-12">
-          THREE MONTH
           <p class="mb-4 text-white border-solid border-l-4 border-white pl-4">
             “I love the way that Picsello flows and so easy to use! All the information I need is easily accessible and well organized. Putting together a proposal for a client is so simple and takes only a few clicks before it's ready to send off for signing and payment.”
           </p>
@@ -381,6 +390,7 @@ defmodule PicselloWeb.OnboardingLive.ThreeMonth.Index do
     ~H"""
       <.signup_container {assigns} show_logout?={true} left_classes="p-8 pb-0 pr-0 bg-purple-marketing-300 text-white order-2 sm:order-1">
         <h2 class="text-3xl md:text-4xl font-bold text-center mb-8">Your <span class="underline underline-offset-1 text-decoration-blue-planning-300">all-in-one</span> photography business software with coaching included.</h2>
+        <img src={Routes.static_path(@socket, "/images/mastermind-dashboard.png")} loading="lazy" alt="Picsello Client booking feature" />
         <:right_panel>
           <.org_job_inputs {assigns} />
           <.step_footer {assigns} />

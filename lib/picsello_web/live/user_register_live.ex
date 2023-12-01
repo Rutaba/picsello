@@ -103,22 +103,19 @@ defmodule PicselloWeb.UserRegisterLive do
   defp onboarding_view(%{onboarding_type: "mastermind"} = assigns) do
     ~H"""
       <.signup_container {assigns} step={1} step_total={length(@steps)} step_title="Let’s get to know you" left_classes="p-8 pb-0 bg-purple-marketing-300 text-white">
-        <h2 class="text-3xl md:text-4xl font-bold text-center mb-2">
-          Sign up for Picsello’s
-          <br />
-          <span class="underline underline-offset-1 text-decoration-blue-planning-300">all-in-one</span>  Business Platform
+        <h2 class="text-3xl md:text-3xl font-bold text-center mb-2">
+          Gift Yourself Success and Support!
         </h2>
-        <h3 class="text-2xl text-center mb-4 italic">and get 12 months of the Mastermind</h3>
-        <p class="text-center">All-in-one software plus expert, community, and support to help you grow a profitable business</p>
+        <h3 class="text-xl text-center mb-4 italic">Sign up and get a full year of Picsello for only $200!</h3>
+        <p class="text-center">Make the switch to Picsello in 2024 during our biggest sale of the year and get the software, support, and education you need to grow your business!</p>
         <div class="max-w-md mx-auto my-8">
           <.signup_deal original_price={Money.new(35000, :USD)} price={Money.new(20000, :USD)} expires_at={@black_friday_timer_end} />
         </div>
         <ul class="mb-8 space-y-2">
-          <li class="flex gap-2 font-bold font-italic"><.icon name="checkcircle" class="h-4 w-4 flex-shrink-0 mt-1.5" /> 1 year full access to Picsello</li>
-          <li class="flex gap-2"><.icon name="checkcircle" class="h-4 w-4 flex-shrink-0 mt-1.5" /> Monthly Expert Series (plus access to previous Experts)</li>
-          <li class="flex gap-2"><.icon name="checkcircle" class="h-4 w-4 flex-shrink-0 mt-1.5" /> Private supportive photographer community </li>
-          <li class="flex gap-2"><.icon name="checkcircle" class="h-4 w-4 flex-shrink-0 mt-1.5" /> Access to Picsello coaches</li>
-          <li class="flex gap-2"><.icon name="checkcircle" class="h-4 w-4 flex-shrink-0 mt-1.5" /> Monthly live expert series (plus access to previous lives)</li>
+          <li class="flex gap-2 font-bold font-italic"><.icon name="checkcircle" class="h-4 w-4 flex-shrink-0 mt-1.5" /> One-year of Picsello’s all-in-one software</li>
+          <li class="flex gap-2"><.icon name="checkcircle" class="h-4 w-4 flex-shrink-0 mt-1.5" /> 12-months of the Business Mastermind</li>
+          <li class="flex gap-2"><.icon name="checkcircle" class="h-4 w-4 flex-shrink-0 mt-1.5" /> Best-in-the- business customer support</li>
+          <li class="flex gap-2"><.icon name="checkcircle" class="h-4 w-4 flex-shrink-0 mt-1.5" /> Resources that will help you market, manage, and monetize your business</li>
         </ul>
         <img src={Routes.static_path(@socket, "/images/mastermind-hero.png")} loading="lazy" alt="Images of the Picsello App" />
         <:right_panel>
@@ -136,22 +133,17 @@ defmodule PicselloWeb.UserRegisterLive do
   defp onboarding_view(%{onboarding_type: "three_month"} = assigns) do
     ~H"""
       <.signup_container {assigns} step={1} step_total={length(@steps)} step_title="Let’s get to know you" left_classes="p-8 pb-0 bg-purple-marketing-300 text-white">
-        <h2 class="text-3xl md:text-4xl font-bold text-center mb-2">
-          Sign up for Picsello’s THREE MONTH
-          <br />
-          <span class="underline underline-offset-1 text-decoration-blue-planning-300">all-in-one</span>  Business Platform
+        <h2 class="text-3xl md:text-4xl font-bold mb-2 text-center">
+          Ditch the overwhelm! Sign up for 3 months of Picsello for only $60!
         </h2>
-        <h3 class="text-2xl text-center mb-4 italic">and get 12 months of the Mastermind</h3>
-        <p class="text-center">All-in-one software plus expert, community, and support to help you grow a profitable business</p>
+        <p class="text-center">Make the switch to Picsello in 2024 during our biggest sale of the year and get the software, support, and education you need to grow your business!</p>
         <div class="max-w-md mx-auto my-8">
           <.signup_deal original_price={Money.new(10500, :USD)} price={Money.new(6000, :USD)} note="Save $45 on a three-month subscription to move over to Picsello" />
         </div>
         <ul class="mb-8 space-y-2">
-          <li class="flex gap-2 font-bold font-italic"><.icon name="checkcircle" class="h-4 w-4 flex-shrink-0 mt-1.5" /> 1 year full access to Picsello</li>
-          <li class="flex gap-2"><.icon name="checkcircle" class="h-4 w-4 flex-shrink-0 mt-1.5" /> Monthly Expert Series (plus access to previous Experts)</li>
-          <li class="flex gap-2"><.icon name="checkcircle" class="h-4 w-4 flex-shrink-0 mt-1.5" /> Private supportive photographer community </li>
-          <li class="flex gap-2"><.icon name="checkcircle" class="h-4 w-4 flex-shrink-0 mt-1.5" /> Access to Picsello coaches</li>
-          <li class="flex gap-2"><.icon name="checkcircle" class="h-4 w-4 flex-shrink-0 mt-1.5" /> Monthly live expert series (plus access to previous lives)</li>
+          <li class="flex gap-2"><.icon name="checkcircle" class="h-4 w-4 flex-shrink-0 mt-1.5" /> 3 months of Picsello’s all-in-one software</li>
+          <li class="flex gap-2"><.icon name="checkcircle" class="h-4 w-4 flex-shrink-0 mt-1.5" /> Best-in-the- business customer support</li>
+          <li class="flex gap-2"><.icon name="checkcircle" class="h-4 w-4 flex-shrink-0 mt-1.5" /> Resources that will help you market, manage, and monetize your business</li>
         </ul>
         <img src={Routes.static_path(@socket, "/images/mastermind-hero.png")} loading="lazy" alt="Images of the Picsello App" />
         <:right_panel>
