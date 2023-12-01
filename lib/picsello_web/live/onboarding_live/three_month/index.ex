@@ -172,7 +172,10 @@ defmodule PicselloWeb.OnboardingLive.ThreeMonth.Index do
 
         socket
         |> assign(:stripe_elements_loading, false)
-        |> put_flash(:error, "Couldn't fetch your payment session. Please try again")
+        |> put_flash(
+          :error,
+          "Sorry - something went wrong! Confirm your payment and information is correct or reach out to Customer Success."
+        )
     end
     |> noreply()
   end
@@ -227,7 +230,10 @@ defmodule PicselloWeb.OnboardingLive.ThreeMonth.Index do
 
     socket
     |> assign(:stripe_elements_loading, false)
-    |> put_flash(:error, "Couldn't fetch your payment session. Please try again")
+    |> put_flash(
+      :error,
+      "Sorry - something went wrong! Confirm your payment and information is correct or reach out to Customer Success."
+    )
     |> noreply()
   end
 
@@ -235,7 +241,10 @@ defmodule PicselloWeb.OnboardingLive.ThreeMonth.Index do
   def handle_event("stripe-elements-error", _params, socket) do
     socket
     |> assign(:stripe_elements_loading, false)
-    |> put_flash(:error, "Couldn't fetch your payment session. Please try again")
+    |> put_flash(
+      :error,
+      "Sorry - something went wrong! Confirm your payment and information is correct or reach out to Customer Success."
+    )
     |> noreply()
   end
 
