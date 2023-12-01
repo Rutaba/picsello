@@ -11,8 +11,8 @@ export default {
 
     // Set up Stripe.js and Elements to use in checkout form
     const elements = stripe.elements({
-      mode: 'subscription',
-      amount: 24000,
+      mode: 'payment',
+      amount: 6000,
       currency: 'usd',
       setupFutureUsage: 'off_session',
     });

@@ -144,7 +144,7 @@ defmodule PicselloWeb.UserRegisterLive do
         <h3 class="text-2xl text-center mb-4 italic">and get 12 months of the Mastermind</h3>
         <p class="text-center">All-in-one software plus expert, community, and support to help you grow a profitable business</p>
         <div class="max-w-md mx-auto my-8">
-          <.signup_deal original_price={Money.new(35000, :USD)} price={Money.new(20000, :USD)} expires_at={@black_friday_timer_end} />
+          <.signup_deal original_price={Money.new(10500, :USD)} price={Money.new(6000, :USD)} note="Save $45 on a three-month subscription to move over to Picsello" />
         </div>
         <ul class="mb-8 space-y-2">
           <li class="flex gap-2 font-bold font-italic"><.icon name="checkcircle" class="h-4 w-4 flex-shrink-0 mt-1.5" /> 1 year full access to Picsello</li>

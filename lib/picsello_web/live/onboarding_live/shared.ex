@@ -28,18 +28,22 @@ defmodule PicselloWeb.OnboardingLive.Shared do
       Enum.into(assigns, %{
         original_price: nil,
         price: nil,
-        expires_at: nil
+        expires_at: nil,
+        note: nil
       })
 
     ~H"""
       <div class="bg-white" phx-update="ignore" id="timer">
-        <div class="bg-base-200 flex justify-center p-8">
-          <h3 class="text-4xl text-purple-marketing-300">
+        <div class="bg-base-200 p-8">
+          <h3 class="text-4xl text-purple-marketing-300 flex justify-center gap-2">
             <%= if @original_price do %>
               <strike class="font-bold"><%= @original_price %></strike>
             <% end %>
             <%= @price %>
           </h3>
+          <%= if @note do %>
+            <p class="text-md font-light text-center mt-4 text-purple-marketing-300"><%= @note %></p>
+          <% end %>
         </div>
         <%= if @expires_at do %>
           <div class="border flex justify-center p-2 text-purple-marketing-300 font-light tracking-wider text-lg" id="bf-timer" phx-hook="Timer" data-end={@expires_at}></div>

@@ -205,9 +205,6 @@ defmodule PicselloWeb.OnboardingLive.ThreeMonth.Index do
               jessallenphotography.com</cite>
           </div>
         </blockqoute>
-        <div class="flex justify-center mt-12">
-          <img src={Routes.static_path(@socket, "/images/mastermind-logo.png")} loading="lazy" alt="Picsello Mastermind logo" class="h-16" />
-        </div>
         <%= if @stripe_elements_loading do %>
           <div class="fixed bg-base-300/75 backdrop-blur-md pointer-events-none w-full h-full z-50 top-0 left-0 flex items-center justify-center">
             <.icon class="animate-spin w-8 h-8 mr-2 text-white" name="loader"/>
@@ -215,8 +212,8 @@ defmodule PicselloWeb.OnboardingLive.ThreeMonth.Index do
           </div>
         <% end %>
         <:right_panel>
-          <.signup_deal original_price={Money.new(35000, :USD)} price={Money.new(20000, :USD)} expires_at={@black_friday_timer_end} />
-          <p class="text-md text-gray-400 italic text-center mt-2">Your card will be charged the discounted annual subscription price</p>
+          <.signup_deal original_price={Money.new(10500, :USD)} price={Money.new(6000, :USD)} note="Save $45 on a three-month subscription to move over to Picsello" />
+          <p class="text-md text-gray-400 italic text-center mt-2">Your card will be charged the discounted price</p>
           <div
             phx-update="ignore"
             class="my-6"
@@ -326,7 +323,6 @@ defmodule PicselloWeb.OnboardingLive.ThreeMonth.Index do
     ~H"""
       <.signup_container {assigns} show_logout?={true} left_classes="p-8 pb-0 pr-0 bg-purple-marketing-300 text-white order-2 sm:order-1">
         <h2 class="text-3xl md:text-4xl font-bold text-center mb-8">Your <span class="underline underline-offset-1 text-decoration-blue-planning-300">all-in-one</span> photography business software with coaching included.</h2>
-        <img src={Routes.static_path(@socket, "/images/mastermind-dashboard.png")} loading="lazy" alt="Picsello Client booking feature" />
         <:right_panel>
           <.org_job_inputs {assigns} />
           <.step_footer {assigns} />
