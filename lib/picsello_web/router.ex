@@ -240,6 +240,10 @@ defmodule PicselloWeb.Router do
       live("/onboarding/mastermind", OnboardingLive.Mastermind.Index, :index,
         as: :onboarding_mastermind
       )
+
+      live("/onboarding/three_month", OnboardingLive.ThreeMonth.Index, :index,
+        as: :onboarding_three_month
+      )
     end
   end
 

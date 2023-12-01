@@ -103,7 +103,7 @@ defmodule PicselloWeb.HomeLive.Index do
     Promotions.insert_or_update_promotion(current_user, %{
       slug: promotion_code,
       state: :purchased,
-      name: "Black Friday"
+      name: "Holiday"
     })
 
     Onboardings.user_update_promotion_code_changeset(current_user, %{
@@ -319,7 +319,7 @@ defmodule PicselloWeb.HomeLive.Index do
       ) do
     case Promotions.insert_or_update_promotion(current_user, %{
            slug: promotion_code,
-           name: "Black Friday",
+           name: "Holiday",
            state: :dismissed
          }) do
       {:ok, promotion_code} ->
@@ -1666,7 +1666,7 @@ defmodule PicselloWeb.HomeLive.Index do
                     price={"#{subscription_plan.price |> Money.subtract(15_000) |> Money.to_string(fractional_unit: false)} yearly"}
                     price_secondary={"(Originally #{subscription_plan.price |> Money.to_string(fractional_unit: false)}—save $150!)"}
                     interval={subscription_plan.recurring_interval}
-                    body="BLACK FRIDAY SALE! SAVE $150. You get everything in the monthly plan PLUS exclusive access to Picsello’s Business Mastermind with classes and so much more"
+                    body="HOLDAY SALE! SAVE $150. You get everything in the monthly plan PLUS exclusive access to Picsello’s Business Mastermind with classes and so much more"
                   />
                 <% _ -> %>
               <% end %>
@@ -1899,7 +1899,7 @@ defmodule PicselloWeb.HomeLive.Index do
               currency: "USD",
               unit_amount: 35_000,
               product_data: %{
-                name: "Black Friday 2023",
+                name: "Holiday Sale 2023",
                 description: "Pre purchase your next year of Picsello!"
               },
               tax_behavior: "exclusive"
