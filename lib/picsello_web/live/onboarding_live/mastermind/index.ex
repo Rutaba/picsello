@@ -2,10 +2,13 @@ defmodule PicselloWeb.OnboardingLive.Mastermind.Index do
   @moduledoc false
   use PicselloWeb, live_view: [layout: :onboarding]
 
+  require Logger
+
   alias Picsello.{
     Subscriptions,
     Subscriptions,
     Payments,
+    Accounts,
     Accounts.User.Promotions
   }
 
@@ -56,7 +59,6 @@ defmodule PicselloWeb.OnboardingLive.Mastermind.Index do
   @impl true
   def handle_params(
         %{
-          "payment_intent" => _,
           "redirect_status" => "succeeded",
           "state" => state,
           "country" => country
@@ -65,7 +67,6 @@ defmodule PicselloWeb.OnboardingLive.Mastermind.Index do
         socket
       ) do
     socket
-    |> assign(:stripe_elements_loading, false)
     |> assign(:state, state)
     |> assign(:country, country)
     |> assign_step(3)
@@ -111,12 +112,44 @@ defmodule PicselloWeb.OnboardingLive.Mastermind.Index do
 
   @impl true
   def handle_event(
+        "stripe-elements-success",
+        %{"subscription_id" => subscription_id},
+        %{assigns: %{current_user: current_user, promotion_code: promotion_code}} = socket
+      ) do
+    case Payments.retrieve_subscription(subscription_id, []) do
+      {:ok, subscription} ->
+        Subscriptions.handle_stripe_subscription(subscription)
+
+        Promotions.insert_or_update_promotion(current_user, %{
+          slug: promotion_code,
+          state: :purchased,
+          name: "Holiday"
+        })
+
+        socket
+        |> assign(:stripe_elements_loading, false)
+        |> put_flash(:success, "Subscription and payment added!")
+
+      {:error, error} ->
+        Logger.error("Error retrieving subscription: #{inspect(error)}")
+
+        socket
+        |> assign(:stripe_elements_loading, false)
+        |> put_flash(:error, "Couldn't fetch your payment session. Please try again")
+    end
+    |> noreply()
+  end
+
+  @impl true
+  def handle_event(
         "stripe-elements-create",
         %{"address" => %{"value" => %{"address" => address}}} = _params,
         %{assigns: %{current_user: current_user, promotion_code: promotion_code}} = socket
       ) do
+    customer_id = Subscriptions.user_customer_id(current_user, %{address: address})
+
     stripe_params = %{
-      customer: Subscriptions.user_customer_id(current_user, %{address: address}),
+      customer: customer_id,
       items: [
         %{
           quantity: 1,
@@ -124,54 +157,59 @@ defmodule PicselloWeb.OnboardingLive.Mastermind.Index do
         }
       ],
       coupon: Subscriptions.maybe_return_promotion_code_id?(promotion_code),
-      payment_behavior: "default_incomplete",
       payment_settings: %{
         save_default_payment_method: "on_subscription"
       },
-      expand: ["latest_invoice.payment_intent", "pending_setup_intent"]
+      collection_method: "charge_automatically",
+      payment_behavior: "default_incomplete",
+      expand: ["latest_invoice.payment_intent"]
     }
 
     case Payments.create_subscription(stripe_params) do
       {:ok, subscription} ->
-        Subscriptions.handle_stripe_subscription(subscription)
-
-        Promotions.insert_or_update_promotion(current_user, %{
-          slug: promotion_code,
-          state: :purchased,
-          name: "Black Friday"
-        })
-
         return =
-          if is_nil(subscription.pending_setup_intent) do
-            build_return(
-              subscription.latest_invoice.payment_intent.client_secret,
-              address,
-              promotion_code,
-              "payment"
-            )
-          else
-            build_return(
-              subscription.pending_setup_intent.client_secret,
-              address,
-              promotion_code,
-              "setup"
-            )
-          end
+          build_return(
+            subscription.latest_invoice.payment_intent.client_secret,
+            address,
+            promotion_code,
+            "subscription"
+          )
 
         socket
-        |> push_event("stripe-elements-success", return)
-        |> noreply()
+        |> assign(
+          :current_user,
+          Accounts.get_user_by_stripe_customer_id(customer_id)
+        )
+        |> push_event(
+          "stripe-elements-confirm",
+          Enum.into(return, %{
+            subscription_id: subscription.id
+          })
+        )
 
-      _ ->
+      {:error, error} ->
+        Logger.error("Error creating subscription: #{inspect(error)}")
+
         socket
-        |> put_flash(:error, "Couldn't fetch your payment session. Please try again")
-        |> noreply()
+        |> assign(:stripe_elements_loading, false)
+        |> put_flash(:error, "Payment method didn't work. Please try again")
     end
+    |> noreply()
   end
 
   @impl true
   def handle_event("stripe-elements-loading", _params, socket) do
     socket |> assign(:stripe_elements_loading, true) |> noreply()
+  end
+
+  @impl true
+  def handle_event("stripe-elements-error", %{"error" => error}, socket) do
+    Logger.error("Error creating subscription: #{inspect(error)}")
+
+    socket
+    |> assign(:stripe_elements_loading, false)
+    |> put_flash(:error, "Couldn't fetch your payment session. Please try again")
+    |> noreply()
   end
 
   @impl true
@@ -353,7 +391,15 @@ defmodule PicselloWeb.OnboardingLive.Mastermind.Index do
     """
   end
 
-  defp assign_step(%{assigns: %{current_user: %{stripe_customer_id: nil}}} = socket) do
+  defp assign_step(
+         %{assigns: %{current_user: %{stripe_customer_id: nil, subscription: nil}}} = socket
+       ) do
+    assign_step(socket, 2)
+  end
+
+  defp assign_step(
+         %{assigns: %{current_user: %{stripe_customer_id: _, subscription: nil}}} = socket
+       ) do
     assign_step(socket, 2)
   end
 

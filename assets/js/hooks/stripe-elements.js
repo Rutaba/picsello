@@ -3,19 +3,26 @@ export default {
     console.log('mounting stripe elements');
     const parentForm = this.el.closest('form');
     const submitBtn = document.getElementById('payment-element-submit');
-    const { publishableKey, name, email, returnUrl } = this.el.dataset;
+    const { publishableKey, name, email, returnUrl, type } = this.el.dataset;
 
     const stripe = Stripe(publishableKey, {
       apiVersion: '2020-08-27',
     });
 
     // Set up Stripe.js and Elements to use in checkout form
-    const elements = stripe.elements({
-      mode: 'payment',
-      amount: 6000,
-      currency: 'usd',
-      setupFutureUsage: 'off_session',
-    });
+    const elements =
+      type === 'setup'
+        ? stripe.elements({
+            mode: 'setup',
+            currency: 'usd',
+            setupFutureUsage: 'off_session',
+          })
+        : stripe.elements({
+            mode: 'subscription',
+            amount: 24000,
+            currency: 'usd',
+            setupFutureUsage: 'off_session',
+          });
 
     // Create and mount the Payment Element
     const paymentElement = elements.create('payment');
@@ -48,7 +55,7 @@ export default {
       const { error: submitError } = await elements.submit();
       if (submitError) {
         console.log(submitError);
-        this.pushEvent('stripe-elements-error', {});
+        this.pushEvent('stripe-elements-error', { error: submitError });
         return;
       }
 
@@ -67,8 +74,15 @@ export default {
       });
 
       this.handleEvent(
-        'stripe-elements-success',
-        async ({ type, client_secret, state, country, promotion_code }) => {
+        'stripe-elements-confirm',
+        async ({
+          type,
+          client_secret,
+          state,
+          country,
+          promotion_code,
+          subscription_id,
+        }) => {
           const confirmIntent =
             type === 'setup' ? stripe.confirmSetup : stripe.confirmPayment;
 
@@ -79,15 +93,21 @@ export default {
             confirmParams: {
               return_url: `${returnUrl}?state=${state}&country=${country}&promotion_code=${promotion_code}`,
             },
+            redirect: 'if_required',
           });
 
           if (error) {
             console.log(error);
-            this.pushEvent('stripe-elements-error', {});
+            this.pushEvent('stripe-elements-error', { error });
           } else {
-            // Your customer is redirected to your `return_url`. For some payment
-            // methods like iDEAL, your customer is redirected to an intermediate
-            // site first to authorize the payment, then redirected to the `return_url`.
+            this.pushEvent('stripe-elements-success', {
+              state,
+              country,
+              promotion_code,
+              subscription_id,
+            });
+
+            window.location = `${returnUrl}?state=${state}&country=${country}&promotion_code=${promotion_code}&redirect_status=succeeded`;
           }
         }
       );

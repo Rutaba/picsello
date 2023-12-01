@@ -71,7 +71,16 @@
             </div>
             <div class="w-full mt-4 border-t pt-4">
               <%= if @promotion_code do %>
-                <p class="text-base-250">🎉 <%= @promotion_code.percent_off %>% off each <%= subscription.recurring_interval %> with code "<span class="font-bold"><%= @promotion_code.code %></span>"</p>
+                <p class="text-base-250">
+                  🎉 
+                  <%= cond do %>
+                    <% @promotion_code.percent_off -> %>
+                      <%= @promotion_code.percent_off %>% 
+                    <% @promotion_code.amount_off -> %>
+                      <%= Money.new(@promotion_code.amount_off) %>
+                    <% true -> %>
+                  <% end %>
+                  off each <%= Subscriptions.interval(subscription) %> with code "<span class="font-bold"><%= @promotion_code.code %></span>"</p>
               <% end %>
               <p class="underline w-full text-sm mt-2 cursor-pointer text-blue-planning-300" {testid("promo-code")} phx-click="open-promo-code-modal"><%= if @promotion_code, do: "Edit", else: "Add" %> promo code</p>
             </div>
