@@ -241,7 +241,7 @@ defmodule Picsello.BookingEventDate do
     [occurences, stop_repeating] = get_fields(changeset, [:occurences, :stop_repeating])
 
     if occurences == 0 and is_nil(stop_repeating),
-      do: changeset |> add_error(:repetition, "Either occurence or date should be selected"),
+      do: changeset |> add_error(:occurences, "Either occurence or date should be selected"),
       else: changeset
   end
 
