@@ -75,12 +75,14 @@
                   🎉 
                   <%= cond do %>
                     <% @promotion_code.percent_off -> %>
-                      <%= @promotion_code.percent_off %>% 
+                      <%= @promotion_code.percent_off %>% off each <%= Subscriptions.interval(subscription) %>
+                    <% @promotion_code.amount_off && @promotion_code.code == "THREEMONTHDEAL" -> %>
+                      <%= Money.new(@promotion_code.amount_off) %> off for 3 months
                     <% @promotion_code.amount_off -> %>
-                      <%= Money.new(@promotion_code.amount_off) %>
+                      <%= Money.new(@promotion_code.amount_off) %> off each <%= Subscriptions.interval(subscription) %>
                     <% true -> %>
                   <% end %>
-                  off each <%= Subscriptions.interval(subscription) %> with code "<span class="font-bold"><%= @promotion_code.code %></span>"</p>
+                   with code "<span class="font-bold"><%= @promotion_code.code %></span>"</p>
               <% end %>
               <p class="underline w-full text-sm mt-2 cursor-pointer text-blue-planning-300" {testid("promo-code")} phx-click="open-promo-code-modal"><%= if @promotion_code, do: "Edit", else: "Add" %> promo code</p>
             </div>
