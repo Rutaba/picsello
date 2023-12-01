@@ -182,7 +182,6 @@ defmodule PicselloWeb.Live.Calendar.BookingEventModal do
           <% end %>
         </div>
         <.footer class="pt-16">
-          <% IO.inspect(@changeset) %>
           <button class="btn-primary" title="Save" type="submit" disabled={!@changeset.valid? || Enum.empty?(@changeset.changes)} phx-disable-with="Save">
               Save
           </button>

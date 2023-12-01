@@ -205,29 +205,28 @@ defmodule PicselloWeb.Calendar.BookingEvents.Shared do
       to_integer([booking_event_date_id, slot_client_id, slot_index])
 
     dates_with_slots =
-    booking_event.dates
-    |> Enum.map(fn date ->
-      date_slots =
-        date.slots
-        |> Enum.with_index(fn slot, slot_index ->
-          {"#{slot.slot_start} - #{slot.slot_end}", slot_index}
-        end)
+      booking_event.dates
+      |> Enum.map(fn date ->
+        date_slots =
+          date.slots
+          |> Enum.with_index(fn slot, slot_index ->
+            {"#{slot.slot_start} - #{slot.slot_end}", slot_index}
+          end)
 
-      %{id: date.id, date: date_formatter(date.date, :day), slots: date_slots}
-    end)
-    |> Enum.map(fn
-      %{id: ^booking_event_date_id} = date_slots ->
-        updated_slots =
-          date_slots
-          |> Map.get(:slots, [])
-          |> Enum.reject(fn {_, index} -> index == slot_index end)
+        %{id: date.id, date: date_formatter(date.date, :day), slots: date_slots}
+      end)
+      |> Enum.map(fn
+        %{id: ^booking_event_date_id} = date_slots ->
+          updated_slots =
+            date_slots
+            |> Map.get(:slots, [])
+            |> Enum.reject(fn {_, index} -> index == slot_index end)
 
-        date_slots |> Map.put(:slots, updated_slots)
+          date_slots |> Map.put(:slots, updated_slots)
 
-      rest ->
-        rest
-    end)
-
+        any ->
+          any
+      end)
 
     socket
     |> make_popup(
@@ -534,14 +533,18 @@ defmodule PicselloWeb.Calendar.BookingEvents.Shared do
            booking_event_date_id: booking_event_date_id,
            item_id: item_id,
            slot_client_id: slot_client_id,
-           slot_index: slot_index
+           slot_index: slot_index,
+           old_booking_event_date_id: old_booking_event_date_id
          }},
         %{assigns: %{current_user: user, booking_event: booking_event}} = socket
       ) do
     booking_event_date = get_booking_date(booking_event, to_integer(booking_event_date_id))
 
+    old_booking_event_date =
+      get_booking_date(booking_event, to_integer(old_booking_event_date_id))
+
     slot =
-      booking_event_date.slots
+      old_booking_event_date.slots
       |> Enum.at(slot_index)
 
     new_slot =
@@ -574,7 +577,7 @@ defmodule PicselloWeb.Calendar.BookingEvents.Shared do
          {:ok, _} <-
            BookingEvents.expire_booking(%{
              "id" => slot.job_id,
-             "booking_date_id" => booking_event_date.id,
+             "booking_date_id" => old_booking_event_date.id,
              "slot_index" => slot_index
            }) do
       Picsello.Shoots.broadcast_shoot_change(shoot)

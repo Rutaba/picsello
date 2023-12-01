@@ -23,20 +23,21 @@ defmodule PicselloWeb.Shared.ConfirmationComponent do
   @impl true
   def update(
         %{
-          payload: %{
-            booking_event_date_id: date_id,
-            dates_with_slots: dates_with_slots
-          }
+          payload:
+            %{
+              booking_event_date_id: date_id,
+              dates_with_slots: dates_with_slots
+            } = payload
         } = assigns,
         socket
       ) do
+    date_labels = dates_with_slots |> Enum.map(fn %{id: id, date: date} -> {date, id} end)
+
     socket
     |> assign(Enum.into(assigns, @default_assigns))
-    |> assign(
-      :date_labels,
-      dates_with_slots |> Enum.map(fn %{id: id, date: date} -> {date, id} end)
-    )
-    |> assign(:dropdown_items, get_date_slots(dates_with_slots, date_id))
+    |> assign(:date_labels, date_labels)
+    |> assign(:dropdown_items, get_date_slots(dates_with_slots, date_labels |> hd |> elem(1)))
+    |> assign(:payload, Map.put(payload, :old_booking_event_date_id, date_id))
     |> ok()
   end
 
@@ -147,6 +148,15 @@ defmodule PicselloWeb.Shared.ConfirmationComponent do
     socket
     |> assign(:payload, Map.put(payload, :booking_event_date_id, id))
     |> assign(:dropdown_items, get_date_slots(dates_with_slots, id))
+    |> noreply()
+  end
+
+  def handle_event(
+        "validate",
+        _,
+        socket
+      ) do
+    socket
     |> noreply()
   end
 
