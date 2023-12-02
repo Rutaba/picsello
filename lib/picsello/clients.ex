@@ -198,6 +198,12 @@ defmodule Picsello.Clients do
           "leads" ->
             filter_leads(dynamic)
 
+          "archived_clients" ->
+            filter_archived_clients(dynamic)
+
+          "all" ->
+            filter_all_clients(dynamic)
+
           _ ->
             dynamic
         end
@@ -234,6 +240,20 @@ defmodule Picsello.Clients do
     )
   end
 
+  defp filter_archived_clients(dynamic) do
+    dynamic(
+      [client],
+      ^dynamic and not is_nil(client.archived_at)
+    )
+  end
+
+  defp filter_all_clients(dynamic) do
+    dynamic(
+      [client],
+      ^dynamic and is_nil(client.archived_at)
+    )
+  end
+
   # returned dynamic with join binding
   defp filter_order_by(:id, order),
     do: [{order, dynamic([client, jobs], count(field(jobs, :id)))}]
@@ -248,4 +268,7 @@ defmodule Picsello.Clients do
       order_by: [asc: c.name, asc: c.email]
     )
   end
+
+  def get_client!(client_id), do: Repo.get!(Client, client_id)
+  def fetch_multiple(client_ids), do: where(Client, [c], c.id in ^client_ids) |> Repo.all()
 end

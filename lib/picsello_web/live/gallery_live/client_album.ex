@@ -61,6 +61,7 @@ defmodule PicselloWeb.GalleryLive.ClientAlbum do
 
   def handle_params(%{"hash" => _hash}, _, %{assigns: %{album: album}} = socket) do
     album = album |> Repo.preload(:gallery)
+    if connected?(socket), do: Album.subscribe(album)
 
     socket
     |> assign(:album, album)
@@ -182,9 +183,7 @@ defmodule PicselloWeb.GalleryLive.ClientAlbum do
       album_favorites_count: Galleries.gallery_album_favorites_count(gallery, album.id),
       favorites_count: Galleries.gallery_favorites_count(gallery)
     )
-    |> assign(:update_mode, "replace")
-    |> assign_photos(@per_page)
-    |> push_event("reload_grid", %{})
+    |> update_grid_photos(favorites_filter)
     |> noreply()
   end
 
@@ -193,6 +192,8 @@ defmodule PicselloWeb.GalleryLive.ClientAlbum do
 
     noreply(socket)
   end
+
+  def handle_info({:pack, _, _}, socket), do: noreply(socket)
 
   defdelegate handle_info(message, socket), to: PicselloWeb.GalleryLive.Shared
 

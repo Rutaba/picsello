@@ -19,7 +19,7 @@ defmodule PicselloWeb.GalleryLive.ChooseBundle do
 
   def render(assigns) do
     ~H"""
-    <div class="choose-product__modal bg-base-100">
+    <div class="choose-product__modal bg-base-100" id="choose_product_modal" phx-hook="DisableRightClick">
       <div class="sticky md:static -top-2 bg-white py-4 z-[60]">
         <a phx-click="close" title="close" phx-target={@myself} class="absolute cursor-pointer md:right-5 md:top-5 right-8 top-6">
           <.icon name="close-x" class="w-4 h-4 stroke-current lg:w-5 lg:h-5 stroke-2" />

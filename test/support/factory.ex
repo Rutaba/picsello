@@ -32,7 +32,8 @@ defmodule Picsello.Factory do
     BrandLink,
     Questionnaire,
     PackagePaymentSchedule,
-    ClientMessageRecipient
+    ClientMessageRecipient,
+    PreferredFilter
   }
 
   alias Picsello.GlobalSettings.Gallery, as: GSGallery
@@ -1055,11 +1056,31 @@ defmodule Picsello.Factory do
     }
   end
 
-  def job_factory() do
-    %Picsello.Job{
-      type: "wedding",
-      client_id: 2
+  def prefer_filter_factory(attrs) do
+    %PreferredFilter{
+      type: "jobs",
+      filters: %{
+        sort_by: "name",
+        job_type: "wedding",
+        job_status: "active",
+        sort_direction: "asc"
+      },
+      organization: fn ->
+        case attrs do
+          %{user: user} -> user |> Repo.preload(:organization) |> Map.get(:organization)
+          _ -> build(:organization, Map.get(attrs, :organization, %{}))
+        end
+      end
     }
+    |> merge_attributes(Map.drop(attrs, [:user]))
+    |> evaluate_lazy_attributes()
+  end
+
+  def job_factory(attrs) do
+    %Picsello.Job{
+      type: "wedding"
+    }
+    |> merge_attributes(attrs)
   end
 
   def image_url(),

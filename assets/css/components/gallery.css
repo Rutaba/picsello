@@ -1,6 +1,6 @@
 @layer components {
   .photographer-gallery {
-    @apply md:before:content-[""] md:before:fixed md:before:left-96 md:before:top-0 md:before:right-0 md:before:bottom-0 md:before:bg-base-100;
+    /* @apply md:before:content-[""] md:before:fixed md:before:left-96 md:before:top-0 md:before:right-0 md:before:bottom-0 md:before:bg-base-100; */
   }
 
   .gallery__coverImg {
@@ -21,7 +21,7 @@
   }
 
   .album-select {
-    @apply items-center flex md:w-32 w-full h-6 py-2.5 pl-4 overflow-hidden text-gray-700 transition duration-300 ease-in-out rounded-lg whitespace-nowrap;
+    @apply items-center flex md:w-36 w-full h-6 py-2.5 pl-4 overflow-hidden text-gray-700 transition duration-300 ease-in-out rounded-lg whitespace-nowrap;
   }
 
   .album-actions {

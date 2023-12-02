@@ -11,7 +11,7 @@ defmodule Picsello.EmailPresets.EmailPreset do
     lead:
       ~w(manual_thank_you_lead client_contact booking_proposal_sent manual_booking_proposal_sent abandoned_emails lead)a,
     job:
-      ~w(job post_shoot shoot_thanks offline_payment paid_full paid_offline_full balance_due before_shoot thanks_booking pays_retainer pays_retainer_offline booking_proposal payment_confirmation_client shoot_reminder)a,
+      ~w(job post_shoot shoot_thanks offline_payment paid_full paid_offline_full balance_due before_shoot thanks_booking thanks_job pays_retainer pays_retainer_offline booking_proposal payment_confirmation_client shoot_reminder)a,
     gallery:
       ~w[manual_gallery_send_link gallery_send_link after_gallery_send_feedback cart_abandoned gallery_expiration_soon gallery_password_changed order_confirmation_physical order_confirmation_digital order_confirmation_digital_physical digitals_ready_download order_shipped order_delayed order_arrived gallery_shipping_to_client gallery_shipping_to_photographer album_send_link proofs_send_link manual_send_proofing_gallery manual_send_proofing_gallery_finals]a
   }
@@ -97,17 +97,69 @@ defmodule Picsello.EmailPresets.EmailPreset do
   #   changeset |> validate_inclusion(:state, Map.get(@states_by_type, type))
   # end
 
+  @doc """
+  Calculates the total number of hours based on a count value.
+
+  This function takes an Ecto changeset and extracts the `:count` field from it. If a valid count is provided, it
+  calculates the total number of hours using the `calculate_total_hours/2` function. If the count is not provided
+  or is nil, it returns 0.
+
+  ## Parameters
+
+      - `changeset`: An Ecto changeset containing the `:count` field.
+
+  ## Returns
+
+      The total number of hours calculated from the count value, or 0 if no count is provided.
+
+  ## Example
+
+      ```elixir
+      # Calculate hours based on a count value in a changeset
+      iex> changeset = Ecto.Changeset.change(%MyApp.Model{}, %{count: 10})
+      iex> calculate_hours(changeset)
+      10
+
+  ## Notes
+
+  This function is useful for converting a count into a total number of hours.
+  """
   def calculate_hours(changeset) do
     data = changeset |> current()
     count = Map.get(data, :count)
 
-    if count do
-      calculate_total_hours(count, data)
-    else
-      0
-    end
+    if count, do: calculate_total_hours(count, data), else: 0
   end
 
+  @doc """
+  Calculates the total number of hours based on a count and unit data.
+
+  This function takes a count value and unit data as a map. It calculates the total number of hours based on the
+  provided count and unit information, considering units like "Hour," "Day," "Month," or "Year," and the sign
+  (positive or negative) of the count.
+
+  ## Parameters
+
+      - `count`: The count value to be used in the calculation.
+      - `data`: A map containing unit information, such as the unit type and sign.
+
+  ## Returns
+
+      integer(): The total number of hours calculated based on the count and unit data.
+
+  ## Example
+
+      ```elixir
+      # Calculate total hours based on a count and unit data
+      iex> count = 5
+      iex> data = %{calendar: "Month", sign: "+"}
+      iex> calculate_total_hours(count, data)
+      3600
+
+  ## Notes
+
+  This function is used for converting a count and unit information into a total number of hours.
+  """
   def calculate_total_hours(count, data) do
     hours =
       case Map.get(data, :calendar) do

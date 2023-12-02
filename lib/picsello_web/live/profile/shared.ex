@@ -173,11 +173,12 @@ defmodule PicselloWeb.Live.Profile.Shared do
     assigns =
       assigns
       |> assign_new(:include_font_bold?, fn -> true end)
+      |> assign_new(:show_large_logo?, fn -> false end)
 
     ~H"""
       <%= case Profiles.logo_url(@organization) do %>
         <% nil -> %> <h1 class={classes("pt-3 text-sm sm:text-3xl font-client text-base-300", %{"font-bold"  => @include_font_bold?})}><%= @organization.name %></h1>
-        <% url -> %> <img class="h-16" src={url} />
+        <% url -> %> <img class={if @show_large_logo?, do: "h-24", else: "h-16"} src={url} />
       <% end %>
     """
   end

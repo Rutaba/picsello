@@ -15,7 +15,9 @@ defmodule PicselloWeb.ShootLive.EditComponent do
     PackagePaymentSchedule,
     PaymentSchedule,
     PackagePayments,
-    Workers.CalendarEvent
+    Workers.CalendarEvent,
+    EmailAutomation.EmailSchedule,
+    EmailAutomationSchedules
   }
 
   alias Ecto.{Changeset, Multi}
@@ -79,7 +81,7 @@ defmodule PicselloWeb.ShootLive.EditComponent do
                 external_calendar_rw_id: external_calendar_rw_id
               }
             },
-            job: %{job_status: job_status}
+            job: %{job_status: job_status} = job
           }
         } = socket
       ) do
@@ -88,6 +90,9 @@ defmodule PicselloWeb.ShootLive.EditComponent do
     |> then(fn changeset ->
       Multi.new()
       |> Multi.insert_or_update(:shoot, changeset)
+      |> Multi.insert_all(:email_automation_job, EmailSchedule, fn %{shoot: shoot} ->
+        EmailAutomationSchedules.shoot_emails(job, shoot)
+      end)
       |> Multi.merge(fn
         %{shoot: shoot}
         when not is_nil(oauth_token) and not is_nil(external_calendar_rw_id) ->
@@ -131,6 +136,8 @@ defmodule PicselloWeb.ShootLive.EditComponent do
           Multi.new()
         end
       end)
+
+      # here insert shoot emails for job
       |> Repo.transaction()
       |> then(fn
         {:ok, %{shoot: shoot}} ->

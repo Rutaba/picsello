@@ -1,4 +1,6 @@
 defmodule Picsello.Pack do
+  require Logger
+
   @moduledoc """
   context module for creating a zip of an order's digitals
   """
@@ -88,13 +90,15 @@ defmodule Picsello.Pack do
 
   @spec url(Order.t() | Gallery.t()) :: {:ok, String.t()} | {:error, any()}
   def url(packable) do
-    case packable |> path() |> PhotoStorage.get() do
+    case packable |> path |> PhotoStorage.get() do
       {:ok, %{name: name}} -> {:ok, PhotoStorage.path_to_url(name)}
       error -> error
     end
   end
 
-  def delete(packable), do: packable |> path |> PhotoStorage.delete()
+  def delete(packable) do
+    packable |> path |> PhotoStorage.delete()
+  end
 
   def path(%Order{bundle_price: %Money{}} = order), do: path(order.gallery)
 
@@ -165,7 +169,7 @@ defmodule Picsello.Pack do
     album.gallery
     |> then(fn gallery ->
       if album.is_finals do
-        album |> Repo.preload(:photos) |> Map.get(:photos, [])
+        album |> Repo.preload(:photos) |> Map.get(:photos, []) |> Enum.filter(& &1.active)
       else
         Orders.get_all_purchased_photos_in_album(gallery, album.id)
       end
@@ -177,9 +181,11 @@ defmodule Picsello.Pack do
         |> do_upload(path(album), opts)
 
       {:error, %Ecto.NoResultsError{}} ->
+        Logger.error("No photos to pack for album: #{album.id}")
         {:error, :empty}
 
       error ->
+        Logger.error("Error packing album: #{album.id}: #{inspect(error)}")
         error
     end
   end

@@ -15,13 +15,62 @@
             <.action_item button_text="Create gallery" button_action="create-gallery" button_icon="proof_notifier" />
             <.action_item button_text="Import job" button_action="import-job" button_icon="camera-check" />
             <hr class="block mx-4 my-2" />
-            <.action_item button_text="Create booking event" button_action="create-booking-event" button_icon="calendar" />
+            <.action_item button_text="Create event" button_action="create-booking-event" button_icon="calendar" />
             <.action_item button_text="Create package" button_action="add-package" button_icon="files-icon" />
             <.action_item button_text="Create questionnaire" button_action="create-questionnaire" button_icon="files-icon" />
           </div>
         </div>
       </div>
+
       <.tabs_nav tab_active={@tab_active} tabs={@tabs} socket={@socket} />
+
+      <%= if @current_user.onboarding.promotion_code != @promotion_code && @promotion_code do %>
+        <%= case @current_sale do %>
+          <% nil -> %>
+            <div class="bg-blue-planning-300 mb-8 rounded-lg p-3">
+              <div class="center-container">
+                <div class="flex justify-between items-center gap-2 flex-wrap">
+                  <div>
+                    <p class="flex items-center text-white font-bold">
+                      <.icon name="clock" class="w-6 h-6 mr-2 flex-shrink-0"/>
+                      Level Up with our Holiday Sale-Yearly Subscription + FREE Mastermind Membership!
+                    </p>
+                    <%= case @current_user.subscription do %>
+                      <% nil -> %>
+                      <% subscription -> %>
+                        <%= if Subscriptions.interval(subscription) == "month" do %>
+                        <ul class="list-disc text-white text-sm ml-12">
+                          <li>Add code in account settings <%= @promotion_code %></li>
+                          <li>Open the billing portal—add a payment method if you don't have one already and change to yearly</li>
+                          <li>If you get stuck, reach out to Picsello Support</li>
+                        </ul>
+                        <% end %>
+                    <% end %>
+                  </div>
+                  <div class="flex gap-2 ml-auto">
+                    <%= case @current_user.subscription do %>
+                      <% nil -> %>
+                      <% subscription -> %>
+                        <button type="button" phx-click={if Subscriptions.interval(subscription) == "month", do: "open-user-settings", else: "subscription-prepurchase"} class="flex text-xs items-center px-2 py-1 btn-tertiary bg-white text-blue-planning-300">
+                          <.icon name="money-bags" class="inline-block w-4 h-4 fill-current text-blue-planning-300 mr-1" />
+                          <%= if Subscriptions.interval(subscription) == "month" do %>
+                            Billing settings
+                          <% else %>
+                            Buy now
+                          <% end %>
+                        </button>
+                    <% end %>
+                  </div>
+                  <button type="button" class="px-2 py-1 btn-tertiary text-blue-planning-300 bg-blue-planning-300 text-xs" title="Dismiss" phx-click="subscription-prepurchase-dismiss">
+                    <.icon name="close" class="inline-block w-6 h-6 fill-current text-white" />
+                  </button>
+                </div>
+              </div>
+            </div>
+          <% _ -> %>
+        <% end %>
+      <% end %>
+
       <.tabs_content tab_active={@tab_active} assigns={assigns} socket={@socket} stripe_status={@stripe_status} />
     </div>
   </div>
@@ -32,7 +81,7 @@
     <div class="grid sm:grid-cols-2 lg:grid-cols-3 grid-cols-1 gap-6">
       <.dashboard_main_card title="Inbox" link_text="View inbox" link_action="redirect" link_value="inbox" inner_block_classes="h-full flex flex-col" notification_count={@inbox_count} redirect_route={Routes.inbox_path(@socket, :index)}>
         <%= if Enum.empty?(@inbox_threads) do %>
-          <p class="text-base-250">This is where you will see new messages from your clients.</p>
+          <p class="text-base-250 text-sm">This is where you will see new messages from your clients.</p>
           <img src="/images/inbox-empty.png" class="my-auto block" />
         <% else %>
           <%= for thread <- @inbox_threads do %>
@@ -40,33 +89,33 @@
           <% end %>
         <% end %>
       </.dashboard_main_card>
-      <.dashboard_main_card title="Calendar" button_text="Create booking event" button_action="create-booking-event" link_text="View calendar" link_action="redirect" link_value="calendar" redirect_route={Routes.calendar_index_path(@socket, :index)}>
+      <.dashboard_main_card title="Calendar" button_text="Create event" button_action="create-booking-event" link_text="View calendar" link_action="redirect" link_value="calendar" redirect_route={Routes.calendar_index_path(@socket, :index)}>
         <%= if @job_count === 0 do %>
-          <p class="text-base-250">Get ready for your calendar to start filling up with shoots! Create a client booking event and you will be off to the races.</p>
+          <p class="text-base-250 text-sm">Get ready for your calendar to start filling up with shoots! Create a client booking event and you will be off to the races.</p>
         <% else %>
-          <p class="flex items-center gap-1 text-base-250">You have <.notification_bubble notification_count={@job_count} /> <%= ngettext "job", "jobs", @job_count %> upcoming this week</p>
+          <p class="flex items-center gap-1 text-base-250 text-sm">You have <.notification_bubble notification_count={@job_count} /> <%= ngettext "job", "jobs", @job_count %> upcoming this week</p>
         <% end %>
       </.dashboard_main_card>
-      <.dashboard_main_card title="Help & Coaching" button_text="Help" button_action="view-help" link_text="View help center" link_action="view-help">
-        <p class="text-base-250">Get in touch with our Customer Success and team of photographers for questions, feedback and help.</p>
+      <.dashboard_main_card title="Help & Coaching" button_text="Help" button_action="view-help">
+        <p class="text-base-250 text-sm">Get in touch with our Customer Success and team of photographers for questions, feedback and help.</p>
       </.dashboard_main_card>
       <.dashboard_main_card title="Smart Profit Calculator™" button_text="Get started" button_action="view-calculator" link_text="View calculator" link_action="redirect" link_value="calculator" redirect_route={Routes.calculator_path(@socket, :index)}>
-        <p class="text-base-250">Tired of losing money on sessions? Our proprietary calculator takes the guesswork out of setting your prices.</p>
+        <p class="text-base-250 text-sm">Tired of losing money on sessions? Our proprietary calculator takes the guesswork out of setting your prices.</p>
       </.dashboard_main_card>
       <.dashboard_main_card title="Clients" button_text="Add client" button_action="add-client" link_text="View clients" link_action="redirect" link_value="clients" redirect_route={Routes.clients_path(@socket, :index)}>
         <%= if @client_count === 0 do %>
-          <p class="text-base-250">Let's start by adding your clients - whether they are new or if existing, feel free to contact Picsello for help with bulk uploading.</p>
+          <p class="text-base-250 text-sm">Let's start by adding your clients - whether they are new or if existing, feel free to contact Picsello for help with bulk uploading.</p>
         <% else %>
-          <p class="flex items-center gap-1 text-base-250">You have <.notification_bubble notification_count={@client_count} /> clients</p>
+          <p class="flex items-center gap-1 text-base-250 text-sm">You have <.notification_bubble notification_count={@client_count} /> clients</p>
         <% end %>
       </.dashboard_main_card>
-      <.dashboard_main_card title="Galleries" button_text="Create a gallery" button_action="create-gallery" link_text="View galleries" link_action="redirect" link_value="gallery" redirect_route={Routes.gallery_path(@socket, :galleries)}>
-        <p class="text-base-250">Unlimited storage and built-in pressure-free sales tools encourage downloads along with digital and product upsells.</p>
+      <.dashboard_main_card title="Galleries" button_text="Create gallery" button_action="create-gallery" link_text="View galleries" link_action="redirect" link_value="gallery" redirect_route={Routes.gallery_path(@socket, :galleries)}>
+        <p class="text-base-250 text-sm">Unlimited storage and built-in pressure-free sales tools encourage downloads along with digital and product upsells.</p>
       </.dashboard_main_card>
     </div>
   </div>
 </section>
 
 <%= if Subscriptions.subscription_expired?(@current_user) && !@stripe_subscription_status do %>
-  <.subscription_modal socket={@socket} promotion_code_changeset={@promotion_code_changeset} promotion_code_open={@promotion_code_open} />
+  <.subscription_modal socket={@socket} promotion_code_changeset={@promotion_code_changeset} promotion_code_open={@promotion_code_open} promotion_code={@promotion_code} />
 <% end %>

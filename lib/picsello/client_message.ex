@@ -5,10 +5,6 @@ defmodule Picsello.ClientMessage do
   alias Picsello.{Repo, Job, ClientMessageRecipient, ClientMessageAttachment}
 
   schema "client_messages" do
-    belongs_to(:job, Job)
-    has_many(:client_message_recipients, ClientMessageRecipient)
-    has_many(:client_message_attachments, ClientMessageAttachment)
-    has_many(:clients, through: [:client_message_recipients, :client])
     field(:subject, :string)
     field(:body_text, :string)
     field(:body_html, :string)
@@ -16,6 +12,11 @@ defmodule Picsello.ClientMessage do
     field(:outbound, :boolean)
     field(:read_at, :utc_datetime)
     field(:deleted_at, :utc_datetime)
+
+    belongs_to(:job, Job)
+    has_many(:client_message_recipients, ClientMessageRecipient)
+    has_many(:client_message_attachments, ClientMessageAttachment)
+    has_many(:clients, through: [:client_message_recipients, :client])
 
     timestamps(type: :utc_datetime)
   end
@@ -54,6 +55,35 @@ defmodule Picsello.ClientMessage do
     )
   end
 
+  @doc """
+  Retrieves client messages associated with a job and matching subjects.
+
+  This function queries the database to retrieve client messages that are associated with a specific job, have subjects
+  that match the provided list of subjects, and are inbound (outbound is false). It filters messages based on the client
+  message recipients, ensuring that the recipients are of type :to and belong to the specified job's client.
+
+  ## Parameters
+
+      - `job`: The job entity for which client messages are to be retrieved.
+      - `subjects`: A list of subjects to match when retrieving messages.
+
+  ## Returns
+
+      A list of client messages associated with the job and matching subjects.
+
+  ## Example
+
+      ```elixir
+      # Retrieve client messages for a job with specified subjects
+      iex> job = MyApp.Job.get_job(123)
+      iex> subjects = ["Request Information", "Confirmation"]
+      iex> get_client_messages(job, subjects)
+      [%MyApp.ClientMessage{}, %MyApp.ClientMessage{}]
+
+  ## Notes
+
+  This function is used to fetch relevant client messages associated with a specific job and subjects.
+  """
   def get_client_messages(job, subjects) do
     from(
       mesage in __MODULE__,

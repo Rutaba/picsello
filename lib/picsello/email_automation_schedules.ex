@@ -1,37 +1,141 @@
 defmodule Picsello.EmailAutomationSchedules do
   @moduledoc """
-    context module for email automation
+  This module provides functions for managing email automation schedules.
+
+  The Picsello.EmailAutomationSchedules module is a context module for handling email automation schedules within the Picsello application.
+  It provides functions for retrieving, updating, and managing email schedules and related data. These functions are used in the context of
+  email automation, which allows organizations to send automated emails to clients based on predefined criteria.
+
+  ## Functions
+
+      - `get_schedule_by_id(id)`: Retrieve an email automation schedule by its ID.
+      - `get_emails_by_gallery(table, gallery_id)`: Retrieve email schedules associated with a specific gallery.
+      - `get_emails_by_order(table, order_id)`: Retrieve email schedules associated with a specific order.
+      - `get_emails_by_job(table, job_id)`: Retrieve email schedules associated with a specific job.
+      - `get_active_email_schedule_count(job_id)`: Get the count of active email schedules for a job.
+      - `get_email_schedules_by_ids(ids, type)`: Retrieve email schedules by their IDs and category type.
+      - `get_all_emails_schedules(organizations)`: Retrieve all email schedules for specified organizations.
+      - `update_email_schedule(id, params)`: Update an email schedule with the given parameters.
+      - `query_get_email_schedule(category_type, gallery_id, job_id, piepline_id, table \\ EmailSchedule)`: Query and retrieve
+         email schedules based on category, gallery, and job.
+      - `get_last_completed_email(category_type, gallery_id, job_id, pipeline_id, state)`: Get the last completed email schedule
+         for a specific category, gallery, job, pipeline, and state.
+
+  This module helps manage and retrieve email automation schedules for various organizational tasks.
   """
   import Ecto.Query
+  alias Ecto.{Multi}
 
   alias Picsello.{
     Repo,
+    Jobs,
+    Orders,
+    PaymentSchedules,
     EmailAutomations,
     EmailAutomation.EmailSchedule,
     EmailAutomation.EmailScheduleHistory,
     Galleries
   }
 
-  def get_schedule_by_id(id) do
+  def get_schedule_by_id_query(id) do
     from(es in EmailSchedule, where: es.id == ^id)
+  end
+
+  @doc """
+  Retrieves an email automation schedule by its ID.
+
+  This function queries the database to retrieve an email automation schedule based on its unique ID.
+  It is commonly used to fetch specific email schedules for further processing or updates.
+
+  ## Parameters
+
+  - `id`: The unique identifier of the email automation schedule to retrieve.
+
+  ## Returns
+
+  Returns a single email automation schedule matching the provided ID or `nil` if no schedule is found.
+
+  ## Example
+
+  ```elixir
+  # Retrieve an email automation schedule by its ID
+  schedule = Picsello.EmailAutomationSchedules.get_schedule_by_id(123)
+
+  # If found, the `schedule` variable will contain the email schedule details, otherwise, it will be `nil`.
+  """
+
+  def get_schedule_by_id(id) do
+    get_schedule_by_id_query(id)
     |> Repo.one()
   end
 
+  @doc """
+  Get emails associated with a specific gallery.
+
+  ## Parameters
+
+      - `table`: The table to query for emails.
+      - `gallery_id`: The gallery ID to filter by.
+
+  ## Returns
+
+  A list of emails associated with the specified gallery.
+  """
   def get_emails_by_gallery(table, gallery_id, type) do
     from(es in table, where: es.gallery_id == ^gallery_id and es.type == ^type)
     |> Repo.all()
   end
 
+  @doc """
+  Get emails associated with a specific order.
+
+  ## Parameters
+
+      - `table`: The table to query for emails.
+      - `order_id`: The order ID to filter by.
+
+  ## Returns
+
+  A list of emails associated with the specified order.
+  """
   def get_emails_by_order(table, order_id, type) do
     from(es in table, where: es.order_id == ^order_id and es.type == ^type)
     |> Repo.all()
   end
 
+  @doc """
+  Get emails associated with a specific job.
+
+  ## Parameters
+
+      - `table`: The table to query for emails.
+      - `job_id`: The job ID to filter by.
+
+  ## Returns
+
+  A list of emails associated with the specified job.
+  """
   def get_emails_by_job(table, job_id, type) do
     from(es in table, where: es.job_id == ^job_id and es.type == ^type)
     |> Repo.all()
   end
 
+  def get_emails_by_shoot(table, shoot_id, type) do
+    from(es in table, where: es.shoot_id == ^shoot_id and es.type == ^type)
+    |> Repo.all()
+  end
+
+  @doc """
+  Get the count of active email schedules for a specific job.
+
+  ## Parameters
+
+      - `job_id`: The job ID to filter by.
+
+  ## Returns
+
+  The count of active email schedules for the specified job.
+  """
   def get_active_email_schedule_count(job_id) do
     job_count =
       from(es in EmailSchedule,
@@ -55,6 +159,18 @@ defmodule Picsello.EmailAutomationSchedules do
     job_count + active_galleries_count
   end
 
+  @doc """
+  Get email schedules by IDs and type.
+
+  ## Parameters
+
+      - `ids`: A list of email schedule IDs.
+      - `type`: The type of the schedule.
+
+  ## Returns
+
+  A structured representation of email schedules grouped by categories and subcategories.
+  """
   def get_email_schedules_by_ids(ids, type) do
     email_schedule_query =
       from(
@@ -82,6 +198,9 @@ defmodule Picsello.EmailAutomationSchedules do
     |> email_schedules_group_by_categories()
   end
 
+  ## Select specific fields and construct a structured representation of email schedule information.
+  ## This function processes the query results to create a structured representation that includes
+  ## category and subcategory information along with pipeline details and related email data.
   defp select_schedule_fields(query) do
     query
     |> select([email, pipeline, category, subcategory], %{
@@ -100,7 +219,7 @@ defmodule Picsello.EmailAutomationSchedules do
           pipeline.state,
           pipeline.description,
           fragment(
-            "to_jsonb(json_build_object('id', ?, 'name', ?, 'total_hours', ?, 'condition', ?, 'body_template', ?, 'subject_template', ?, 'private_name', ?, 'stopped_at', ?, 'reminded_at', ?, 'order_id', ?, 'gallery_id', ?, 'job_id', ?))",
+            "to_jsonb(json_build_object('id', ?, 'name', ?, 'total_hours', ?, 'condition', ?, 'body_template', ?, 'subject_template', ?, 'private_name', ?, 'stopped_at', ?, 'reminded_at', ?, 'stopped_reason', ?, 'shoot_id', ?, 'order_id', ?, 'gallery_id', ?, 'job_id', ?))",
             email.id,
             email.name,
             email.total_hours,
@@ -110,6 +229,8 @@ defmodule Picsello.EmailAutomationSchedules do
             email.private_name,
             email.stopped_at,
             email.reminded_at,
+            email.stopped_reason,
+            email.shoot_id,
             email.order_id,
             email.gallery_id,
             email.job_id
@@ -118,12 +239,98 @@ defmodule Picsello.EmailAutomationSchedules do
     })
   end
 
+  @doc """
+  Retrieve all email schedules associated with the specified organizations which have approval_required always :false.
+
+  This function queries the database to fetch all email schedules that belong to the provided organizations.
+  It also preloads the associated email automation pipeline and categories for each schedule.
+
+  ## Parameters
+
+      - `organizations`: A list of organization IDs for which to retrieve email schedules.
+
+  ## Returns
+
+  A list of email schedules, each including preloaded data for email automation pipelines and categories.
+  """
+
+  def send_all_emails_of_organization(organization_id) do
+    email_ids =
+      from(es in EmailSchedule,
+        where: es.organization_id == ^organization_id and es.approval_required == true
+      )
+      |> Repo.all()
+      |> Enum.map(& &1.id)
+
+    email_ids |> Enum.map(fn id -> send_email_sechedule(id) end)
+  end
+
+  def send_all_global_emails() do
+    email_ids =
+      from(es in EmailSchedule,
+        where: es.approval_required == true
+      )
+      |> Repo.all()
+      |> Enum.map(& &1.id)
+
+    email_ids |> Enum.map(fn id -> send_email_sechedule(id) end)
+  end
+
   def get_all_emails_schedules(organizations) do
-    from(es in EmailSchedule, where: es.organization_id in ^organizations)
+    from(es in EmailSchedule,
+      where: es.organization_id in ^organizations and es.approval_required == false
+    )
     |> preload(email_automation_pipeline: [:email_automation_category])
     |> Repo.all()
   end
 
+  def get_all_emails_for_approval() do
+    from(es in EmailSchedule,
+      where: es.approval_required
+    )
+    |> preload(organization: [:user])
+    |> Repo.all()
+    |> Enum.group_by(&{&1.organization.id, &1.organization.name, &1.organization.user.email})
+    |> Enum.map(fn {{id, name, email}, emails} ->
+      %{
+        id: id,
+        name: name,
+        photographer_email: email,
+        emails: emails
+      }
+    end)
+  end
+
+  @doc """
+  Updates the email schedule and creates a corresponding email schedule history entry.
+
+  This function updates an email schedule with the provided `params` while creating a history entry.
+  The `id` parameter specifies the ID of the email schedule to be updated.
+
+  ## Parameters
+
+      - `id`: An integer representing the ID of the email schedule to update.
+      - `params`: A map containing the parameters for the update, including `reminded_at`.
+
+  ## Returns
+
+      - `{:ok, multi}` when the update and history entry creation are successful.
+      - `{:error, multi}` when an error occurs during the update and history entry creation.
+
+  ## Example
+
+      ```elixir
+      # Update an email schedule and create a corresponding history entry
+      result = Picsello.EmailAutomations.update_email_schedule(123, %{
+        reminded_at: DateTime.now()
+      })
+
+      # Check the result and handle accordingly
+      case result do
+        {:ok, _} -> IO.puts("Email schedule updated successfully.")
+        {:error, _} -> IO.puts("Error updating email schedule.")
+      end
+  """
   def update_email_schedule(id, %{reminded_at: _reminded_at} = params) do
     schedule = get_schedule_by_id(id)
 
@@ -163,6 +370,9 @@ defmodule Picsello.EmailAutomationSchedules do
     |> Repo.update()
   end
 
+  ## Filter email schedules based on different criteria. This function filters email schedules
+  ## based on specific criteria, such as galleries, orders, or jobs. It constructs a query that
+  ## selects and groups email schedules according to the provided criteria, and returns the result.
   defp filter_email_schedule(query, galleries, :gallery) do
     query
     |> join(:inner, [es, _, _, _], gallery in assoc(es, :gallery))
@@ -172,6 +382,7 @@ defmodule Picsello.EmailAutomationSchedules do
       category_name: fragment("concat(?, ':', ?)", c.name, gallery.name),
       gallery_id: gallery.id,
       order_id: es.order_id,
+      shoot_id: nil,
       order_number: order.number,
       subcategory_name: fragment("concat(?, ':', ?)", s.name, order.number)
     })
@@ -191,28 +402,52 @@ defmodule Picsello.EmailAutomationSchedules do
     ])
   end
 
+  ## Filter email schedules based on job ID. This function filters email schedules based on a specific job ID.
+  ## It constructs a query that selects and groups email schedules related to the provided job ID, and returns the result.
   defp filter_email_schedule(query, job_id, _type) do
     query
     |> where([es, _, _, _], es.job_id == ^job_id)
     |> where([es, _, _, _], is_nil(es.gallery_id))
-    |> select_merge([_, _, c, s], %{
+    |> join(:left, [es, _, _, _], shoot in assoc(es, :shoot))
+    |> select_merge([_, _, c, s, shoot], %{
       category_name: c.name,
-      subcategory_name: s.name,
+      subcategory_name:
+        fragment(
+          "CASE WHEN ? IS NOT NULL THEN concat(?, ':', ?) ELSE ? END",
+          shoot.name,
+          s.name,
+          shoot.name,
+          s.name
+        ),
+      shoot_id: shoot.id,
       gallery_id: nil,
       order_id: nil,
       order_number: ""
     })
-    |> group_by([es, p, c, s], [c.name, c.type, c.id, p.id, es.id, s.id, s.slug, s.name])
+    |> group_by([es, p, c, s, shoot], [
+      c.name,
+      c.type,
+      c.id,
+      p.id,
+      es.id,
+      s.id,
+      s.slug,
+      s.name,
+      shoot.id
+    ])
   end
 
+  ## Group email schedules by categories and subcategories. This function groups email schedules
+  ## based on categories and subcategories. It processes the provided list of email schedules and
+  ## organizes them into structured categories and subcategories.
   defp email_schedules_group_by_categories(emails_schedules) do
     emails_schedules
     |> Enum.group_by(
       &{&1.subcategory_slug, &1.subcategory_name, &1.subcategory_id, &1.subcategory_position,
-       &1.gallery_id, &1.job_id, &1.order_id, &1.order_number}
+       &1.gallery_id, &1.job_id, &1.order_id, &1.shoot_id, &1.order_number}
     )
-    |> Enum.map(fn {{slug, name, id, position, gallery_id, job_id, order_id, order_number},
-                    automation_pipelines} ->
+    |> Enum.map(fn {{slug, name, id, position, gallery_id, job_id, order_id, shoot_id,
+                     order_number}, automation_pipelines} ->
       pipelines =
         automation_pipelines
         |> Enum.group_by(& &1.pipeline["id"])
@@ -236,6 +471,7 @@ defmodule Picsello.EmailAutomationSchedules do
         subcategory_name: name,
         subcategory_id: id,
         subcategory_position: position,
+        shoot_id: shoot_id,
         gallery_id: gallery_id,
         job_id: job_id,
         order_id: order_id,
@@ -264,23 +500,173 @@ defmodule Picsello.EmailAutomationSchedules do
     |> Enum.sort_by(&{&1.category_position, &1.category_name}, :asc)
   end
 
+  @doc """
+  Queries the EmailSchedule or a specified table for email automation pipeline data based on the provided parameters.
+
+  This function constructs a query to retrieve email schedule records from the specified table, filtered by the given
+  `category_type`, `gallery_id`, `job_id`, and `pipeline_id`.
+
+  ## Parameters
+
+      - `category_type`: An atom representing the category type. Should be either `:gallery` or other values.
+      - `gallery_id`: An integer representing the gallery ID for filtering.
+      - `job_id`: An integer representing the job ID for filtering.
+      - `pipeline_id`: An integer representing the email automation pipeline ID for filtering.
+      - `table`: The table module where the query will be executed. Defaults to `EmailSchedule` if not provided.
+
+  ## Returns
+
+  A list of maps representing the email schedule records that match the specified criteria.
+
+  ## Example
+
+      ```elixir
+      query_get_email_schedule(:gallery, 123, nil, 456, EmailSchedule)
+  """
   def query_get_email_schedule(
         category_type,
         gallery_id,
+        shoot_id,
         job_id,
         piepline_id,
         table \\ EmailSchedule
       ) do
-    query = from(es in table, where: es.email_automation_pipeline_id == ^piepline_id)
+    query = get_schedule_by_pipeline(table, piepline_id)
 
     case category_type do
       :gallery -> query |> where([es], es.gallery_id == ^gallery_id)
+      :shoot -> query |> where([es], es.shoot_id == ^shoot_id)
       _ -> query |> where([es], es.job_id == ^job_id)
     end
   end
 
-  def get_last_completed_email(category_type, gallery_id, job_id, pipeline_id, state, helpers) do
-    query_get_email_schedule(category_type, gallery_id, job_id, pipeline_id, EmailScheduleHistory)
+  def get_schedule_by_pipeline(table, pipeline_ids) when is_list(pipeline_ids) do
+    from(es in table, where: es.email_automation_pipeline_id in ^pipeline_ids)
+  end
+
+  def get_schedule_by_pipeline(table, pipeline_id) do
+    from(es in table, where: es.email_automation_pipeline_id == ^pipeline_id)
+  end
+
+  def get_all_emails_active_by_job_pipeline(category, job_id, pipeline_id) do
+    query_get_email_schedule(category, nil, nil, job_id, pipeline_id)
+    |> where([es], is_nil(es.stopped_at))
+  end
+
+  def stopped_all_active_proposal_emails(job_id) do
+    pipeline = EmailAutomations.get_pipeline_by_state(:manual_booking_proposal_sent)
+
+    all_proposal_active_emails_query =
+      get_all_emails_active_by_job_pipeline(:lead, job_id, pipeline.id)
+
+    delete_and_insert_schedules_by(
+      all_proposal_active_emails_query,
+      :proposal_accepted
+    )
+  end
+
+  def delete_and_insert_schedules_by(email_schedule_query, stopped_reason) do
+    schedule_history_params = make_schedule_history_params(email_schedule_query, stopped_reason)
+
+    Multi.new()
+    |> Multi.delete_all(:proposal_emails, email_schedule_query)
+    |> Multi.insert_all(:schedule_history, EmailScheduleHistory, schedule_history_params)
+    |> Repo.transaction()
+  end
+
+  def make_schedule_history_params(query, stopped_reason) do
+    query
+    |> Repo.all()
+    |> Enum.map(fn schedule ->
+      schedule
+      |> Map.take([
+        :total_hours,
+        :condition,
+        :type,
+        :body_template,
+        :name,
+        :subject_template,
+        :private_name,
+        :reminded_at,
+        :email_automation_pipeline_id,
+        :job_id,
+        :shoot_id,
+        :gallery_id,
+        :order_id,
+        :organization_id
+      ])
+      |> Map.merge(%{
+        stopped_reason: stopped_reason,
+        stopped_at: DateTime.truncate(DateTime.utc_now(), :second),
+        inserted_at: DateTime.truncate(DateTime.utc_now(), :second),
+        updated_at: DateTime.truncate(DateTime.utc_now(), :second)
+      })
+    end)
+  end
+
+  def get_stopped_emails_text(job_id, state, helper) do
+    pipeline = EmailAutomations.get_pipeline_by_state(state)
+
+    emails_stopped =
+      from(es in EmailScheduleHistory,
+        where:
+          es.email_automation_pipeline_id == ^pipeline.id and es.job_id == ^job_id and
+            not is_nil(es.stopped_at)
+      )
+      |> Repo.all()
+
+    if Enum.any?(emails_stopped) do
+      count = Enum.count(emails_stopped)
+
+      helper.ngettext("1 email stopped", "#{count} emails stopped", count)
+    else
+      nil
+    end
+  end
+
+  @doc """
+  Retrieves the last completed email from the specified pipeline for a given category type, gallery ID, shoot_id, job ID, pipeline id, state and helpers.
+
+  This function first calls `query_get_email_schedule/6` to retrieve email schedule records, filters them to include only
+  those with non-nil `reminded_at` values, and then sorts the emails based on the provided `state`. Finally, it returns
+  the last email in the sorted list.
+
+  ## Parameters
+
+      - `category_type`: An atom representing the category type. Should be either `:gallery` or other values.
+      - `gallery_id`: An integer representing the gallery ID for filtering.
+      - `shoot_id`: An integer representing the shoot ID for filtering.
+      - `job_id`: An integer representing the job ID for filtering.
+      - `pipeline_id`: An integer representing the email automation pipeline ID for filtering.
+      - `state`: A module responsible for sorting the email records.
+      - `helpers`: A module responsible for calling the helper actions.
+
+  ## Returns
+
+  A map representing the last completed email record, or `nil` if no matching record is found.
+
+  ## Example
+
+      ```elixir
+      get_last_completed_email(:gallery, 123, nil, 456, 4, active, MyEmailStateModule)
+  """
+  def get_last_completed_email(
+        category_type,
+        gallery_id,
+        shoot_id,
+        job_id,
+        pipeline_id,
+        state,
+        helpers
+      ) do
+    query_get_email_schedule(
+      category_type,
+      gallery_id,
+      shoot_id,
+      job_id,
+      pipeline_id,
+      EmailScheduleHistory
+    )
     |> where([es], not is_nil(es.reminded_at))
     |> Repo.all()
     |> helpers.sort_emails(state)
@@ -291,16 +677,31 @@ defmodule Picsello.EmailAutomationSchedules do
     Insert all emails templates for jobs & leads in email schedules
   """
   def job_emails(type, organization_id, job_id, category_type, skip_states \\ []) do
+    job = Jobs.get_job_by_id(job_id) |> Repo.preload([:job_status])
     now = DateTime.utc_now() |> DateTime.truncate(:second)
+
+    payment_states = [
+      :offline_payment,
+      :balance_due,
+      :paid_offline_full,
+      :paid_full,
+      :pays_retainer_offline,
+      :pays_retainer
+    ]
+
+    shoot_skip_states = [:before_shoot, :shoot_thanks]
+    skip_payment_states = if PaymentSchedules.all_paid?(job), do: payment_states, else: []
+    all_skip_states = skip_states ++ shoot_skip_states ++ skip_payment_states
 
     emails =
       EmailAutomations.get_emails_for_schedule(organization_id, type, category_type)
       |> Enum.map(fn email_data ->
         state = Map.get(email_data, :email_automation_pipeline) |> Map.get(:state)
 
-        if state not in skip_states do
+        if state not in all_skip_states do
           [
             job_id: job_id,
+            shoot_id: nil,
             type: category_type,
             total_hours: email_data.total_hours,
             condition: email_data.condition,
@@ -309,6 +710,7 @@ defmodule Picsello.EmailAutomationSchedules do
             subject_template: email_data.subject_template,
             private_name: email_data.private_name,
             email_automation_pipeline_id: email_data.email_automation_pipeline_id,
+            approval_required: false,
             organization_id: organization_id,
             inserted_at: now,
             updated_at: now
@@ -325,6 +727,72 @@ defmodule Picsello.EmailAutomationSchedules do
       emails
     else
       []
+    end
+  end
+
+  def shoot_emails(job, shoot) do
+    job = job |> Repo.preload(client: [organization: [:user]])
+    category_type = :shoot
+
+    skip_sub_categories = [
+      "post_job_emails",
+      "payment_reminder_emails",
+      "booking_response_emails"
+    ]
+
+    organization_id = job.client.organization.id
+    now = DateTime.utc_now() |> DateTime.truncate(:second)
+
+    emails =
+      EmailAutomations.get_emails_for_schedule(
+        job.client.organization.id,
+        job.type,
+        :job,
+        skip_sub_categories
+      )
+      |> Enum.map(fn email_data ->
+        state = Map.get(email_data, :email_automation_pipeline) |> Map.get(:state)
+
+        if state not in [:post_shoot] do
+          [
+            shoot_id: shoot.id,
+            gallery_id: nil,
+            type: category_type,
+            order_id: nil,
+            job_id: job.id,
+            total_hours: email_data.total_hours,
+            condition: email_data.condition,
+            body_template: email_data.body_template,
+            name: email_data.name,
+            subject_template: email_data.subject_template,
+            private_name: email_data.private_name,
+            approval_required: false,
+            email_automation_pipeline_id: email_data.email_automation_pipeline_id,
+            organization_id: organization_id,
+            inserted_at: now,
+            updated_at: now
+          ]
+        end
+      end)
+      |> Enum.filter(&(&1 != nil))
+
+    previous_emails_schedules = get_emails_by_shoot(EmailSchedule, shoot.id, category_type)
+
+    previous_emails_history = get_emails_by_shoot(EmailScheduleHistory, shoot.id, category_type)
+
+    if Enum.empty?(previous_emails_schedules) and Enum.empty?(previous_emails_history) do
+      emails
+    else
+      []
+    end
+  end
+
+  def insert_shoot_emails(job, shoot) do
+    emails = shoot_emails(job, shoot)
+
+    case Repo.insert_all(EmailSchedule, emails) do
+      {count, nil} -> {:ok, count}
+      _ -> {:error, "error insertion"}
     end
   end
 
@@ -405,6 +873,62 @@ defmodule Picsello.EmailAutomationSchedules do
     end
   end
 
+  def send_email_sechedule(email_id) do
+    email =
+      get_schedule_by_id(email_id)
+      |> Repo.preload(email_automation_pipeline: [:email_automation_category])
+
+    pipeline = email.email_automation_pipeline
+
+    case email.gallery_id do
+      nil ->
+        job =
+          Jobs.get_job_by_id(email.job_id)
+          |> Repo.preload([:payment_schedules, :job_status, client: :organization])
+
+        send_email(:job, pipeline.email_automation_category.type, email, job, pipeline.state, nil)
+
+      id ->
+        gallery = Galleries.get_gallery!(id)
+
+        send_email(
+          :gallery,
+          pipeline.email_automation_category.type,
+          email,
+          gallery,
+          pipeline.state,
+          email.order_id
+        )
+    end
+  end
+
+  defp send_email(:job, category_type, email, job, state, _order_id) do
+    EmailAutomations.send_now_email(
+      category_type,
+      email,
+      job,
+      state
+    )
+  end
+
+  defp send_email(:gallery, _category_type, email, gallery, state, _order_id)
+       when state in [
+              :manual_gallery_send_link,
+              :manual_send_proofing_gallery,
+              :manual_send_proofing_gallery_finals,
+              :cart_abandoned,
+              :gallery_expiration_soon,
+              :gallery_password_changed,
+              :after_gallery_send_feedback
+            ] do
+    EmailAutomations.send_now_email(:gallery, email, gallery, state)
+  end
+
+  defp send_email(:gallery, _category_type, email, _gallery, state, order_id) do
+    order = Orders.get_order(order_id)
+    EmailAutomations.send_now_email(:order, email, order, state)
+  end
+
   defp email_mapping(data, gallery, category_type, order_id) do
     now = DateTime.utc_now() |> DateTime.truncate(:second)
 
@@ -426,6 +950,7 @@ defmodule Picsello.EmailAutomationSchedules do
           condition: email_data.condition,
           body_template: email_data.body_template,
           name: email_data.name,
+          approval_required: false,
           subject_template: email_data.subject_template,
           private_name: email_data.private_name,
           email_automation_pipeline_id: email_data.email_automation_pipeline_id,

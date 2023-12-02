@@ -1193,7 +1193,7 @@ defmodule PicselloWeb.GalleryLive.Photos.Index do
     cond do
       first_visit? && error_count != 0 -> "pt-80 mt-4"
       first_visit? && error_count == 0 -> "pt-72"
-      error_count == 0 -> "lg:pt-44 pt-48"
+      error_count == 0 -> ""
       true -> "pt-64"
     end
   end

@@ -11,7 +11,47 @@
     <% subscription -> %>
       <.card title="Your subscription" title_badge={subscription_badge(subscription)}>
         <p class="text-base-250 sm:mr-32">You can update your payment method, modify your plan, or download your invoices using our Billing Portal through Stripe. If you’re currently on a monthly trial and modify your plan to yearly, you will lose the time left. Contact us if you have issues.</p>
-        <div class="grid grid-cols-1 sm:grid-cols-2 mt-4 gap-6">
+        <%= if @sale_promotion_code do %>
+          <%= case @current_sale do %>
+            <% nil -> %>
+              <div class="bg-blue-planning-300 mt-4 mb-1 rounded-lg p-3">
+                <div class="center-container">
+                  <div class="flex justify-between items-center gap-2 flex-wrap">
+                    <div>
+                      <p class="flex items-center text-white font-bold">
+                        <.icon name="clock" class="w-6 h-6 mr-2 flex-shrink-0"/>
+                        Level Up with our Holiday Sale-Yearly Subscription + FREE Mastermind Membership!
+                      </p>
+                      <%= if Subscriptions.interval(subscription) == "month" do %>
+                        <ul class="list-disc text-white text-sm ml-12">
+                          <li>Add code in account settings <%= @sale_promotion_code %></li>
+                          <li>Open the billing portal—add a payment method if you don't have one already and change to yearly</li>
+                          <li>If you get stuck, reach out to Picsello Support</li>
+                        </ul>
+                      <% end %>
+                    </div>
+                    <div class="flex gap-2 ml-auto">
+                      <%= case @current_user.subscription do %>
+                        <% nil -> %>
+                        <% subscription -> %>
+                          <%= if Subscriptions.interval(subscription) == "year" do %>
+                            <button type="button" phx-click="subscription-prepurchase" class="flex text-xs items-center px-2 py-1 btn-tertiary bg-white text-blue-planning-300">
+                              <.icon name="money-bags" class="inline-block w-4 h-4 fill-current text-blue-planning-300 mr-1" />
+                              Buy now
+                            </button>
+                          <% end %>
+                      <% end %>
+                    </div>
+                    <button type="button" class="px-2 py-1 btn-tertiary text-blue-planning-300 bg-blue-planning-300 text-xs" title="Dismiss" phx-click="subscription-prepurchase-dismiss">
+                      <.icon name="close" class="inline-block w-6 h-6 fill-current text-white" />
+                    </button>
+                  </div>
+                </div>
+              </div>
+            <% _ -> %>
+          <% end %>
+        <% end %>
+        <div class="grid grid-cols-1 sm:grid-cols-1 mt-4 gap-6">
           <div class="border flex flex-wrap rounded-lg p-4 sm:p-6 justify-between sm:items-center">
             <div class="flex flex-col items-start">
               <.badge color={:blue}>
@@ -31,13 +71,49 @@
             </div>
             <div class="w-full mt-4 border-t pt-4">
               <%= if @promotion_code do %>
-                <p class="text-base-250">🎉 <%= @promotion_code.percent_off %>% off each <%= subscription.recurring_interval %> with code "<span class="font-bold"><%= @promotion_code.code %></span>"</p>
+                <p class="text-base-250">
+                  🎉 
+                  <%= cond do %>
+                    <% @promotion_code.percent_off -> %>
+                      <%= @promotion_code.percent_off %>% off each <%= Subscriptions.interval(subscription) %>
+                    <% @promotion_code.amount_off && @promotion_code.code == "THREEMONTHDEAL" -> %>
+                      <%= Money.new(@promotion_code.amount_off) %> off for 3 months
+                    <% @promotion_code.amount_off -> %>
+                      <%= Money.new(@promotion_code.amount_off) %> off each <%= Subscriptions.interval(subscription) %>
+                    <% true -> %>
+                  <% end %>
+                   with code "<span class="font-bold"><%= @promotion_code.code %></span>"</p>
               <% end %>
               <p class="underline w-full text-sm mt-2 cursor-pointer text-blue-planning-300" {testid("promo-code")} phx-click="open-promo-code-modal"><%= if @promotion_code, do: "Edit", else: "Add" %> promo code</p>
             </div>
           </div>
         </div>
       </.card>
+  <% end %>
+
+  <%= if FunWithFlags.enabled?(:photo_lab) do %>
+    <.card title="Beta Features" class="mt-10">
+      <p class="text-base-250 sm:mr-32">Picsello's Beta Features gives you early access to new features before they’re available to everyone. We welcome your feedback to help us continuously improve Picsello. Experimental features are works-in-progress, so you may find some bugs along the way.</p>
+      <hr class="my-4" />
+      <div class="max-w-md">
+        <div class="flex items-center gap-4">
+          <p class=" font-bold text-xl">Sidebar Navigation</p>
+          <button type="button" class="cursor-pointer flex items-center gap-2" phx-click="feature-flag">
+            <div class="flex">
+              <div class={classes("rounded-full w-7 p-0.5 flex border border-blue-planning-300", %{"bg-blue-planning-300 justify-end" => FunWithFlags.enabled?(:sidebar_navigation, for: @current_user), "bg-base-100" => !FunWithFlags.enabled?(:sidebar_navigation, for: @current_user)})}>
+                <div class={classes("rounded-full h-3 w-3", %{"bg-base-100" => FunWithFlags.enabled?(:sidebar_navigation, for: @current_user), "bg-blue-planning-300" => !FunWithFlags.enabled?(:sidebar_navigation, for: @current_user)})}></div>
+              </div>
+            </div>
+            <%= if FunWithFlags.enabled?(:sidebar_navigation, for: @current_user) do %>
+              Disable
+            <% else %>
+              Enable
+            <% end %>
+          </button>
+        </div>
+        <p class="text-sm text-base-250">Try out an easier to use navigation. We'd love your <a href="https://form.typeform.com/to/vZiH7yCy" target="_blank" rel="noreferrer" class="link">feedback</a>. (You will be directed to your dashboard when toggled.)</p>
+      </div>
+    </.card>
   <% end %>
 
   <div class="grid gap-10 grid-cols-1 sm:grid-cols-2 mt-10" phx-hook="BeforeUnload" id="setting-alert" data-is-save={@is_save_settings} >
