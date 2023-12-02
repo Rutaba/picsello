@@ -278,6 +278,9 @@ defmodule Picsello.Jobs do
           "new" ->
             filter_new_leads(dynamic)
 
+          "all" ->
+            filter_all(dynamic)
+
           _ ->
             dynamic
         end
@@ -286,6 +289,14 @@ defmodule Picsello.Jobs do
         # Not a where parameter
         dynamic
     end)
+  end
+
+  defp filter_all(dynamic) do
+    dynamic(
+      [j, client, status],
+      ^dynamic and
+        status.current_status not in [:archived]
+    )
   end
 
   defp filter_completed_jobs(dynamic) do
