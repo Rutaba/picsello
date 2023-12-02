@@ -30,6 +30,8 @@ defmodule PicselloWeb.Live.Admin.Index do
 
         <li><%= live_redirect "Manage Users", to: Routes.admin_user_index_path(@socket, :index), class: @class %></li>
 
+        <li><%= live_redirect "User Subscription Reconciliation Report", to: Routes.admin_user_subscription_report_path(@socket, :index), class: @class %></li>
+
         <li><%= live_redirect "Subscription Pricing", to: Routes.admin_subscription_pricing_path(@socket, :index), class: @class %></li>
 
         <li><%= live_redirect "Product Pricing Report", to: Routes.admin_product_pricing_path(@socket, :index), class: @class %></li>
