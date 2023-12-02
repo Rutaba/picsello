@@ -9,7 +9,6 @@ defmodule Picsello.Orders do
     Galleries.Photo,
     Intents,
     Invoices.Invoice,
-    Photos,
     Repo
   }
 
@@ -160,7 +159,11 @@ defmodule Picsello.Orders do
       %{
         organization: get_organization!(gallery_hash),
         photos:
-          from(photo in Photos.active_photos(), where: photo.gallery_id == ^gallery.id) |> some!()
+          from(photo in Photo,
+            where: photo.gallery_id == ^gallery.id,
+            where: photo.active == true
+          )
+          |> some!()
       }
     else
       raise Ecto.NoResultsError, queryable: Gallery
@@ -237,6 +240,7 @@ defmodule Picsello.Orders do
   def get_order_photos(%Order{bundle_price: %Money{}} = order) do
     from(photo in Photo,
       where: photo.gallery_id == ^order.gallery_id,
+      where: photo.active == true,
       order_by: [asc: photo.inserted_at]
     )
   end
@@ -247,6 +251,7 @@ defmodule Picsello.Orders do
       join: photo in assoc(digital, :photo),
       where: order.id == ^order_id,
       order_by: [asc: photo.inserted_at],
+      where: photo.active == true,
       select: photo
     )
   end
@@ -343,6 +348,30 @@ defmodule Picsello.Orders do
     |> Repo.one()
   end
 
+  @doc """
+  Retrieves an order by its ID.
+
+  This function queries the database to retrieve an order based on the provided order ID.
+  It preloads associated data, including the gallery and job, for more comprehensive order information.
+
+  ## Parameters
+
+      - `id`: The unique identifier (ID) of the order to retrieve.
+
+  ## Returns
+
+      - `%Order{}`: A struct representing the retrieved order with associated data, including the gallery and job.
+
+  ## Examples
+
+      ```elixir
+      order_id = 123
+      order = MyApp.Orders.get_order(order_id)
+
+      # Accessing order details:
+      # order.gallery - The associated gallery for the order
+      # order.job - The associated job for the order
+  """
   def get_order(id) do
     from(order in Order,
       preload: [gallery: :job],

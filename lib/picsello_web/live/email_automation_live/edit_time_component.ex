@@ -33,6 +33,7 @@ defmodule PicselloWeb.EmailAutomationLive.EditTimeComponent do
     |> assign(assigns)
     |> assign(email_automation_setting: email_automation_setting)
     |> assign(changeset: changeset)
+    |> assign_new(:show_enable_setting?, fn -> true end)
     |> ok()
   end
 
@@ -184,28 +185,31 @@ defmodule PicselloWeb.EmailAutomationLive.EditTimeComponent do
                 <% end %> --%>
               </div>
               <hr class="my-4 md:hidden flex" />
-              <div class="mt-4">
-                <b>Email Status</b>
-                <span class="text-base-250">Choose whether or not this email should send</span>
 
-                <div>
-                  <label class="flex pt-4">
-                    <%= checkbox f, :status, class: "peer hidden", checked: Changeset.get_field(@changeset, :status) == :active %>
-                    <div class="hidden peer-checked:flex cursor-pointer">
-                      <div testid="enable-toggle-in-edit-email-modal" class="rounded-full bg-blue-planning-300 border border-base-100 w-14 p-1 flex justify-end mr-4">
-                        <div class="rounded-full h-5 w-5 bg-base-100"></div>
+              <%= if @show_enable_setting? do %>
+                <div class="mt-4">
+                  <b>Email Status</b>
+                  <span class="text-base-250">Choose whether or not this email should send</span>
+
+                  <div>
+                    <label class="flex pt-4">
+                      <%= checkbox f, :status, class: "peer hidden", checked: Changeset.get_field(@changeset, :status) == :active %>
+                      <div class="hidden peer-checked:flex cursor-pointer">
+                        <div testid="enable-toggle-in-edit-email-modal" class="rounded-full bg-blue-planning-300 border border-base-100 w-14 p-1 flex justify-end mr-4">
+                          <div class="rounded-full h-5 w-5 bg-base-100"></div>
+                        </div>
+                        Email enabled
                       </div>
-                      Email enabled
-                    </div>
-                    <div class="flex peer-checked:hidden cursor-pointer">
-                      <div testid="disable-toggle-in-edit-email-modal" class="rounded-full w-14 p-1 flex mr-4 border border-blue-planning-300">
-                        <div class="rounded-full h-5 w-5 bg-blue-planning-300"></div>
+                      <div class="flex peer-checked:hidden cursor-pointer">
+                        <div testid="disable-toggle-in-edit-email-modal" class="rounded-full w-14 p-1 flex mr-4 border border-blue-planning-300">
+                          <div class="rounded-full h-5 w-5 bg-blue-planning-300"></div>
+                        </div>
+                        Email disabled
                       </div>
-                      Email disabled
-                    </div>
-                  </label>
+                    </label>
+                  </div>
                 </div>
-              </div>
+              <% end %>
             </div>
           </div>
 

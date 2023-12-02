@@ -1,12 +1,12 @@
 <li class="flex flex-col justify-between">
   <%= if @click_params do %>
-    <div phx-click="product_preview_photo_popup" phx-value-params={@click_params} class="productPreview-photo">
-      <div class="flex items-center justify-center p-4 photos__rect sm:p-8">
+    <div phx-click="product_preview_photo_popup" phx-value-params={@click_params} class="productPreview-photo js-disable-right-click">
+      <div class="flex items-center justify-center p-4 photos__rect sm:p-8 ">
         <.framed_preview category={@category} photo={@photo} height={170} />
       </div>
     </div>
   <% else %>
-    <div class="flex items-center justify-center p-4 photos__rect sm:p-8">
+    <div class="flex items-center justify-center p-4 photos__rect sm:p-8 js-disable-right-click">
       <.framed_preview category={@category} photo={@photo} height={170} />
     </div>
   <% end %>

@@ -13,12 +13,12 @@ defmodule PicselloWeb.ClientProposalView do
           <.photographer_logo organization={@organization} />
         </div>
         <hr class="border-gray-100 my-4">
-        <h2 class="text-xs md:mt-12">
+        <h2 class="text-sm md:mt-12">
           <span class="capitalize"></span><%= @client_proposal.title %>
         </h2>
 
         <div class="grid md:grid-cols-2 gap-5">
-          <div>
+          <div class="text-sm">
             <p class="text-xs whitespace-pre-line">
               <%= raw @client_proposal.message %>
             </p>

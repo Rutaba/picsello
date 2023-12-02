@@ -9,7 +9,7 @@
       <div class="fixed top-12 left-0 right-0 z-10 flex flex-shrink-0 w-full sm:p-0 p-6 mt-1 sm:mt-0 sm:bottom-auto sm:static sm:items-start sm:w-auto">
         <%= case @type.singular do %>
           <% "lead" -> %>
-            <a {testid("create-a-lead")} title="create lead" class="w-full md:w-auto btn-primary text-center" phx-click="create-lead">
+            <a {testid("create-a-lead")} title="create lead" class="w-full md:w-auto btn-primary text-center hover:cursor-pointer" phx-click="create-lead">
               Create a lead
             </a>
           <% "job" -> %>
@@ -27,14 +27,14 @@
 
 <%= if Enum.empty? @jobs do %>
   <div class="flex flex-col justify-between flex-auto p-6 center-container lg:flex-none">
-    <div></div> <%# flex in thirds %>
+    <div></div>
     <%= case {@type.singular, @stripe_status} do %>
       <% {"lead", _stripe_status} -> %>
         <%= if @search_phrase || @job_status !== "all" || @job_type !== "all" do %>
           <p class="text-center text-lg lg:text-2xl text-base-250">No leads match your search or filters.</p>
         <% else %>
           <.empty_state_base tour_embed="https://demo.arcade.software/2rNmJeh5ZDMmrhth7v0P?embed" headline="Meet Leads" eyebrow_text="Leads Product Tour" body="Leads are the beginning to a great relationship between you and your client! Creating one takes less than a minute." third_party_padding="calc(59.916666666666664% + 41px)">
-            <a title="create lead" class="w-full md:w-auto btn-tertiary text-center flex-shrink-0" phx-click="create-lead">
+            <a title="create lead" class="w-full md:w-auto btn-tertiary text-center flex-shrink-0 hover:cursor-pointer" phx-click="create-lead">
               Create a lead
             </a>
           </.empty_state_base>
@@ -54,13 +54,14 @@
   </div>
 <% else %>
   <div class="p-6 center-container">
-    <div class="hidden items-center sm:grid sm:grid-cols-6 gap-2 border-b-8 border-blue-planning-300 font-semibold text-lg pb-6">
+    <div class="hidden items-center sm:grid sm:grid-cols-8 gap-2 border-b-8 border-blue-planning-300 font-semibold text-lg pb-6">
       <div class="sm:col-span-2"><%= String.capitalize(@type.singular)%> Information</div>
       <div class="sm:col-span-2">Package</div>
+      <div class="sm:col-span-2">Shoot Date(s)</div>
       <div>Status</div>
     </div>
     <%= for job <- @jobs do %>
-      <div {testid("job-row")} class="grid sm:grid-cols-6 gap-2 border p-3 items-center sm:pt-0 sm:px-0 sm:pb-2 sm:border-b sm:border-t-0 sm:border-x-0 rounded-lg sm:rounded-none border-gray-100 mt-2">
+      <div {testid("job-row")} class="grid sm:grid-cols-8 gap-2 border p-3 items-center sm:pt-0 sm:px-0 sm:pb-2 sm:border-b sm:border-t-0 sm:border-x-0 rounded-lg sm:rounded-none border-gray-100 mt-2">
         <div phx-click="view-job" phx-value-id={job.id} class="sm:col-span-2 flex flex-col">
           <%= live_redirect to: Routes.job_path(@socket, String.to_atom(@type.plural), job.id) do %>
             <p class="text-blue-planning-300 font-bold underline hover:cursor-pointer capitalize">
@@ -87,6 +88,19 @@
           <% else %>
             <p class="font-bold text-red-sales-300">No package selected</p>
             <p>-</p>
+          <% end %>
+        </div>
+        <div class="sm:col-span-2 flex flex-col md:block">
+          <% collapse? = Enum.any?(@collapsed_shoots, & &1 == job.id) %>
+          <%= for shoot  <- get_shoots(@sort_direction, job.shoots, collapse?) do %>
+            <p class="sm:text-base text-xs"><%= format_datetime_via_type(shoot.starts_at, @current_user.time_zone) %> </p>
+          <% end %>
+          <div class={classes(%{"hidden" => Enum.count(job.shoots) < 4})} phx-click="toggle-shoots" phx-value-job_id={job.id}>
+            <.icon name="hellip" class={classes("w-4 h-4 text-blue-planning-300 mt-2 cursor-pointer", %{"hidden" => Enum.any?(@collapsed_shoots, & &1 == job.id)})} />
+            <span class={classes("text-blue-planning-300 underline cursor-pointer", %{"hidden" => !collapse?})}>Hide</span>
+          </div>
+          <%= if job.shoots == [] do %>
+            <p class="font-bold text-red-sales-300">Missing Shoot Date</p>
           <% end %>
         </div>
         <.status_badge class="w-fit" job={job}/>

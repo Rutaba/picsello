@@ -9,10 +9,11 @@ defmodule Picsello.Accounts.User do
     Subscription,
     SubscriptionEvent,
     Organization,
-    NylasDetail
+    NylasDetail,
+    Accounts.User.Promotions
   }
 
-  @email_regex ~r/^[^\s]+@[^\s]+\.[^\s]+$/
+  @email_regex ~r/^(?!.*\.\.)(?!^[^\w]+)(?!.*[^\w]$)[^\s]+@[^\s]+\.[^\s]+$/
   @derive {Inspect, except: [:password]}
 
   schema "users" do
@@ -27,9 +28,11 @@ defmodule Picsello.Accounts.User do
     field :sign_up_auth_provider, Ecto.Enum, values: [:google, :password], default: :password
     field :stripe_customer_id, :string
     embeds_one(:onboarding, Onboarding, on_replace: :update)
+    field :onboarding_flow_source, {:array, :string}, default: []
     has_one(:subscription, Subscription)
     has_one(:subscription_event, SubscriptionEvent)
     has_one(:nylas_detail, NylasDetail)
+    has_many(:user_promotions, Promotions)
     belongs_to(:organization, Organization)
 
     timestamps()
@@ -67,7 +70,8 @@ defmodule Picsello.Accounts.User do
       :email,
       :name,
       :password,
-      :time_zone
+      :time_zone,
+      :onboarding_flow_source
     ])
     |> validate_required([:name])
     |> validate_email()

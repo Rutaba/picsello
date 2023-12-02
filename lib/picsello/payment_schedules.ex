@@ -206,6 +206,30 @@ defmodule Picsello.PaymentSchedules do
     |> Money.add(Map.get(job.package, :collected_price) || Money.new(0, currency))
   end
 
+  @doc """
+  Retrieves payment schedules associated with the given job that require cash payments.
+
+  This function filters the payment schedules associated with the provided job and returns a
+  list of payment schedules where `is_with_cash` is `true`. Payment schedules that require cash
+  payments can be useful for further processing or analysis.
+
+  ## Parameters
+
+      - `job`: A `%Job{}` struct representing the job for which payment schedules are retrieved.
+
+  ## Returns
+
+      - `[%PaymentSchedule{}]`: A list of payment schedules associated with the job that require cash payments (where `is_with_cash` is `true`).
+
+  ## Examples
+
+      ```elixir
+      job = MyApp.Jobs.get_job(job_id)
+      cash_payment_schedules = MyApp.PaymentSchedules.get_is_with_cash(job)
+
+      # Accessing payment schedule details:
+      # cash_payment_schedules - A list of payment schedules requiring cash payments.
+  """
   def get_is_with_cash(job) do
     job |> payment_schedules() |> Enum.filter(& &1.is_with_cash)
   end
@@ -352,7 +376,11 @@ defmodule Picsello.PaymentSchedules do
 
       # insert job shoots
       _inserted_shhots =
-        shoots |> Enum.map(&EmailAutomationSchedules.insert_shoot_emails(proposal.job, &1.shoot))
+        shoots |> Enum.map(&EmailAutomationSchedules.insert_shoot_emails(proposal.job, &1))
+
+      # stopped all active proposal emails when online payment paid
+      _stopped_emails =
+        EmailAutomationSchedules.stopped_all_active_proposal_emails(proposal.job.id)
 
       EmailAutomations.send_pays_retainer(
         proposal.job,

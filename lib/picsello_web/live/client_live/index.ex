@@ -4,6 +4,7 @@ defmodule PicselloWeb.Live.ClientLive.Index do
 
   import PicselloWeb.GalleryLive.Index, only: [update_gallery_listing: 1]
   import PicselloWeb.GalleryLive.Shared, only: [add_message_and_notify: 3]
+  import PicselloWeb.Live.Shared, only: [save_filters: 3]
 
   import PicselloWeb.Shared.CustomPagination,
     only: [
@@ -15,7 +16,7 @@ defmodule PicselloWeb.Live.ClientLive.Index do
     ]
 
   alias Ecto.Changeset
-  alias Picsello.{Repo, Clients, ClientTag}
+  alias Picsello.{Repo, Clients, ClientTag, PreferredFilter}
   alias PicselloWeb.JobLive.{NewComponent, ImportWizard, Shared}
 
   alias PicselloWeb.{
@@ -255,8 +256,10 @@ defmodule PicselloWeb.Live.ClientLive.Index do
   def handle_event(
         "apply-filter-status",
         %{"option" => status},
-        socket
+        %{assigns: %{current_user: %{organization_id: organization_id}}} = socket
       ) do
+    save_filters(organization_id, "clients", %{job_status: status})
+
     socket
     |> assign(:job_status, status)
     |> reassign_pagination_and_clients()
@@ -266,8 +269,10 @@ defmodule PicselloWeb.Live.ClientLive.Index do
   def handle_event(
         "apply-filter-type",
         %{"option" => type},
-        socket
+        %{assigns: %{current_user: %{organization_id: organization_id}}} = socket
       ) do
+    save_filters(organization_id, "clients", %{job_type: type})
+
     socket
     |> assign(:job_type, type)
     |> reassign_pagination_and_clients()
@@ -277,8 +282,10 @@ defmodule PicselloWeb.Live.ClientLive.Index do
   def handle_event(
         "apply-filter-sort_by",
         %{"option" => sort_by},
-        socket
+        %{assigns: %{current_user: %{organization_id: organization_id}}} = socket
       ) do
+    save_filters(organization_id, "clients", %{sort_by: sort_by})
+
     socket
     |> assign(:sort_by, sort_by)
     |> assign(:sort_col, Enum.find(sort_options(), fn op -> op.id == sort_by end).column)
@@ -290,8 +297,10 @@ defmodule PicselloWeb.Live.ClientLive.Index do
   def handle_event(
         "sort_direction",
         _,
-        %{assigns: %{desc: desc}} = socket
+        %{assigns: %{desc: desc, current_user: %{organization_id: organization_id}}} = socket
       ) do
+    save_filters(organization_id, "clients", %{sort_by: !desc})
+
     socket
     |> assign(:desc, !desc)
     |> reassign_pagination_and_clients()
@@ -472,17 +481,17 @@ defmodule PicselloWeb.Live.ClientLive.Index do
 
   def select_dropdown(assigns) do
     ~H"""
-    <div id={@id} class={"relative w-full mt-3 md:mt-0 w-full"} data-offset-y="10" phx-hook="Select">
+    <div id={@id} class={"relative w-full mt-3 md:mt-0"} data-offset-y="10" phx-hook="Select">
       <h4 class="font-extrabold text-sm mb-1"><%= @title %></h4>
       <div class="flex flex-row items-center border rounded-lg p-3">
           <span class="flex-shrink-0"><%= String.capitalize(String.replace(@selected_option, "_", " ")) %></span>
           <.icon name="down" class="flex-shrink-0 w-3 h-3 ml-auto lg:mr-2 mr-1 stroke-current stroke-2 open-icon" />
           <.icon name="up" class="flex-shrink-0 hidden w-3 h-3 ml-auto lg:mr-2 mr-1 stroke-current stroke-2 close-icon" />
       </div>
-      <ul class="absolute z-30 hidden w-full md:w-32 mt-2 bg-white toggle rounded-md popover-content border shadow-lg">
+      <ul class="absolute z-30 hidden w-full md:w-44 mt-2 bg-white toggle rounded-md popover-content border shadow-lg">
         <%= for option <- @options_list do %>
           <li id={option.id} target-class="toggle-it" parent-class="toggle" toggle-type="selected-active" phx-hook="ToggleSiblings"
-          class="flex items-center py-1.5 hover:bg-blue-planning-100 hover:rounded-md" phx-click={"apply-filter-#{@id}"} phx-value-option={option.id}>
+          class="flex items-center justify-between py-1.5 hover:bg-blue-planning-100 hover:rounded-md" phx-click={"apply-filter-#{@id}"} phx-value-option={option.id}>
             <button id={option.id} class="album-select"><%= option.title %></button>
             <%= if option.id == @selected_option do %>
               <.icon name="tick" class="w-6 h-5 mr-1 toggle-it text-blue-planning-300" />
@@ -582,11 +591,7 @@ defmodule PicselloWeb.Live.ClientLive.Index do
 
   defp assign_clients(socket) do
     socket
-    |> assign(:job_status, "all")
-    |> assign(:job_type, "all")
-    |> assign(:sort_by, "name")
-    |> assign(:sort_col, "name")
-    |> assign(:sort_direction, "asc")
+    |> assign_preferred_filters()
     |> assign(:search_results, [])
     |> assign(:search_phrase, nil)
     |> assign(:searched_client, nil)
@@ -597,6 +602,60 @@ defmodule PicselloWeb.Live.ClientLive.Index do
     |> assign_new(:selected_client, fn -> nil end)
     |> fetch_clients()
   end
+
+  defp assign_preferred_filters(
+         %{assigns: %{current_user: %{organization_id: organization_id}}} = socket
+       ) do
+    case PreferredFilter.load_preferred_filters(organization_id, "clients") do
+      %{
+        filters: %{
+          job_type: job_type,
+          job_status: job_status,
+          sort_by: sort_by
+        }
+      } ->
+        socket
+        |> assign_default_filters(job_status, job_type, sort_by)
+        |> assign_sort_direction(sort_by, "asc")
+        |> assign_sort_col(sort_by, "name")
+
+      _ ->
+        socket
+        |> assign_default_filters("all", "all", "name")
+        |> assign(:sort_direction, "asc")
+        |> assign(:sort_col, "name")
+    end
+  end
+
+  defp assign_default_filters(socket, job_status, job_type, sort_by),
+    do:
+      socket
+      |> assign(:job_status, job_status || "all")
+      |> assign(:job_type, job_type || "all")
+      |> assign(:sort_by, sort_by || "name")
+
+  defp assign_sort_col(socket, nil, default_sort_col),
+    do:
+      socket
+      |> assign(:sort_col, default_sort_col)
+
+  defp assign_sort_col(socket, sort_by, _default_sort_col),
+    do:
+      socket
+      |> assign(:sort_col, Enum.find(sort_options(), fn op -> op.id == sort_by end).column)
+
+  defp assign_sort_direction(socket, nil, default_sort_direction),
+    do:
+      socket
+      |> assign(:sort_direction, default_sort_direction)
+
+  defp assign_sort_direction(socket, sort_by, _default_sort_direction),
+    do:
+      socket
+      |> assign(
+        :sort_direction,
+        Enum.find(sort_options(), fn op -> op.id == sort_by end).direction
+      )
 
   defp open_confirmation_component(socket, client),
     do:
@@ -692,7 +751,8 @@ defmodule PicselloWeb.Live.ClientLive.Index do
       %{title: "All", id: "all"},
       %{title: "Active Jobs", id: "active_jobs"},
       %{title: "Past Jobs", id: "past_jobs"},
-      %{title: "Leads", id: "leads"}
+      %{title: "Leads", id: "leads"},
+      %{title: "Archived clients", id: "archived_clients"}
     ]
   end
 

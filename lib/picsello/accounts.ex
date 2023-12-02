@@ -392,7 +392,8 @@ defmodule Picsello.Accounts do
 
   def user_from_auth(
         %Ueberauth.Auth{provider: provider, info: %Ueberauth.Auth.Info{name: name, email: email}},
-        time_zone
+        time_zone,
+        onboarding_flow_source \\ []
       ) do
     case Repo.get_by(User, email: email) do
       nil ->
@@ -402,6 +403,7 @@ defmodule Picsello.Accounts do
           name: name,
           password: generate_password(),
           time_zone: time_zone,
+          onboarding_flow_source: onboarding_flow_source,
           organization: %{
             organization_cards: OrganizationCard.for_new_changeset(),
             gs_gallery_products: GlobalSettings.gallery_products_params()

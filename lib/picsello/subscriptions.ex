@@ -8,7 +8,8 @@ defmodule Picsello.Subscriptions do
     Payments,
     Subscription,
     Accounts.User,
-    SubscriptionPlansMetadata
+    SubscriptionPlansMetadata,
+    Organization
   }
 
   import Picsello.Zapier.User, only: [user_subscription_ending_soon_webhook: 1]
@@ -56,12 +57,22 @@ defmodule Picsello.Subscriptions do
   def sync_subscription_promotion_codes() do
     case Payments.list_promotion_codes(%{active: true, limit: 100}) do
       {:ok, %{data: promotion_codes}} ->
-        for %{code: code, coupon: %{id: id, percent_off: percent_off}} <-
+        for %{
+              code: code,
+              coupon: %{
+                id: id,
+                percent_off: percent_off,
+                amount_off: amount_off,
+                currency: currency
+              }
+            } <-
               promotion_codes do
           %{
             stripe_promotion_code_id: id,
             code: code,
-            percent_off: percent_off
+            percent_off: percent_off,
+            amount_off: amount_off,
+            currency: currency
           }
           |> SubscriptionPromotionCode.changeset()
           |> Repo.insert!(
@@ -127,6 +138,15 @@ defmodule Picsello.Subscriptions do
 
   def all_subscription_plans() do
     Repo.all(from(s in SubscriptionPlan, order_by: s.price))
+  end
+
+  def organizations_with_active_subscription() do
+    from(o in Organization,
+      join: u in assoc(o, :user),
+      join: s in assoc(u, :subscription),
+      where: s.status in ["active", "trialing"]
+    )
+    |> Repo.all()
   end
 
   def maybe_return_promotion_code_id?(code) do
@@ -294,9 +314,26 @@ defmodule Picsello.Subscriptions do
 
   def ensure_active_subscription!(%User{} = user) do
     if Picsello.Subscriptions.subscription_expired?(user) do
-      raise Ecto.NoResultsError, queryable: Picsello.Organization
+      raise Ecto.NoResultsError, queryable: Organization
     end
   end
+
+  def user_customer_id(%User{stripe_customer_id: nil} = user, attrs) do
+    params = %{name: user.name, email: user.email} |> Map.merge(attrs)
+
+    with {:ok, %{id: customer_id}} <- Payments.create_customer(params, []),
+         {:ok, user} <-
+           user
+           |> User.assign_stripe_customer_changeset(customer_id)
+           |> Repo.update() do
+      user.stripe_customer_id
+    else
+      {:error, _} = e -> e
+      e -> {:error, e}
+    end
+  end
+
+  def user_customer_id(%User{stripe_customer_id: customer_id}, _attrs), do: customer_id
 
   def user_customer_id(%User{stripe_customer_id: nil} = user) do
     params = %{name: user.name, email: user.email}

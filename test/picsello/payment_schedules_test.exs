@@ -1,7 +1,7 @@
 defmodule Picsello.PaymentSchedulesTest do
   use Picsello.DataCase, async: true
   import Money.Sigils
-  alias Picsello.{PaymentSchedules, Repo}
+  alias Picsello.{PaymentSchedules, Repo, EmailAutomationNotifierMock}
 
   setup do
     Mox.stub_with(Picsello.MockBambooAdapter, Picsello.Sandbox.BambooAdapter)
@@ -24,6 +24,11 @@ defmodule Picsello.PaymentSchedulesTest do
         job: lead,
         price: %Money{amount: 5000, currency: :USD}
       )
+
+    EmailAutomationNotifierMock
+    |> Mox.expect(:deliver_automation_email_job, 3, fn _, _, _, _, _ ->
+      {:ok, {:ok, "Email Sent"}}
+    end)
 
     [lead: lead, proposal: proposal, payment_schedule: payment_schedule]
   end

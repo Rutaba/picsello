@@ -98,6 +98,8 @@ defmodule Picsello.Galleries.PhotoProcessing.ProcessedConsumer do
 
       :ok
     end
+
+    :ok
   end
 
   defp do_handle_message(%{"path" => "" <> path, "metadata" => %{"version-id" => "" <> id}}) do

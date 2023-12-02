@@ -9,6 +9,7 @@ defmodule PicselloWeb.HomeLive.Index do
     Payments,
     Repo,
     Accounts,
+    Accounts.User.Promotions,
     Shoot,
     Shoots,
     Accounts.User,
@@ -60,7 +61,10 @@ defmodule PicselloWeb.HomeLive.Index do
   ]
 
   @impl true
-  def mount(params, _session, socket) do
+  def mount(params, _session, %{assigns: %{current_user: current_user}} = socket) do
+    %{value: black_friday_code} =
+      Picsello.AdminGlobalSettings.get_settings_by_slug("black_friday_code")
+
     socket
     |> assign(:main_class, "bg-gray-100")
     |> assign_stripe_status()
@@ -68,15 +72,50 @@ defmodule PicselloWeb.HomeLive.Index do
     |> assign(:stripe_subscription_status, nil)
     |> assign_counts()
     |> assign(:promotion_code_open, false)
+    |> assign(
+      :current_sale,
+      Promotions.get_user_promotion_by_slug(current_user, black_friday_code)
+    )
     |> assign_attention_items()
     |> assign(:tabs, tabs_list(socket))
     |> assign(:tab_active, "todo")
     |> assign(:index, false)
-    |> assign_promotion_code_changeset()
     |> subscribe_inbound_messages()
     |> assign_inbox_threads()
     |> maybe_show_success_subscription(params)
+    |> assign(
+      :promotion_code,
+      if(Subscriptions.maybe_return_promotion_code_id?(black_friday_code),
+        do: black_friday_code,
+        else: nil
+      )
+    )
+    |> assign_promotion_code_changeset()
     |> ok()
+  end
+
+  @impl true
+  def handle_params(
+        %{"pre_purchase" => "true", "checkout_session_id" => _},
+        _uri,
+        %{assigns: %{promotion_code: promotion_code, current_user: current_user}} = socket
+      ) do
+    Promotions.insert_or_update_promotion(current_user, %{
+      slug: promotion_code,
+      state: :purchased,
+      name: "Holiday"
+    })
+
+    Onboardings.user_update_promotion_code_changeset(current_user, %{
+      onboarding: %{
+        promotion_code: promotion_code
+      }
+    })
+    |> Repo.update!()
+
+    socket
+    |> put_flash(:success, "Year extended!")
+    |> noreply()
   end
 
   @impl true
@@ -86,7 +125,10 @@ defmodule PicselloWeb.HomeLive.Index do
   def handle_event("open-welcome-modal", %{}, %{assigns: %{current_user: current_user}} = socket) do
     socket
     |> assign(:current_user, Onboardings.increase_welcome_count!(current_user))
-    |> PicselloWeb.WelcomeComponent.open(%{close_event: "toggle_welcome_event"})
+    |> PicselloWeb.WelcomeComponent.open(%{
+      close_event: "toggle_welcome_event",
+      current_user: current_user
+    })
     |> noreply()
   end
 
@@ -262,6 +304,41 @@ defmodule PicselloWeb.HomeLive.Index do
 
   @impl true
   def handle_event(
+        "subscription-prepurchase",
+        _,
+        socket
+      ) do
+    build_invoice_link(socket)
+  end
+
+  @impl true
+  def handle_event(
+        "subscription-prepurchase-dismiss",
+        _,
+        %{assigns: %{current_user: current_user, promotion_code: promotion_code}} = socket
+      ) do
+    case Promotions.insert_or_update_promotion(current_user, %{
+           slug: promotion_code,
+           name: "Holiday",
+           state: :dismissed
+         }) do
+      {:ok, promotion_code} ->
+        socket
+        |> assign(
+          :current_sale,
+          promotion_code
+        )
+        |> put_flash(:success, "Deal hidden successfully")
+
+      {:error, _} ->
+        socket
+        |> put_flash(:error, "Failed to dismiss promotion")
+    end
+    |> noreply()
+  end
+
+  @impl true
+  def handle_event(
         "card_status",
         %{"org_card_id" => org_card_id, "status" => status},
         socket
@@ -389,17 +466,29 @@ defmodule PicselloWeb.HomeLive.Index do
       |> noreply()
 
   @impl true
-  def handle_event("change-tab", %{"tab" => tab}, socket) do
+  def handle_event(
+        "change-tab",
+        %{"tab" => tab},
+        %{assigns: %{current_user: current_user}} = socket
+      ) do
+    # reassign user for collapsing sidebar jank
+    # since we are looking at the layout with a class
+    current_user =
+      current_user.id
+      |> Accounts.get_user!()
+      |> Repo.preload(organization: [:organization_job_types])
+
     socket
+    |> assign(:current_user, current_user)
     |> assign(:tab_active, tab)
     |> assign_tab_data(tab)
     |> noreply()
   end
 
   @impl true
-  def handle_event("open-thread", %{"id" => id}, socket) do
+  def handle_event("open-thread", %{"id" => id, "type" => type}, socket) do
     socket
-    |> push_redirect(to: Routes.inbox_path(socket, :show, id))
+    |> push_redirect(to: Routes.inbox_path(socket, :show, "#{type}-#{id}"))
     |> noreply()
   end
 
@@ -902,22 +991,24 @@ defmodule PicselloWeb.HomeLive.Index do
       })
 
     ~H"""
-    <div class="rounded-lg bg-white p-6 grow flex flex-col items-start">
+    <div class="rounded-lg border p-4 grow flex flex-col items-start">
       <div class="flex justify-between items-center mb-2 w-full gap-4">
         <h3 class="text-2xl font-bold flex items-center gap-2">
           <%= @title %>
           <.notification_bubble notification_count={@notification_count} />
         </h3>
-        <%= if @button_action && @button_text do %>
-          <button class="btn-tertiary py-2 px-4 mt-2 md:mt-0 flex-wrap whitespace-nowrap flex-shrink-0" type="button" phx-click={@button_action}><%= @button_text %></button>
-        <% end %>
       </div>
       <div class={"mb-2 #{@inner_block_classes}"}>
         <%= render_slot(@inner_block) %>
       </div>
-      <%= if @link_action && @link_text do %>
-        <button class="underline text-blue-planning-300 mt-auto inline-block" type="button" phx-click={@link_action} phx-value-tab={@link_value} phx-value-to={@redirect_route}><%= @link_text %></button>
-      <% end %>
+      <div class="flex items-center gap-4 mt-auto">
+        <%= if @button_action && @button_text do %>
+          <button class="btn-tertiary border border-base-300/25 py-2 px-4 md:mt-0 flex-wrap whitespace-nowrap flex-shrink-0 text-sm" type="button" phx-click={@button_action}><%= @button_text %></button>
+        <% end %>
+        <%= if @link_action && @link_text do %>
+          <button class="underline text-blue-planning-300 inline-block text-sm" type="button" phx-click={@link_action} phx-value-tab={@link_value} phx-value-to={@redirect_route}><%= @link_text %></button>
+        <% end %>
+      </div>
     </div>
     """
   end
@@ -931,14 +1022,14 @@ defmodule PicselloWeb.HomeLive.Index do
 
     ~H"""
     <%= if @notification_count && @notification_count !== 0 do %>
-      <span {testid("badge")} class={"text-xs bg-red-sales-300 text-white w-5 h-5 leading-none rounded-full flex items-center justify-center pb-0.5 #{@classes}"}><%= @notification_count %></span>
+      <span {testid("badge")} class={"text-xs bg-red-sales-300 text-white leading-none rounded-full flex items-center justify-center px-2 pt-0.5 pb-1 #{@classes}"}><%= @notification_count %></span>
     <% end %>
     """
   end
 
   def thread_card(assigns) do
     ~H"""
-    <div {testid("thread-card")} phx-click="open-thread" phx-value-id={@id} class="flex justify-between border-b cursor-pointer first:pt-0 py-3">
+    <div {testid("thread-card")} phx-click="open-thread" phx-value-id={@id} phx-value-type={@type} class="flex justify-between border-b cursor-pointer first:pt-0 py-3">
       <div class="">
         <div class="flex items-center">
           <div class="text-xl line-clamp-1 font-bold"><%= @title %></div>
@@ -976,7 +1067,8 @@ defmodule PicselloWeb.HomeLive.Index do
           title: message.job.client.name,
           subtitle: Job.name(message.job),
           message: message.body_text,
-          date: strftime(current_user.time_zone, message.inserted_at, "%-m/%-d/%y")
+          date: strftime(current_user.time_zone, message.inserted_at, "%-m/%-d/%y"),
+          type: thread_type(message)
         }
       end)
 
@@ -1561,7 +1653,7 @@ defmodule PicselloWeb.HomeLive.Index do
                     button_class="btn-tertiary"
                     subscription_plan={subscription_plan}
                     headline="Monthly"
-                    price={"#{subscription_plan.price |> Money.to_string(fractional_unit: false)} monthly subscription"}
+                    price={"#{subscription_plan.price |> Money.to_string(fractional_unit: false)} monthly"}
                     price_secondary={"(#{subscription_plan.price |> Money.multiply(12) |> Money.to_string(fractional_unit: false)}/year)"}
                     interval={subscription_plan.recurring_interval}
                     body="You get everything in the monthly plan PLUS exclusive access to Picsello’s Business Mastermind with classes and so much more"
@@ -1571,10 +1663,10 @@ defmodule PicselloWeb.HomeLive.Index do
                     class="bg-blue-planning-300 text-white"
                     subscription_plan={subscription_plan}
                     headline="Yearly"
-                    price={"#{subscription_plan.price |> Money.to_string(fractional_unit: false)} yearly subscription"}
-                    price_secondary={"(#{subscription_plan.price |> Money.divide(12) |> Enum.at(1) |> Money.to_string(fractional_unit: false)}/month)"}
+                    price={"#{subscription_plan.price |> Money.subtract(15_000) |> Money.to_string(fractional_unit: false)} yearly"}
+                    price_secondary={"(Originally #{subscription_plan.price |> Money.to_string(fractional_unit: false)}—save $150!)"}
                     interval={subscription_plan.recurring_interval}
-                    body="You get everything in the monthly plan PLUS exclusive access to Picsello’s Business Mastermind with classes and so much more"
+                    body="HOLDAY SALE! SAVE $150. You get everything in the monthly plan PLUS exclusive access to Picsello’s Business Mastermind with classes and so much more"
                   />
                 <% _ -> %>
               <% end %>
@@ -1756,13 +1848,80 @@ defmodule PicselloWeb.HomeLive.Index do
     |> Map.put(:action, action)
   end
 
-  defp assign_promotion_code_changeset(socket, params \\ %{}) do
+  defp assign_promotion_code_changeset(
+         %{assigns: %{promotion_code: promotion_code}} = socket,
+         params \\ %{}
+       ) do
+    params =
+      Enum.into(params, %{
+        "onboarding" => %{
+          "promotion_code" => promotion_code
+        }
+      })
+
     socket
     |> assign(
       :promotion_code_changeset,
       build_promotion_code_changeset(socket, params, :validate)
     )
   end
+
+  defp build_invoice_link(
+         %{
+           assigns: %{
+             current_user: current_user,
+             promotion_code: promotion_code
+           }
+         } = socket
+       ) do
+    discounts_data =
+      if promotion_code,
+        do: %{
+          discounts: [
+            %{
+              coupon: Subscriptions.maybe_return_promotion_code_id?(promotion_code)
+            }
+          ]
+        },
+        else: %{}
+
+    stripe_params =
+      %{
+        client_reference_id: "blackfriday_2023",
+        cancel_url: Routes.home_url(socket, :index),
+        success_url:
+          "#{Routes.home_url(socket, :index)}?pre_purchase=true&checkout_session_id={CHECKOUT_SESSION_ID}",
+        billing_address_collection: "auto",
+        customer: Subscriptions.user_customer_id(current_user),
+        line_items: [
+          %{
+            price_data: %{
+              currency: "USD",
+              unit_amount: 35_000,
+              product_data: %{
+                name: "Holiday Sale 2023",
+                description: "Pre purchase your next year of Picsello!"
+              },
+              tax_behavior: "exclusive"
+            },
+            quantity: 1
+          }
+        ]
+      }
+      |> Map.merge(discounts_data)
+
+    case Payments.create_session(stripe_params, []) do
+      {:ok, %{url: url}} ->
+        socket |> redirect(external: url) |> noreply()
+
+      {:error, error} ->
+        Logger.warning("Error redirecting to Stripe: #{inspect(error)}")
+        socket |> put_flash(:error, "Couldn't redirect to Stripe. Please try again") |> noreply()
+    end
+  end
+
+  defp thread_type(%{job_id: nil}), do: :client
+  defp thread_type(%{job_id: _job_id}), do: :job
 
   defdelegate get_all_proofing_album_orders(organization_id), to: Orders
 end

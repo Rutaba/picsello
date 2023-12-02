@@ -1,5 +1,7 @@
 defmodule Picsello.NylasDetails do
-  @moduledoc false
+  @moduledoc """
+  Methods for Picsello.NylasDetail
+  """
   alias Picsello.{Repo, Workers.CalendarEvent, NylasDetail}
   alias Ecto.{Changeset, Multi}
 
