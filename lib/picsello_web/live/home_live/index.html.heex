@@ -1,13 +1,13 @@
 <section class="px-6 py-10" phx-hook="showWelcomeModal" id="show-welcome-modal">
   <div class="center-container">
     <div class="rounded-lg shadow-lg bg-white p-6">
-      <div class="md:flex md:justify-between gap-6 items-center mb-4">
-        <h1 class="text-4xl font-bold mb-4 md:mb-0"><%= time_of_day_greeting @current_user %></h1>
+      <div class="flex justify-between gap-6 items-center mb-4">
+        <h1 class="text-2xl md:text-4xl font-bold mb-0"><%= time_of_day_greeting @current_user %></h1>
         <div data-offset="0" phx-hook="Select" id="actions">
           <button title="Actions" class="btn-primary flex items-center gap-3 mr-2 text-white xl:w-auto w-full">
-            Actions
-            <.icon name="down" class="w-4 h-4 ml-auto mr-1 stroke-current stroke-3  open-icon" />
-            <.icon name="up" class="hidden w-4 h-4 ml-auto mr-1 stroke-current stroke-3  close-icon" />
+            <span class="hidden md:block ml-1">Actions</span>
+            <.icon name="down" class="w-4 h-4 mr-auto md:mr-0 ml-auto first-letter:stroke-current stroke-3 open-icon" />
+            <.icon name="up" class="hidden w-4 h-4 mr-auto md:mr-0 ml-auto stroke-current stroke-3 close-icon" />
           </button>
           <div class="flex flex-col hidden bg-white border rounded-lg shadow-lg popover-content z-20">
             <.action_item button_text="Create lead" button_action="create-lead" button_icon="three-people" />
