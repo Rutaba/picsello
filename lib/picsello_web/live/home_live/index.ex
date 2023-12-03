@@ -1619,13 +1619,13 @@ defmodule PicselloWeb.HomeLive.Index do
     <div {testid("card-#{@title}")} class={"flex overflow-hidden border border-base-200 rounded-lg #{@class}"}>
       <div class={"w-3 flex-shrink-0 border-r rounded-l-lg bg-#{@color}"} />
       <div class="flex flex-col w-full p-4">
-        <div class="flex justify-between items-center mb-2 w-full gap-10">
+        <div class="flex flex-wrap justify-between items-center mb-2 w-full gap-0 md:gap-10">
           <h3 class={"mb-2 mr-4 text-xl font-bold text-black"}><%= @title %></h3>
-          <div class="flex flex-col md:flex-row items-center">
-            <button type="button" class="link px-4 mb-2 md:mb-0" phx-click={@view_event} hidden={@hidden}>
+          <div class="flex flex-row items-center justify-between">
+            <button type="button" class="md:order-1 order-2 link px-4 mb-2 md:mb-0" phx-click={@view_event} hidden={@hidden}>
               View all
             </button>
-            <button type="button" class="font-bold btn-tertiary py-2" phx-click={@add_event}>
+            <button type="button" class="md:order-2 order-1 font-bold btn-tertiary py-2" phx-click={@add_event}>
               <%= @button_title %>
             </button>
           </div>
