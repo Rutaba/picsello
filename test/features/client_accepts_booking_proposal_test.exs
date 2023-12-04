@@ -31,7 +31,7 @@ defmodule Picsello.ClientAcceptsBookingProposalTest do
       insert(:questionnaire, %{
         name: "Questionnaire name",
         is_picsello_default: false,
-        job_type: "other"
+        job_type: "global"
       })
 
     lead =
@@ -476,7 +476,7 @@ defmodule Picsello.ClientAcceptsBookingProposalTest do
     insert(:questionnaire, %{
       name: "Questionnaire name",
       is_picsello_default: true,
-      job_type: "other"
+      job_type: "global"
     })
 
     photographer_session

@@ -153,7 +153,7 @@ defmodule PicselloWeb.Live.Profile.ClientFormComponent do
 
   defp assign_default_job_type(job_types, params) do
     if job_types == [] do
-      params |> Map.put("job_type", "other")
+      params |> Map.put("job_type", "global")
     else
       params
     end

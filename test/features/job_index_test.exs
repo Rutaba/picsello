@@ -78,7 +78,7 @@ defmodule Picsello.JobIndexTest do
       user: user,
       client: %{name: "peter2"},
       shoots: [%{name: "testShoot2"}],
-      type: "other",
+      type: "global",
       package:
         insert(:package, organization: user.organization, shoot_count: 1, name: "My package 2"),
       client: %{

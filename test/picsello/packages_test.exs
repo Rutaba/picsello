@@ -68,10 +68,10 @@ defmodule Picsello.PackagesTest do
             prices:
               """
               Time	Experience	Type	Tier	Price	Shoots	Downloads	Turnaround	Max
-              Part-Time	0	Other	Essential	$100.00	1	5	3	3
-              Full-Time	0	Other	Essential	$200.00	1	5	3	3
-              Full-Time	0	Other	Keepsake	$300.00	1	10	3	3
-              Full-Time	0	Other	Heirloom	$400.00	1	20	3	3
+              Part-Time	0	Global	Essential	$100.00	1	5	3	3
+              Full-Time	0	Global	Essential	$200.00	1	5	3	3
+              Full-Time	0	Global	Keepsake	$300.00	1	10	3	3
+              Full-Time	0	Global	Heirloom	$400.00	1	20	3	3
               Full-Time	1-2	Wedding	Essential	$500.00	2	5	12	3
               Full-Time	1-2	Wedding	Keepsake	$600.00	2	10	12	3
               Full-Time	1-2	Wedding	Heirloom	$700.00	2	20	12	3
