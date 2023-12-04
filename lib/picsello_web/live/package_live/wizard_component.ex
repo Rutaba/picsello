@@ -329,8 +329,10 @@ defmodule PicselloWeb.PackageLive.WizardComponent do
     """
   end
 
-  defp step_valid?(%{step: :payment, payments_changeset: payments_changeset}),
-    do: payments_changeset.valid?
+  defp step_valid?(%{step: :payment, payments_changeset: payments_changeset}) do
+    remaining_price = Changeset.get_field(payments_changeset, :remaining_price)
+    Money.zero?(remaining_price) || payments_changeset.valid?
+  end
 
   defp step_valid?(%{step: :documents, contract_changeset: contract}), do: contract.valid?
 
