@@ -128,6 +128,8 @@ defmodule PicselloWeb.GalleryLive.ClientAlbum do
     socket |> client_photo_click(photo_id, %{close_event: :update_assigns_state})
   end
 
+  defdelegate handle_event(name, params, socket), to: PicselloWeb.GalleryLive.Shared
+
   def handle_info(
         {:customize_and_buy_product, whcc_product, photo, size},
         %{assigns: %{album: album, favorites_filter: favorites_filter}} = socket

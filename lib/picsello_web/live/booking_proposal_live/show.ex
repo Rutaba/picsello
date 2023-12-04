@@ -400,7 +400,7 @@ I look forward to capturing these memories for you!"}
            presets: [],
            send_button: "Send",
            client: Job.client(job),
-           recipients: %{"from" => job.client.email},
+           recipients: %{"from" => job.client.email, "to" => current_user.email},
            current_user: current_user
          })
          |> noreply()

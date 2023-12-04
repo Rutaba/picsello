@@ -256,6 +256,9 @@ defmodule PicselloWeb.GalleryLive.ClientShow.Cart do
     |> noreply()
   end
 
+  @impl true
+  defdelegate handle_event(name, params, socket), to: PicselloWeb.GalleryLive.Shared
+
   defp cart_checkout(%{assigns: %{checkout_routes: checkout_routes}} = socket, order) do
     order
     |> Cart.checkout(
@@ -350,6 +353,9 @@ defmodule PicselloWeb.GalleryLive.ClientShow.Cart do
     |> close_modal()
     |> noreply()
   end
+
+  @impl true
+  defdelegate handle_info(message, socket), to: PicselloWeb.GalleryLive.Shared
 
   defp continue_summary(assigns) do
     ~H"""

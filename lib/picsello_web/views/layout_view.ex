@@ -11,8 +11,6 @@ defmodule PicselloWeb.LayoutView do
       classes: 1
     ]
 
-  import Picsello.Profiles, only: [public_url: 1]
-
   import PicselloWeb.Live.Profile.Shared, only: [photographer_logo: 1]
   import PicselloWeb.Shared.StickyUpload, only: [sticky_upload: 1, gallery_top_banner: 1]
   import PicselloWeb.Shared.Sidebar, only: [main_header: 1, get_classes_for_main: 1]
@@ -266,7 +264,7 @@ defmodule PicselloWeb.LayoutView do
         <.photographer_logo organization={@organization} />
       </div>
       <div class="ml-auto pt-3">
-        <a class="flex items-center justify-center px-2.5 py-1 text-base-300 bg-base-100 border border-base-300 hover:text-base-100 hover:bg-base-300" href={"#{public_url(@organization)}#contact-form"}>
+        <a class="flex items-center justify-center px-2.5 py-1 text-base-300 bg-base-100 border border-base-300 hover:text-base-100 hover:bg-base-300" phx-hook="OpenCompose" id="open-compose">
           <.icon name="envelope" class="mr-2 w-4 h-4 fill-current"/>
           Contact
         </a>
