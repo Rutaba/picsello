@@ -1,7 +1,7 @@
 defmodule PicselloWeb.Live.Admin.WHCCOrdersPricingReport do
   @moduledoc false
   use PicselloWeb, live_view: [layout: false]
-  alias Picsello.{Orders, Cart, Cart.Product}
+  alias Picsello.{Orders, Cart}
   alias Picsello.WHCC.Order.Created, as: WHCCOrder
 
   def mount(%{"order_number" => order_number}, _, socket) do
@@ -27,17 +27,14 @@ defmodule PicselloWeb.Live.Admin.WHCCOrdersPricingReport do
               <th> Client Paid </th>
               <th> Shipping </th>
               <th> Print Cost for Photog</th>
-              <th> Discounted Print Cost for Picsello</th>
               <th> Stripe fee </th>
               <th> Photographer Paid to us </th>
-              <th> Photographer's Profit </th>
-
+              <th> Photographer Got </th>
           </tr>
             <tr class="text-center w-full">
               <td><%= Cart.Order.total_cost(@order) %></td>
               <td><%= Cart.total_shipping(@order) %></td>
-              <td><%= print_cost_for_photog(@order) %></td>
-              <td><%= print_cost_for_picsello(@order) %></td>
+              <td><%= print_cost(@order) %></td>
               <td><%= @stripe_fee %></td>
               <td><%= @photographer_charge %></td>
               <td><%= @photographer_payment %></td>
@@ -47,15 +44,9 @@ defmodule PicselloWeb.Live.Admin.WHCCOrdersPricingReport do
     """
   end
 
-  defp print_cost_for_photog(%{products: []}), do: nil
+  defp print_cost(%{whcc_order: nil}), do: nil
 
-  defp print_cost_for_photog(%{products: _products} = order) do
-    order |> Product.total_cost()
-  end
-
-  defp print_cost_for_picsello(%{products: []}), do: nil
-
-  defp print_cost_for_picsello(%{whcc_order: whcc_order}) do
+  defp print_cost(%{whcc_order: whcc_order}) do
     whcc_order |> WHCCOrder.total()
   end
 end

@@ -9,7 +9,6 @@ defmodule Picsello.Orders.Confirmations do
 
   alias Picsello.{
     Cart.Order,
-    Cart.Product,
     Cart.OrderNumber,
     Galleries,
     Intents,
@@ -22,6 +21,7 @@ defmodule Picsello.Orders.Confirmations do
     EmailAutomationSchedules
   }
 
+  alias Picsello.WHCC.Order.Created, as: WHCCOrder
   import Picsello.Zapier.GalleryOrders, only: [gallery_order_whcc_update: 1]
 
   import Ecto.Query, only: [from: 2]
@@ -253,9 +253,9 @@ defmodule Picsello.Orders.Confirmations do
     end
   end
 
-  defp calculate_total_costs(order) do
-    order
-    |> Product.total_cost()
+  defp calculate_total_costs(%{whcc_order: whcc_order} = order) do
+    whcc_order
+    |> WHCCOrder.total()
     |> Money.add(Picsello.Cart.total_shipping(order))
   end
 
