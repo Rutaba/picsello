@@ -46,7 +46,7 @@ defmodule Picsello.Repo.Migrations.AddThanksJobEmailsInPresets do
       "headshot",
       "portrait",
       "boudoir",
-      "other",
+      "global",
       "maternity",
       "event"
     ]
