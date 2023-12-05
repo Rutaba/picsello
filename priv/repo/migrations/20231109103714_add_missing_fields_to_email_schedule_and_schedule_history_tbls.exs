@@ -19,11 +19,10 @@ defmodule Picsello.Repo.Migrations.AddMissingFieldsToEmailScheduleAndScheduleHis
     flush()
     email_schedules_query = from(es in EmailSchedule, where: not is_nil(es.stopped_at))
 
-    EmailAutomationSchedules.delete_and_insert_schedules_by_multi(
+    EmailAutomationSchedules.delete_and_insert_schedules_by(
       email_schedules_query,
       :photographer_stopped
     )
-    |> Repo.transaction()
   end
 
   def down do

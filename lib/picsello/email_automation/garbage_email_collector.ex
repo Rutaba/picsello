@@ -111,11 +111,10 @@ defmodule Picsello.EmailAutomation.GarbageEmailCollector do
       email_schedules_query =
         EmailAutomationSchedules.query_get_email_schedule(:job, nil, nil, job.id, pipelines)
 
-      EmailAutomationSchedules.delete_and_insert_schedules_by_multi(
+      EmailAutomationSchedules.delete_and_insert_schedules_by(
         email_schedules_query,
         :already_paid_full
       )
-      |> Repo.transaction()
     end
   end
 
@@ -132,21 +131,19 @@ defmodule Picsello.EmailAutomation.GarbageEmailCollector do
     email_schedules_query =
       EmailAutomationSchedules.query_get_email_schedule(:job, nil, nil, lead.id, pipelines)
 
-    EmailAutomationSchedules.delete_and_insert_schedules_by_multi(
+    EmailAutomationSchedules.delete_and_insert_schedules_by(
       email_schedules_query,
       :lead_converted_to_job
     )
-    |> Repo.transaction()
   end
 
   defp stop_archived_emails(job) do
     email_schedules_query = from(es in EmailSchedule, where: es.job_id == ^job.id)
 
-    EmailAutomationSchedules.delete_and_insert_schedules_by_multi(
+    EmailAutomationSchedules.delete_and_insert_schedules_by(
       email_schedules_query,
       :archived
     )
-    |> Repo.transaction()
   end
 
   defp stop_completed_emails(job) do
@@ -159,11 +156,10 @@ defmodule Picsello.EmailAutomation.GarbageEmailCollector do
             es.email_automation_pipeline_id != ^post_shoot_pipeline.id
       )
 
-    EmailAutomationSchedules.delete_and_insert_schedules_by_multi(
+    EmailAutomationSchedules.delete_and_insert_schedules_by(
       email_schedules_query,
       :completed
     )
-    |> Repo.transaction()
   end
 
   defp stop_shoot_emails(job) do
@@ -182,11 +178,10 @@ defmodule Picsello.EmailAutomation.GarbageEmailCollector do
         email_schedules_query =
           EmailAutomationSchedules.query_get_email_schedule(:shoot, nil, shoot.id, nil, pipelines)
 
-        EmailAutomationSchedules.delete_and_insert_schedules_by_multi(
+        EmailAutomationSchedules.delete_and_insert_schedules_by(
           email_schedules_query,
           :shoot_starts_at_passed
         )
-        |> Repo.transaction()
       end
     end)
   end
@@ -214,11 +209,10 @@ defmodule Picsello.EmailAutomation.GarbageEmailCollector do
             pipelines
           )
 
-        EmailAutomationSchedules.delete_and_insert_schedules_by_multi(
+        EmailAutomationSchedules.delete_and_insert_schedules_by(
           email_schedules_query,
           :gallery_already_shared_because_order_placed
         )
-        |> Repo.transaction()
       end
     end)
   end

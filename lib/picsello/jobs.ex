@@ -1,6 +1,6 @@
 defmodule Picsello.Jobs do
   @moduledoc "context module for jobs"
-  alias Picsello.EmailAutomation.{EmailScheduleHistory}
+  alias Picsello.EmailAutomation.{EmailSchedule, EmailScheduleHistory}
 
   alias Picsello.{
     Repo,
@@ -8,8 +8,7 @@ defmodule Picsello.Jobs do
     Job,
     Shoot,
     PaymentSchedule,
-    OrganizationJobType,
-    EmailAutomationSchedules
+    OrganizationJobType
   }
 
   alias Ecto.Multi
@@ -134,7 +133,7 @@ defmodule Picsello.Jobs do
 
     case result do
       {:ok, updated_job} ->
-        pull_back_archived_email_schedules(job)
+        pull_back_email_schedules(job)
         {:ok, updated_job}
 
       error ->
@@ -142,14 +141,48 @@ defmodule Picsello.Jobs do
     end
   end
 
-  defp pull_back_archived_email_schedules(job) do
+  defp pull_back_email_schedules(job) do
     schedule_history_query =
       from(esh in EmailScheduleHistory,
         where: esh.job_id == ^job.id and esh.stopped_reason == :archived
       )
 
-    EmailAutomationSchedules.pull_back_email_schedules_multi(schedule_history_query)
+    email_schedule_params = make_schedule_params(schedule_history_query)
+
+    Multi.new()
+    |> Multi.delete_all(:schedule_history, schedule_history_query)
+    |> Multi.insert_all(:email_schedule, EmailSchedule, email_schedule_params)
     |> Repo.transaction()
+  end
+
+  def make_schedule_params(query) do
+    query
+    |> Repo.all()
+    |> Enum.map(fn schedule ->
+      schedule
+      |> Map.take([
+        :total_hours,
+        :condition,
+        :type,
+        :body_template,
+        :name,
+        :subject_template,
+        :private_name,
+        :reminded_at,
+        :email_automation_pipeline_id,
+        :job_id,
+        :shoot_id,
+        :gallery_id,
+        :order_id,
+        :organization_id,
+        :inserted_at,
+        :updated_at
+      ])
+      |> Map.merge(%{
+        stopped_at: nil,
+        stopped_reason: nil
+      })
+    end)
   end
 
   def maybe_upsert_client(%Multi{} = multi, client, current_user) do
