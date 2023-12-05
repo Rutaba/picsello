@@ -425,14 +425,16 @@ defmodule PicselloWeb.EmailAutomationLive.Shared do
   end
 
   def fetch_date_for_state(:cart_abandoned, _email, last_completed_email, _job, gallery, _order) do
-    card_abandoned? =
-      Enum.any?(gallery.orders, fn order ->
-        order = Repo.preload(order, [:digitals])
-        is_nil(order.placed_at) and is_nil(order.intent) and Enum.any?(order.digitals)
+    cart_abandoned =
+      Enum.map(gallery.orders, fn order ->
+        order = Repo.preload(order, [:digitals, :intent])
+        if is_nil(order.placed_at) and is_nil(order.intent) and Enum.any?(order.digitals), do: order
       end)
+      |> Enum.filter(&(not is_nil(&1)))
+      |> hd()
 
-    if card_abandoned?,
-      do: get_date_for_schedule(last_completed_email, gallery.inserted_at),
+    if cart_abandoned,
+      do: get_date_for_schedule(last_completed_email, cart_abandoned.inserted_at),
       else: nil
   end
 

@@ -68,8 +68,11 @@ defmodule Picsello.PackagePaymentSchedule do
         %__MODULE__{} = payment_schedule,
         attrs \\ %{},
         default_payment_changeset,
-        fixed \\ true
+        fixed \\ true,
+        package_attrs
       ) do
+    total_price = Map.get(package_attrs, "total_price")
+
     interval = payment_schedule |> cast(attrs, [:interval]) |> get_field(:interval)
 
     attrs =
@@ -82,7 +85,7 @@ defmodule Picsello.PackagePaymentSchedule do
     |> validate_required([:interval])
     |> then(fn changeset ->
       changeset
-      |> validate_price_percentage(fixed)
+      |> validate_price_percentage(fixed, total_price)
       |> validate_custom_time(default_payment_changeset)
     end)
   end
@@ -94,17 +97,31 @@ defmodule Picsello.PackagePaymentSchedule do
     |> Enum.at(index)
   end
 
-  defp validate_price_percentage(changeset, fixed) do
+  defp validate_price_percentage(changeset, fixed, total_price \\ nil) do
     if fixed do
       changeset
       |> validate_required([:price])
-      |> Picsello.Package.validate_money(:price, greater_than: 0)
+      |> validate_money(total_price)
     else
       changeset
       |> validate_required([:percentage])
-      |> validate_number(:percentage, greater_than: 0)
+      |> validate_percentage(total_price)
     end
   end
+
+  defp validate_money(changeset, nil), do: changeset
+
+  defp validate_money(changeset, %{amount: 0}), do: changeset
+
+  defp validate_money(changeset, _total_price),
+    do: changeset |> Picsello.Package.validate_money(:price, greater_than: 0)
+
+  defp validate_percentage(changeset, nil), do: changeset
+
+  defp validate_percentage(changeset, %{amount: 0}), do: changeset
+
+  defp validate_percentage(changeset, _total_price),
+    do: changeset |> validate_number(:percentage, greater_than: 0)
 
   defp validate_custom_time(changeset, default_payment_changeset),
     do:

@@ -83,6 +83,22 @@ defmodule Picsello.Payments do
           optional(:trial_period_days) => non_neg_integer()
         }
 
+  @type create_subscription_schedule() :: %{
+          :customer => Stripe.id() | Stripe.Customer.t(),
+          :phases => [
+            %{
+              :items => [
+                %{
+                  optional(:price) => Stripe.id() | Stripe.Price.t(),
+                  optional(:quantity) => non_neg_integer()
+                }
+              ],
+              :iterations => non_neg_integer(),
+              optional(:trial_period_days) => non_neg_integer()
+            }
+          ]
+        }
+
   @callback create_customer(create_customer(), Stripe.options()) ::
               {:ok, Stripe.Customer.t()} | {:error, Stripe.Error.t()}
 
@@ -107,6 +123,9 @@ defmodule Picsello.Payments do
   @callback create_account(create_account(), Stripe.options()) ::
               {:ok, Stripe.Account.t()} | {:error, Stripe.Error.t()}
 
+  @callback create_subscription_schedule(create_subscription_schedule(), Stripe.options()) ::
+              {:ok, Stripe.Subscription.t()} | {:error, Stripe.Error.t()}
+
   @callback create_subscription(create_subscription(), Stripe.options()) ::
               {:ok, Stripe.Subscription.t()} | {:error, Stripe.Error.t()}
 
@@ -125,6 +144,9 @@ defmodule Picsello.Payments do
 
   @callback create_billing_portal_session(%{customer: String.t()}) ::
               {:ok, Stripe.BillingPortal.Session.t()} | {:error, Stripe.Error.t()}
+
+  @callback setup_intent(binary(), Stripe.options()) ::
+              {:ok, Stripe.SetupIntent.t()} | {:error, Stripe.Error.t()}
 
   @callback retrieve_payment_intent(binary(), Stripe.options()) ::
               {:ok, Stripe.PaymentIntent.t()} | {:error, Stripe.Error.t()}
@@ -211,6 +233,9 @@ defmodule Picsello.Payments do
   def retrieve_account(id, opts \\ []), do: impl().retrieve_account(id, opts)
   def create_subscription(params, opts \\ []), do: impl().create_subscription(params, opts)
 
+  def create_subscription_schedule(params, opts \\ []),
+    do: impl().create_subscription_schedule(params, opts)
+
   def update_subscription(id, params, opts \\ []),
     do: impl().update_subscription(id, params, opts)
 
@@ -220,6 +245,7 @@ defmodule Picsello.Payments do
   def create_account_link(params), do: impl().create_account_link(params, [])
   def create_account(params, opts \\ []), do: impl().create_account(params, opts)
   def create_billing_portal_session(params), do: impl().create_billing_portal_session(params)
+  def setup_intent(params, opts \\ []), do: impl().setup_intent(params, opts)
   def retrieve_payment_intent(id, opts), do: impl().retrieve_payment_intent(id, opts)
   def capture_payment_intent(id, opts), do: impl().capture_payment_intent(id, opts)
   def cancel_payment_intent(id, opts), do: impl().cancel_payment_intent(id, opts)

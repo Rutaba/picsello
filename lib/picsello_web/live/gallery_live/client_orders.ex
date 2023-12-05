@@ -21,6 +21,9 @@ defmodule PicselloWeb.GalleryLive.ClientOrders do
     ]
 
   @impl true
+  defdelegate handle_event(name, params, socket), to: PicselloWeb.GalleryLive.Shared
+
+  @impl true
   def handle_params(
         _,
         _,
@@ -58,6 +61,9 @@ defmodule PicselloWeb.GalleryLive.ClientOrders do
   end
 
   def handle_info({:pack, _, _}, socket), do: noreply(socket)
+
+  @impl true
+  defdelegate handle_info(message, socket), to: PicselloWeb.GalleryLive.Shared
 
   def order_route(%{socket: socket, album: album}, order)
       when album.is_proofing or album.is_finals do

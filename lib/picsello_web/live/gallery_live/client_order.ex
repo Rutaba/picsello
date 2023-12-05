@@ -33,6 +33,9 @@ defmodule PicselloWeb.GalleryLive.ClientOrder do
   end
 
   @impl true
+  defdelegate handle_event(name, params, socket), to: PicselloWeb.GalleryLive.Shared
+
+  @impl true
   def handle_params(
         %{"order_number" => order_number, "session_id" => session_id},
         _,
@@ -104,6 +107,9 @@ defmodule PicselloWeb.GalleryLive.ClientOrder do
   end
 
   def handle_info({:pack, _, _}, socket), do: noreply(socket)
+
+  @impl true
+  defdelegate handle_info(message, socket), to: PicselloWeb.GalleryLive.Shared
 
   defp process_checkout_order(%{assigns: %{gallery: gallery}} = socket) do
     if connected?(socket) do

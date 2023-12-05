@@ -2,7 +2,7 @@ defmodule PicselloWeb.BookingProposalLive.ProposalComponent do
   @moduledoc false
 
   use PicselloWeb, :live_component
-  alias Picsello.{Repo, BookingProposal}
+  alias Picsello.{Repo, BookingProposal, EmailAutomationSchedules}
   import PicselloWeb.LiveModal, only: [close_x: 1, footer: 1]
 
   import PicselloWeb.BookingProposalLive.Shared,
@@ -19,6 +19,9 @@ defmodule PicselloWeb.BookingProposalLive.ProposalComponent do
   def handle_event("accept-proposal", %{}, %{assigns: %{proposal: proposal}} = socket) do
     case proposal |> BookingProposal.accept_changeset() |> Repo.update() do
       {:ok, proposal} ->
+        _stopped_emails =
+          EmailAutomationSchedules.stopped_all_active_proposal_emails(proposal.job.id)
+
         send(self(), {:update, %{proposal: proposal, next_page: "contract"}})
 
         socket

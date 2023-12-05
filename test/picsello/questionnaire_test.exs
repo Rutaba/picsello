@@ -8,7 +8,7 @@ defmodule Picsello.QuestionnaireTest do
   end
 
   describe "for_job when template is not set" do
-    test "when job type is different than other" do
+    test "when job type is different than global" do
       assert %{job_type: "family"} =
                Questionnaire.for_job(%Job{
                  type: "family",
@@ -17,16 +17,16 @@ defmodule Picsello.QuestionnaireTest do
                |> Repo.one()
     end
 
-    test "when job type is other" do
-      assert %{job_type: "other"} =
+    test "when job type is global" do
+      assert %{job_type: "global"} =
                Questionnaire.for_job(%Job{
-                 type: "other",
+                 type: "global",
                  package: %Package{questionnaire_template_id: nil}
                })
                |> Repo.one()
     end
 
-    test "when job type doesn't exist then falls back to other" do
+    test "when job type doesn't exist then falls back to global" do
       assert %{job_type: "event"} =
                Questionnaire.for_job(%Job{
                  type: "event",
@@ -66,14 +66,17 @@ defmodule Picsello.QuestionnaireTest do
     } do
       assert %{job_type: "family"} =
                Questionnaire.for_job(%Job{
-                 package: %Package{job_type: "other", questionnaire_template_id: questionnaire.id}
+                 package: %Package{
+                   job_type: "global",
+                   questionnaire_template_id: questionnaire.id
+                 }
                })
                |> Repo.one()
     end
   end
 
   describe "for_package when template is not set" do
-    test "when job type is different than other" do
+    test "when job type is different than global" do
       assert %{job_type: "family"} =
                Questionnaire.for_package(%Package{
                  job_type: "family",
@@ -81,15 +84,15 @@ defmodule Picsello.QuestionnaireTest do
                })
     end
 
-    test "when job type is other" do
-      assert %{job_type: "other"} =
+    test "when job type is global" do
+      assert %{job_type: "global"} =
                Questionnaire.for_package(%Package{
-                 job_type: "other",
+                 job_type: "global",
                  questionnaire_template_id: nil
                })
     end
 
-    test "when job type doesn't exist then falls back to other" do
+    test "when job type doesn't exist then falls back to global" do
       assert %{job_type: "event"} =
                Questionnaire.for_package(%Package{
                  job_type: "event",
@@ -128,7 +131,7 @@ defmodule Picsello.QuestionnaireTest do
     } do
       assert %{job_type: "event"} =
                Questionnaire.for_package(%Package{
-                 job_type: "other",
+                 job_type: "global",
                  questionnaire_template_id: questionnaire.id
                })
     end
@@ -255,7 +258,7 @@ defmodule Picsello.QuestionnaireTest do
 
       insert(:questionnaire,
         name: "Custom Other Questionnaire",
-        job_type: "other",
+        job_type: "global",
         organization_id: organization.id,
         questions: [
           %{
@@ -272,12 +275,12 @@ defmodule Picsello.QuestionnaireTest do
     test "when job type is nil", %{organization: organization} do
       assert [
                %Picsello.Questionnaire{
-                 job_type: "other",
+                 job_type: "global",
                  name: "Custom Other Questionnaire"
                },
                %Picsello.Questionnaire{
                  is_picsello_default: true,
-                 job_type: "other"
+                 job_type: "global"
                }
              ] = Questionnaire.for_organization_by_job_type(organization.id, nil)
     end
@@ -285,7 +288,7 @@ defmodule Picsello.QuestionnaireTest do
     test "when job type is not nil", %{organization: organization} do
       assert [
                %Picsello.Questionnaire{
-                 job_type: "other",
+                 job_type: "global",
                  name: "Custom Other Questionnaire"
                },
                %Picsello.Questionnaire{
@@ -294,7 +297,7 @@ defmodule Picsello.QuestionnaireTest do
                },
                %Picsello.Questionnaire{
                  is_picsello_default: true,
-                 job_type: "other"
+                 job_type: "global"
                }
              ] = Questionnaire.for_organization_by_job_type(organization.id, "family")
     end

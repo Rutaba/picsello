@@ -866,7 +866,7 @@ defmodule PicselloWeb.Live.Pricing.Calculator.Index do
 
   defp assign_job_types(socket) do
     socket
-    |> assign(job_types: Enum.filter(job_types(), fn job_type -> job_type !== "other" end))
+    |> assign(job_types: Enum.filter(job_types(), fn job_type -> job_type !== "global" end))
   end
 
   defdelegate job_types(), to: JobType, as: :all

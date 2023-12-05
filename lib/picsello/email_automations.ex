@@ -472,28 +472,7 @@ defmodule Picsello.EmailAutomations do
   end
 
   def send_now_email(type, email, job, state) when type in [:lead, :job] do
-    payment_schedule =
-      PaymentSchedule
-      |> where([ps], ps.job_id == ^job.id and not is_nil(ps.paid_at))
-      |> order_by(desc: :updated_at)
-      |> limit(1)
-      |> Repo.one()
-      |> then(fn
-        %PaymentSchedule{} = ps ->
-          ps
-
-        nil ->
-          currency = Picsello.Currency.for_job(job)
-          %PaymentSchedule{price: Money.new(0, currency)}
-      end)
-
-    EmailAutomationNotifier.deliver_automation_email_job(
-      email,
-      job,
-      {job, payment_schedule},
-      state,
-      PicselloWeb.Helpers
-    )
+    send_job_email(email, job, state)
     |> update_schedule(email.id)
   end
 
@@ -707,14 +686,14 @@ defmodule Picsello.EmailAutomations do
     state_full_paid = if state == :pays_retainer_offline, do: :paid_offline_full, else: :paid_full
 
     if PaymentSchedules.all_paid?(job) do
-      send_email_by_state(job, state_full_paid, organization_id)
+      send_email_by_state(job, state_full_paid, organization_id, :job)
       GarbageEmailCollector.stop_job_and_lead_emails(job)
     else
-      send_email_by_state(job, state, organization_id)
+      send_email_by_state(job, state, organization_id, :job)
     end
   end
 
-  def send_email_by_state(job, state, organization_id) do
+  def send_email_by_state(job, state, organization_id, type) do
     pipeline = get_pipeline_by_state(state)
 
     email_schedule =
@@ -728,7 +707,7 @@ defmodule Picsello.EmailAutomations do
 
     email_preset =
       EmailPresets.user_email_automation_presets(
-        :lead,
+        type,
         job.type,
         pipeline.id,
         organization_id
@@ -742,27 +721,40 @@ defmodule Picsello.EmailAutomations do
   defp send_automation_email(nil, nil, _job, _state), do: nil
 
   defp send_automation_email(nil, email_preset, job, state) do
+    send_job_email(email_preset, job, state)
+  end
+
+  defp send_automation_email(email_schedule, _email_preset, job, state) do
+    send_job_email(email_schedule, job, state)
+    |> update_schedule(email_schedule.id)
+  end
+
+  defp send_job_email(email, job, state) do
+    payment_schedule = get_latest_payment_schedule(job)
+
     EmailAutomationNotifier.deliver_automation_email_job(
-      email_preset,
+      email,
       job,
-      {job},
+      {job, payment_schedule},
       state,
       PicselloWeb.Helpers
     )
   end
 
-  defp send_automation_email(email_schedule, _email_preset, job, state) do
-    EmailAutomationNotifier.deliver_automation_email_job(
-      email_schedule,
-      job,
-      {job},
-      state,
-      PicselloWeb.Helpers
-    )
+  defp get_latest_payment_schedule(job) do
+    PaymentSchedule
+    |> where([ps], ps.job_id == ^job.id and not is_nil(ps.paid_at))
+    |> order_by(desc: :updated_at)
+    |> limit(1)
+    |> Repo.one()
+    |> then(fn
+      %PaymentSchedule{} = ps ->
+        ps
 
-    EmailAutomationSchedules.update_email_schedule(email_schedule.id, %{
-      reminded_at: DateTime.truncate(DateTime.utc_now(), :second)
-    })
+      nil ->
+        currency = Picsello.Currency.for_job(job)
+        %PaymentSchedule{price: Money.new(0, currency)}
+    end)
   end
 
   defp get_email_from_schedule(job_id, pipeline_id, state, helpers) do

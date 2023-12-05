@@ -27,7 +27,7 @@ defmodule Picsello.EditQuestionnaireTest do
     |> click(css("#hamburger-menu"))
     |> click(link("Questionnaires"))
     |> assert_path("/questionnaires")
-    |> click(button("Picsello Other Template"))
+    |> click(button("Picsello Global Template"))
     |> within_modal(fn modal ->
       modal
       |> assert_text("View questionnaire")
@@ -179,7 +179,7 @@ defmodule Picsello.EditQuestionnaireTest do
     setup %{user: user} do
       insert(:questionnaire,
         name: "Custom Other Questionnaire",
-        job_type: "other",
+        job_type: "global",
         organization_id: user.organization.id,
         questions: [
           %{

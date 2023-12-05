@@ -71,6 +71,9 @@ defmodule PicselloWeb.GalleryLive.GlobalSettings.Index do
   def handle_params(%{"section" => "digital_pricing"}, _uri, socket),
     do: new_section(socket, digital_pricing_section?: true)
 
+  def handle_params(%{"section" => "expiration_date"}, _uri, socket),
+    do: new_section(socket, expiration_date_section?: true)
+
   def handle_params(_params, _uri, %{assigns: %{is_mobile: is_mobile}} = socket),
     do: new_section(socket, expiration_date_section?: !is_mobile)
 

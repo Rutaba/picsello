@@ -11,8 +11,6 @@ defmodule PicselloWeb.LayoutView do
       classes: 1
     ]
 
-  import Picsello.Profiles, only: [public_url: 1]
-
   import PicselloWeb.Live.Profile.Shared, only: [photographer_logo: 1]
   import PicselloWeb.Shared.StickyUpload, only: [sticky_upload: 1, gallery_top_banner: 1]
   import PicselloWeb.Shared.Sidebar, only: [main_header: 1, get_classes_for_main: 1]
@@ -227,7 +225,7 @@ defmodule PicselloWeb.LayoutView do
     <footer class={"mt-auto #{@footer_class} sm:block bg-base-300 text-white"}>
       <div class="px-6 center-container py-10">
         <div class="flex justify-between gap-8">
-          <nav class="flex text-lg font-bold mt-4 w-full items-center">
+          <nav class="flex flex-col sm:flex-row text-lg font-bold mt-4 w-full items-center gap-2">
             <ul class="flex">
               <li><a href="https://support.picsello.com/" target="_blank" rel="noopener noreferrer">Help center</a></li>
               <%= if @current_user && Application.get_env(:picsello, :intercom_id) do %>
@@ -235,12 +233,14 @@ defmodule PicselloWeb.LayoutView do
               <% end %>
               <li><a class="ml-10" href="https://www.picsello.com/blog" target="_blank" rel="noopener noreferrer">Blog</a></li>
             </ul>
+
+            <.icon name="logo-shoot-higher" class="w-24 h-10 sm:h-20 sm:w-32 sm:ml-auto mt-4 md:mt-0" />
+
             <.subscription_ending_soon type="footer" socket={@socket} current_user={@current_user} class="flex ml-auto bg-white text-black rounded px-4 py-2 items-center text-sm"/>
           </nav>
         </div>
         <hr class="my-8 opacity-30" />
         <div class="flex flex-col lg:flex-row">
-          <div class="text-base-250 text-xs">Copyright © <%= DateTime.utc_now.year %> Picsello</div>
           <ul class="flex lg:ml-auto items-center">
             <li class="text-base-250 text-xs"><a href="https://www.picsello.com/terms-conditions" target="_blank" rel="noopener noreferrer">Terms</a></li>
             <li class="text-base-250 mx-3.5">|</li>
@@ -264,7 +264,7 @@ defmodule PicselloWeb.LayoutView do
         <.photographer_logo organization={@organization} />
       </div>
       <div class="ml-auto pt-3">
-        <a class="flex items-center justify-center px-2.5 py-1 text-base-300 bg-base-100 border border-base-300 hover:text-base-100 hover:bg-base-300" href={"#{public_url(@organization)}#contact-form"}>
+        <a class="flex items-center justify-center px-2.5 py-1 text-base-300 bg-base-100 border border-base-300 hover:text-base-100 hover:bg-base-300" phx-hook="OpenCompose" id="open-compose">
           <.icon name="envelope" class="mr-2 w-4 h-4 fill-current"/>
           Contact
         </a>

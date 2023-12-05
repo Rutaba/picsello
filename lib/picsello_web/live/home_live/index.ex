@@ -103,7 +103,7 @@ defmodule PicselloWeb.HomeLive.Index do
     Promotions.insert_or_update_promotion(current_user, %{
       slug: promotion_code,
       state: :purchased,
-      name: "Black Friday"
+      name: "Holiday"
     })
 
     Onboardings.user_update_promotion_code_changeset(current_user, %{
@@ -319,7 +319,7 @@ defmodule PicselloWeb.HomeLive.Index do
       ) do
     case Promotions.insert_or_update_promotion(current_user, %{
            slug: promotion_code,
-           name: "Black Friday",
+           name: "Holiday",
            state: :dismissed
          }) do
       {:ok, promotion_code} ->
@@ -872,10 +872,10 @@ defmodule PicselloWeb.HomeLive.Index do
                         "#{package.name |> String.slice(0..40)} ..."
                       end %>
                   </p>
-                  <p class="text-gray-400 font-normal text-sm">
-                    Package price: <%= package |> Package.price() %>&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp
-                    Digital price: <%= if Money.zero?(package.download_each_price) do %>--<% else %><%= package.download_each_price %> <% end %>
-                  </p>
+                  <div class="flex flex-col sm:grid sm:grid-cols-2 justify-between text-gray-400 font-normal text-sm break-all gap-1 sm:gap-2">
+                    <span>Package price: <%= package |> Package.price() %></span>
+                    <span>Digital price: <%= if Money.zero?(package.download_each_price) do %>--<% else %><%= package.download_each_price %> <% end %></span>
+                  </div>
                 <% end %>
               <% end %>
             </div>
@@ -1496,7 +1496,7 @@ defmodule PicselloWeb.HomeLive.Index do
         :link,
         Routes.gallery_downloads_url(
           socket,
-          :download_csv,
+          :download_lightroom_csv,
           gallery.client_link_hash,
           number
         )
@@ -1619,13 +1619,13 @@ defmodule PicselloWeb.HomeLive.Index do
     <div {testid("card-#{@title}")} class={"flex overflow-hidden border border-base-200 rounded-lg #{@class}"}>
       <div class={"w-3 flex-shrink-0 border-r rounded-l-lg bg-#{@color}"} />
       <div class="flex flex-col w-full p-4">
-        <div class="flex justify-between items-center mb-2 w-full gap-10">
+        <div class="flex flex-wrap justify-between items-center mb-2 w-full gap-0 md:gap-10">
           <h3 class={"mb-2 mr-4 text-xl font-bold text-black"}><%= @title %></h3>
-          <div class="flex flex-col md:flex-row items-center">
-            <button type="button" class="link px-4 mb-2 md:mb-0" phx-click={@view_event} hidden={@hidden}>
+          <div class="flex flex-row items-center justify-between">
+            <button type="button" class="md:order-1 order-2 link px-4 mb-2 md:mb-0" phx-click={@view_event} hidden={@hidden}>
               View all
             </button>
-            <button type="button" class="font-bold btn-tertiary py-2" phx-click={@add_event}>
+            <button type="button" class="md:order-2 order-1 font-bold btn-tertiary py-2" phx-click={@add_event}>
               <%= @button_title %>
             </button>
           </div>
@@ -1666,7 +1666,7 @@ defmodule PicselloWeb.HomeLive.Index do
                     price={"#{subscription_plan.price |> Money.subtract(15_000) |> Money.to_string(fractional_unit: false)} yearly"}
                     price_secondary={"(Originally #{subscription_plan.price |> Money.to_string(fractional_unit: false)}—save $150!)"}
                     interval={subscription_plan.recurring_interval}
-                    body="BLACK FRIDAY SALE! SAVE $150. You get everything in the monthly plan PLUS exclusive access to Picsello’s Business Mastermind with classes and so much more"
+                    body="HOLDAY SALE! SAVE $150. You get everything in the monthly plan PLUS exclusive access to Picsello’s Business Mastermind with classes and so much more"
                   />
                 <% _ -> %>
               <% end %>
@@ -1899,7 +1899,7 @@ defmodule PicselloWeb.HomeLive.Index do
               currency: "USD",
               unit_amount: 35_000,
               product_data: %{
-                name: "Black Friday 2023",
+                name: "Holiday Sale 2023",
                 description: "Pre purchase your next year of Picsello!"
               },
               tax_behavior: "exclusive"
