@@ -3,15 +3,19 @@ defmodule PicselloWeb.GalleryLive.Settings.ManagePasswordComponent do
   use PicselloWeb, :live_component
   alias Picsello.Galleries
 
-  import PicselloWeb.GalleryLive.Shared, only: [disabled?: 1]
-
   @impl true
   def update(%{id: id, gallery: gallery}, socket) do
     {:ok,
      socket
      |> assign(:visibility, false)
      |> assign(:id, id)
-     |> assign(:gallery, gallery)}
+     |> assign(:gallery, gallery)
+     |> assign(:password, gallery.password)
+     |> assign(:is_password, gallery.is_password)
+     |> assign(
+       :password_changeset,
+       Galleries.Gallery.password_changeset(gallery) |> Map.put(:action, :validate)
+     )}
   end
 
   @impl true
@@ -22,9 +26,40 @@ defmodule PicselloWeb.GalleryLive.Settings.ManagePasswordComponent do
   end
 
   @impl true
-  def handle_event("regenerate", _params, %{assigns: %{gallery: gallery}} = socket) do
+  def handle_event(
+        "validate",
+        %{"_target" => ["gallery", "is_password"], "gallery" => %{"is_password" => password}},
+        %{assigns: %{gallery: gallery}} = socket
+      ) do
+    password = String.to_atom(password)
+
+   {:ok, gallery} = Galleries.update_gallery(gallery, %{is_password: password})
     socket
-    |> assign(:gallery, Galleries.regenerate_gallery_password(gallery))
+    |> assign(:is_password, password)
+    |> assign(:gallery, gallery)
+    |> noreply
+  end
+
+  @impl true
+  def handle_event(
+        "validate",
+        %{"gallery" => %{"password" => password}} = params,
+        %{assigns: %{gallery: gallery}} = socket
+      ) do
+    socket
+    |> assign(:password, password)
+    |> assign(
+      :password_changeset,
+      Galleries.Gallery.password_changeset(gallery, %{password: password})
+      |> Map.put(:action, :validate)
+    )
+    |> noreply
+  end
+
+  def handle_event("save", _params, %{assigns: %{gallery: gallery, password: password}} = socket) do
+    {:ok, gallery} = Galleries.update_gallery(gallery, %{password: password})
+    socket
+    |> assign(:gallery, gallery)
     |> noreply
   end
 
@@ -34,33 +69,33 @@ defmodule PicselloWeb.GalleryLive.Settings.ManagePasswordComponent do
     <div>
       <h3 class="font-sans">Gallery password</h3>
       <div class="relative">
-        <%= if @visibility do %>
-          <%= text_input :gallery, :password, value: @gallery.password, disabled: true, id: "galleryPasswordInput",
-          class: "gallerySettingsInput font-sans" %>
-        <% else %>
-          <%= password_input :gallery, :password, value: @gallery.password, disabled: true, id: "galleryPasswordInput",
-          class: "gallerySettingsInput font-sans" %>
-        <% end %>
-
-        <a phx-click="toggle_visibility" phx-target={@myself} class="absolute h-full -translate-y-1/2 right-5 top-1/2" id="togglePasswordVisibility">
+        <.form :let={f} for={@password_changeset} phx-change="validate" phx-submit="save" phx-target={@myself} >
+          <%= error_tag f, :password, class: "text-red-sales-300" %>
           <%= if @visibility do %>
-            <.icon name="eye" class="w-5 h-full ml-1 text-base-250 cursor-pointer"/>
+            <%= text_input f, :password, value: @password, disabled: !@is_password, phx_debounce: "500", id: "galleryPasswordInput",
+            class: "gallerySettingsInput font-sans" %>
           <% else %>
-            <.icon name="closed-eye" class="w-5 h-full ml-1 text-base-250 cursor-pointer"/>
+            <%= password_input f, :password, value: @password, disabled: !@is_password,  phx_debounce: "500", id: "galleryPasswordInput",
+            class: "gallerySettingsInput font-sans" %>
           <% end %>
-        </a>
-      </div>
-      <div {testid("password_component")} class="flex items-center justify-between w-full mt-3 lg:items-start">
-        <button phx-click="regenerate" disabled={disabled?(@gallery)} phx-target={@myself} class={classes("p-4 font-bold font-sans cursor-pointer text-blue-planning-300 lg:pt-0", %{"text-gray-200" => disabled?(@gallery)})} id="regeneratePasswordButton">
-            Re-generate
-        </button>
-        <button disabled={disabled?(@gallery)} id="CopyToClipboardButton" phx-hook="Clipboard" data-clipboard-text={@gallery.password}
-        class={classes("py-2 border rounded-lg border-blue-planning-300 text-blue-planning-300 w-36 mt-2", %{"border-gray-200 text-gray-200" => disabled?(@gallery)})}>
-        <div class="hidden p-1 text-sm rounded font-sans shadow bg-white" role="tooltip">
-            Copied!
-        </div>
-          Copy password
-        </button>
+          <a phx-click="toggle_visibility" phx-target={@myself} class=" flex flex-col absolute h-8 -translate-y-1/2 right-5 top-8" id="togglePasswordVisibility">
+            <%= if @visibility do %>
+              <.icon name="eye" class="w-5 h-full ml-1 text-base-250 cursor-pointer"/>
+            <% else %>
+              <.icon name="closed-eye" class="w-5 h-full ml-1 text-base-250 cursor-pointer"/>
+            <% end %>
+          </a>
+
+          <div class="flex  items-center justify-between w-full mt-5 lg:items-start">
+            <div class="flex items-center">
+              <%= checkbox f, :is_password, value: @gallery.is_password, class: "w-6 h-6 mr-3 checkbox-exp cursor-pointer", phx_debounce: 200 %>
+              <label class={classes("", %{"text-gray-400 cursor-default" => !@gallery.is_password})}>
+                    Include Password
+              </label>
+            </div>
+            <%= submit "Save", class: "btn-settings w-32  px-11", disabled: (@is_password || @password_changeset.valid?) && not (@is_password && @password_changeset.valid?), phx_disable_with: "Saving..." %>
+          </div>
+        </.form>
       </div>
     </div>
     """
