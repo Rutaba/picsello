@@ -105,16 +105,6 @@ defmodule PicselloWeb.EmailAutomationLive.Shared do
       - If the `state` is "before_shoot" or "gallery_expiration_soon", it returns options for "Before" and "After".
       - If the `state` is "balance_due" or "balance_due_offline", it returns options for "Before" and "After" with the "After" option enabled.
       - For any other `state`, it returns options for "Before" and "After" with the "Before" option disabled.
-
-  ## Parameters
-
-      - `state` (String.t() | atom()): The state to determine sign options for.
-
-  ## Examples
-
-      ```elixir
-      options = make_sign_options("before_shoot")
-      # Returns: [[key: "Before", value: "-"], [key: "After", value: "+", disabled: true]]
   """
   def make_sign_options(state) do
     state = if is_atom(state), do: Atom.to_string(state), else: state
@@ -719,33 +709,9 @@ defmodule PicselloWeb.EmailAutomationLive.Shared do
   end
 
   @doc """
-  Normalizes the "status" parameter in a map of parameters.
-
-  This function accepts a map of parameters (`params`) and normalizes the "status" parameter. It checks if "status" is
-  equal to "true" or "active" and replaces it with `:active`, or if it's anything else, it replaces it with `:disabled`.
-  The normalized parameters are then returned.
-
-  ## Parameters
-
-      - `params` (map()): A map of parameters.
-
-  ## Returns
-
-      map(): A map of parameters with the "status" parameter normalized.
-
-  ## Example
-
-      ```elixir
-      # Normalize the "status" parameter in a map of parameters
-      iex> params = %{"status" => "true", "name" => "John"}
-      iex> maybe_normalize_params(params)
-      %{"status" => :active, "name" => "John"}
-      iex> maybe_normalize_params(nil)
-      nil
-
-  ## Notes
-
-      This function is useful for normalizing specific parameters within a map.
+  Normalizes the "status" parameter in a map of parameters. This function accepts a map of parameters (`params`)
+  and normalizes the "status" parameter. It checks if "status" is equal to "true" or "active" and replaces it with
+  `:active`, or if it's anything else, it replaces it with `:disabled`. The normalized parameters are then returned.
   """
   @spec maybe_normalize_params(nil) :: nil
   def maybe_normalize_params(nil), do: nil
