@@ -6179,7 +6179,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "thanks_job"),
         total_hours: 0,
         status: "active",
-        job_type: "other",
+        job_type: "global",
         type: "job",
         position: 0,
         name: "Thank you for booking email",
