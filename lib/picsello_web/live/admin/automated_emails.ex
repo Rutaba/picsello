@@ -21,19 +21,30 @@ defmodule PicselloWeb.Live.Admin.AutomatedEmails do
       </header>
 
       <div class="p-12 flex flex-row space-between items-center">
-        <div class="flex flex-col">
-          <div class="flex items-center flex-wrap">
-            <h1 class="text-4xl font-bold">Ready to Send Emails</h1>
+        <%= if Enum.any?(@organization_emails) do %>
+          <div class="flex flex-col">
+            <div class="flex items-center flex-wrap">
+              <h1 class="text-4xl font-bold">Ready to Send Emails</h1>
+            </div>
+            <div class="max-w-4xl mt-2 text-base-250">
+              <p>Unlock Seamless Communication: Your Emails, Perfected and Ready for Dispatch! 🚀</p>
+            </div>
           </div>
-          <div class="max-w-4xl mt-2 text-base-250">
-            <p>Unlock Seamless Communication: Your Emails, Perfected and Ready for Dispatch! 🚀</p>
+          <div class="flex ml-auto">
+            <button testid="send-global" class="h-8 flex items-center px-2 py-1 btn-tertiary text-black font-bold hover:border-blue-planning-300 mr-2 whitespace-nowrap" phx-click="confirm-global-send">
+              Send Emails Globally
+            </button>
           </div>
-        </div>
-        <div class="flex ml-auto">
-          <button testid="send-global" class="h-8 flex items-center px-2 py-1 btn-tertiary text-black font-bold hover:border-blue-planning-300 mr-2 whitespace-nowrap" phx-click="confirm-global-send">
-            Send Emails Globally
-          </button>
-        </div>
+        <% else %>
+          <div class="flex flex-col">
+            <div class="flex items-center flex-wrap">
+              <h1 class="text-4xl font-bold">No Emails are ready to dispatch</h1>
+            </div>
+            <div class="max-w-4xl mt-2 text-base-250">
+              <p>Make sure you have some in pipeline before coming here!</p>
+            </div>
+          </div>
+        <% end %>
       </div>
       <.pipeline_section organization_emails={@organization_emails} collapsed_sections={@collapsed_sections}/>
     """
@@ -191,11 +202,17 @@ defmodule PicselloWeb.Live.Admin.AutomatedEmails do
         {:confirm_event, "send-global-emails"},
         socket
       ) do
-    # SEND GLOBAL EMAILS HERE
+    EmailAutomationSchedules.send_all_global_emails()
+    |> case do
+      {:ok, _} ->
+        socket
+        |> put_flash(:success, "Emails have been sent globally!")
 
-    socket
+      _ ->
+        socket
+        |> put_flash(:error, "Some error occurred on the way!")
+    end
     |> close_modal()
-    |> put_flash(:message, "Emails have been sent globally!")
     |> assign_defaults()
     |> noreply()
   end
@@ -204,11 +221,19 @@ defmodule PicselloWeb.Live.Admin.AutomatedEmails do
         {:confirm_event, "send-all-emails-" <> organization_id},
         socket
       ) do
-    _organization_id = String.to_integer(organization_id)
-    # SEND ALL EMAILS BY ORGANIZATION
-    socket
+    organization_id = String.to_integer(organization_id)
+
+    EmailAutomationSchedules.send_all_emails_of_organization(organization_id)
+    |> case do
+      {:ok, _} ->
+        socket
+        |> put_flash(:success, "All emails have been sent for the organization!")
+
+      _ ->
+        socket
+        |> put_flash(:error, "Some error occurred on the way!")
+    end
     |> close_modal()
-    |> put_flash(:message, "All emails have been sent for the organization!")
     |> assign_defaults()
     |> noreply()
   end

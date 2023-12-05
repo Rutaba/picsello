@@ -209,7 +209,7 @@ defmodule Picsello.CreateClientTest do
     |> assert_text("Event")
     |> assert_text("Newborn")
     |> assert_text("Wedding")
-    |> assert_text("Other")
+    |> assert_text("Global")
   end
 
   defp assert_package_and_payment_fields(session) do

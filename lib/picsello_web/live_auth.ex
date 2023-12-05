@@ -193,14 +193,20 @@ defmodule PicselloWeb.LiveAuth do
          } = socket
        ) do
     %{onboarding_view: onboarding_view, onboarding_route: onboarding_route} =
-      case Enum.member?(onboarding_flow_source, "mastermind") do
-        true ->
+      cond do
+        Enum.member?(onboarding_flow_source, "mastermind") ->
           %{
             onboarding_view: PicselloWeb.OnboardingLive.Mastermind.Index,
             onboarding_route: Routes.onboarding_mastermind_path(socket, :index)
           }
 
-        _ ->
+        Enum.member?(onboarding_flow_source, "three_month") ->
+          %{
+            onboarding_view: PicselloWeb.OnboardingLive.ThreeMonth.Index,
+            onboarding_route: Routes.onboarding_three_month_path(socket, :index)
+          }
+
+        true ->
           %{
             onboarding_view: PicselloWeb.OnboardingLive.Index,
             onboarding_route: Routes.onboarding_path(socket, :index)

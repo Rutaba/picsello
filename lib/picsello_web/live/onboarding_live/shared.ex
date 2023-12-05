@@ -1,5 +1,6 @@
 defmodule PicselloWeb.OnboardingLive.Shared do
   @moduledoc false
+  require Logger
 
   use Phoenix.Component
   use Phoenix.HTML
@@ -28,18 +29,22 @@ defmodule PicselloWeb.OnboardingLive.Shared do
       Enum.into(assigns, %{
         original_price: nil,
         price: nil,
-        expires_at: nil
+        expires_at: nil,
+        note: nil
       })
 
     ~H"""
       <div class="bg-white" phx-update="ignore" id="timer">
-        <div class="bg-base-200 flex justify-center p-8">
-          <h3 class="text-4xl text-purple-marketing-300">
+        <div class="bg-base-200 p-8">
+          <h3 class="text-4xl text-purple-marketing-300 flex justify-center gap-2">
             <%= if @original_price do %>
               <strike class="font-bold"><%= @original_price %></strike>
             <% end %>
             <%= @price %>
           </h3>
+          <%= if @note do %>
+            <p class="text-md font-light text-center mt-4 text-purple-marketing-300"><%= @note %></p>
+          <% end %>
         </div>
         <%= if @expires_at do %>
           <div class="border flex justify-center p-2 text-purple-marketing-300 font-light tracking-wider text-lg" id="bf-timer" phx-hook="Timer" data-end={@expires_at}></div>
@@ -142,7 +147,7 @@ defmodule PicselloWeb.OnboardingLive.Shared do
             <%= for jt <- inputs_for(o, :organization_job_types) |> Enum.sort_by(&(&1.data.job_type)) do %>
               <% input_name = input_name(jt, :job_type) %>
               <%= hidden_inputs_for(jt) %>
-              <%= if jt.data.job_type != "other" do %>
+              <%= if jt.data.job_type != "global" do %>
                 <% checked = jt |> current() |> Map.get(:show_on_business?) %>
                 <.job_type_option type="checkbox" name={input_name} form={jt} job_type={jt |> current() |> Map.get(:job_type)} checked={checked} />
               <% else %>
@@ -153,14 +158,14 @@ defmodule PicselloWeb.OnboardingLive.Shared do
           </div>
           <div class="flex flex-row">
             <div class="flex items-center justify-center w-7 h-7 ml-1 mr-3 mt-2 rounded-full flex-shrink-0 bg-blue-planning-300 text-white">
-              <.icon name="other" class="fill-current" width="14" height="14" />
+              <.icon name="global" class="fill-current" width="14" height="14" />
             </div>
             <div class="flex flex-col">
               <p class="pt-2 font-bold">
                 Not seeing yours here?
               </p>
               <p class="text-gray-400 font-normal">
-                All Picsello accounts include an <strong>Other</strong> photography speciality in case yours isn’t listed here.
+                All Picsello accounts include an <strong>Global</strong> photography speciality in case yours isn’t listed here.
               </p>
             </div>
           </div>

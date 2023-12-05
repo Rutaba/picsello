@@ -121,7 +121,7 @@ defmodule Picsello.GalleryProofingAlbumTest do
     link =
       Routes.gallery_downloads_url(
         PicselloWeb.Endpoint,
-        :download_csv,
+        :download_lightroom_csv,
         gallery.client_link_hash,
         order.number
       )
@@ -145,7 +145,7 @@ defmodule Picsello.GalleryProofingAlbumTest do
     csv_link =
       Routes.gallery_downloads_url(
         PicselloWeb.Endpoint,
-        :download_csv,
+        :download_lightroom_csv,
         gallery.client_link_hash,
         order.number
       )

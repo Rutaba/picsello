@@ -20,7 +20,7 @@ defmodule Picsello.CreateLeadTest do
 
     insert(:package_template,
       user: user,
-      job_type: "other",
+      job_type: "global",
       name: "best other",
       shoot_count: 1,
       description: "desc",
@@ -130,7 +130,7 @@ defmodule Picsello.CreateLeadTest do
     |> assert_has(css("button:disabled[type='submit']"))
   end
 
-  feature "user creates lead with job type 'other'", %{session: session} do
+  feature "user creates lead with job type 'global'", %{session: session} do
     session
     |> click(button("Actions"))
     |> click(button("Create lead"))
@@ -138,10 +138,10 @@ defmodule Picsello.CreateLeadTest do
     |> assert_has(css("#search_results"))
     |> send_keys([:down_arrow])
     |> send_keys([:enter])
-    |> click(css("label", text: "Other"))
+    |> click(css("label", text: "Global"))
     |> find(css(".modal"), &wait_for_enabled_submit_button/1)
     |> click(button("Save"))
-    |> assert_has(css("h1", text: "Elizabeth Taylor Other"))
+    |> assert_has(css("h1", text: "Elizabeth Taylor Global"))
     |> assert_has(testid("card-Communications", text: "Elizabeth Taylor"))
     |> assert_has(testid("card-Communications", text: "taylor@example.com"))
     |> assert_has(testid("card-Communications", text: @phone))

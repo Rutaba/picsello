@@ -553,7 +553,7 @@ defmodule PicselloWeb.Live.EmailAutomations.Show do
 
   @status_texts %{
     "photographer_stopped" => "Stopped by Photographer",
-    "proposal_accepted" => "Proposal has already been accepted",
+    "proposal_accepted" => "Stopped since user accepted",
     "already_paid_full" => "Job has already been paid in full",
     "shoot_starts_at_passed" => "Shoot date has already passed",
     "gallery_already_shared_because_order_placed" => "Gallery has already been shared",

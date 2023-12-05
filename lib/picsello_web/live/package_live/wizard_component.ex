@@ -73,7 +73,7 @@ defmodule PicselloWeb.PackageLive.WizardComponent do
       %__MODULE__{}
       |> cast(attrs, [:total_price, :remaining_price, :fixed, :schedule_type])
       |> cast_embed(:payment_schedules,
-        with: &PackagePaymentSchedule.changeset(&1, &2, default_payment_changeset, fixed),
+        with: &PackagePaymentSchedule.changeset(&1, &2, default_payment_changeset, fixed, attrs),
         required: true
       )
       |> validate_schedule_date(default_payment_changeset)
@@ -329,8 +329,10 @@ defmodule PicselloWeb.PackageLive.WizardComponent do
     """
   end
 
-  defp step_valid?(%{step: :payment, payments_changeset: payments_changeset}),
-    do: payments_changeset.valid?
+  defp step_valid?(%{step: :payment, payments_changeset: payments_changeset}) do
+    remaining_price = Changeset.get_field(payments_changeset, :remaining_price)
+    Money.zero?(remaining_price) || payments_changeset.valid?
+  end
 
   defp step_valid?(%{step: :documents, contract_changeset: contract}), do: contract.valid?
 

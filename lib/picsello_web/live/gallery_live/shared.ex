@@ -106,11 +106,17 @@ defmodule PicselloWeb.GalleryLive.Shared do
     |> noreply
   end
 
+  def handle_event("open_compose", %{}, socket), do: open_compose(socket)
+
   def handle_info(:update_cart_count, %{assigns: %{gallery: gallery}} = socket) do
     socket
     |> assign(:order, nil)
     |> assign_cart_count(gallery)
     |> noreply()
+  end
+
+  def handle_info({:message_composed, message_changeset, recipients}, socket) do
+    add_message_and_notify(socket, message_changeset, recipients)
   end
 
   defp get_email_body_subject(nil, gallery, state) do
@@ -332,6 +338,29 @@ defmodule PicselloWeb.GalleryLive.Shared do
         |> noreply())
     )
   end
+
+  defp open_compose(
+         %{
+           assigns: %{
+             current_user: %{organization: %{name: organization_name}} = current_user,
+             gallery: %{job: job, name: gallery_name}
+           }
+         } = socket
+       ),
+       do:
+         socket
+         |> PicselloWeb.ClientMessageComponent.open(%{
+           modal_title: "Contact #{organization_name}",
+           show_client_email: false,
+           show_subject: false,
+           subject: "Client message: #{gallery_name} Gallery",
+           presets: [],
+           send_button: "Send",
+           client: Job.client(job),
+           recipients: %{"from" => job.client.email, "to" => current_user.email},
+           current_user: current_user
+         })
+         |> noreply()
 
   defp editor_urls(
          %{assigns: %{gallery_client: gallery_client, album: %Album{is_finals: true} = album}} =

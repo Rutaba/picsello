@@ -79,12 +79,12 @@ import Cookies from 'js-cookie';
 import FolderUpload from './hooks/folder-upload';
 import SearchResultSelect from './hooks/search-result-select';
 import Tooltip from './hooks/tooltip';
-import DisableRightClick from './hooks/disable-right-click';
 import StripeElements from './hooks/stripe-elements';
+import DisableRightClick from './hooks/disable-right-click';
 import Timer from './hooks/timer';
 import LivePhone from 'live_phone';
 import ViewProposal from './hooks/view_proposal';
-import CollapseSidebar from './hooks/collapse-sidebar';
+import OpenCompose from './hooks/open_compose';
 
 const Modal = {
   mounted() {
@@ -294,8 +294,8 @@ const Hooks = {
   Timer,
   LivePhone,
   ViewProposal,
-  CollapseSidebar,
-  PreserveToggleState
+  PreserveToggleState,
+  OpenCompose
 };
 
 window.addEventListener(`phx:download`, (event) => {

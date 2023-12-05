@@ -1,4 +1,4 @@
-defmodule PicselloWeb.OnboardingLive.Mastermind.Index do
+defmodule PicselloWeb.OnboardingLive.ThreeMonth.Index do
   @moduledoc false
   use PicselloWeb, live_view: [layout: :onboarding]
 
@@ -30,11 +30,7 @@ defmodule PicselloWeb.OnboardingLive.Mastermind.Index do
 
   @impl true
   def mount(_params, _session, socket) do
-    %{value: black_friday_code} =
-      Picsello.AdminGlobalSettings.get_settings_by_slug("black_friday_code")
-
-    %{value: black_friday_timer_end} =
-      Picsello.AdminGlobalSettings.get_settings_by_slug("black_friday_timer_end")
+    %{value: three_month} = Picsello.AdminGlobalSettings.get_settings_by_slug("three_month")
 
     socket
     |> assign(:main_class, "bg-gray-100")
@@ -44,15 +40,14 @@ defmodule PicselloWeb.OnboardingLive.Mastermind.Index do
     |> assign(:country, nil)
     |> assign(
       :promotion_code,
-      if(Subscriptions.maybe_return_promotion_code_id?(black_friday_code),
-        do: black_friday_code,
+      if(Subscriptions.maybe_return_promotion_code_id?(three_month),
+        do: three_month,
         else: nil
       )
     )
-    |> assign(:black_friday_timer_end, black_friday_timer_end)
     |> assign(:stripe_elements_loading, false)
     |> assign(:stripe_publishable_key, Application.get_env(:stripity_stripe, :publishable_key))
-    |> assign_changeset(%{}, :mastermind)
+    |> assign_changeset(%{}, :three_month)
     |> ok()
   end
 
@@ -67,6 +62,7 @@ defmodule PicselloWeb.OnboardingLive.Mastermind.Index do
         socket
       ) do
     socket
+    |> assign(:stripe_elements_loading, false)
     |> assign(:state, state)
     |> assign(:country, country)
     |> assign_step(3)
@@ -84,22 +80,22 @@ defmodule PicselloWeb.OnboardingLive.Mastermind.Index do
 
   @impl true
   def handle_event("previous", %{}, %{assigns: %{step: step}} = socket) do
-    socket |> assign_step(step - 1) |> assign_changeset(%{}, :mastermind) |> noreply()
+    socket |> assign_step(step - 1) |> assign_changeset(%{}, :three_month) |> noreply()
   end
 
   @impl true
   def handle_event("validate", %{"user" => params}, socket) do
-    socket |> assign_changeset(params, :mastermind) |> noreply()
+    socket |> assign_changeset(params, :three_month) |> noreply()
   end
 
   @impl true
   def handle_event("validate", _params, socket) do
-    socket |> assign_changeset(%{}, :mastermind) |> noreply()
+    socket |> assign_changeset(%{}, :three_month) |> noreply()
   end
 
   @impl true
   def handle_event("save", %{"user" => params}, %{assigns: %{step: 4}} = socket) do
-    save_final(socket, params, :mastermind)
+    save_final(socket, params, :three_month)
   end
 
   @impl true
@@ -113,17 +109,58 @@ defmodule PicselloWeb.OnboardingLive.Mastermind.Index do
   @impl true
   def handle_event(
         "stripe-elements-success",
-        %{"subscription_id" => subscription_id},
+        _params,
         %{assigns: %{current_user: current_user, promotion_code: promotion_code}} = socket
       ) do
-    case Payments.retrieve_subscription(subscription_id, []) do
-      {:ok, subscription} ->
+    stripe_params = %{
+      customer: Subscriptions.user_customer_id(current_user),
+      start_date: "now",
+      phases: [
+        %{
+          items: [
+            %{
+              price: Subscriptions.get_subscription_plan("month").stripe_price_id,
+              quantity: 3
+            }
+          ],
+          coupon: Subscriptions.maybe_return_promotion_code_id?(promotion_code),
+          iterations: 1
+        },
+        %{
+          items: [
+            %{
+              price: Subscriptions.get_subscription_plan("month").stripe_price_id,
+              quantity: 1
+            }
+          ],
+          iterations: 2,
+          trial: true
+        },
+        %{
+          items: [
+            %{
+              price: Subscriptions.get_subscription_plan("month").stripe_price_id,
+              quantity: 1
+            }
+          ],
+          iterations: 1
+        }
+      ],
+      expand: [
+        "subscription",
+        "subscription.latest_invoice.payment_intent",
+        "subscription.pending_setup_intent"
+      ]
+    }
+
+    case Payments.create_subscription_schedule(stripe_params) do
+      {:ok, %Stripe.SubscriptionSchedule{subscription: subscription}} ->
         Subscriptions.handle_stripe_subscription(subscription)
 
         Promotions.insert_or_update_promotion(current_user, %{
           slug: promotion_code,
           state: :purchased,
-          name: "Holiday"
+          name: "Three Month"
         })
 
         socket
@@ -131,7 +168,7 @@ defmodule PicselloWeb.OnboardingLive.Mastermind.Index do
         |> put_flash(:success, "Subscription and payment added!")
 
       {:error, error} ->
-        Logger.error("Error retrieving subscription: #{inspect(error)}")
+        Logger.error("Error creation subscription schedule: #{inspect(error)}")
 
         socket
         |> assign(:stripe_elements_loading, false)
@@ -151,31 +188,18 @@ defmodule PicselloWeb.OnboardingLive.Mastermind.Index do
       ) do
     customer_id = Subscriptions.user_customer_id(current_user, %{address: address})
 
-    stripe_params = %{
-      customer: customer_id,
-      items: [
-        %{
-          quantity: 1,
-          price: Subscriptions.get_subscription_plan("year").stripe_price_id
-        }
-      ],
-      coupon: Subscriptions.maybe_return_promotion_code_id?(promotion_code),
-      payment_settings: %{
-        save_default_payment_method: "on_subscription"
-      },
-      collection_method: "charge_automatically",
-      payment_behavior: "default_incomplete",
-      expand: ["latest_invoice.payment_intent"]
-    }
-
-    case Payments.create_subscription(stripe_params) do
-      {:ok, subscription} ->
+    case Payments.setup_intent(%{
+           customer: customer_id,
+           usage: "off_session",
+           automatic_payment_methods: %{enabled: true}
+         }) do
+      {:ok, %{client_secret: client_secret}} ->
         return =
           build_return(
-            subscription.latest_invoice.payment_intent.client_secret,
+            client_secret,
             address,
             promotion_code,
-            "subscription"
+            "setup"
           )
 
         socket
@@ -183,12 +207,7 @@ defmodule PicselloWeb.OnboardingLive.Mastermind.Index do
           :current_user,
           Accounts.get_user_by_stripe_customer_id(customer_id)
         )
-        |> push_event(
-          "stripe-elements-confirm",
-          Enum.into(return, %{
-            subscription_id: subscription.id
-          })
-        )
+        |> push_event("stripe-elements-confirm", return)
 
       {:error, error} ->
         Logger.error("Error creating subscription: #{inspect(error)}")
@@ -242,7 +261,7 @@ defmodule PicselloWeb.OnboardingLive.Mastermind.Index do
     ~H"""
       <.signup_container {assigns} show_logout?={true} left_classes="p-8 bg-purple-marketing-300 text-white order-2 sm:order-1">
         <h2 class="text-3xl md:text-4xl font-bold text-center mb-8">Picsello is here to help you achieve success on your terms</h2>
-        <blockqoute class="max-w-lg mt-auto mx-auto py-8 lg:py-12">
+        <blockqoute class="max-w-lg mt-auto mx-auto block mt-8">
           <p class="mb-4 text-white border-solid border-l-4 border-white pl-4">
             "Jane has been a wonderful mentor! With her help I’ve learned the importance of believing in myself and my work. She has taught me that it is imperative to be profitable at every stage of my photography journey to ensure I’m set up for lasting success. Jane has also given me the tools I need to make sure I’m charging enough to be profitable. She is always there to answer my questions and cheer me on. Jane has played a key role in my growth as a photographer and business owner! I wouldn’t be where I am without her!”
           </p>
@@ -252,9 +271,16 @@ defmodule PicselloWeb.OnboardingLive.Mastermind.Index do
               jessallenphotography.com</cite>
           </div>
         </blockqoute>
-        <div class="flex justify-center mt-12">
-          <img src={Routes.static_path(@socket, "/images/mastermind-logo.png")} loading="lazy" alt="Picsello Mastermind logo" class="h-16" />
-        </div>
+        <blockqoute class="max-w-lg mx-auto mt-6 block">
+          <p class="mb-4 text-white border-solid border-l-4 border-white pl-4">
+            "The mobile design on Picsello is GENIUS! I can operate it fully from my phone in a mobile friendly version - no more ‘this is not supported by the app at this time!’”
+          </p>
+          <div class="flex items-center gap-4">
+            <img src="https://assets-global.website-files.com/61147776bffed57ff3e884ef/629e8d41780f4f5411f43fc9_adrienne.webp" loading="lazy" alt="Logo for Adrienne DeMarco" class="w-12 h-12 object-contain rounded-full" />
+            <cite class="normal not-italic text-white"><span class="block font-bold not-italic">Adrienne DeMarco</span>
+              apdphotography.com</cite>
+          </div>
+        </blockqoute>
         <%= if @stripe_elements_loading do %>
           <div class="fixed bg-base-300/75 backdrop-blur-md pointer-events-none w-full h-full z-50 top-0 left-0 flex items-center justify-center">
             <.icon class="animate-spin w-8 h-8 mr-2 text-white" name="loader"/>
@@ -262,8 +288,8 @@ defmodule PicselloWeb.OnboardingLive.Mastermind.Index do
           </div>
         <% end %>
         <:right_panel>
-          <.signup_deal original_price={Money.new(35000, :USD)} price={Money.new(20000, :USD)} expires_at={@black_friday_timer_end} />
-          <p class="text-md text-gray-400 italic text-center mt-2">Your card will be charged the discounted annual subscription price</p>
+          <.signup_deal original_price={Money.new(10500, :USD)} price={Money.new(6000, :USD)} note="Save $45 on a three-month subscription to move over to Picsello" />
+          <p class="text-md text-gray-400 italic text-center mt-2">Your card will be charged the discounted price</p>
           <div
             phx-update="ignore"
             class="my-6"
@@ -272,7 +298,8 @@ defmodule PicselloWeb.OnboardingLive.Mastermind.Index do
             data-publishable-key={@stripe_publishable_key}
             data-name={@current_user.name}
             data-email={@current_user.email}
-            data-return-url={"#{PicselloWeb.Router.Helpers.page_url(PicselloWeb.Endpoint, :index)}#{Routes.onboarding_mastermind_path(@socket, :index)}"}
+            data-type="setup"
+            data-return-url={"#{PicselloWeb.Router.Helpers.page_url(PicselloWeb.Endpoint, :index)}#{Routes.onboarding_three_month_path(@socket, :index)}"}
           >
             <div id="address-element"></div>
             <div id="payment-element" class="mt-2"></div>
@@ -453,7 +480,7 @@ defmodule PicselloWeb.OnboardingLive.Mastermind.Index do
         socket
         |> assign(current_user: user)
         |> assign_step(step + 1)
-        |> assign_changeset(%{}, :mastermind)
+        |> assign_changeset(%{}, :three_month)
 
       {:error, reason} ->
         socket |> assign(changeset: reason)

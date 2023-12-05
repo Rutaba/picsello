@@ -136,7 +136,7 @@ defmodule Picsello.Contracts do
     from(contract in Contract,
       where:
         (contract.organization_id == ^package.organization_id and
-           (^job_type == contract.job_type or contract.job_type == "other")) or
+           (^job_type == contract.job_type or contract.job_type == "global")) or
           (is_nil(contract.organization_id) and is_nil(contract.package_id)),
       order_by: contract.name
     )

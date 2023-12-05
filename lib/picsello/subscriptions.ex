@@ -57,12 +57,22 @@ defmodule Picsello.Subscriptions do
   def sync_subscription_promotion_codes() do
     case Payments.list_promotion_codes(%{active: true, limit: 100}) do
       {:ok, %{data: promotion_codes}} ->
-        for %{code: code, coupon: %{id: id, percent_off: percent_off}} <-
+        for %{
+              code: code,
+              coupon: %{
+                id: id,
+                percent_off: percent_off,
+                amount_off: amount_off,
+                currency: currency
+              }
+            } <-
               promotion_codes do
           %{
             stripe_promotion_code_id: id,
             code: code,
-            percent_off: percent_off
+            percent_off: percent_off,
+            amount_off: amount_off,
+            currency: currency
           }
           |> SubscriptionPromotionCode.changeset()
           |> Repo.insert!(

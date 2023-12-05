@@ -120,6 +120,7 @@ defmodule PicselloWeb.Router do
     live("/product_pricing", Live.Admin.ProductPricing, :index)
     live("/product_pricing/:id", Live.Admin.ProductPricing, :show)
     live("/user", Live.Admin.User.Index, :index)
+    live("/user/subscription_report", Live.Admin.User.SubscriptionReport, :index)
     live("/user/:id/contact_upload", Live.Admin.User.ContactUpload, :show)
     live("/workers", Live.Admin.Workers, :index)
     live("/", Live.Admin.Index, :index)
@@ -240,6 +241,10 @@ defmodule PicselloWeb.Router do
       live("/onboarding/mastermind", OnboardingLive.Mastermind.Index, :index,
         as: :onboarding_mastermind
       )
+
+      live("/onboarding/three_month", OnboardingLive.ThreeMonth.Index, :index,
+        as: :onboarding_three_month
+      )
     end
   end
 
@@ -314,7 +319,6 @@ defmodule PicselloWeb.Router do
           end
 
           live("/paid", GalleryLive.ClientOrder, :paid)
-          get("/csv", GalleryDownloadsController, :download_csv)
 
           get(
             "/csv-lightroom",

@@ -251,10 +251,19 @@ defmodule PicselloWeb.BookingProposalLive.Show do
     |> apply(:open_modal_from_proposal, [socket, proposal, read_only])
   end
 
-  defp show_confetti_banner(%{assigns: %{job: %{shoots: shoots}}} = socket) do
+  defp show_confetti_banner(%{assigns: %{job: %{shoots: shoots, package: package}}} = socket) do
+    package_price = Picsello.Package.price(package)
+
+    inner_title =
+      if Money.zero?(package_price),
+        do:
+          "You can save and refer back to your client portal for shoot details and to contact me.",
+        else:
+          "If you opted to pay via cash or check, please arrange for payment at your earliest convenience. You can save and refer back to your client portal for shoot details, if additional payments are due, and to contact me."
+
     {title, subtitle} =
       {"Congratulations - your #{ngettext("session is", "sessions are", Enum.count(shoots))} now booked.",
-       "If you opted to pay via cash or check, please arrange for payment at your earliest convenience. You can save and refer back to your client portal for shoot details, if additional payments are due, and to contact me.
+       "#{inner_title}
 
 I look forward to capturing these memories for you!"}
 
@@ -391,7 +400,7 @@ I look forward to capturing these memories for you!"}
            presets: [],
            send_button: "Send",
            client: Job.client(job),
-           recipients: %{"from" => job.client.email},
+           recipients: %{"from" => job.client.email, "to" => current_user.email},
            current_user: current_user
          })
          |> noreply()

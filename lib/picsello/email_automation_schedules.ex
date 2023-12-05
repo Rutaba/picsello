@@ -264,7 +264,14 @@ defmodule Picsello.EmailAutomationSchedules do
       |> Repo.all()
       |> Enum.map(& &1.id)
 
-    email_ids |> Enum.map(fn id -> send_email_sechedule(id) end)
+    Enum.reduce_while(email_ids, {}, fn id, _acc ->
+      sent_email = send_email_sechedule(id)
+
+      case sent_email do
+        {:ok, _} -> {:cont, sent_email}
+        _ -> {:halt, sent_email}
+      end
+    end)
   end
 
   def send_all_global_emails() do
@@ -275,7 +282,14 @@ defmodule Picsello.EmailAutomationSchedules do
       |> Repo.all()
       |> Enum.map(& &1.id)
 
-    email_ids |> Enum.map(fn id -> send_email_sechedule(id) end)
+    Enum.reduce_while(email_ids, {}, fn id, _acc ->
+      sent_email = send_email_sechedule(id)
+
+      case sent_email do
+        {:ok, _} -> {:cont, sent_email}
+        _ -> {:halt, sent_email}
+      end
+    end)
   end
 
   def get_all_emails_schedules(organizations) do

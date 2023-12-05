@@ -258,21 +258,23 @@ defmodule Picsello.Workers.ScheduleAutomationEmail do
             ],
        do: true
 
+  ## This function will handle the all follow-up emails and
+  ## these emails are actually 'after-emails' i.e. 3-days after, 5-days after etc
   defp is_email_send_time(submit_time, _state, total_hours) do
     %{sign: sign} = EmailAutomations.explode_hours(total_hours)
+    sign = if total_hours == 0, do: "+", else: sign
     {:ok, current_time} = DateTime.now("Etc/UTC")
-    diff_seconds = DateTime.diff(current_time, submit_time, :second)
-    hours = div(diff_seconds, 3600)
-    before_after_send_time(sign, hours, abs(total_hours))
+    hours_diff = DateTime.diff(current_time, submit_time, :hour)
+    before_after_send_time(sign, hours_diff, abs(total_hours))
   end
 
-  defp before_after_send_time(_sign, hours, 0) when hours > 0, do: true
+  ## This will only trigger when time is strictly matching + 2 hour buffer i.e.
+  ## if the email was to be sent 1 hours after then it will handle it upto 3 hours buffer
+  defp before_after_send_time("+", hours_diff, hours_to_compare),
+    do: hours_diff >= hours_to_compare && hours_diff <= hours_to_compare + 2
 
-  defp before_after_send_time("+", hours, total_hours),
-    do: if(hours >= total_hours, do: true, else: false)
-
-  defp before_after_send_time("-", hours, total_hours),
-    do: if(hours <= total_hours, do: true, else: false)
+  defp before_after_send_time("-", _days_diff, _days_to_compare),
+    do: false
 
   defp get_subjects_for_job_pipeline(emails) do
     emails

@@ -79,7 +79,7 @@ defmodule Picsello.ContractsIndexTest do
       &(&1
         |> assert_text("Edit Contract")
         |> fill_in(text_field("Name"), with: "Duplicate Contract")
-        |> click(css("label", text: "Other"))
+        |> click(css("label", text: "Global"))
         |> wait_for_enabled_submit_button()
         |> click(button("Save")))
     )
@@ -96,7 +96,7 @@ defmodule Picsello.ContractsIndexTest do
 
     assert %Contract{
              name: "Duplicate Contract",
-             job_type: "other",
+             job_type: "global",
              content: "<p>the greatest contract ever</p>"
            } = contract
 
