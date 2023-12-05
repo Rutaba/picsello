@@ -59,6 +59,7 @@ defmodule Picsello.Workers.ScheduleAutomationEmail do
     end)
   end
 
+  ## This will trigger for specified states whenever the gallery is nil
   defp send_email_by(_job, nil, %{state: state}, _is_approval_required?)
        when state in [
               :order_arrived,
@@ -191,9 +192,11 @@ defmodule Picsello.Workers.ScheduleAutomationEmail do
     type = if order, do: :order, else: type
     state = if is_atom(state), do: state, else: String.to_atom(state)
 
+    ## fetches the datetime on the basis of which email will be sent
     job_date_time =
       Shared.fetch_date_for_state_maybe_manual(state, schedule, pipeline_id, job, gallery, order)
 
+    ## Determines whether the email should be sent
     is_send_time = is_email_send_time(job_date_time, state, schedule.total_hours)
 
     if is_send_time and is_nil(schedule.reminded_at) and is_nil(schedule.stopped_at) do
@@ -206,8 +209,10 @@ defmodule Picsello.Workers.ScheduleAutomationEmail do
      email_schedule.email_automation_pipeline_id}
   end
 
+  ## Always return false whenever the submit_time is nil
   defp is_email_send_time(nil, _state, _total_hours), do: false
 
+  ## Always send true whenever the states are in [:shoot_thanks, :post_shoot, :before_shoot, :gallery_expiration_soon, :after_gallery_send_feedback]
   defp is_email_send_time(_submit_time, state, _total_hours)
        when state in [
               :shoot_thanks,

@@ -54,6 +54,7 @@ defmodule Picsello.EmailAutomations do
   end
 
   def get_sub_categories(), do: from(EmailAutomationSubCategory) |> Repo.all()
+
   def get_pipeline_by_id(id),
     do: from(eap in EmailAutomationPipeline, where: eap.id == ^id) |> Repo.one()
 
@@ -402,6 +403,7 @@ defmodule Picsello.EmailAutomations do
   defp calendar_text("Month", count, helpers), do: helpers.ngettext("month", "months", count)
   defp calendar_text("Year", count, helpers), do: helpers.ngettext("year", "years", count)
 
+  ## Explodes a given number of hours into a human-readable time breakdown.
   def explode_hours(hours) do
     year = 365 * 24
     month = 30 * 24
