@@ -173,6 +173,13 @@ defmodule PicselloWeb.GalleryLive.PhotographerIndex do
     make_popup(socket, opts)
   end
 
+  @impl true
+  def handle_event("gallery_password",%{"_target" => ["is_password"], "is_password" => password},  %{assigns: %{gallery: gallery}} = socket) do
+  gallery
+  |> Galleries.update_gallery(%{is_password:  String.to_atom(password)})
+   socket |> noreply()
+  end
+
   def handle_cover_progress(:cover_photo, entry, %{assigns: %{gallery: gallery}} = socket) do
     if entry.done? do
       CoverPhoto.original_path(gallery.id, entry.uuid)

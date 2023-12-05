@@ -85,6 +85,12 @@
                      id: "gallery-analytics-#{@gallery.id}",
                      gallery: @gallery,
                      user: @user %>
+
+                  <div>
+                     <.form :let={f} for={%{}} class="contents" phx-change="gallery_password" >
+                       <%= checkbox f, :is_password, value: @gallery.is_password, class: "checkbox", phx_debounce: 200 %>
+                     </.form>
+                  </div>
                </div>
                <div class="galleryManagePassword xl:col-start-1 xl:col-end-2 xl:row-start-2 xl:row-end-3">
                   <%= live_component PicselloWeb.GalleryLive.Settings.ManagePasswordComponent, id: @gallery.id, gallery: @gallery %>
