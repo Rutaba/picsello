@@ -2,7 +2,6 @@ defmodule PicselloWeb.Live.EmailAutomations.Index do
   @moduledoc false
   use PicselloWeb, :live_view
   import PicselloWeb.Live.Calendar.Shared, only: [back_button: 1]
-  import PicselloWeb.LiveHelpers
 
   import PicselloWeb.EmailAutomationLive.Shared,
     only: [
@@ -15,9 +14,16 @@ defmodule PicselloWeb.Live.EmailAutomations.Index do
       get_email_name: 4
     ]
 
+  import PicselloWeb.LiveHelpers
+
   alias Picsello.{EmailAutomations, Repo}
-  alias PicselloWeb.ConfirmationComponent
-  alias PicselloWeb.EmailAutomationLive.{EditTimeComponent, EditEmailComponent, AddEmailComponent}
+
+  alias PicselloWeb.{
+    ConfirmationComponent,
+    EmailAutomationLive.EditTimeComponent,
+    EmailAutomationLive.EditEmailComponent,
+    EmailAutomationLive.AddEmailComponent
+  }
 
   @always_enabled_states ~w(digitals_ready_download order_confirmation_digital_physical thanks_booking thanks_job pays_retainer_offline pays_retainer)
   @impl true
@@ -142,11 +148,9 @@ defmodule PicselloWeb.Live.EmailAutomations.Index do
         %{assigns: %{collapsed_sections: collapsed_sections}} = socket
       ) do
     collapsed_sections =
-      if Enum.member?(collapsed_sections, section_id) do
-        Enum.filter(collapsed_sections, &(&1 != section_id))
-      else
-        collapsed_sections ++ [section_id]
-      end
+      if Enum.member?(collapsed_sections, section_id),
+        do: Enum.filter(collapsed_sections, &(&1 != section_id)),
+        else: collapsed_sections ++ [section_id]
 
     socket
     |> assign(:collapsed_sections, collapsed_sections)
