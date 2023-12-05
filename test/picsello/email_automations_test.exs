@@ -1084,12 +1084,7 @@ defmodule Picsello.EmailAutomationsTest do
 
   defp stop_email(email) do
     schedule_query = EmailAutomationSchedules.get_schedule_by_id_query(email.id)
-
-    EmailAutomationSchedules.delete_and_insert_schedules_by_multi(
-      schedule_query,
-      :photographer_stopped
-    )
-    |> Repo.transaction()
+    EmailAutomationSchedules.delete_and_insert_schedules_by(schedule_query, :photographer_stopped)
   end
 
   defp fetch_all_send_emails_count() do
@@ -1171,11 +1166,10 @@ defmodule Picsello.EmailAutomationsTest do
   defp stop_archived_emails(job) do
     email_schedules_query = from(es in EmailSchedule, where: es.job_id == ^job.id)
 
-    EmailAutomationSchedules.delete_and_insert_schedules_by_multi(
+    EmailAutomationSchedules.delete_and_insert_schedules_by(
       email_schedules_query,
       :archived
     )
-    |> Repo.transaction()
   end
 
   defp update_schedule_history(reminded_at) do

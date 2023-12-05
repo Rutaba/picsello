@@ -62,7 +62,7 @@ defmodule PicselloWeb.ConfirmationComponent do
       <% end %>
 
       <%= if @close_event do %>
-        <button id="cancel-button" phx-hook="PreserveToggleState" class={"w-full mt-6 " <> @close_class} title={@close_label} type="button" phx-click={"close_event"} phx-target={@myself}>
+        <button class={"w-full mt-6 " <> @close_class} title={@close_label} type="button" phx-click={"close_event"} phx-target={@myself}>
           <%= @close_label %>
         </button>
         <% else %>

@@ -2,7 +2,7 @@ defmodule Picsello.Organization do
   @moduledoc false
   use Ecto.Schema
   import Ecto.Changeset
-  import Ecto.Query
+  import Ecto.Query, only: [from: 2]
 
   alias Picsello.{
     PackagePaymentPreset,
@@ -107,7 +107,7 @@ defmodule Picsello.Organization do
     field(:stripe_account_id, :string)
     field(:slug, :string)
     field(:previous_slug, :string)
-    field(:global_automation_enabled, :boolean, default: true)
+
     embeds_one(:profile, Profile, on_replace: :update)
     embeds_one(:email_signature, EmailSignature, on_replace: :update)
     embeds_one(:payment_options, PaymentOptions, on_replace: :update)
@@ -281,14 +281,3 @@ defmodule Picsello.Organization do
       |> put_change(:previous_slug, get_field(changeset, :slug))
       |> put_change(:slug, changeset |> get_field(:name) |> build_slug())
 end
-
-# global_automation_enabled default true
-
-# when turns off
-# disable all automation emails for this organization
-# -> for manuall trigger emails confirm case when all emails diabsle how they works
-# -> if no email found then fetch default email where org_id nil
-# stopped all active emails with condition :gloabally_stopped
-# when turns on
-# enable all disabled emails for this organization
-# revert all those emails which have gloabally_stopped

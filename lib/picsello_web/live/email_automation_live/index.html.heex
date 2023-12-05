@@ -8,7 +8,7 @@
   </div>
 
   <hr class="mt-2 border-white" />
-  <div class="flex flex-col justify-between lg:mt-2">
+  <div class="flex justify-between lg:mt-2 md:justify-start">
     <div class="flex">
       <div>
         <.back_button to={Routes.home_path(@socket, :index)} class="hidden lg:flex mt-2"/>
@@ -16,34 +16,14 @@
       <div>
         <div class="flex items-center flex-wrap">
           <h1 class="text-4xl font-bold">Your Email Automations</h1>
-          <div class="bg-blue-planning-300 pt-0.5 pb-1 px-2 text-blue-planning-100 mt-1 sm:mt-0 ml-2 uppercase font-bold text-xs rounded-md tracking-wider">Beta</div>
+          <div class="bg-blue-planning-300 pt-0.5 pb-1 px-2 text-blue-planning-100 mt-1 sm:mt-0 sm:ml-2 uppercase font-bold text-xs rounded-md tracking-wider">Beta</div>
         </div>
         <div class="max-w-4xl mt-2 text-base-250">
           <p>Email automation sequences scheduled to send globally for all your Leads, Jobs and Galleries. “Set and forget” these sequences globally here to increase your productivity and make sure communications to your client are sent when you want and need them to be.</p>
         </div>
-      </div>
-    </div>
-
-    <div class="flex flex-row lg:ml-12 mt-4">
-      <.form :let={_} for={%{}} as={:toggle} phx-click="toggle_global" phx-value-active={@global_automation_enabled |> to_string}>
-        <label class="flex">
-          <input type="checkbox" class="peer hidden" checked={@global_automation_enabled} value={@global_automation_enabled} id="toggle-button"/>
-          <div testid={"enable-global"} class="hidden peer-checked:flex">
-            <div class="rounded-full bg-blue-planning-300 border border-base-100 w-12 p-1 flex justify-end mr-4 hover:cursor-pointer">
-              <div class="rounded-full h-5 w-5 bg-base-100"></div>
-            </div>
-            <span class="md:flex-shrink-0">Enable Global Automation</span>
-          </div>
-          <div testid={"disable-global"} class="flex peer-checked:hidden">
-            <div class="rounded-full w-12 p-1 flex mr-4 border border-blue-planning-300 hover:cursor-pointer">
-              <div class="rounded-full h-5 w-5 bg-blue-planning-300"></div>
-            </div>
-            <span class="md:flex-shrink-0">Disable Global Automation</span>
-          </div>
-        </label>
-      </.form>
     </div>
   </div>
+</div>
 
 <hr class="mt-4 sm:mt-10" />
 
