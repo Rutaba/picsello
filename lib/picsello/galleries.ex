@@ -1324,7 +1324,7 @@ defmodule Picsello.Galleries do
         %Gallery{id: id, is_password: false} = gallery,
         email
       ) do
-      with {:ok, %{token: token}} <-
+    with {:ok, %{token: token}} <-
            insert_session_token(%{resource_id: id, resource_type: :gallery, email: email}),
          {:ok, _} <- insert_gallery_client(gallery, email) do
       {:ok, token}

@@ -73,7 +73,9 @@ defmodule PicselloWeb.GalleryLive.Settings.ManagePasswordComponent do
       <div class="flex justify-between">
         <h3 class="font-sans">Gallery password</h3>
          <%= if !@gallery.is_password do %>
-          <div class= "bg-base-250/10 rounded-lg font-bold text-red-sales-300 px-2 h-8">Password Disabled</div>
+          <div class= "bg-red-sales-100 rounded-lg font-bold text-red-sales-300 px-2 py-1 h-fit">Password Disabled</div>
+        <% else %>
+          <div class= "bg-blue-planning-100 rounded-lg font-bold text-blue-planning-300 px-2 py-1 h-fit">Password Enabled</div>
         <% end %>
       </div>
       <div class="relative">
