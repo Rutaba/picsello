@@ -33,7 +33,8 @@ defmodule PicselloWeb.GalleryLive.Settings.ManagePasswordComponent do
       ) do
     password = String.to_atom(password)
 
-   {:ok, gallery} = Galleries.update_gallery(gallery, %{is_password: password})
+    {:ok, gallery} = Galleries.update_gallery(gallery, %{is_password: password})
+
     socket
     |> assign(:is_password, password)
     |> assign(:gallery, gallery)
@@ -58,6 +59,8 @@ defmodule PicselloWeb.GalleryLive.Settings.ManagePasswordComponent do
 
   def handle_event("save", _params, %{assigns: %{gallery: gallery, password: password}} = socket) do
     {:ok, gallery} = Galleries.update_gallery(gallery, %{password: password})
+    send(self(), :gallery_password)
+
     socket
     |> assign(:gallery, gallery)
     |> noreply
@@ -67,7 +70,12 @@ defmodule PicselloWeb.GalleryLive.Settings.ManagePasswordComponent do
   def render(assigns) do
     ~H"""
     <div>
-      <h3 class="font-sans">Gallery password</h3>
+      <div class="flex justify-between">
+        <h3 class="font-sans">Gallery password</h3>
+         <%= if !@gallery.is_password do %>
+          <div class= "bg-base-250/10 rounded-lg font-bold text-red-sales-300 px-2 h-8">Password Disabled</div>
+        <% end %>
+      </div>
       <div class="relative">
         <.form :let={f} for={@password_changeset} phx-change="validate" phx-submit="save" phx-target={@myself} >
           <%= error_tag f, :password, class: "text-red-sales-300" %>
@@ -78,7 +86,7 @@ defmodule PicselloWeb.GalleryLive.Settings.ManagePasswordComponent do
             <%= password_input f, :password, value: @password, disabled: !@is_password,  phx_debounce: "500", id: "galleryPasswordInput",
             class: "gallerySettingsInput font-sans" %>
           <% end %>
-          <a phx-click="toggle_visibility" phx-target={@myself} class=" flex flex-col absolute h-8 -translate-y-1/2 right-5 top-8" id="togglePasswordVisibility">
+          <a phx-click="toggle_visibility" phx-target={@myself} class=" absolute h-8 -translate-y-1/2 right-5 top-8" id="togglePasswordVisibility">
             <%= if @visibility do %>
               <.icon name="eye" class="w-5 h-full ml-1 text-base-250 cursor-pointer"/>
             <% else %>
@@ -90,7 +98,7 @@ defmodule PicselloWeb.GalleryLive.Settings.ManagePasswordComponent do
             <div class="flex items-center">
               <%= checkbox f, :is_password, value: @gallery.is_password, class: "w-6 h-6 mr-3 checkbox-exp cursor-pointer", phx_debounce: 200 %>
               <label class={classes("", %{"text-gray-400 cursor-default" => !@gallery.is_password})}>
-                    Include Password
+              Password protect gallery
               </label>
             </div>
             <%= submit "Save", class: "btn-settings w-32  px-11", disabled: (@is_password || @password_changeset.valid?) && not (@is_password && @password_changeset.valid?), phx_disable_with: "Saving..." %>

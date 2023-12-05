@@ -305,10 +305,7 @@ defmodule PicselloWeb.GalleryLive.PhotographerIndex do
 
   @impl true
   def handle_info(:expiration_saved, %{assigns: %{gallery: gallery}} = socket) do
-    gallery =
-      Galleries.get_gallery!(gallery.id)
-      |> Galleries.load_watermark_in_gallery()
-      |> Repo.preload(:photographer, job: :client)
+    gallery = get_gallery!(gallery.id)
 
     socket
     |> assign(:gallery, gallery)
@@ -316,11 +313,17 @@ defmodule PicselloWeb.GalleryLive.PhotographerIndex do
     |> noreply()
   end
 
+  @impl true
+  def handle_info(:gallery_password, %{assigns: %{gallery: gallery}} = socket) do
+    gallery = get_gallery!(gallery.id)
+
+    socket
+    |> assign(:gallery, gallery)
+    |> noreply()
+  end
+
   def handle_info({:cover_photo_processed, _, _}, %{assigns: %{gallery: gallery}} = socket) do
-    gallery =
-      Galleries.get_gallery!(gallery.id)
-      |> Galleries.load_watermark_in_gallery()
-      |> Repo.preload(:photographer, job: :client)
+    gallery = get_gallery!(gallery.id)
 
     socket
     |> assign(:gallery, gallery)
@@ -512,4 +515,10 @@ defmodule PicselloWeb.GalleryLive.PhotographerIndex do
 
   @impl true
   defdelegate handle_event(event, params, socket), to: PicselloWeb.GalleryLive.Shared
+
+  def get_gallery!(id),
+    do:
+      Galleries.get_gallery!(id)
+      |> Galleries.load_watermark_in_gallery()
+      |> Repo.preload(:photographer, job: :client)
 end

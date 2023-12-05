@@ -40,7 +40,7 @@ defmodule PicselloWeb.GalleryLive.Shared do
 
   @card_blank "/images/card_gray.png"
   @per_page 12
-
+  @password_pattern ~r/<p><span style="color: rgb\(0, 0, 0\);">Please remember that your photos are password-protected, and you'll need this password to access them: <strong>.*?<\/strong> <\/span><\/p>/
   def handle_event(
         "client-link",
         _,
@@ -75,11 +75,18 @@ defmodule PicselloWeb.GalleryLive.Shared do
 
         body_html = Utils.normalize_body_template(body_html)
 
+        cleaned_body_html =
+          if gallery.is_password do
+            body_html
+          else
+            Regex.replace(@password_pattern, body_html, "")
+          end
+
         socket
         |> assign(:job, gallery.job)
         |> assign(:gallery, gallery)
         |> PicselloWeb.ClientMessageComponent.open(%{
-          body_html: body_html,
+          body_html: cleaned_body_html,
           subject: subject,
           modal_title: modal_title(type),
           presets: [],
