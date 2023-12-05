@@ -85,6 +85,7 @@ import Timer from './hooks/timer';
 import LivePhone from 'live_phone';
 import ViewProposal from './hooks/view_proposal';
 import OpenCompose from './hooks/open_compose';
+import CollapseSidebar from './hooks/collapse-sidebar';
 
 const Modal = {
   mounted() {
@@ -285,7 +286,8 @@ const Hooks = {
   Timer,
   LivePhone,
   ViewProposal,
-  OpenCompose
+  OpenCompose,
+  CollapseSidebar,
 };
 
 window.addEventListener(`phx:download`, (event) => {
