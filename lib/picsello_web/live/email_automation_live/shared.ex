@@ -14,7 +14,6 @@ defmodule PicselloWeb.EmailAutomationLive.Shared do
     Marketing,
     Shoots,
     PaymentSchedules,
-    PaymentSchedule,
     EmailPresets.EmailPreset,
     EmailAutomations,
     EmailAutomationSchedules,
@@ -104,7 +103,7 @@ defmodule PicselloWeb.EmailAutomationLive.Shared do
 
   The sign options are determined as follows:
       - If the `state` is "before_shoot" or "gallery_expiration_soon", it returns options for "Before" and "After".
-      - If the `state` is "balance_due" or "offline_payment", it returns options for "Before" and "After" with the "After" option enabled.
+      - If the `state` is "balance_due" or "balance_due_offline", it returns options for "Before" and "After" with the "After" option enabled.
       - For any other `state`, it returns options for "Before" and "After" with the "Before" option disabled.
 
   ## Parameters
@@ -124,7 +123,7 @@ defmodule PicselloWeb.EmailAutomationLive.Shared do
       state in ["before_shoot", "gallery_expiration_soon"] ->
         [[key: "Before", value: "-"], [key: "After", value: "+", disabled: true]]
 
-      state in ["balance_due", "offline_payment"] ->
+      state in ["balance_due", "balance_due_offline"] ->
         [[key: "Before", value: "-"], [key: "After", value: "+"]]
 
       true ->
@@ -573,75 +572,10 @@ defmodule PicselloWeb.EmailAutomationLive.Shared do
     get_date_for_schedule(last_completed_email, lead_date)
   end
 
-  def fetch_date_for_state(:thanks_booking, _email, last_completed_email, job, _gallery, _order) do
-    payment_schedules = PaymentSchedules.payment_schedules(job)
-    any_with_cash? = PaymentSchedules.is_with_cash?(job)
-
-    paid_at =
-      payment_schedules
-      |> Enum.filter(&(!is_nil(&1.paid_at)))
-
-    cond do
-      Enum.any?(paid_at) ->
-        payment_date = paid_at |> List.first() |> Map.get(:paid_at)
-        get_date_for_schedule(last_completed_email, payment_date)
-
-      any_with_cash? ->
-        payment_date = payment_schedules |> List.first() |> Map.get(:inserted_at)
-        get_date_for_schedule(last_completed_email, payment_date)
-
-      PaymentSchedules.all_paid?(job) ->
-        get_date_for_schedule(last_completed_email, DateTime.utc_now())
-
-      true ->
-        nil
-    end
-  end
-
-  def fetch_date_for_state(:pays_retainer, _email, last_completed_email, job, _gallery, _order) do
-    payment_schedules = PaymentSchedules.payment_schedules(job)
-
-    online_pays =
-      payment_schedules
-      |> Enum.filter(&(!is_nil(&1.paid_at) and &1.type == "stripe"))
-      |> Enum.sort_by(& &1.paid_at, :asc)
-
-    if Enum.any?(online_pays) and !PaymentSchedules.all_paid?(job) do
-      payment_date = online_pays |> List.first() |> Map.get(:paid_at)
-      get_date_for_schedule(last_completed_email, payment_date)
-    else
-      nil
-    end
-  end
-
   def fetch_date_for_state(:abandoned_emails, _email, last_completed_email, job, _gallery, _order) do
     if is_nil(job.archived_at),
       do: nil,
       else: get_date_for_schedule(last_completed_email, job.archived_at)
-  end
-
-  def fetch_date_for_state(
-        :pays_retainer_offline,
-        _email,
-        last_completed_email,
-        job,
-        _gallery,
-        _order
-      ) do
-    payment_schedules = PaymentSchedules.payment_schedules(job)
-
-    offline_pays =
-      payment_schedules
-      |> Enum.filter(&(!is_nil(&1.paid_at) and &1.type != "stripe"))
-      |> Enum.sort_by(& &1.paid_at, :asc)
-
-    if Enum.any?(offline_pays) and !PaymentSchedules.all_paid?(job) do
-      payment_offline = offline_pays |> List.first() |> Map.get(:paid_at)
-
-      get_date_for_schedule(last_completed_email, payment_offline)
-    else
-      nil
-    end
   end
 
   def fetch_date_for_state(:before_shoot, email, _last_completed_email, job, _gallery, _order) do
@@ -695,7 +629,14 @@ defmodule PicselloWeb.EmailAutomationLive.Shared do
     end
   end
 
-  def fetch_date_for_state(:offline_payment, _email, last_completed_email, job, _gallery, _order) do
+  def fetch_date_for_state(
+        :balance_due_offline,
+        _email,
+        last_completed_email,
+        job,
+        _gallery,
+        _order
+      ) do
     invoiced_due_date = PaymentSchedules.remainder_due_on(job)
 
     offline_dues =
@@ -707,41 +648,6 @@ defmodule PicselloWeb.EmailAutomationLive.Shared do
       due_at = List.first(offline_dues) |> Map.get(:due_at)
 
       get_date_for_schedule(last_completed_email, due_at)
-    else
-      nil
-    end
-  end
-
-  def fetch_date_for_state(:paid_full, _email, last_completed_email, job, _gallery, _order) do
-    payment_schedules =
-      PaymentSchedules.payment_schedules(job) |> Enum.sort_by(& &1.updated_at, :desc)
-
-    # Trigger when all paid & last payment is paid by stripe
-    if Enum.any?(payment_schedules) and PaymentSchedules.all_paid?(job) do
-      payment_schedule = payment_schedules |> List.first()
-      paid_at = paid_online(payment_schedule)
-      get_date_for_schedule(last_completed_email, paid_at)
-    else
-      nil
-    end
-  end
-
-  def fetch_date_for_state(
-        :paid_offline_full,
-        _email,
-        last_completed_email,
-        job,
-        _gallery,
-        _order
-      ) do
-    payment_schedules =
-      PaymentSchedules.payment_schedules(job) |> Enum.sort_by(& &1.updated_at, :desc)
-
-    # Trigger when all paid & last payment is paid by cash/check
-    if Enum.any?(payment_schedules) and PaymentSchedules.all_paid?(job) do
-      payment_schedule = payment_schedules |> List.first()
-      paid_at = paid_offline(payment_schedule)
-      get_date_for_schedule(last_completed_email, paid_at)
     else
       nil
     end
@@ -909,10 +815,4 @@ defmodule PicselloWeb.EmailAutomationLive.Shared do
   defp get_gallery_id(gallery, _order) when is_map(gallery), do: gallery.id
   defp get_gallery_id(_gallery, order) when is_map(order), do: order.gallery.id
   defp get_gallery_id(_gallery, _order), do: nil
-
-  defp paid_online(%PaymentSchedule{type: "stripe", paid_at: paid_at}), do: paid_at
-  defp paid_online(%PaymentSchedule{type: _type}), do: nil
-
-  defp paid_offline(%PaymentSchedule{type: "stripe"}), do: nil
-  defp paid_offline(%PaymentSchedule{type: _type, paid_at: paid_at}), do: paid_at
 end

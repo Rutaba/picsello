@@ -13,6 +13,7 @@ defmodule Picsello.Profiles do
     Client,
     Accounts.User,
     Notifiers.UserNotifier,
+    EmailAutomations,
     EmailAutomation.EmailSchedule,
     EmailAutomationSchedules
   }
@@ -209,9 +210,7 @@ defmodule Picsello.Profiles do
               job.client.organization.id,
               job.id,
               :lead,
-              [
-                :abandoned_emails
-              ]
+              [:abandoned_emails]
             )
           end)
           |> Ecto.Multi.insert(
@@ -229,7 +228,8 @@ defmodule Picsello.Profiles do
             :email,
             fn _, changes ->
               UserNotifier.deliver_new_lead_email(changes.lead, contact.message, helpers)
-
+              # Send immediately client contact Automations email
+              EmailAutomations.send_schedule_email(changes.lead, :client_contact)
               {:ok, :email}
             end
           )

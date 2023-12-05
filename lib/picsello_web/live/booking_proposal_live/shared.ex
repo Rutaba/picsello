@@ -22,7 +22,16 @@ defmodule PicselloWeb.BookingProposalLive.Shared do
 
   import PicselloWeb.Gettext, only: [dyn_gettext: 1, ngettext: 3]
 
-  alias Picsello.{PaymentSchedules, Job, Package, Packages, EmailAutomationSchedules}
+  alias Picsello.{
+    PaymentSchedules,
+    Job,
+    Package,
+    Packages,
+    Notifiers,
+    EmailAutomations,
+    EmailAutomationSchedules
+  }
+
   alias PicselloWeb.Router.Helpers, as: Routes
 
   def banner(assigns) do
@@ -378,7 +387,7 @@ defmodule PicselloWeb.BookingProposalLive.Shared do
     end
   end
 
-  def handle_offline_checkout(socket, job, _proposal) do
+  def handle_offline_checkout(socket, job, proposal) do
     if PaymentSchedules.free?(job) do
       finish_booking(socket) |> noreply()
     else
@@ -386,10 +395,14 @@ defmodule PicselloWeb.BookingProposalLive.Shared do
       # stopped all active proposal emails when offline checkout
       _stopped_emails = EmailAutomationSchedules.stopped_all_active_proposal_emails(job.id)
 
-      # No need to call old emails as we have automation emails for blance due
+      # No need to call old emails as we have automation emails to clients
       # Notifiers.ClientNotifier.deliver_payment_due(proposal)
       # Notifiers.ClientNotifier.deliver_paying_by_invoice(proposal)
-      # Notifiers.UserNotifier.deliver_paying_by_invoice(proposal)
+
+      Notifiers.UserNotifier.deliver_paying_by_invoice(proposal)
+
+      # Send immediately balance due offline Automations email
+      EmailAutomations.send_schedule_email(job, :balance_due_offline)
 
       send(self(), {:update_offline_payment_schedules})
 
