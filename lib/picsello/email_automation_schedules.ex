@@ -181,6 +181,23 @@ defmodule Picsello.EmailAutomationSchedules do
     end)
   end
 
+  def stop_all_emails_of_organization(organization_id, reason) do
+    email_ids =
+      get_all_emails_schedules_query([organization_id])
+      |> where([schedule], schedule.approval_required == true)
+      |> Repo.all()
+      |> Enum.map(& &1.id)
+
+    Enum.reduce_while(email_ids, {}, fn id, _acc ->
+      stopped_email = stop_email_sechedule(id, reason)
+
+      case stopped_email do
+        {:ok, _} -> {:cont, stopped_email}
+        _ -> {:halt, stopped_email}
+      end
+    end)
+  end
+
   def get_all_emails_schedules(organizations) do
     get_all_emails_schedules_query(organizations)
     |> where([schedule], schedule.approval_required == false)
@@ -194,8 +211,10 @@ defmodule Picsello.EmailAutomationSchedules do
     )
     |> preload(organization: [:user])
     |> Repo.all()
-    |> Enum.group_by(&{&1.organization.id, &1.organization.name, &1.organization.user.email})
-    |> Enum.map(fn {{id, name, email}, emails} ->
+    |> Enum.group_by(&{&1.organization.id, &1.organization.name, &1.organization.user})
+    |> Enum.map(fn {{id, name, user}, emails} ->
+      email = if user, do: user.email, else: nil
+
       %{
         id: id,
         name: name,
@@ -796,6 +815,13 @@ defmodule Picsello.EmailAutomationSchedules do
           email.order_id
         )
     end
+  end
+
+  def stop_email_sechedule(email_id, reason) do
+    email_id
+    |> get_schedule_by_id_query()
+    |> delete_and_insert_schedules_by_multi(reason)
+    |> Repo.transaction()
   end
 
   defp send_email(:job, category_type, email, job, state, _order_id) do

@@ -161,36 +161,6 @@ defmodule PicselloWeb.Live.EmailAutomations.Show do
     [id, _pipeline_id] = String.split(param, "-")
     id = to_integer(id)
 
-    # TODO: Needs to remove after verfiy send emails manually
-    # pipeline_id = to_integer(pipeline_id)
-
-    # email =
-    #   EmailAutomationSchedules.get_schedule_by_id(id)
-    #   |> Repo.preload(email_automation_pipeline: [:email_automation_category])
-    # pipeline = email.email_automation_pipeline
-    # # pipeline = get_pipline(email.email_automation_pipeline_id)
-
-    # case email.gallery_id do
-    #   nil ->
-    #     job =
-    #       Jobs.get_job_by_id(job_id)
-    #       |> Repo.preload([:payment_schedules, :job_status, client: :organization])
-
-    #     send_email(:job, pipeline.email_automation_category.type, email, job, pipeline.state, nil)
-
-    #   id ->
-    #     gallery = Galleries.get_gallery!(id)
-
-    #     send_email(
-    #       :gallery,
-    #       pipeline.email_automation_category.type,
-    #       email,
-    #       gallery,
-    #       pipeline.state,
-    #       email.order_id
-    #     )
-    # end
-
     EmailAutomationSchedules.send_email_sechedule(id)
     |> case do
       {:ok, _} ->
@@ -208,16 +178,12 @@ defmodule PicselloWeb.Live.EmailAutomations.Show do
 
   @impl true
   def handle_info({:confirm_event, "stop-email-schedule-" <> id}, socket) do
-    schedule_query = EmailAutomationSchedules.get_schedule_by_id_query(String.to_integer(id))
+    stopped_email =
+      id
+      |> to_integer()
+      |> EmailAutomationSchedules.stop_email_sechedule(:photographer_stopped)
 
-    multi =
-      EmailAutomationSchedules.delete_and_insert_schedules_by_multi(
-        schedule_query,
-        :photographer_stopped
-      )
-      |> Repo.transaction()
-
-    case multi do
+    case stopped_email do
       {:ok, _} -> socket |> put_flash(:success, "Email Stopped Successfully")
       _ -> socket |> put_flash(:error, "Error in Updating Email")
     end
