@@ -87,11 +87,9 @@ defmodule PicselloWeb.BookingProposalLive.InvoiceComponent do
         %{},
         %{assigns: %{job: job, proposal: proposal, organization: organization}} = socket
       ) do
-    handle_checkout(socket, job)
     insert_job_emails(job.type, organization.id, job.id, :job, [])
-    # send thanks booking or thanks job when proposal accepts of zero package or pay with stripe
     send_thanks_email(proposal)
-    socket |> noreply()
+    handle_checkout(socket, job)
   end
 
   def handle_event(
