@@ -210,10 +210,14 @@ defmodule PicselloWeb.Live.EmailAutomations.Show do
   def handle_info({:confirm_event, "stop-email-schedule-" <> id}, socket) do
     schedule_query = EmailAutomationSchedules.get_schedule_by_id_query(String.to_integer(id))
 
-    case EmailAutomationSchedules.delete_and_insert_schedules_by(
-           schedule_query,
-           :photographer_stopped
-         ) do
+    multi =
+      EmailAutomationSchedules.delete_and_insert_schedules_by_multi(
+        schedule_query,
+        :photographer_stopped
+      )
+      |> Repo.transaction()
+
+    case multi do
       {:ok, _} -> socket |> put_flash(:success, "Email Stopped Successfully")
       _ -> socket |> put_flash(:error, "Error in Updating Email")
     end
@@ -523,7 +527,8 @@ defmodule PicselloWeb.Live.EmailAutomations.Show do
     "gallery_already_shared_because_order_placed" => "Gallery has already been shared",
     "archived" => "Archived",
     "completed" => "Completed",
-    "lead_converted_to_job" => "Lead has been converted to job"
+    "lead_converted_to_job" => "Lead has been converted to job",
+    "globally_stopped" => "Globally Stopped"
   }
   def stop_reason_text(status), do: Map.get(@status_texts, status, "")
 end

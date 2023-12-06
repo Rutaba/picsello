@@ -409,7 +409,9 @@ defmodule PicselloWeb.EmailAutomationLive.Shared do
     cart_abandoned =
       Enum.map(gallery.orders, fn order ->
         order = Repo.preload(order, [:digitals, :intent])
-        if is_nil(order.placed_at) and is_nil(order.intent) and Enum.any?(order.digitals), do: order
+
+        if is_nil(order.placed_at) and is_nil(order.intent) and Enum.any?(order.digitals),
+          do: order
       end)
       |> Enum.filter(&(not is_nil(&1)))
       |> hd()

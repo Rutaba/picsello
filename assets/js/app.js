@@ -233,6 +233,15 @@ const showAdminBanner = {
   },
 };
 
+const PreserveToggleState = {
+  mounted() {
+    this.el.addEventListener('click', (e) => {
+      var checked_value = document.getElementById("toggle-button").checked
+      document.getElementById("toggle-button").checked = !checked_value
+    })
+  },
+};
+
 const Hooks = {
   AutoHeight,
   Calendar,
@@ -286,6 +295,7 @@ const Hooks = {
   Timer,
   LivePhone,
   ViewProposal,
+  PreserveToggleState,
   OpenCompose,
   CollapseSidebar,
 };

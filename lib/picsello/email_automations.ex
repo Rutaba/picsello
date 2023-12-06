@@ -12,8 +12,10 @@ defmodule Picsello.EmailAutomations do
     Galleries,
     Orders,
     EmailAutomationSchedules,
+    EmailAutomation.EmailScheduleHistory,
     Notifiers.EmailAutomationNotifier,
     EmailPresets,
+    Organization,
     PaymentSchedule,
     PaymentSchedules
   }
@@ -23,6 +25,8 @@ defmodule Picsello.EmailAutomations do
     EmailAutomationPipeline,
     EmailAutomationSubCategory
   }
+
+  alias Ecto.Multi
 
   @doc """
   Retrieves email presets for scheduling based on the provided organization, job type,
@@ -146,6 +150,59 @@ defmodule Picsello.EmailAutomations do
         :job_status,
         client: :organization
       ])
+
+  def update_globally_automations_emails(organization_id, "disabled") do
+    email_schedules_query =
+      EmailAutomationSchedules.get_all_emails_schedules_query([organization_id])
+
+    Multi.new()
+    |> Multi.update_all(:settings_update, update_automation_settings_query(organization_id),
+      set: [status: "disabled"]
+    )
+    |> Multi.update(
+      :organization_update,
+      update_organization_global_automation_changeset(organization_id, false)
+    )
+    |> Multi.append(
+      EmailAutomationSchedules.delete_and_insert_schedules_by_multi(
+        email_schedules_query,
+        :globally_stopped
+      )
+    )
+    |> Repo.transaction()
+  end
+
+  def update_globally_automations_emails(organization_id, "enabled") do
+    schedule_history_query =
+      from(esh in EmailScheduleHistory,
+        where: esh.organization_id == ^organization_id and esh.stopped_reason == :globally_stopped
+      )
+
+    Multi.new()
+    |> Multi.update_all(:settings_update, update_automation_settings_query(organization_id),
+      set: [status: "active"]
+    )
+    |> Multi.update(
+      :organization_update,
+      update_organization_global_automation_changeset(organization_id, true)
+    )
+    |> Multi.append(
+      EmailAutomationSchedules.pull_back_email_schedules_multi(schedule_history_query)
+    )
+    |> Repo.transaction()
+  end
+
+  def update_automation_settings_query(organization_id) do
+    from(es in EmailPreset,
+      where: es.organization_id == ^organization_id
+    )
+  end
+
+  defp update_organization_global_automation_changeset(organization_id, enabled) do
+    from(o in Organization, where: o.id == ^organization_id)
+    |> Repo.one()
+    |> Ecto.Changeset.change(global_automation_enabled: enabled)
+  end
 
   @doc """
   Resolves variables in email content for a given EmailSchedule.
