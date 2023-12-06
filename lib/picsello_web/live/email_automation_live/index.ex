@@ -16,7 +16,7 @@ defmodule PicselloWeb.Live.EmailAutomations.Index do
 
   import PicselloWeb.LiveHelpers
 
-  alias Picsello.{EmailAutomations, Repo}
+  alias Picsello.{EmailAutomations, Packages, Repo}
 
   alias PicselloWeb.{
     ConfirmationComponent,
