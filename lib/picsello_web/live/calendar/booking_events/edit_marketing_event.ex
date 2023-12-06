@@ -141,7 +141,10 @@ defmodule PicselloWeb.Live.Calendar.EditMarketingEvent do
 
   defp toggle_visibility(%{show_on_public_profile?: show_on_public_profile?} = assigns) do
     class_1 = if show_on_public_profile?, do: ~s(bg-blue-planning-300), else: ~s(bg-white)
-    class_2 = if show_on_public_profile?, do: ~s(right-1 bg-white), else: ~s(left-1 bg-blue-planning-300)
+
+    class_2 =
+      if show_on_public_profile?, do: ~s(right-1 bg-white), else: ~s(left-1 bg-blue-planning-300)
+
     assigns = assign(assigns, class_1: class_1, class_2: class_2)
 
     ~H"""

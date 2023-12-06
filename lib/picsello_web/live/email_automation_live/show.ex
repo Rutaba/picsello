@@ -343,7 +343,7 @@ defmodule PicselloWeb.Live.EmailAutomations.Show do
                       Send now
                   <% end %>
                 </button>
-                <.icon_button_simple disabled={!is_nil(email.reminded_at) || !is_nil(email.stopped_at)} class={classes("h-8 flex items-center px-2 py-1 btn-tertiary bg-blue-planning-300 text-white hover:bg-blue-planning-300/75 whitespace-nowrap", %{"opacity-30 hover:cursor-not-allowed" => allow_cursor?})} phx-click="edit-email" phx-value-index={index} phx-value-email_id={email.id} phx-value-pipeline_id={@pipeline.id} icon_class="inline-block w-4 h-4 mr-3" color="white" icon="pencil">Edit email</.icon_button_simple>
+                <.button_simple disabled={!is_nil(email.reminded_at) || !is_nil(email.stopped_at)} class={classes("h-8 flex items-center px-2 py-1 btn-tertiary bg-blue-planning-300 text-white hover:bg-blue-planning-300/75 whitespace-nowrap", %{"opacity-30 hover:cursor-not-allowed" => allow_cursor?})} phx-click="edit-email" phx-value-index={index} phx-value-email_id={email.id} phx-value-pipeline_id={@pipeline.id} icon_class="inline-block w-4 h-4 mr-3" color="white" icon="pencil">Edit email</.button_simple>
               </div>
             </div>
           <% end) %>

@@ -283,7 +283,9 @@ defmodule Picsello.BookingEventDate do
         repeat_dates,
         booking_event_id
       )
-    error_field = if Map.has_key?(changeset, :stop_repeating), do: :stop_repeating, else: :occurences
+
+    error_field =
+      if Map.has_key?(changeset, :stop_repeating), do: :stop_repeating, else: :occurences
 
     if repeat_date_overlap_any_booking_event? do
       changeset

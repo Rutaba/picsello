@@ -385,7 +385,7 @@ defmodule PicselloWeb.Live.EmailAutomations.Index do
                     <% end %>
                   </div>
                   <%= unless emails_send_immediately_states?(@subcategory_slug, @pipeline.state) do %>
-                    <.icon_button_simple class={classes("flex items-center px-2 py-1 btn-tertiary text-blue-planning-300 hover:border-blue-planning-300 mr-2 whitespace-nowrap", %{"hidden" => is_state_manually_trigger(@pipeline.state) and index == 0})} phx-click="edit-time-popup" phx-value-index={index} phx-value-subcategory_slug={@subcategory_slug} phx-value-email_id={email.id} phx-value-pipeline_id={@pipeline.id} icon_class="inline-block w-4 h-4 mr-3" color="blue-planning-300" icon="settings">Edit time</.icon_button_simple>
+                    <.button_simple class={classes("flex items-center px-2 py-1 btn-tertiary text-blue-planning-300 hover:border-blue-planning-300 mr-2 whitespace-nowrap", %{"hidden" => is_state_manually_trigger(@pipeline.state) and index == 0})} phx-click="edit-time-popup" phx-value-index={index} phx-value-subcategory_slug={@subcategory_slug} phx-value-email_id={email.id} phx-value-pipeline_id={@pipeline.id} icon_class="inline-block w-4 h-4 mr-3" color="blue-planning-300" icon="settings">Edit time</.button_simple>
                   <% end %>
                   <.button_simple class="flex items-center px-2 py-1 btn-tertiary bg-blue-planning-300 text-white hover:bg-blue-planning-300/75 whitespace-nowrap" phx-click="edit-email-popup" phx-value-index={index} phx-value-email_id={email.id} phx-value-pipeline_id={@pipeline.id} icon_class="inline-block w-4 h-4 mr-3" color="white" icon="pencil">Edit email</.button_simple>
                 </div>
@@ -396,7 +396,7 @@ defmodule PicselloWeb.Live.EmailAutomations.Index do
           <div class="flex flex-row justify-between pr-6 pl-8 sm:pl-16 py-6">
             <div class="flex items-center">
               <%= unless emails_send_immediately_states?(@subcategory_slug, @pipeline.state) do %>
-                <.icon_button_simple class="flex items-center px-2 py-1 btn-tertiary hover:border-blue-planning-300" phx-click="add-email-popup" phx-value-pipeline_id={@pipeline.id} data-popover-target="popover-default" icon_class="inline-block w-4 h-4 mr-3" color="blue-planning-300" icon="plus">Add email</.icon_button_simple>
+                <.button_simple class="flex items-center px-2 py-1 btn-tertiary hover:border-blue-planning-300" phx-click="add-email-popup" phx-value-pipeline_id={@pipeline.id} data-popover-target="popover-default" icon_class="inline-block w-4 h-4 mr-3" color="blue-planning-300" icon="plus">Add email</.button_simple>
               <% end %>
             </div>
             <%= if show_enable_setting?(@pipeline.state, @subcategory_slug) do %>

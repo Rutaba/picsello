@@ -308,11 +308,15 @@ defmodule PicselloWeb.Live.Calendar.BookingEventModal do
     if get_field(changeset, :date) do
       selected_days = get_field(changeset, :repeat_on) |> Enum.map(&Map.from_struct(&1))
       selected_days_no = selected_days |> Enum.filter(& &1.active) |> length()
+
       booking_event_date =
         changeset
         |> current()
         |> Map.put(:occurences, selected_days_no)
-      BookingEvents.calculate_dates(booking_event_date, selected_days) |> Enum.take(selected_days_no) |> List.last()
+
+      BookingEvents.calculate_dates(booking_event_date, selected_days)
+      |> Enum.take(selected_days_no)
+      |> List.last()
     end
   end
 

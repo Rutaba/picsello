@@ -415,7 +415,6 @@ defmodule PicselloWeb.BookingProposalLive.Shared do
     end
   end
 
-
   # When we have empty phonevalue for disable live_phone
   defp phone_value(nil), do: "+12515551234"
   defp phone_value(value), do: value

@@ -93,7 +93,7 @@ defmodule PicselloWeb.EmailAutomationLive.EditTimeComponent do
 
   @impl true
   def render(assigns) do
-        ~H"""
+    ~H"""
       <div class="modal">
         <.close_x />
         <h1 class="mt-2 mb-4 text-3xl">
