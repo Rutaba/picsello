@@ -14,7 +14,7 @@ defmodule PicselloWeb.GalleryLive.Settings.ManagePasswordComponent do
      |> assign(:is_password, gallery.is_password)
      |> assign(
        :password_changeset,
-       Galleries.Gallery.password_changeset(gallery) |> Map.put(:action, :validate)
+       Galleries.Gallery.password_changeset(%Galleries.Gallery{})
      )}
   end
 
@@ -34,6 +34,8 @@ defmodule PicselloWeb.GalleryLive.Settings.ManagePasswordComponent do
     password = String.to_atom(password)
 
     {:ok, gallery} = Galleries.update_gallery(gallery, %{is_password: password})
+
+    send(self(), :gallery_password)
 
     socket
     |> assign(:is_password, password)
@@ -83,10 +85,10 @@ defmodule PicselloWeb.GalleryLive.Settings.ManagePasswordComponent do
           <%= error_tag f, :password, class: "text-red-sales-300" %>
           <%= if @visibility do %>
             <%= text_input f, :password, value: @password, disabled: !@is_password, phx_debounce: "500", id: "galleryPasswordInput",
-            class: "gallerySettingsInput font-sans" %>
+            class: classes("gallerySettingsInput font-sans", %{"bg-base-250/10" => !@is_password}) %>
           <% else %>
             <%= password_input f, :password, value: @password, disabled: !@is_password,  phx_debounce: "500", id: "galleryPasswordInput",
-            class: "gallerySettingsInput font-sans" %>
+            class: classes("gallerySettingsInput font-sans", %{"bg-base-250/10" => !@is_password}) %>
           <% end %>
           <a phx-click="toggle_visibility" phx-target={@myself} class=" absolute h-8 -translate-y-1/2 right-5 top-8" id="togglePasswordVisibility">
             <%= if @visibility do %>
@@ -103,7 +105,7 @@ defmodule PicselloWeb.GalleryLive.Settings.ManagePasswordComponent do
               Password protect gallery
               </label>
             </div>
-            <%= submit "Save", class: "btn-settings w-32  px-11", disabled: (@is_password || @password_changeset.valid?) && not (@is_password && @password_changeset.valid?), phx_disable_with: "Saving..." %>
+            <%= submit "Save", class: "btn-settings w-32  px-11", disabled: (@is_password || !@password_changeset.valid?) && not (@is_password && @password_changeset.valid?), phx_disable_with: "Saving..." %>
           </div>
         </.form>
       </div>

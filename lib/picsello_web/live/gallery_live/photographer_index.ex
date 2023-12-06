@@ -516,7 +516,7 @@ defmodule PicselloWeb.GalleryLive.PhotographerIndex do
   @impl true
   defdelegate handle_event(event, params, socket), to: PicselloWeb.GalleryLive.Shared
 
-  def get_gallery!(id),
+  defp get_gallery!(id),
     do:
       Galleries.get_gallery!(id)
       |> Galleries.load_watermark_in_gallery()
