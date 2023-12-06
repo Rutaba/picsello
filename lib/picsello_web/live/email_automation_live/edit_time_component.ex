@@ -93,7 +93,7 @@ defmodule PicselloWeb.EmailAutomationLive.EditTimeComponent do
 
   @impl true
   def render(assigns) do
-    ~H"""
+        ~H"""
       <div class="modal">
         <.close_x />
         <h1 class="mt-2 mb-4 text-3xl">
@@ -211,7 +211,7 @@ defmodule PicselloWeb.EmailAutomationLive.EditTimeComponent do
           </div>
 
           <.footer class="pt-10">
-            <button class="btn-primary" title="Save" disabled={!Shared.step_valid?(assigns)} type="submit" phx-disable-with="Save">
+            <button class="btn-primary" title="Save" type="submit" phx-disable-with="Save">
               Save
             </button>
             <button class="btn-secondary" title="cancel" type="button" phx-click="modal" phx-value-action="close">

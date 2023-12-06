@@ -738,6 +738,16 @@ defmodule PicselloWeb.EmailAutomationLive.Shared do
   def next_step(%{step: step, steps: steps}),
     do: Enum.at(steps, Enum.find_index(steps, &(&1 == step)) + 1)
 
+  def step_valid?(assigns),
+    do:
+      Enum.all?(
+        [
+          assigns.email_preset_changeset
+        ],
+        & &1.valid?
+      )
+      |> validate?(assigns.job_types)
+
   defp today_timezone(timezone), do: DateTime.utc_now() |> DateTime.shift_zone!(timezone)
 
   defp get_date_for_schedule(nil, date), do: date
@@ -754,14 +764,4 @@ defmodule PicselloWeb.EmailAutomationLive.Shared do
   defp get_gallery_id(gallery, _order) when is_map(gallery), do: gallery.id
   defp get_gallery_id(_gallery, order) when is_map(order), do: order.gallery.id
   defp get_gallery_id(_gallery, _order), do: nil
-
-  def step_valid?(assigns),
-    do:
-      Enum.all?(
-        [
-          assigns.email_preset_changeset
-        ],
-        & &1.valid?
-      )
-      |> validate?(assigns.job_types)
 end

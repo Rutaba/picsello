@@ -1,11 +1,5 @@
 defmodule Picsello.Repo.Migrations.AddMissingFieldsToEmailScheduleAndScheduleHistoryTbls do
   use Ecto.Migration
-  import Ecto.Query
-
-  alias Picsello.{
-    EmailAutomation.EmailSchedule,
-    EmailAutomationSchedules
-  }
 
   def up do
     alter table(:email_schedules) do
@@ -15,15 +9,6 @@ defmodule Picsello.Repo.Migrations.AddMissingFieldsToEmailScheduleAndScheduleHis
     alter table(:email_schedules_history) do
       add(:stopped_reason, :string)
     end
-
-    flush()
-    email_schedules_query = from(es in EmailSchedule, where: not is_nil(es.stopped_at))
-
-    EmailAutomationSchedules.delete_and_insert_schedules_by_multi(
-      email_schedules_query,
-      :photographer_stopped
-    )
-    |> Repo.transaction()
   end
 
   def down do
