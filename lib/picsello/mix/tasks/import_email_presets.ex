@@ -306,23 +306,24 @@ defmodule Mix.Tasks.ImportEmailPresets do
         <p><span style="color: rgb(0, 0, 0);">{{email_signature}}</span></p>
         """
       },
-      %{
-        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "thanks_job"),
-        total_hours: 0,
-        status: "active",
-        job_type: "wedding",
-        type: "job",
-        position: 0,
-        name: "Thank you for booking email",
-        subject_template: "Thank you for booking with {{photography_company_s_name}}",
-        body_template: """
-        <p><span style="color: rgb(0, 0, 0);">Hello {{client_first_name}}, </span></p>
-        <p><span style="color: rgb(0, 0, 0);">You are officially booked for your photoshoot. I'm looking forward to working with you.</span></p>
-        <p><span style="color: rgb(0, 0, 0);">After your photoshoot, your images will be delivered via a beautiful online gallery within {{delivery_time}} of your session date.</span></p>
-        <p><span style="color: rgb(0, 0, 0);">Any questions, please feel free to let me know! </span></p>
-        <p><span style="color: rgb(0, 0, 0);">{{email_signature}}</span></p>
-        """
-      },
+      # TODO: Remove this commented code later
+      # %{
+      #   email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "thanks_job"),
+      #   total_hours: 0,
+      #   status: "active",
+      #   job_type: "wedding",
+      #   type: "job",
+      #   position: 0,
+      #   name: "Thank you for booking email",
+      #   subject_template: "Thank you for booking with {{photography_company_s_name}}",
+      #   body_template: """
+      #   <p><span style="color: rgb(0, 0, 0);">Hello {{client_first_name}}, </span></p>
+      #   <p><span style="color: rgb(0, 0, 0);">You are officially booked for your photoshoot. I'm looking forward to working with you.</span></p>
+      #   <p><span style="color: rgb(0, 0, 0);">After your photoshoot, your images will be delivered via a beautiful online gallery within {{delivery_time}} of your session date.</span></p>
+      #   <p><span style="color: rgb(0, 0, 0);">Any questions, please feel free to let me know! </span></p>
+      #   <p><span style="color: rgb(0, 0, 0);">{{email_signature}}</span></p>
+      #   """
+      # },
       %{
         email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "before_shoot"),
         total_hours: EmailPreset.calculate_total_hours(7, %{calendar: "Day", sign: "-"}),
@@ -1138,23 +1139,24 @@ defmodule Mix.Tasks.ImportEmailPresets do
         <p><span style="color: rgb(0, 0, 0);">{{email_signature}}</span></p>
         """
       },
-      %{
-        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "thanks_job"),
-        total_hours: 0,
-        status: "active",
-        job_type: "newborn",
-        type: "job",
-        position: 0,
-        name: "Thank you for booking email",
-        subject_template: "Thank you for booking with {{photography_company_s_name}}",
-        body_template: """
-        <p><span style="color: rgb(0, 0, 0);">Hello {{client_first_name}}, </span></p>
-        <p><span style="color: rgb(0, 0, 0);">You are officially booked for your photoshoot. I'm looking forward to working with you.</span></p>
-        <p><span style="color: rgb(0, 0, 0);">After your photoshoot, your images will be delivered via a beautiful online gallery within {{delivery_time}} of your session date.</span></p>
-        <p><span style="color: rgb(0, 0, 0);">Any questions, please feel free to let me know! </span></p>
-        <p><span style="color: rgb(0, 0, 0);">{{email_signature}}</span></p>
-        """
-      },
+      # TODO: Remove this commented code later
+      # %{
+      #   email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "thanks_job"),
+      #   total_hours: 0,
+      #   status: "active",
+      #   job_type: "newborn",
+      #   type: "job",
+      #   position: 0,
+      #   name: "Thank you for booking email",
+      #   subject_template: "Thank you for booking with {{photography_company_s_name}}",
+      #   body_template: """
+      #   <p><span style="color: rgb(0, 0, 0);">Hello {{client_first_name}}, </span></p>
+      #   <p><span style="color: rgb(0, 0, 0);">You are officially booked for your photoshoot. I'm looking forward to working with you.</span></p>
+      #   <p><span style="color: rgb(0, 0, 0);">After your photoshoot, your images will be delivered via a beautiful online gallery within {{delivery_time}} of your session date.</span></p>
+      #   <p><span style="color: rgb(0, 0, 0);">Any questions, please feel free to let me know! </span></p>
+      #   <p><span style="color: rgb(0, 0, 0);">{{email_signature}}</span></p>
+      #   """
+      # },
       %{
         email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "before_shoot"),
         total_hours: EmailPreset.calculate_total_hours(7, %{calendar: "Day", sign: "-"}),
@@ -1990,24 +1992,24 @@ defmodule Mix.Tasks.ImportEmailPresets do
         <p><span style="color: rgb(0, 0, 0);">{{email_signature}}</span></p>
         """
       },
-      %{
-        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "thanks_job"),
-        total_hours: 0,
-        status: "active",
-        job_type: "family",
-        type: "job",
-        position: 0,
-        name: "Thank you for booking email",
-        subject_template: "Thank you for booking with {{photography_company_s_name}}",
-        body_template: """
-        <p><span style="color: rgb(0, 0, 0);">Hello {{client_first_name}}, </span></p>
-        <p><span style="color: rgb(0, 0, 0);">You are officially booked for your photoshoot. I'm looking forward to working with you.</span></p>
-        <p><span style="color: rgb(0, 0, 0);">After your photoshoot, your images will be delivered via a beautiful online gallery within {{delivery_time}} of your session date.</span></p>
-        <p><span style="color: rgb(0, 0, 0);">Any questions, please feel free to let me know! </span></p>
-        <p><span style="color: rgb(0, 0, 0);">{{email_signature}}</span></p>
-        """
-      },
-      # insert all
+      # TODO: Remove this commented code later
+      # %{
+      #   email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "thanks_job"),
+      #   total_hours: 0,
+      #   status: "active",
+      #   job_type: "family",
+      #   type: "job",
+      #   position: 0,
+      #   name: "Thank you for booking email",
+      #   subject_template: "Thank you for booking with {{photography_company_s_name}}",
+      #   body_template: """
+      #   <p><span style="color: rgb(0, 0, 0);">Hello {{client_first_name}}, </span></p>
+      #   <p><span style="color: rgb(0, 0, 0);">You are officially booked for your photoshoot. I'm looking forward to working with you.</span></p>
+      #   <p><span style="color: rgb(0, 0, 0);">After your photoshoot, your images will be delivered via a beautiful online gallery within {{delivery_time}} of your session date.</span></p>
+      #   <p><span style="color: rgb(0, 0, 0);">Any questions, please feel free to let me know! </span></p>
+      #   <p><span style="color: rgb(0, 0, 0);">{{email_signature}}</span></p>
+      #   """
+      # },
       %{
         email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "before_shoot"),
         total_hours: EmailPreset.calculate_total_hours(7, %{calendar: "Day", sign: "-"}),
@@ -2835,23 +2837,24 @@ defmodule Mix.Tasks.ImportEmailPresets do
         <p><span style="color: rgb(0, 0, 0);">{{email_signature}}</span></p>
         """
       },
-      %{
-        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "thanks_job"),
-        total_hours: 0,
-        status: "active",
-        job_type: "mini",
-        type: "job",
-        position: 0,
-        name: "Thank you for booking email",
-        subject_template: "Thank you for booking with {{photography_company_s_name}}",
-        body_template: """
-        <p><span style="color: rgb(0, 0, 0);">Hello {{client_first_name}}, </span></p>
-        <p><span style="color: rgb(0, 0, 0);">You are officially booked for your photoshoot. I'm looking forward to working with you.</span></p>
-        <p><span style="color: rgb(0, 0, 0);">After your photoshoot, your images will be delivered via a beautiful online gallery within {{delivery_time}} of your session date.</span></p>
-        <p><span style="color: rgb(0, 0, 0);">Any questions, please feel free to let me know! </span></p>
-        <p><span style="color: rgb(0, 0, 0);">{{email_signature}}</span></p>
-        """
-      },
+      # TODO: Remove this commented code later
+      # %{
+      #   email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "thanks_job"),
+      #   total_hours: 0,
+      #   status: "active",
+      #   job_type: "mini",
+      #   type: "job",
+      #   position: 0,
+      #   name: "Thank you for booking email",
+      #   subject_template: "Thank you for booking with {{photography_company_s_name}}",
+      #   body_template: """
+      #   <p><span style="color: rgb(0, 0, 0);">Hello {{client_first_name}}, </span></p>
+      #   <p><span style="color: rgb(0, 0, 0);">You are officially booked for your photoshoot. I'm looking forward to working with you.</span></p>
+      #   <p><span style="color: rgb(0, 0, 0);">After your photoshoot, your images will be delivered via a beautiful online gallery within {{delivery_time}} of your session date.</span></p>
+      #   <p><span style="color: rgb(0, 0, 0);">Any questions, please feel free to let me know! </span></p>
+      #   <p><span style="color: rgb(0, 0, 0);">{{email_signature}}</span></p>
+      #   """
+      # },
       %{
         email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "before_shoot"),
         total_hours: EmailPreset.calculate_total_hours(7, %{calendar: "Day", sign: "-"}),
@@ -3679,23 +3682,24 @@ defmodule Mix.Tasks.ImportEmailPresets do
         <p><span style="color: rgb(0, 0, 0);">{{email_signature}}</span></p>
         """
       },
-      %{
-        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "thanks_job"),
-        total_hours: 0,
-        status: "active",
-        job_type: "headshot",
-        type: "job",
-        position: 0,
-        name: "Thank you for booking email",
-        subject_template: "Thank you for booking with {{photography_company_s_name}}",
-        body_template: """
-        <p><span style="color: rgb(0, 0, 0);">Hello {{client_first_name}}, </span></p>
-        <p><span style="color: rgb(0, 0, 0);">You are officially booked for your photoshoot. I'm looking forward to working with you.</span></p>
-        <p><span style="color: rgb(0, 0, 0);">After your photoshoot, your images will be delivered via a beautiful online gallery within {{delivery_time}} of your session date.</span></p>
-        <p><span style="color: rgb(0, 0, 0);">Any questions, please feel free to let me know! </span></p>
-        <p><span style="color: rgb(0, 0, 0);">{{email_signature}}</span></p>
-        """
-      },
+      # TODO: Remove this commented code later
+      # %{
+      #   email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "thanks_job"),
+      #   total_hours: 0,
+      #   status: "active",
+      #   job_type: "headshot",
+      #   type: "job",
+      #   position: 0,
+      #   name: "Thank you for booking email",
+      #   subject_template: "Thank you for booking with {{photography_company_s_name}}",
+      #   body_template: """
+      #   <p><span style="color: rgb(0, 0, 0);">Hello {{client_first_name}}, </span></p>
+      #   <p><span style="color: rgb(0, 0, 0);">You are officially booked for your photoshoot. I'm looking forward to working with you.</span></p>
+      #   <p><span style="color: rgb(0, 0, 0);">After your photoshoot, your images will be delivered via a beautiful online gallery within {{delivery_time}} of your session date.</span></p>
+      #   <p><span style="color: rgb(0, 0, 0);">Any questions, please feel free to let me know! </span></p>
+      #   <p><span style="color: rgb(0, 0, 0);">{{email_signature}}</span></p>
+      #   """
+      # },
       %{
         email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "before_shoot"),
         total_hours: EmailPreset.calculate_total_hours(7, %{calendar: "Day", sign: "-"}),
@@ -4511,23 +4515,24 @@ defmodule Mix.Tasks.ImportEmailPresets do
         <p><span style="color: rgb(0, 0, 0);">{{email_signature}}</span></p>
         """
       },
-      %{
-        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "thanks_job"),
-        total_hours: 0,
-        status: "active",
-        job_type: "portrait",
-        type: "job",
-        position: 0,
-        name: "Thank you for booking email",
-        subject_template: "Thank you for booking with {{photography_company_s_name}}",
-        body_template: """
-        <p><span style="color: rgb(0, 0, 0);">Hello {{client_first_name}}, </span></p>
-        <p><span style="color: rgb(0, 0, 0);">You are officially booked for your photoshoot. I'm looking forward to working with you.</span></p>
-        <p><span style="color: rgb(0, 0, 0);">After your photoshoot, your images will be delivered via a beautiful online gallery within {{delivery_time}} of your session date.</span></p>
-        <p><span style="color: rgb(0, 0, 0);">Any questions, please feel free to let me know! </span></p>
-        <p><span style="color: rgb(0, 0, 0);">{{email_signature}}</span></p>
-        """
-      },
+      # TODO: Remove this commented code later
+      # %{
+      #   email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "thanks_job"),
+      #   total_hours: 0,
+      #   status: "active",
+      #   job_type: "portrait",
+      #   type: "job",
+      #   position: 0,
+      #   name: "Thank you for booking email",
+      #   subject_template: "Thank you for booking with {{photography_company_s_name}}",
+      #   body_template: """
+      #   <p><span style="color: rgb(0, 0, 0);">Hello {{client_first_name}}, </span></p>
+      #   <p><span style="color: rgb(0, 0, 0);">You are officially booked for your photoshoot. I'm looking forward to working with you.</span></p>
+      #   <p><span style="color: rgb(0, 0, 0);">After your photoshoot, your images will be delivered via a beautiful online gallery within {{delivery_time}} of your session date.</span></p>
+      #   <p><span style="color: rgb(0, 0, 0);">Any questions, please feel free to let me know! </span></p>
+      #   <p><span style="color: rgb(0, 0, 0);">{{email_signature}}</span></p>
+      #   """
+      # },
       %{
         email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "before_shoot"),
         total_hours: EmailPreset.calculate_total_hours(7, %{calendar: "Day", sign: "-"}),
@@ -5342,23 +5347,24 @@ defmodule Mix.Tasks.ImportEmailPresets do
         <p><span style="color: rgb(0, 0, 0);">{{email_signature}}</span></p>
         """
       },
-      %{
-        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "thanks_job"),
-        total_hours: 0,
-        status: "active",
-        job_type: "boudoir",
-        type: "job",
-        position: 0,
-        name: "Thank you for booking email",
-        subject_template: "Thank you for booking with {{photography_company_s_name}}",
-        body_template: """
-        <p><span style="color: rgb(0, 0, 0);">Hello {{client_first_name}}, </span></p>
-        <p><span style="color: rgb(0, 0, 0);">You are officially booked for your photoshoot. I'm looking forward to working with you.</span></p>
-        <p><span style="color: rgb(0, 0, 0);">After your photoshoot, your images will be delivered via a beautiful online gallery within {{delivery_time}} of your session date.</span></p>
-        <p><span style="color: rgb(0, 0, 0);">Any questions, please feel free to let me know! </span></p>
-        <p><span style="color: rgb(0, 0, 0);">{{email_signature}}</span></p>
-        """
-      },
+      # TODO: Remove this commented code later
+      # %{
+      #   email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "thanks_job"),
+      #   total_hours: 0,
+      #   status: "active",
+      #   job_type: "boudoir",
+      #   type: "job",
+      #   position: 0,
+      #   name: "Thank you for booking email",
+      #   subject_template: "Thank you for booking with {{photography_company_s_name}}",
+      #   body_template: """
+      #   <p><span style="color: rgb(0, 0, 0);">Hello {{client_first_name}}, </span></p>
+      #   <p><span style="color: rgb(0, 0, 0);">You are officially booked for your photoshoot. I'm looking forward to working with you.</span></p>
+      #   <p><span style="color: rgb(0, 0, 0);">After your photoshoot, your images will be delivered via a beautiful online gallery within {{delivery_time}} of your session date.</span></p>
+      #   <p><span style="color: rgb(0, 0, 0);">Any questions, please feel free to let me know! </span></p>
+      #   <p><span style="color: rgb(0, 0, 0);">{{email_signature}}</span></p>
+      #   """
+      # },
       %{
         email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "before_shoot"),
         total_hours: EmailPreset.calculate_total_hours(7, %{calendar: "Day", sign: "-"}),
@@ -6175,23 +6181,24 @@ defmodule Mix.Tasks.ImportEmailPresets do
         <p><span style="color: rgb(0, 0, 0);">{{email_signature}}</span></p>
         """
       },
-      %{
-        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "thanks_job"),
-        total_hours: 0,
-        status: "active",
-        job_type: "global",
-        type: "job",
-        position: 0,
-        name: "Thank you for booking email",
-        subject_template: "Thank you for booking with {{photography_company_s_name}}",
-        body_template: """
-        <p><span style="color: rgb(0, 0, 0);">Hello {{client_first_name}}, </span></p>
-        <p><span style="color: rgb(0, 0, 0);">You are officially booked for your photoshoot. I'm looking forward to working with you.</span></p>
-        <p><span style="color: rgb(0, 0, 0);">After your photoshoot, your images will be delivered via a beautiful online gallery within {{delivery_time}} of your session date.</span></p>
-        <p><span style="color: rgb(0, 0, 0);">Any questions, please feel free to let me know! </span></p>
-        <p><span style="color: rgb(0, 0, 0);">{{email_signature}}</span></p>
-        """
-      },
+      # TODO: Remove this commented code later
+      # %{
+      #   email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "thanks_job"),
+      #   total_hours: 0,
+      #   status: "active",
+      #   job_type: "global",
+      #   type: "job",
+      #   position: 0,
+      #   name: "Thank you for booking email",
+      #   subject_template: "Thank you for booking with {{photography_company_s_name}}",
+      #   body_template: """
+      #   <p><span style="color: rgb(0, 0, 0);">Hello {{client_first_name}}, </span></p>
+      #   <p><span style="color: rgb(0, 0, 0);">You are officially booked for your photoshoot. I'm looking forward to working with you.</span></p>
+      #   <p><span style="color: rgb(0, 0, 0);">After your photoshoot, your images will be delivered via a beautiful online gallery within {{delivery_time}} of your session date.</span></p>
+      #   <p><span style="color: rgb(0, 0, 0);">Any questions, please feel free to let me know! </span></p>
+      #   <p><span style="color: rgb(0, 0, 0);">{{email_signature}}</span></p>
+      #   """
+      # },
       %{
         email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "before_shoot"),
         total_hours: EmailPreset.calculate_total_hours(7, %{calendar: "Day", sign: "-"}),
@@ -7004,23 +7011,24 @@ defmodule Mix.Tasks.ImportEmailPresets do
         <p><span style="color: rgb(0, 0, 0);">{{email_signature}}</span></p>
         """
       },
-      %{
-        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "thanks_job"),
-        total_hours: 0,
-        status: "active",
-        job_type: "maternity",
-        type: "job",
-        position: 0,
-        name: "Thank you for booking email",
-        subject_template: "Thank you for booking with {{photography_company_s_name}}",
-        body_template: """
-        <p><span style="color: rgb(0, 0, 0);">Hello {{client_first_name}}, </span></p>
-        <p><span style="color: rgb(0, 0, 0);">You are officially booked for your photoshoot. I'm looking forward to working with you.</span></p>
-        <p><span style="color: rgb(0, 0, 0);">After your photoshoot, your images will be delivered via a beautiful online gallery within {{delivery_time}} of your session date.</span></p>
-        <p><span style="color: rgb(0, 0, 0);">Any questions, please feel free to let me know! </span></p>
-        <p><span style="color: rgb(0, 0, 0);">{{email_signature}}</span></p>
-        """
-      },
+      # TODO: Remove this commented code later
+      # %{
+      #   email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "thanks_job"),
+      #   total_hours: 0,
+      #   status: "active",
+      #   job_type: "maternity",
+      #   type: "job",
+      #   position: 0,
+      #   name: "Thank you for booking email",
+      #   subject_template: "Thank you for booking with {{photography_company_s_name}}",
+      #   body_template: """
+      #   <p><span style="color: rgb(0, 0, 0);">Hello {{client_first_name}}, </span></p>
+      #   <p><span style="color: rgb(0, 0, 0);">You are officially booked for your photoshoot. I'm looking forward to working with you.</span></p>
+      #   <p><span style="color: rgb(0, 0, 0);">After your photoshoot, your images will be delivered via a beautiful online gallery within {{delivery_time}} of your session date.</span></p>
+      #   <p><span style="color: rgb(0, 0, 0);">Any questions, please feel free to let me know! </span></p>
+      #   <p><span style="color: rgb(0, 0, 0);">{{email_signature}}</span></p>
+      #   """
+      # },
       %{
         email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "before_shoot"),
         total_hours: EmailPreset.calculate_total_hours(7, %{calendar: "Day", sign: "-"}),
@@ -7835,23 +7843,24 @@ defmodule Mix.Tasks.ImportEmailPresets do
         <p><span style="color: rgb(0, 0, 0);">{{email_signature}}</span></p>
         """
       },
-      %{
-        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "thanks_job"),
-        total_hours: 0,
-        status: "active",
-        job_type: "event",
-        type: "job",
-        position: 0,
-        name: "Thank you for booking email",
-        subject_template: "Thank you for booking with {{photography_company_s_name}}",
-        body_template: """
-        <p><span style="color: rgb(0, 0, 0);">Hello {{client_first_name}}, </span></p>
-        <p><span style="color: rgb(0, 0, 0);">You are officially booked for your photoshoot. I'm looking forward to working with you.</span></p>
-        <p><span style="color: rgb(0, 0, 0);">After your photoshoot, your images will be delivered via a beautiful online gallery within {{delivery_time}} of your session date.</span></p>
-        <p><span style="color: rgb(0, 0, 0);">Any questions, please feel free to let me know! </span></p>
-        <p><span style="color: rgb(0, 0, 0);">{{email_signature}}</span></p>
-        """
-      },
+      # TODO: Remove this commented code later
+      # %{
+      #   email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "thanks_job"),
+      #   total_hours: 0,
+      #   status: "active",
+      #   job_type: "event",
+      #   type: "job",
+      #   position: 0,
+      #   name: "Thank you for booking email",
+      #   subject_template: "Thank you for booking with {{photography_company_s_name}}",
+      #   body_template: """
+      #   <p><span style="color: rgb(0, 0, 0);">Hello {{client_first_name}}, </span></p>
+      #   <p><span style="color: rgb(0, 0, 0);">You are officially booked for your photoshoot. I'm looking forward to working with you.</span></p>
+      #   <p><span style="color: rgb(0, 0, 0);">After your photoshoot, your images will be delivered via a beautiful online gallery within {{delivery_time}} of your session date.</span></p>
+      #   <p><span style="color: rgb(0, 0, 0);">Any questions, please feel free to let me know! </span></p>
+      #   <p><span style="color: rgb(0, 0, 0);">{{email_signature}}</span></p>
+      #   """
+      # },
       %{
         email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "before_shoot"),
         total_hours: EmailPreset.calculate_total_hours(7, %{calendar: "Day", sign: "-"}),

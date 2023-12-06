@@ -345,19 +345,21 @@ defmodule Picsello.PaymentSchedules do
            |> PaymentSchedule.paid_changeset()
            |> Repo.update() do
       # insert emails when client books a slot
-      skip_states =
-        if is_nil(proposal.job.booking_event), do: ["thanks_booking"], else: ["thanks_job"]
+      # TODO: Remove this commented code later
+      # skip_states =
+      #   if is_nil(proposal.job.booking_event), do: ["thanks_booking"], else: ["thanks_job"]
 
       EmailAutomationSchedules.insert_job_emails(
         proposal.job.type,
         client.organization.id,
         proposal.job.id,
         :job,
-        skip_states
+        ["thanks_job"]
       )
 
-      state = if is_nil(proposal.job.booking_event), do: :thanks_job, else: :thanks_booking
-      EmailAutomations.send_schedule_email(proposal.job, state)
+      # TODO: Remove this commented code later
+      # state = if is_nil(proposal.job.booking_event), do: :thanks_job, else: :thanks_booking
+      EmailAutomations.send_schedule_email(proposal.job, :thanks_booking)
 
       if job_status.is_lead do
         UserNotifier.deliver_lead_converted_to_job(proposal, helpers)
