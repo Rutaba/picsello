@@ -112,11 +112,19 @@ defmodule PicselloWeb.BookingProposalLive.Show do
     |> noreply()
   end
 
-  def handle_event("pay_offline", %{}, %{assigns: %{job: job, proposal: proposal}} = socket) do
+  def handle_event(
+        "pay_offline",
+        %{},
+        %{assigns: %{job: job, proposal: proposal, organization: organization}} = socket
+      ) do
     # From job Booking proposal open and Pay with cash/check send either thanks booking or thanks job
     proposal = BookingProposal.preloads(proposal)
-    state = if is_nil(proposal.job.booking_event), do: :thanks_job, else: :thanks_booking
-    EmailAutomations.send_schedule_email(job, state)
+    # TODO: Remove this commented code later
+    # state = if is_nil(proposal.job.booking_event), do: :thanks_job, else: :thanks_booking
+    insert_job_emails(job.type, organization.id, job.id, :job, [])
+
+    EmailAutomations.send_schedule_email(job, :thanks_booking)
+
     handle_offline_checkout(socket, job, proposal)
   end
 

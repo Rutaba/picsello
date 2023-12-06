@@ -138,7 +138,8 @@ defmodule PicselloWeb.BookingProposalLive.InvoiceComponent do
 
   defp send_thanks_email(proposal) do
     proposal = BookingProposal.preloads(proposal)
-    state = if is_nil(proposal.job.booking_event), do: :thanks_job, else: :thanks_booking
-    EmailAutomations.send_schedule_email(proposal.job, state)
+    # TODO: Remove this commented code later
+    # state = if is_nil(proposal.job.booking_event), do: :thanks_job, else: :thanks_booking
+    EmailAutomations.send_schedule_email(proposal.job, :thanks_booking)
   end
 end
