@@ -1,3 +1,4 @@
+<%= live_render @socket, PicselloWeb.LiveModal, id: "live_modal" %>
 <main role="main" class={classes("min-h-screen flex flex-col transition-all", get_classes_for_main(@current_user))} phx-hook="showAdminBanner" id="show-admin-banner">
 
   <%= if FunWithFlags.enabled?(:sidebar_navigation, for: @current_user) do %>
@@ -12,8 +13,6 @@
     <.subscription_ending_soon type="banner" socket={@socket} current_user={@current_user} class="flex px-6 py-2 items-center bg-blue-planning-300 text-white justify-center"/>
     <%= @inner_content %>
   </div>
-
-  <%= live_render @socket, PicselloWeb.LiveModal, id: "live_modal" %>
 
   <.admin_banner socket={@socket} />
 
