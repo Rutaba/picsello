@@ -80,6 +80,9 @@ defmodule PicselloWeb.Live.Admin.AutomatedEmails do
                   <button class="h-8 flex items-center px-2 py-1 bg-blue-planning-300 text-white font-bold mr-2 whitespace-nowrap rounded-md hover:opacity-75" phx-click="confirm-send-all-emails" phx-value-organization_id={organization.id}>
                     Send All
                   </button>
+                  <button class="h-8 flex items-center px-2 py-1 bg-blue-planning-300 text-white font-bold mr-2 whitespace-nowrap rounded-md hover:opacity-75" phx-click="confirm-stop-all-emails" phx-value-organization_id={organization.id}>
+                    Stopped All
+                  </button>
                 <% end %>
                 <%= if Enum.member?(@collapsed_sections, organization.id) do %>
                   <.icon name="down" class="w-5 h-5 stroke-2 text-blue-planning-300" />
@@ -111,6 +114,9 @@ defmodule PicselloWeb.Live.Admin.AutomatedEmails do
                       <button class="h-8 flex items-center px-2 py-1 btn-tertiary text-black font-bold hover:border-blue-planning-300 mr-2 whitespace-nowrap" phx-click="confirm-send-now" phx-value-email_id={email.id}}>
                         Send now
                       </button>
+                      <button class="h-8 flex items-center px-2 py-1 btn-tertiary text-black font-bold hover:border-blue-planning-300 mr-2 whitespace-nowrap" phx-click="confirm-stop-now" phx-value-email_id={email.id}}>
+                        Stop now
+                      </button>
                     </div>
                   </div>
                   <hr class="md:ml-8 ml-6">
@@ -129,7 +135,7 @@ defmodule PicselloWeb.Live.Admin.AutomatedEmails do
         %{"organization_id" => organization_id},
         %{assigns: %{collapsed_sections: collapsed_sections}} = socket
       ) do
-    organization_id = String.to_integer(organization_id)
+    organization_id = to_integer(organization_id)
 
     collapsed_sections =
       if Enum.member?(collapsed_sections, organization_id) do
@@ -182,6 +188,24 @@ defmodule PicselloWeb.Live.Admin.AutomatedEmails do
 
   @impl true
   def handle_event(
+        "confirm-stop-all-emails",
+        %{"organization_id" => organization_id},
+        socket
+      ) do
+    socket
+    |> PicselloWeb.ConfirmationComponent.open(%{
+      title: "Are you sure you want to stop all emails of this organization?",
+      subtitle: "This will stop all of your ready-to-send emails for this specific organization",
+      confirm_event: "stop-all-emails-#{organization_id}",
+      confirm_label: "Yes, stop them",
+      close_label: "Cancel",
+      icon: "warning-orange"
+    })
+    |> noreply()
+  end
+
+  @impl true
+  def handle_event(
         "confirm-send-now",
         %{"email_id" => email_id},
         socket
@@ -192,6 +216,24 @@ defmodule PicselloWeb.Live.Admin.AutomatedEmails do
       subtitle: "This will send only this specific selected email for this organization",
       confirm_event: "send-now-#{email_id}",
       confirm_label: "Yes, send it",
+      close_label: "Cancel",
+      icon: "warning-orange"
+    })
+    |> noreply()
+  end
+
+  @impl true
+  def handle_event(
+        "confirm-stop-now",
+        %{"email_id" => email_id},
+        socket
+      ) do
+    socket
+    |> PicselloWeb.ConfirmationComponent.open(%{
+      title: "Are you sure your want to stop this email?",
+      subtitle: "This will stop only this specific selected email for this organization",
+      confirm_event: "stop-now-#{email_id}",
+      confirm_label: "Yes, stop it",
       close_label: "Cancel",
       icon: "warning-orange"
     })
@@ -221,9 +263,9 @@ defmodule PicselloWeb.Live.Admin.AutomatedEmails do
         {:confirm_event, "send-all-emails-" <> organization_id},
         socket
       ) do
-    organization_id = String.to_integer(organization_id)
-
-    EmailAutomationSchedules.send_all_emails_of_organization(organization_id)
+    organization_id
+    |> to_integer()
+    |> EmailAutomationSchedules.send_all_emails_of_organization()
     |> case do
       {:ok, _} ->
         socket
@@ -239,12 +281,33 @@ defmodule PicselloWeb.Live.Admin.AutomatedEmails do
   end
 
   def handle_info(
+        {:confirm_event, "stop-all-emails-" <> organization_id},
+        socket
+      ) do
+    organization_id
+    |> to_integer()
+    |> EmailAutomationSchedules.stop_all_emails_of_organization(:globally_stopped)
+    |> case do
+      {:ok, _} ->
+        socket
+        |> put_flash(:success, "All emails have been stop for the organization!")
+
+      _ ->
+        socket
+        |> put_flash(:error, "Some error occurred on the way!")
+    end
+    |> close_modal()
+    |> assign_defaults()
+    |> noreply()
+  end
+
+  def handle_info(
         {:confirm_event, "send-now-" <> email_id},
         socket
       ) do
-    email_id = String.to_integer(email_id)
-
-    EmailAutomationSchedules.send_email_sechedule(email_id)
+    email_id
+    |> to_integer()
+    |> EmailAutomationSchedules.send_email_sechedule()
     |> case do
       {:ok, _} ->
         socket
@@ -253,6 +316,27 @@ defmodule PicselloWeb.Live.Admin.AutomatedEmails do
       _ ->
         socket
         |> put_flash(:error, "Error in Sending Email")
+    end
+    |> close_modal()
+    |> assign_defaults()
+    |> noreply()
+  end
+
+  def handle_info(
+        {:confirm_event, "stop-now-" <> email_id},
+        socket
+      ) do
+    email_id
+    |> to_integer()
+    |> EmailAutomationSchedules.stop_email_sechedule(:globally_stopped)
+    |> case do
+      {:ok, _} ->
+        socket
+        |> put_flash(:success, "Email Stop Successfully")
+
+      _ ->
+        socket
+        |> put_flash(:error, "Error in Stopping Email")
     end
     |> close_modal()
     |> assign_defaults()
