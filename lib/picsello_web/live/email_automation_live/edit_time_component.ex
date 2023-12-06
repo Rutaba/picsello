@@ -5,9 +5,9 @@ defmodule PicselloWeb.EmailAutomationLive.EditTimeComponent do
   import PicselloWeb.LiveModal, only: [close_x: 1, footer: 1]
   import PicselloWeb.PackageLive.Shared, only: [current: 1]
 
-  alias Ecto.Changeset
-  alias Picsello.{Repo, EmailPresets.EmailPreset, EmailAutomations}
   alias PicselloWeb.EmailAutomationLive.Shared
+  alias Picsello.{Repo, EmailPresets.EmailPreset, EmailAutomations}
+  alias Ecto.Changeset
 
   @impl true
   def update(
@@ -37,15 +37,6 @@ defmodule PicselloWeb.EmailAutomationLive.EditTimeComponent do
     |> ok()
   end
 
-  defp step_valid?(assigns),
-    do:
-      Enum.all?(
-        [
-          assigns.changeset
-        ],
-        & &1.valid?
-      )
-
   @impl true
   def handle_event(
         "validate",
@@ -71,12 +62,18 @@ defmodule PicselloWeb.EmailAutomationLive.EditTimeComponent do
   defp save(
          %{
            assigns: %{
-             changeset: email_preset_changeset
+             changeset: email_preset_changeset,
+             show_enable_setting?: show_enable_setting?
            }
          } = socket
        ) do
+    replace =
+      if show_enable_setting?,
+        do: [:total_hours, :condition, :status],
+        else: [:total_hours, :condition]
+
     case Repo.insert(email_preset_changeset,
-           on_conflict: {:replace, [:total_hours, :condition, :status]},
+           on_conflict: {:replace, replace},
            conflict_target: :id
          ) do
       {:ok, email_automation_setting} ->
@@ -96,7 +93,7 @@ defmodule PicselloWeb.EmailAutomationLive.EditTimeComponent do
 
   @impl true
   def render(assigns) do
-    ~H"""
+        ~H"""
       <div class="modal">
         <.close_x />
         <h1 class="mt-2 mb-4 text-3xl">
@@ -214,7 +211,7 @@ defmodule PicselloWeb.EmailAutomationLive.EditTimeComponent do
           </div>
 
           <.footer class="pt-10">
-            <button class="btn-primary" title="Save" disabled={!step_valid?(assigns)} type="submit" phx-disable-with="Save">
+            <button class="btn-primary" title="Save" type="submit" phx-disable-with="Save">
               Save
             </button>
             <button class="btn-secondary" title="cancel" type="button" phx-click="modal" phx-value-action="close">

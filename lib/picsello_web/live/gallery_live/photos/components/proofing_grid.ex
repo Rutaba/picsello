@@ -31,22 +31,10 @@ defmodule PicselloWeb.GalleryLive.Photos.ProofingGrid do
                           :download_lightroom_csv,
                           @gallery.client_link_hash,
                           order.number)}
-                  class="hover-drop-down"
+                  class="hover-drop-down "
                   target="_blank"
                   rel="noopener noreferrer">
-                  Download Lightroom CSV
-                </a>
-              </li>
-              <li class="flex items-center pl-1 py-1 hover:bg-blue-planning-100 hover:rounded-md">
-                <a href={Routes.gallery_downloads_url(
-                          @socket,
-                          :download_csv,
-                          @gallery.client_link_hash,
-                          order.number)}
-                  class="hover-drop-down"
-                  target="_blank"
-                  rel="noopener noreferrer">
-                  Download full CSV
+                  Download file names
                 </a>
               </li>
               <li class="flex items-center pl-1 py-1 hover:bg-blue-planning-100 hover:rounded-md">

@@ -6,12 +6,11 @@ defmodule PicselloWeb.EmailAutomationLive.AddEmailComponent do
   import PicselloWeb.PackageLive.Shared, only: [current: 1]
   import PicselloWeb.GalleryLive.Shared, only: [steps: 1]
   import PicselloWeb.Shared.Quill, only: [quill_input: 1]
-  import PicselloWeb.Shared.MultiSelect
   import PicselloWeb.Shared.ShortCodeComponent, only: [short_codes_select: 1]
-  import PicselloWeb.EmailAutomationLive.Shared
+  import PicselloWeb.{EmailAutomationLive.Shared, Shared.MultiSelect}
 
   alias Picsello.{Repo, EmailPresets, EmailPresets.EmailPreset, Utils, UserCurrencies}
-  alias Ecto.Changeset
+  alias Ecto.{Changeset, Multi}
 
   @steps [:timing, :edit_email, :preview_email]
 
@@ -58,16 +57,6 @@ defmodule PicselloWeb.EmailAutomationLive.AddEmailComponent do
     |> assign_new(:template_preview, fn -> nil end)
     |> ok()
   end
-
-  defp step_valid?(assigns),
-    do:
-      Enum.all?(
-        [
-          assigns.email_preset_changeset
-        ],
-        & &1.valid?
-      )
-      |> validate?(assigns.job_types)
 
   @impl true
   def handle_event("back", _, %{assigns: %{step: step, steps: steps}} = socket) do
@@ -157,7 +146,7 @@ defmodule PicselloWeb.EmailAutomationLive.AddEmailComponent do
     total_hours = assigns.email_preset.total_hours
 
     body_html =
-      Ecto.Changeset.get_field(changeset, :body_template)
+      Changeset.get_field(changeset, :body_template)
       |> :bbmustache.render(get_sample_values(current_user, job, user_currency, total_hours),
         key_type: :atom
       )
@@ -501,8 +490,8 @@ defmodule PicselloWeb.EmailAutomationLive.AddEmailComponent do
     email_preset = email_preset_changeset |> current()
     selected_job_types = Enum.filter(job_types, & &1.selected)
 
-    Ecto.Multi.new()
-    |> Ecto.Multi.insert_all(:email_preset, EmailPreset, fn _ ->
+    Multi.new()
+    |> Multi.insert_all(:email_preset, EmailPreset, fn _ ->
       now = DateTime.utc_now() |> DateTime.truncate(:second)
 
       selected_job_types

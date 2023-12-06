@@ -8,8 +8,8 @@ defmodule PicselloWeb.EmailAutomationLive.EditEmailScheduleComponent do
   import PicselloWeb.Shared.ShortCodeComponent, only: [short_codes_select: 1]
   import PicselloWeb.EmailAutomationLive.Shared
 
-  alias Picsello.{Repo, EmailPresets}
-  alias Picsello.EmailAutomation.EmailSchedule
+  alias Picsello.{Repo, EmailPresets, EmailAutomation.EmailSchedule}
+  alias Ecto.{Changeset, Multi}
 
   @steps [:edit_email, :preview_email]
 
@@ -60,16 +60,6 @@ defmodule PicselloWeb.EmailAutomationLive.EditEmailScheduleComponent do
     index = Enum.find_index(email_presets, &(&1.name == email_preset.name))
     if(index, do: List.delete_at(email_presets, index), else: email_presets) ++ [email_preset]
   end
-
-  defp step_valid?(assigns),
-    do:
-      Enum.all?(
-        [
-          assigns.email_preset_changeset
-        ],
-        & &1.valid?
-      )
-      |> validate?(assigns.job_types)
 
   @impl true
   def handle_event("back", _, %{assigns: %{step: step, steps: steps}} = socket) do
@@ -285,10 +275,10 @@ defmodule PicselloWeb.EmailAutomationLive.EditEmailScheduleComponent do
            }
          } = socket
        ) do
-    changeset = Ecto.Changeset.put_change(email_preset_changeset, :id, email.id)
+    changeset = Changeset.put_change(email_preset_changeset, :id, email.id)
 
-    Ecto.Multi.new()
-    |> Ecto.Multi.insert(
+    Multi.new()
+    |> Multi.insert(
       :email_preset,
       fn _ -> changeset end,
       on_conflict: {:replace, [:name, :subject_template, :body_template, :private_name]},

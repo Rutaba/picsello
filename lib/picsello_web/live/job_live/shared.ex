@@ -1113,12 +1113,12 @@ defmodule PicselloWeb.JobLive.Shared do
             <% end %>
           </div>
 
-          <button class="ml-auto mt-auto h-8 flex content-center items-center px-2 py-1 btn-tertiary text-blue-planning-300  hover:border-blue-planning-300 mr-2 whitespace-nowrap" phx-click="open-compose" phx-value-client_id={@job.client_id}>
+          <a target="_blank" href={Routes.client_path(@socket, :show, @job.client_id)} class="ml-auto mt-auto h-8 flex content-center items-center px-2 py-1 btn-tertiary text-blue-planning-300  hover:border-blue-planning-300 mr-2 whitespace-nowrap">
             <span class="flex w-8 h-8 justify-center items-center">
             <.icon name="eye" class="text-blue-planning-300 mr-2 w-6 h-6" />
             </span>
             View client
-          </button>
+          </a>
 
         </div>
       </div>

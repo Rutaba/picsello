@@ -2,7 +2,6 @@ defmodule PicselloWeb.Live.EmailAutomations.Index do
   @moduledoc false
   use PicselloWeb, :live_view
   import PicselloWeb.Live.Calendar.Shared, only: [back_button: 1]
-  import PicselloWeb.LiveHelpers
 
   import PicselloWeb.EmailAutomationLive.Shared,
     only: [
@@ -15,11 +14,18 @@ defmodule PicselloWeb.Live.EmailAutomations.Index do
       get_email_name: 4
     ]
 
-  alias Picsello.{EmailAutomations, Repo}
-  alias PicselloWeb.ConfirmationComponent
-  alias PicselloWeb.EmailAutomationLive.{EditTimeComponent, EditEmailComponent, AddEmailComponent}
+  import PicselloWeb.LiveHelpers
 
-  @always_enabled_states ~w(digitals_ready_download order_confirmation_digital_physical thanks_booking pays_retainer_offline pays_retainer)
+  alias Picsello.{EmailAutomations, Packages, Repo}
+
+  alias PicselloWeb.{
+    ConfirmationComponent,
+    EmailAutomationLive.EditTimeComponent,
+    EmailAutomationLive.EditEmailComponent,
+    EmailAutomationLive.AddEmailComponent
+  }
+
+  @always_enabled_states ~w(digitals_ready_download order_confirmation_digital_physical thanks_booking thanks_job pays_retainer_offline pays_retainer)
   @impl true
   def mount(params, _session, socket) do
     socket
@@ -34,6 +40,7 @@ defmodule PicselloWeb.Live.EmailAutomations.Index do
     socket
     |> assign_job_types()
     |> assign_automation_pipelines()
+    |> assign_global_automation_settings()
     |> assign_collapsed_sections()
   end
 
@@ -52,6 +59,15 @@ defmodule PicselloWeb.Live.EmailAutomations.Index do
     |> assign(:current_user, current_user)
     |> assign(:job_types, job_types)
     |> assign(:selected_job_type, selected_job_type)
+  end
+
+  defp assign_global_automation_settings(%{assigns: %{current_user: current_user}} = socket) do
+    user = Packages.get_current_user(current_user.id)
+
+    global_automation_enabled? = user.organization.global_automation_enabled
+
+    socket
+    |> assign(:global_automation_enabled, global_automation_enabled?)
   end
 
   def handle_event("back_to_navbar", _, %{assigns: %{is_mobile: is_mobile}} = socket) do
@@ -142,11 +158,9 @@ defmodule PicselloWeb.Live.EmailAutomations.Index do
         %{assigns: %{collapsed_sections: collapsed_sections}} = socket
       ) do
     collapsed_sections =
-      if Enum.member?(collapsed_sections, section_id) do
-        Enum.filter(collapsed_sections, &(&1 != section_id))
-      else
-        collapsed_sections ++ [section_id]
-      end
+      if Enum.member?(collapsed_sections, section_id),
+        do: Enum.filter(collapsed_sections, &(&1 != section_id)),
+        else: collapsed_sections ++ [section_id]
 
     socket
     |> assign(:collapsed_sections, collapsed_sections)
@@ -170,6 +184,64 @@ defmodule PicselloWeb.Live.EmailAutomations.Index do
         socket
         |> put_flash(:error, "Failed to update email template status")
     end
+    |> assign_automation_pipelines()
+    |> noreply()
+  end
+
+  @impl true
+  def handle_event(
+        "toggle_global",
+        %{"active" => active},
+        socket
+      ) do
+    message = if active == "true", do: "disable", else: "enable"
+
+    socket
+    |> ConfirmationComponent.open(%{
+      title: "Are you sure you want to #{message} all the automation",
+      subtitle: "Are you sure you want to #{message} all the automation",
+      confirm_event: "confirm-toggle-global-#{active}",
+      close_event: "cancel_toggle",
+      confirm_label: "Yes",
+      close_label: "Cancel",
+      icon: "warning-orange"
+    })
+    |> assign_global_automation_settings()
+    |> noreply()
+  end
+
+  @impl true
+  def handle_info(
+        {:close_event, "cancel_toggle"},
+        socket
+      ) do
+    socket
+    |> close_modal()
+    |> assign_global_automation_settings()
+    |> noreply()
+  end
+
+  @impl true
+  def handle_info(
+        {:confirm_event, "confirm-toggle-global-" <> active},
+        %{assigns: %{current_user: %{organization: organization}}} = socket
+      ) do
+    status = if active == "true", do: "disabled", else: "enabled"
+
+    case EmailAutomations.update_globally_automations_emails(organization.id, status) do
+      {:ok, _} ->
+        socket
+        |> assign_global_automation_settings()
+        |> put_flash(
+          :success,
+          "Email template successfully #{status}"
+        )
+
+      _error ->
+        socket
+        |> put_flash(:success, "Failed to process template enabling/disabling")
+    end
+    |> close_modal()
     |> assign_automation_pipelines()
     |> noreply()
   end
@@ -303,7 +375,7 @@ defmodule PicselloWeb.Live.EmailAutomations.Index do
 
                 <div class="flex items-center md:mt-0 ml-auto md:pb-0 pb-6 md:pt-6">
                   <div class="custom-tooltip">
-                    <%= if @subcategory_slug != "order_confirmation_emails" do %>
+                    <%= unless emails_send_immediately_states?(@subcategory_slug, @pipeline.state) do %>
                       <.icon_button id={"email-#{email.id}"} disabled={disabled_email?(index)} class="ml-8 mr-2 px-2 py-2" title={!(index === 0) && "remove"} phx-click="delete-email" phx-value-email_id={email.id} color="red-sales-300" icon="trash"/>
                     <% end %>
                     <%= if index == 0 do %>
@@ -312,8 +384,8 @@ defmodule PicselloWeb.Live.EmailAutomations.Index do
                       </span>
                     <% end %>
                   </div>
-                  <%= if @subcategory_slug != "order_confirmation_emails" do %>
-                    <.button_simple class={classes("flex items-center px-2 py-1 btn-tertiary text-blue-planning-300 hover:border-blue-planning-300 mr-2 whitespace-nowrap", %{"hidden" => is_state_manually_trigger(@pipeline.state) and index == 0})} phx-click="edit-time-popup" phx-value-index={index} phx-value-subcategory_slug={@subcategory_slug} phx-value-email_id={email.id} phx-value-pipeline_id={@pipeline.id} icon_class="inline-block w-4 h-4 mr-3" color="blue-planning-300" icon="settings">Edit time</.button_simple>
+                  <%= unless emails_send_immediately_states?(@subcategory_slug, @pipeline.state) do %>
+                    <.icon_button_simple class={classes("flex items-center px-2 py-1 btn-tertiary text-blue-planning-300 hover:border-blue-planning-300 mr-2 whitespace-nowrap", %{"hidden" => is_state_manually_trigger(@pipeline.state) and index == 0})} phx-click="edit-time-popup" phx-value-index={index} phx-value-subcategory_slug={@subcategory_slug} phx-value-email_id={email.id} phx-value-pipeline_id={@pipeline.id} icon_class="inline-block w-4 h-4 mr-3" color="blue-planning-300" icon="settings">Edit time</.icon_button_simple>
                   <% end %>
                   <.button_simple class="flex items-center px-2 py-1 btn-tertiary bg-blue-planning-300 text-white hover:bg-blue-planning-300/75 whitespace-nowrap" phx-click="edit-email-popup" phx-value-index={index} phx-value-email_id={email.id} phx-value-pipeline_id={@pipeline.id} icon_class="inline-block w-4 h-4 mr-3" color="white" icon="pencil">Edit email</.button_simple>
                 </div>
@@ -323,7 +395,9 @@ defmodule PicselloWeb.Live.EmailAutomations.Index do
           <% end %>
           <div class="flex flex-row justify-between pr-6 pl-8 sm:pl-16 py-6">
             <div class="flex items-center">
-              <.button_simple class="flex items-center px-2 py-1 btn-tertiary hover:border-blue-planning-300" phx-click="add-email-popup" phx-value-pipeline_id={@pipeline.id} data-popover-target="popover-default" icon_class="inline-block w-4 h-4 mr-3" color="blue-planning-300" icon="plus">Add email</.button_simple>
+              <%= unless emails_send_immediately_states?(@subcategory_slug, @pipeline.state) do %>
+                <.icon_button_simple class="flex items-center px-2 py-1 btn-tertiary hover:border-blue-planning-300" phx-click="add-email-popup" phx-value-pipeline_id={@pipeline.id} data-popover-target="popover-default" icon_class="inline-block w-4 h-4 mr-3" color="blue-planning-300" icon="plus">Add email</.icon_button_simple>
+              <% end %>
             </div>
             <%= if show_enable_setting?(@pipeline.state, @subcategory_slug) do %>
               <div class="flex flex-row">
@@ -357,4 +431,18 @@ defmodule PicselloWeb.Live.EmailAutomations.Index do
 
   defp disabled_email?(0), do: true
   defp disabled_email?(_), do: false
+
+  defp emails_send_immediately_states?(_, state)
+       when state in ["client_contact", "abandoned_emails"],
+       do: true
+
+  defp emails_send_immediately_states?(slug, _state)
+       when slug in [
+              "order_confirmation_emails",
+              "booking_response_emails",
+              "payment_reminder_emails"
+            ],
+       do: true
+
+  defp emails_send_immediately_states?(_slug, _state), do: false
 end

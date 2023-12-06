@@ -7,6 +7,7 @@ export default {
       allowHTML: true,
       trigger: 'mouseenter click',
       interactive: true,
+      placement: this.el.dataset.position || 'top',
     });
   },
   mounted() {

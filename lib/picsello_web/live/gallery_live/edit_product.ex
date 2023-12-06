@@ -20,6 +20,16 @@ defmodule PicselloWeb.GalleryLive.EditProduct do
     |> noreply()
   end
 
+  def handle_event(
+        "click",
+        %{"preview_photo_id" => photo_id},
+        socket
+      ) do
+    send(socket.root_pid, {:open_choose_product, photo_id})
+
+    noreply(socket)
+  end
+
   @impl true
   def handle_event("update-print-type", %{"product-id" => id}, socket) do
     socket

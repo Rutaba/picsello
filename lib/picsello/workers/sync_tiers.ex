@@ -12,7 +12,8 @@ defmodule Picsello.Workers.SyncTiers do
 
   @job_type_map %{
     "Maternity & Newborn" => "newborn",
-    "Mini Session" => "mini"
+    "Mini Session" => "mini",
+    "Other" => "global"
   }
 
   def perform(_) do

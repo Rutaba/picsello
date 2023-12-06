@@ -30,11 +30,15 @@ defmodule PicselloWeb.Live.Admin.Index do
 
         <li><%= live_redirect "Manage Users", to: Routes.admin_user_index_path(@socket, :index), class: @class %></li>
 
+        <li><%= live_redirect "User Subscription Reconciliation Report", to: Routes.admin_user_subscription_report_path(@socket, :index), class: @class %></li>
+
         <li><%= live_redirect "Subscription Pricing", to: Routes.admin_subscription_pricing_path(@socket, :index), class: @class %></li>
 
         <li><%= live_redirect "Product Pricing Report", to: Routes.admin_product_pricing_path(@socket, :index), class: @class %></li>
 
         <li><%= live_redirect "Manage Shipment Details", to: Routes.admin_shippment_index_path(@socket, :index), class: @class %></li>
+
+        <li><%= live_redirect "Automations Report Index", to: Routes.admin_automations_report_index_path(@socket, :index), class: @class %></li>
 
         <li>
           <div class="grid border flex items-center justify-center rounded-lg py-4 px-8">
@@ -50,6 +54,7 @@ defmodule PicselloWeb.Live.Admin.Index do
         <li><%= live_redirect "WHCC Orders report", to: Routes.admin_whcc_orders_report_path(@socket, :index), class: @class %></li>
 
         <li><%= live_redirect "Feature Flags", to: "/feature-flags", class: @class %></li>
+        <li><%= live_redirect "Manage Automated Emails", to: Routes.admin_automated_emails_path(@socket, :index), class: @class %></li>
       </ul>
     </nav>
     """

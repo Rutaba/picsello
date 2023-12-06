@@ -58,12 +58,12 @@ defmodule Picsello.EmailPresets do
     |> Repo.all()
   end
 
-  def for(%Job{type: job_type} = job) do
+  def for(%Job{type: job_type, client: %{organization_id: organization_id}} = job) do
     job = job |> Repo.preload(:job_status)
 
     from(
       preset in job_presets(),
-      where: preset.job_type == ^job_type
+      where: preset.job_type == ^job_type and preset.organization_id == ^organization_id
     )
     |> for_job(job)
     |> Repo.all()

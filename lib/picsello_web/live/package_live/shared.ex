@@ -85,7 +85,7 @@ defmodule PicselloWeb.PackageLive.Shared do
     }
 
     params =
-      if org_job_type.job_type != "other",
+      if org_job_type.job_type != "global",
         do:
           params
           |> Map.put(:heading, "Enable this for my business")

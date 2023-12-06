@@ -233,7 +233,8 @@ defmodule PicselloWeb.ClientMessageComponent do
     socket
     |> assign_changeset(:validate, %{
       subject: preset.subject_template,
-      body_html: preset.body_template
+      body_html: preset.body_template,
+      preset_id: preset_id
     })
     |> push_event("quill:update", %{"html" => remove_client_name(socket, preset.body_template)})
     |> noreply()

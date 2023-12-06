@@ -56,7 +56,7 @@ defmodule PicselloWeb.Live.User.Settings do
     Promotions.insert_or_update_promotion(current_user, %{
       slug: sale_promotion_code,
       state: :purchased,
-      name: "Black Friday"
+      name: "Holiday"
     })
 
     Onboardings.user_update_promotion_code_changeset(current_user, %{
@@ -543,7 +543,7 @@ defmodule PicselloWeb.Live.User.Settings do
       ) do
     case Promotions.insert_or_update_promotion(current_user, %{
            slug: sale_promotion_code,
-           name: "Black Friday",
+           name: "Holiday",
            state: :dismissed
          }) do
       {:ok, sale_promotion_code} ->
@@ -558,6 +558,24 @@ defmodule PicselloWeb.Live.User.Settings do
         socket
         |> put_flash(:error, "Failed to dismiss promotion")
     end
+    |> noreply()
+  end
+
+  @impl true
+  def handle_event(
+        "feature-flag",
+        _unsigned_params,
+        %{assigns: %{current_user: current_user}} = socket
+      ) do
+    if FunWithFlags.enabled?(:sidebar_navigation, for: current_user) do
+      FunWithFlags.disable(:sidebar_navigation, for_actor: current_user)
+    else
+      FunWithFlags.enable(:sidebar_navigation, for_actor: current_user)
+    end
+
+    socket
+    |> put_flash(:success, "Beta feature toggled")
+    |> push_redirect(to: Routes.home_path(socket, :index))
     |> noreply()
   end
 
@@ -728,7 +746,7 @@ defmodule PicselloWeb.Live.User.Settings do
               currency: "USD",
               unit_amount: 35_000,
               product_data: %{
-                name: "Black Friday 2023",
+                name: "Holiday 2023",
                 description: "Pre purchase your next year of Picsello!"
               },
               tax_behavior: "exclusive"

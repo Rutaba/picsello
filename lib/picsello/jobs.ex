@@ -1,6 +1,6 @@
 defmodule Picsello.Jobs do
   @moduledoc "context module for jobs"
-  alias Picsello.EmailAutomation.{EmailSchedule, EmailScheduleHistory}
+  alias Picsello.EmailAutomation.{EmailScheduleHistory}
 
   alias Picsello.{
     Repo,
@@ -8,7 +8,8 @@ defmodule Picsello.Jobs do
     Job,
     Shoot,
     PaymentSchedule,
-    OrganizationJobType
+    OrganizationJobType,
+    EmailAutomationSchedules
   }
 
   alias Ecto.Multi
@@ -44,20 +45,21 @@ defmodule Picsello.Jobs do
     |> Repo.all()
   end
 
+  def count(query) do
+    query
+    |> exclude(:group_by)
+    |> distinct([q], q.id)
+    |> Repo.aggregate(:count)
+  end
+
   def get_jobs(query, %{sort_by: sort_by, sort_direction: sort_direction} = opts) do
+    fields = %{job_id: shoot_dynamic(), starts_at: shoot_dynamic(sort_direction)}
+    shoot_query = from s in Shoot, group_by: s.job_id, select: ^fields
+
     from(j in query,
       as: :j,
-      left_join: shoots in assoc(j, :shoots),
-      # inner_lateral_join:
-      #   sorted_shoot in subquery(
-      #     from Shoot,
-      #       as: :s,
-      #       where: [job_id: parent_as(:j).id],
-      #       order_by: [{^sort_direction, field(as(:s), :starts_at)}],
-      #       limit: 1,
-      #       select: [:id, :starts_at, :job_id]
-      #   ),
-      # on: sorted_shoot.id == shoots.id,
+      left_join: shoots in subquery(shoot_query),
+      on: j.id == shoots.job_id,
       left_join: package in assoc(j, :package),
       left_join: payment_schedules in assoc(j, :payment_schedules),
       where: ^filters_where(opts),
@@ -66,6 +68,10 @@ defmodule Picsello.Jobs do
     )
     |> group_by_clause(sort_by)
   end
+
+  defp shoot_dynamic(:asc), do: dynamic([s], min(s.starts_at))
+  defp shoot_dynamic(:desc), do: dynamic([s], max(s.starts_at))
+  defp shoot_dynamic(), do: dynamic([s], s.job_id)
 
   def get_jobs_by_pagination(
         query,
@@ -128,7 +134,7 @@ defmodule Picsello.Jobs do
 
     case result do
       {:ok, updated_job} ->
-        pull_back_email_schedules(job)
+        pull_back_archived_email_schedules(job)
         {:ok, updated_job}
 
       error ->
@@ -136,48 +142,14 @@ defmodule Picsello.Jobs do
     end
   end
 
-  defp pull_back_email_schedules(job) do
+  defp pull_back_archived_email_schedules(job) do
     schedule_history_query =
       from(esh in EmailScheduleHistory,
         where: esh.job_id == ^job.id and esh.stopped_reason == :archived
       )
 
-    email_schedule_params = make_schedule_params(schedule_history_query)
-
-    Multi.new()
-    |> Multi.delete_all(:schedule_history, schedule_history_query)
-    |> Multi.insert_all(:email_schedule, EmailSchedule, email_schedule_params)
+    EmailAutomationSchedules.pull_back_email_schedules_multi(schedule_history_query)
     |> Repo.transaction()
-  end
-
-  def make_schedule_params(query) do
-    query
-    |> Repo.all()
-    |> Enum.map(fn schedule ->
-      schedule
-      |> Map.take([
-        :total_hours,
-        :condition,
-        :type,
-        :body_template,
-        :name,
-        :subject_template,
-        :private_name,
-        :reminded_at,
-        :email_automation_pipeline_id,
-        :job_id,
-        :shoot_id,
-        :gallery_id,
-        :order_id,
-        :organization_id,
-        :inserted_at,
-        :updated_at
-      ])
-      |> Map.merge(%{
-        stopped_at: nil,
-        stopped_reason: nil
-      })
-    end)
   end
 
   def maybe_upsert_client(%Multi{} = multi, client, current_user) do
@@ -273,6 +245,9 @@ defmodule Picsello.Jobs do
           "new" ->
             filter_new_leads(dynamic)
 
+          "all" ->
+            filter_all(dynamic)
+
           _ ->
             dynamic
         end
@@ -281,6 +256,14 @@ defmodule Picsello.Jobs do
         # Not a where parameter
         dynamic
     end)
+  end
+
+  defp filter_all(dynamic) do
+    dynamic(
+      [j, client, status],
+      ^dynamic and
+        status.current_status not in [:archived]
+    )
   end
 
   defp filter_completed_jobs(dynamic) do

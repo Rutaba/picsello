@@ -98,7 +98,7 @@ defmodule Picsello.EditLeadQuestionnaireTest do
     |> assert_text("Fiance / Fiancee full name")
   end
 
-  feature "user sees default questionnaire was used for other job type", %{
+  feature "user sees default questionnaire was used for global job type", %{
     session: session,
     headshot_lead: headshot_lead,
     user: user

@@ -83,13 +83,13 @@ defmodule Picsello.Questionnaire do
 
   def for_organization_by_job_type(organization_id, nil) do
     get_organization_questionnaires(organization_id)
-    |> where([q], q.job_type == "other")
+    |> where([q], q.job_type == "global")
     |> Repo.all()
   end
 
   def for_organization_by_job_type(organization_id, job_type) do
     get_organization_questionnaires(organization_id)
-    |> where([q], q.job_type == ^job_type or q.job_type == "other")
+    |> where([q], q.job_type == ^job_type or q.job_type == "global")
     |> Repo.all()
   end
 
@@ -192,14 +192,14 @@ defmodule Picsello.Questionnaire do
 
   defp get_default_questionnaire(job_type) do
     from(q in __MODULE__,
-      where: q.job_type in [^job_type, "other"],
+      where: q.job_type in [^job_type, "global"],
       where: q.is_picsello_default,
       order_by:
         fragment(
           """
           case
-            when ?.job_type != 'other' then 0
-            when ?.job_type = 'other' then 1
+            when ?.job_type != 'global' then 0
+            when ?.job_type = 'global' then 1
           end asc
           """,
           q,

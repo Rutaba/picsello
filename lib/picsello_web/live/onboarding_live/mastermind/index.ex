@@ -2,10 +2,13 @@ defmodule PicselloWeb.OnboardingLive.Mastermind.Index do
   @moduledoc false
   use PicselloWeb, live_view: [layout: :onboarding]
 
+  require Logger
+
   alias Picsello.{
     Subscriptions,
     Subscriptions,
     Payments,
+    Accounts,
     Accounts.User.Promotions
   }
 
@@ -18,7 +21,11 @@ defmodule PicselloWeb.OnboardingLive.Mastermind.Index do
       save_multi: 3,
       assign_changeset: 3,
       org_job_inputs: 1,
-      most_interested_select: 0
+      most_interested_select: 0,
+      country_info: 1,
+      countries: 0,
+      states_or_province: 1,
+      field_for: 1
     ]
 
   @impl true
@@ -52,7 +59,6 @@ defmodule PicselloWeb.OnboardingLive.Mastermind.Index do
   @impl true
   def handle_params(
         %{
-          "payment_intent" => _,
           "redirect_status" => "succeeded",
           "state" => state,
           "country" => country
@@ -61,7 +67,6 @@ defmodule PicselloWeb.OnboardingLive.Mastermind.Index do
         socket
       ) do
     socket
-    |> assign(:stripe_elements_loading, false)
     |> assign(:state, state)
     |> assign(:country, country)
     |> assign_step(3)
@@ -107,12 +112,47 @@ defmodule PicselloWeb.OnboardingLive.Mastermind.Index do
 
   @impl true
   def handle_event(
+        "stripe-elements-success",
+        %{"subscription_id" => subscription_id},
+        %{assigns: %{current_user: current_user, promotion_code: promotion_code}} = socket
+      ) do
+    case Payments.retrieve_subscription(subscription_id, []) do
+      {:ok, subscription} ->
+        Subscriptions.handle_stripe_subscription(subscription)
+
+        Promotions.insert_or_update_promotion(current_user, %{
+          slug: promotion_code,
+          state: :purchased,
+          name: "Holiday"
+        })
+
+        socket
+        |> assign(:stripe_elements_loading, false)
+        |> put_flash(:success, "Subscription and payment added!")
+
+      {:error, error} ->
+        Logger.error("Error retrieving subscription: #{inspect(error)}")
+
+        socket
+        |> assign(:stripe_elements_loading, false)
+        |> put_flash(
+          :error,
+          "Sorry - something went wrong! Confirm your payment and information is correct or reach out to Customer Success."
+        )
+    end
+    |> noreply()
+  end
+
+  @impl true
+  def handle_event(
         "stripe-elements-create",
         %{"address" => %{"value" => %{"address" => address}}} = _params,
         %{assigns: %{current_user: current_user, promotion_code: promotion_code}} = socket
       ) do
+    customer_id = Subscriptions.user_customer_id(current_user, %{address: address})
+
     stripe_params = %{
-      customer: Subscriptions.user_customer_id(current_user, %{address: address}),
+      customer: customer_id,
       items: [
         %{
           quantity: 1,
@@ -120,49 +160,44 @@ defmodule PicselloWeb.OnboardingLive.Mastermind.Index do
         }
       ],
       coupon: Subscriptions.maybe_return_promotion_code_id?(promotion_code),
-      payment_behavior: "default_incomplete",
       payment_settings: %{
         save_default_payment_method: "on_subscription"
       },
-      expand: ["latest_invoice.payment_intent", "pending_setup_intent"]
+      collection_method: "charge_automatically",
+      payment_behavior: "default_incomplete",
+      expand: ["latest_invoice.payment_intent"]
     }
 
     case Payments.create_subscription(stripe_params) do
       {:ok, subscription} ->
-        Subscriptions.handle_stripe_subscription(subscription)
-
-        Promotions.insert_or_update_promotion(current_user, %{
-          slug: promotion_code,
-          state: :purchased,
-          name: "Black Friday"
-        })
-
         return =
-          if is_nil(subscription.pending_setup_intent) do
-            build_return(
-              subscription.latest_invoice.payment_intent.client_secret,
-              address,
-              promotion_code,
-              "payment"
-            )
-          else
-            build_return(
-              subscription.pending_setup_intent.client_secret,
-              address,
-              promotion_code,
-              "setup"
-            )
-          end
+          build_return(
+            subscription.latest_invoice.payment_intent.client_secret,
+            address,
+            promotion_code,
+            "subscription"
+          )
 
         socket
-        |> push_event("stripe-elements-success", return)
-        |> noreply()
+        |> assign(
+          :current_user,
+          Accounts.get_user_by_stripe_customer_id(customer_id)
+        )
+        |> push_event(
+          "stripe-elements-confirm",
+          Enum.into(return, %{
+            subscription_id: subscription.id
+          })
+        )
 
-      _ ->
+      {:error, error} ->
+        Logger.error("Error creating subscription: #{inspect(error)}")
+
         socket
-        |> put_flash(:error, "Couldn't fetch your payment session. Please try again")
-        |> noreply()
+        |> assign(:stripe_elements_loading, false)
+        |> put_flash(:error, "Payment method didn't work. Please try again")
     end
+    |> noreply()
   end
 
   @impl true
@@ -171,10 +206,26 @@ defmodule PicselloWeb.OnboardingLive.Mastermind.Index do
   end
 
   @impl true
+  def handle_event("stripe-elements-error", %{"error" => error}, socket) do
+    Logger.error("Error creating subscription: #{inspect(error)}")
+
+    socket
+    |> assign(:stripe_elements_loading, false)
+    |> put_flash(
+      :error,
+      "Sorry - something went wrong! Confirm your payment and information is correct or reach out to Customer Success."
+    )
+    |> noreply()
+  end
+
+  @impl true
   def handle_event("stripe-elements-error", _params, socket) do
     socket
     |> assign(:stripe_elements_loading, false)
-    |> put_flash(:error, "Couldn't fetch your payment session. Please try again")
+    |> put_flash(
+      :error,
+      "Sorry - something went wrong! Confirm your payment and information is correct or reach out to Customer Success."
+    )
     |> noreply()
   end
 
@@ -189,8 +240,8 @@ defmodule PicselloWeb.OnboardingLive.Mastermind.Index do
 
   defp step(%{step: 2} = assigns) do
     ~H"""
-      <.signup_container {assigns} show_logout?={true}>
-        <h2 class="text-3xl md:text-4xl font-bold text-center mb-8">Picsello’s <span class="underline underline-offset-1 text-decoration-blue-planning-300">Business Mastermind</span> is here to help you achieve success on your terms</h2>
+      <.signup_container {assigns} show_logout?={true} left_classes="p-8 bg-purple-marketing-300 text-white order-2 sm:order-1">
+        <h2 class="text-3xl md:text-4xl font-bold text-center mb-8">Picsello is here to help you achieve success on your terms</h2>
         <blockqoute class="max-w-lg mt-auto mx-auto py-8 lg:py-12">
           <p class="mb-4 text-white border-solid border-l-4 border-white pl-4">
             "Jane has been a wonderful mentor! With her help I’ve learned the importance of believing in myself and my work. She has taught me that it is imperative to be profitable at every stage of my photography journey to ensure I’m set up for lasting success. Jane has also given me the tools I need to make sure I’m charging enough to be profitable. She is always there to answer my questions and cheer me on. Jane has played a key role in my growth as a photographer and business owner! I wouldn’t be where I am without her!”
@@ -212,6 +263,7 @@ defmodule PicselloWeb.OnboardingLive.Mastermind.Index do
         <% end %>
         <:right_panel>
           <.signup_deal original_price={Money.new(35000, :USD)} price={Money.new(20000, :USD)} expires_at={@black_friday_timer_end} />
+          <p class="text-md text-gray-400 italic text-center mt-2">Your card will be charged the discounted annual subscription price</p>
           <div
             phx-update="ignore"
             class="my-6"
@@ -235,9 +287,9 @@ defmodule PicselloWeb.OnboardingLive.Mastermind.Index do
     assigns = assign(assigns, input_class: "p-4")
 
     ~H"""
-      <.signup_container {assigns} show_logout?={true}>
+      <.signup_container {assigns} show_logout?={true} left_classes="p-8 bg-purple-marketing-300 text-white order-2 sm:order-1">
         <div class="flex justify-center mt-12">
-          <img src={Routes.static_path(@socket, "/images/mastermind-clientbooking.png")} loading="lazy" alt="Picsello Client booking feature" />
+          <img src={Routes.static_path(@socket, "/images/mastermind-clientbooking.png")} loading="lazy" alt="Picsello Client booking feature" class="max-w-full" />
         </div>
         <blockqoute class="max-w-lg mt-auto mx-auto py-8 lg:py-12">
           <p class="mb-4 text-white border-solid border-l-4 border-white pl-4">
@@ -258,7 +310,6 @@ defmodule PicselloWeb.OnboardingLive.Mastermind.Index do
             </.form_field>
           <% end %>
           <%= for onboarding <- inputs_for(@f, :onboarding) do %>
-            <%= hidden_input onboarding, :state, value: @state %>
             <%= hidden_input onboarding, :promotion_code, value: @promotion_code %>
             <.form_field label="Are you a full-time or part-time photographer?" error={:schedule} f={onboarding} >
               <%= select onboarding, :schedule, %{"Full-time" => :full_time, "Part-time" => :part_time}, class: "select #{@input_class}" %>
@@ -269,7 +320,6 @@ defmodule PicselloWeb.OnboardingLive.Mastermind.Index do
             </.form_field>
 
             <%= hidden_input onboarding, :welcome_count, value: 0 %>
-            <%= hidden_input onboarding, :country, value: @country %>
 
             <.form_field
               label="What are you most interested in using Picsello for?"
@@ -281,6 +331,36 @@ defmodule PicselloWeb.OnboardingLive.Mastermind.Index do
                 class: "select #{@input_class} truncate pr-8"
               ) %>
             </.form_field>
+
+            <%= if is_nil(@country) || is_nil(@state) do %>
+              <% info = country_info(input_value(onboarding, :country)) %>
+              <div class={classes("grid gap-4 mb-8", %{"sm:grid-cols-2" => Map.has_key?(info, :state_label)})}>
+                <.form_field label="What’s your country?" error={:country} f={onboarding}>
+                  <%= select(onboarding, :country, [{"United States", :US}] ++ countries(),
+                    class: "select #{@input_class}"
+                  ) %>
+                </.form_field>
+
+                <%= if Map.has_key?(info, :state_label) do %>
+                  <.form_field label={info.state_label} error={:state} f={onboarding}>
+                    <%= select(
+                      onboarding,
+                      field_for(input_value(onboarding, :country)),
+                      [{"select one", nil}] ++ states_or_province(input_value(onboarding, :country)),
+                      class: "select #{@input_class}"
+                    ) %>
+                  </.form_field>
+                <% end %>
+              </div>
+            <% else %>
+              <%= if @country == "CA" do %>
+                <%= hidden_input onboarding, :province, value: @state %>
+              <% else %>
+                <%= hidden_input onboarding, :state, value: @state %>
+              <% end %>
+              <%= hidden_input onboarding, :country, value: @country %>
+            <% end %>
+
           <% end %>
           <.step_footer {assigns} />
         </:right_panel>
@@ -290,7 +370,7 @@ defmodule PicselloWeb.OnboardingLive.Mastermind.Index do
 
   defp step(%{step: 4} = assigns) do
     ~H"""
-      <.signup_container {assigns} show_logout?={true} left_classes="p-8 pb-0 pr-0 bg-purple-marketing-300 text-white">
+      <.signup_container {assigns} show_logout?={true} left_classes="p-8 pb-0 pr-0 bg-purple-marketing-300 text-white order-2 sm:order-1">
         <h2 class="text-3xl md:text-4xl font-bold text-center mb-8">Your <span class="underline underline-offset-1 text-decoration-blue-planning-300">all-in-one</span> photography business software with coaching included.</h2>
         <img src={Routes.static_path(@socket, "/images/mastermind-dashboard.png")} loading="lazy" alt="Picsello Client booking feature" />
         <:right_panel>
@@ -320,7 +400,15 @@ defmodule PicselloWeb.OnboardingLive.Mastermind.Index do
     """
   end
 
-  defp assign_step(%{assigns: %{current_user: %{stripe_customer_id: nil}}} = socket) do
+  defp assign_step(
+         %{assigns: %{current_user: %{stripe_customer_id: nil, subscription: nil}}} = socket
+       ) do
+    assign_step(socket, 2)
+  end
+
+  defp assign_step(
+         %{assigns: %{current_user: %{stripe_customer_id: _, subscription: nil}}} = socket
+       ) do
     assign_step(socket, 2)
   end
 

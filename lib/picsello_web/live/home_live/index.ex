@@ -83,7 +83,6 @@ defmodule PicselloWeb.HomeLive.Index do
     |> assign(:tabs, tabs_list(socket))
     |> assign(:tab_active, "todo")
     |> assign(:index, false)
-    |> assign_promotion_code_changeset()
     |> subscribe_inbound_messages()
     |> assign_inbox_threads()
     |> maybe_show_success_subscription(params)
@@ -94,6 +93,7 @@ defmodule PicselloWeb.HomeLive.Index do
         else: nil
       )
     )
+    |> assign_promotion_code_changeset()
     |> ok()
   end
 
@@ -106,7 +106,7 @@ defmodule PicselloWeb.HomeLive.Index do
     Promotions.insert_or_update_promotion(current_user, %{
       slug: promotion_code,
       state: :purchased,
-      name: "Black Friday"
+      name: "Holiday"
     })
 
     Onboardings.user_update_promotion_code_changeset(current_user, %{
@@ -322,7 +322,7 @@ defmodule PicselloWeb.HomeLive.Index do
       ) do
     case Promotions.insert_or_update_promotion(current_user, %{
            slug: promotion_code,
-           name: "Black Friday",
+           name: "Holiday",
            state: :dismissed
          }) do
       {:ok, promotion_code} ->
@@ -455,8 +455,20 @@ defmodule PicselloWeb.HomeLive.Index do
       |> noreply()
 
   @impl true
-  def handle_event("change-tab", %{"tab" => tab}, socket) do
+  def handle_event(
+        "change-tab",
+        %{"tab" => tab},
+        %{assigns: %{current_user: current_user}} = socket
+      ) do
+    # reassign user for collapsing sidebar jank
+    # since we are looking at the layout with a class
+    current_user =
+      current_user.id
+      |> Accounts.get_user!()
+      |> Repo.preload(organization: [:organization_job_types])
+
     socket
+    |> assign(:current_user, current_user)
     |> assign(:tab_active, tab)
     |> assign_tab_data(tab)
     |> noreply()
@@ -857,10 +869,10 @@ defmodule PicselloWeb.HomeLive.Index do
                         "#{package.name |> String.slice(0..40)} ..."
                       end %>
                   </p>
-                  <p class="text-gray-400 font-normal text-sm">
-                    Package price: <%= package |> Package.price() %>&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp
-                    Digital price: <%= if Money.zero?(package.download_each_price) do %>--<% else %><%= package.download_each_price %> <% end %>
-                  </p>
+                  <div class="flex flex-col sm:grid sm:grid-cols-2 justify-between text-gray-400 font-normal text-sm break-all gap-1 sm:gap-2">
+                    <span>Package price: <%= package |> Package.price() %></span>
+                    <span>Digital price: <%= if Money.zero?(package.download_each_price) do %>--<% else %><%= package.download_each_price %> <% end %></span>
+                  </div>
                 <% end %>
               <% end %>
             </div>
@@ -976,22 +988,24 @@ defmodule PicselloWeb.HomeLive.Index do
       })
 
     ~H"""
-    <div class="rounded-lg bg-white p-6 grow flex flex-col items-start">
+    <div class="rounded-lg border p-4 grow flex flex-col items-start">
       <div class="flex justify-between items-center mb-2 w-full gap-4">
         <h3 class="text-2xl font-bold flex items-center gap-2">
           <%= @title %>
           <.notification_bubble notification_count={@notification_count} />
         </h3>
-        <%= if @button_action && @button_text do %>
-          <button class="btn-tertiary py-2 px-4 mt-2 md:mt-0 flex-wrap whitespace-nowrap flex-shrink-0" type="button" phx-click={@button_action}><%= @button_text %></button>
-        <% end %>
       </div>
       <div class={"mb-2 #{@inner_block_classes}"}>
         <%= render_slot(@inner_block) %>
       </div>
-      <%= if @link_action && @link_text do %>
-        <button class="underline text-blue-planning-300 mt-auto inline-block" type="button" phx-click={@link_action} phx-value-tab={@link_value} phx-value-to={@redirect_route}><%= @link_text %></button>
-      <% end %>
+      <div class="flex items-center gap-4 mt-auto">
+        <%= if @button_action && @button_text do %>
+          <button class="btn-tertiary border border-base-300/25 py-2 px-4 md:mt-0 flex-wrap whitespace-nowrap flex-shrink-0 text-sm" type="button" phx-click={@button_action}><%= @button_text %></button>
+        <% end %>
+        <%= if @link_action && @link_text do %>
+          <button class="underline text-blue-planning-300 inline-block text-sm" type="button" phx-click={@link_action} phx-value-tab={@link_value} phx-value-to={@redirect_route}><%= @link_text %></button>
+        <% end %>
+      </div>
     </div>
     """
   end
@@ -1005,7 +1019,7 @@ defmodule PicselloWeb.HomeLive.Index do
 
     ~H"""
     <%= if @notification_count && @notification_count !== 0 do %>
-      <span {testid("badge")} class={"text-xs bg-red-sales-300 text-white w-5 h-5 leading-none rounded-full flex items-center justify-center pb-0.5 #{@classes}"}><%= @notification_count %></span>
+      <span {testid("badge")} class={"text-xs bg-red-sales-300 text-white leading-none rounded-full flex items-center justify-center px-2 pt-0.5 pb-1 #{@classes}"}><%= @notification_count %></span>
     <% end %>
     """
   end
@@ -1476,7 +1490,7 @@ defmodule PicselloWeb.HomeLive.Index do
         :link,
         Routes.gallery_downloads_url(
           socket,
-          :download_csv,
+          :download_lightroom_csv,
           gallery.client_link_hash,
           number
         )
@@ -1599,13 +1613,13 @@ defmodule PicselloWeb.HomeLive.Index do
     <div {testid("card-#{@title}")} class={"flex overflow-hidden border border-base-200 rounded-lg #{@class}"}>
       <div class={"w-3 flex-shrink-0 border-r rounded-l-lg bg-#{@color}"} />
       <div class="flex flex-col w-full p-4">
-        <div class="flex justify-between items-center mb-2 w-full gap-10">
+        <div class="flex flex-wrap justify-between items-center mb-2 w-full gap-0 md:gap-10">
           <h3 class={"mb-2 mr-4 text-xl font-bold text-black"}><%= @title %></h3>
-          <div class="flex flex-col md:flex-row items-center">
-            <button type="button" class="link px-4 mb-2 md:mb-0" phx-click={@view_event} hidden={@hidden}>
+          <div class="flex flex-row items-center justify-between">
+            <button type="button" class="md:order-1 order-2 link px-4 mb-2 md:mb-0" phx-click={@view_event} hidden={@hidden}>
               View all
             </button>
-            <button type="button" class="font-bold btn-tertiary py-2" phx-click={@add_event}>
+            <button type="button" class="md:order-2 order-1 font-bold btn-tertiary py-2" phx-click={@add_event}>
               <%= @button_title %>
             </button>
           </div>
@@ -1633,7 +1647,7 @@ defmodule PicselloWeb.HomeLive.Index do
                     button_class="btn-tertiary"
                     subscription_plan={subscription_plan}
                     headline="Monthly"
-                    price={"#{subscription_plan.price |> Money.to_string(fractional_unit: false)} monthly subscription"}
+                    price={"#{subscription_plan.price |> Money.to_string(fractional_unit: false)} monthly"}
                     price_secondary={"(#{subscription_plan.price |> Money.multiply(12) |> Money.to_string(fractional_unit: false)}/year)"}
                     interval={subscription_plan.recurring_interval}
                     body="You get everything in the monthly plan PLUS exclusive access to Picsello’s Business Mastermind with classes and so much more"
@@ -1643,10 +1657,10 @@ defmodule PicselloWeb.HomeLive.Index do
                     class="bg-blue-planning-300 text-white"
                     subscription_plan={subscription_plan}
                     headline="Yearly"
-                    price={"#{subscription_plan.price |> Money.to_string(fractional_unit: false)} yearly subscription"}
-                    price_secondary={"(#{subscription_plan.price |> Money.divide(12) |> Enum.at(1) |> Money.to_string(fractional_unit: false)}/month)"}
+                    price={"#{subscription_plan.price |> Money.subtract(15_000) |> Money.to_string(fractional_unit: false)} yearly"}
+                    price_secondary={"(Originally #{subscription_plan.price |> Money.to_string(fractional_unit: false)}—save $150!)"}
                     interval={subscription_plan.recurring_interval}
-                    body="You get everything in the monthly plan PLUS exclusive access to Picsello’s Business Mastermind with classes and so much more"
+                    body="HOLDAY SALE! SAVE $150. You get everything in the monthly plan PLUS exclusive access to Picsello’s Business Mastermind with classes and so much more"
                   />
                 <% _ -> %>
               <% end %>
@@ -1828,7 +1842,17 @@ defmodule PicselloWeb.HomeLive.Index do
     |> Map.put(:action, action)
   end
 
-  defp assign_promotion_code_changeset(socket, params \\ %{}) do
+  defp assign_promotion_code_changeset(
+         %{assigns: %{promotion_code: promotion_code}} = socket,
+         params \\ %{}
+       ) do
+    params =
+      Enum.into(params, %{
+        "onboarding" => %{
+          "promotion_code" => promotion_code
+        }
+      })
+
     socket
     |> assign(
       :promotion_code_changeset,
@@ -1869,7 +1893,7 @@ defmodule PicselloWeb.HomeLive.Index do
               currency: "USD",
               unit_amount: 35_000,
               product_data: %{
-                name: "Black Friday 2023",
+                name: "Holiday Sale 2023",
                 description: "Pre purchase your next year of Picsello!"
               },
               tax_behavior: "exclusive"

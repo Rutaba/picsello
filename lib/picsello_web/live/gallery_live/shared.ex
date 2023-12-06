@@ -130,6 +130,9 @@ defmodule PicselloWeb.GalleryLive.Shared do
       |> then(&Galleries.load_watermark_in_gallery(elem(&1, 1)))
       |> Repo.preload(:photographer, job: :client)
 
+  def handle_event("open_compose", %{}, socket), do: open_compose(socket)
+
+  def handle_info(:update_cart_count, %{assigns: %{gallery: gallery}} = socket) do
     socket
     |> assign(:gallery, gallery)
     |> assign(:edit_name, false)
@@ -137,10 +140,18 @@ defmodule PicselloWeb.GalleryLive.Shared do
     |> noreply()
   end
 
-  def assign_gallery_changeset(%{assigns: %{gallery: gallery}} = socket),
-    do:
-      socket
-      |> assign(:changeset, Galleries.change_gallery(gallery) |> Map.put(:action, :validate))
+  def handle_info({:message_composed, message_changeset, recipients}, socket) do
+    add_message_and_notify(socket, message_changeset, recipients)
+  end
+
+  defp get_email_body_subject(nil, gallery, state) do
+    case Picsello.EmailPresets.for(gallery, state) do
+      [preset | _] ->
+        Picsello.EmailPresets.resolve_variables(
+          preset,
+          schemas(gallery),
+          PicselloWeb.Helpers
+        )
 
   def assign_gallery_changeset(%{assigns: %{gallery: gallery}} = socket, attrs),
     do:
@@ -313,6 +324,29 @@ defmodule PicselloWeb.GalleryLive.Shared do
         |> noreply())
     )
   end
+
+  defp open_compose(
+         %{
+           assigns: %{
+             current_user: %{organization: %{name: organization_name}} = current_user,
+             gallery: %{job: job, name: gallery_name}
+           }
+         } = socket
+       ),
+       do:
+         socket
+         |> PicselloWeb.ClientMessageComponent.open(%{
+           modal_title: "Contact #{organization_name}",
+           show_client_email: false,
+           show_subject: false,
+           subject: "Client message: #{gallery_name} Gallery",
+           presets: [],
+           send_button: "Send",
+           client: Job.client(job),
+           recipients: %{"from" => job.client.email, "to" => current_user.email},
+           current_user: current_user
+         })
+         |> noreply()
 
   defp editor_urls(
          %{assigns: %{gallery_client: gallery_client, album: %Album{is_finals: true} = album}} =

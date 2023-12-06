@@ -11,40 +11,25 @@ defmodule Picsello.Workers.ScheduleAutomationEmail do
     ClientMessage,
     Galleries.Gallery,
     Job,
-    Subscriptions
+    Subscriptions,
+    AdminGlobalSetting,
+    Repo
   }
 
   alias PicselloWeb.EmailAutomationLive.Shared
+
+  import Ecto.Query
   @impl Oban.Worker
 
-  @doc """
-  Performs email automation tasks for multiple organizations and pipelines.
-
-  This function is responsible for orchestrating email automation tasks across multiple
-  organizations and pipelines. It chunks organizations into groups and processes emails
-  for each group in parallel. For each organization, it retrieves email pipelines, subjects,
-  and checks if any email requires sending based on the job's state and previous interactions
-  with the client. If no client reply is detected, emails are sent for each pipeline.
-
-  ## Parameters
-
-      - `args`: An optional argument, typically not used. It can be any value or data structure.
-
-  ## Returns
-
-      - `:ok`: Indicates that the email automation tasks have been successfully performed.
-
-  ## Example
-
-      ```elixir
-      EmailAutomations.perform(nil)
-
-      # The function will perform email automation tasks for multiple organizations and pipelines.
-  """
   def perform(_) do
+    is_approval_required? =
+      from(ags in AdminGlobalSetting, where: ags.slug == "approval_required", select: ags.value)
+      |> Repo.one()
+      |> String.to_atom()
+
     get_all_organizations()
     |> Enum.chunk_every(10)
-    |> Enum.each(&send_emails_by_organizations(&1))
+    |> Enum.each(&send_emails_by_organizations(&1, is_approval_required?))
 
     # |> Task.async_stream(&send_emails_by_organizations(&1),
     #   max_concurrency: System.schedulers_online() * 3,
@@ -56,7 +41,7 @@ defmodule Picsello.Workers.ScheduleAutomationEmail do
     :ok
   end
 
-  defp send_emails_by_organizations(ids) do
+  defp send_emails_by_organizations(ids, is_approval_required?) do
     get_all_emails(ids)
     |> Enum.map(fn job_pipeline ->
       try do
@@ -64,7 +49,7 @@ defmodule Picsello.Workers.ScheduleAutomationEmail do
         job = EmailAutomations.get_job(job_pipeline.job_id)
 
         job = if is_nil(gallery), do: job, else: gallery.job
-        send_email_by(job, gallery, job_pipeline)
+        send_email_by(job, gallery, job_pipeline, is_approval_required?)
       rescue
         error ->
           message = "Error sending email #{inspect(%{pipeline: job_pipeline, error: error})}"
@@ -74,7 +59,8 @@ defmodule Picsello.Workers.ScheduleAutomationEmail do
     end)
   end
 
-  defp send_email_by(_job, nil, %{state: state})
+  ## This will trigger for specified states whenever the gallery is nil
+  defp send_email_by(_job, nil, %{state: state}, _is_approval_required?)
        when state in [
               :order_arrived,
               :order_delayed,
@@ -93,7 +79,7 @@ defmodule Picsello.Workers.ScheduleAutomationEmail do
             ],
        do: Logger.info("Gallery is not active")
 
-  defp send_email_by(job, gallery, job_pipeline) do
+  defp send_email_by(job, gallery, job_pipeline, is_approval_required?) do
     subjects = get_subjects_for_job_pipeline(job_pipeline.emails)
     state = job_pipeline.state
 
@@ -118,7 +104,7 @@ defmodule Picsello.Workers.ScheduleAutomationEmail do
 
       # This condition only run when no reply recieve from any email for that job & pipeline
       if !is_reply do
-        send_email_each_pipeline(job_pipeline, job, gallery)
+        send_email_each_pipeline(job_pipeline, job, gallery, is_approval_required?)
       end
     end
   end
@@ -129,22 +115,6 @@ defmodule Picsello.Workers.ScheduleAutomationEmail do
   This function retrieves email automation schedules for a list of organizations and organizes them
   into a structured list of `EmailPresetGroup` records. Each group represents a combination of job,
   gallery, pipeline, state, and associated emails. The retrieved emails are sorted according to their respective states.
-
-  ## Parameters
-
-      - `organizations`: A list of organization records for which to retrieve email schedules.
-
-  ## Returns
-
-      - A list of `EmailPresetGroup` records, each containing information about a specific job, gallery, pipeline, state, and associated emails.
-
-  ## Example
-
-      ```elixir
-      organizations = MyModule.get_all_organizations()
-      email_groups = EmailAutomations.get_all_emails(organizations)
-
-      # The `email_groups` variable now contains organized email automation schedules.
   """
   def get_all_emails(organizations) do
     EmailAutomationSchedules.get_all_emails_schedules(organizations)
@@ -162,18 +132,35 @@ defmodule Picsello.Workers.ScheduleAutomationEmail do
     end)
   end
 
-  defp send_email_each_pipeline(job_pipeline, job, gallery) do
+  defp send_email_each_pipeline(job_pipeline, job, gallery, is_approval_required?) do
     # Get first email from pipeline which is not sent
     email_schedules =
       job_pipeline.emails |> Enum.filter(fn email -> is_nil(email.reminded_at) end)
 
     Enum.each(email_schedules, fn schedule ->
       state = schedule.email_automation_pipeline.state
-      send_email_by_state(state, job_pipeline.pipeline_id, schedule, job, gallery, nil)
+
+      send_email_by_state(
+        state,
+        job_pipeline.pipeline_id,
+        schedule,
+        job,
+        gallery,
+        nil,
+        is_approval_required?
+      )
     end)
   end
 
-  defp send_email_by_state(state, pipeline_id, schedule, job, gallery, _order)
+  defp send_email_by_state(
+         state,
+         pipeline_id,
+         schedule,
+         job,
+         gallery,
+         _order,
+         is_approval_required?
+       )
        when state in [
               :order_arrived,
               :order_delayed,
@@ -185,25 +172,35 @@ defmodule Picsello.Workers.ScheduleAutomationEmail do
             ] do
     order = EmailAutomations.get_order(schedule.order_id)
 
-    send_email(state, pipeline_id, schedule, job, gallery, order)
+    send_email(state, pipeline_id, schedule, job, gallery, order, is_approval_required?)
   end
 
-  defp send_email_by_state(state, pipeline_id, schedule, job, gallery, order) do
-    send_email(state, pipeline_id, schedule, job, gallery, order)
+  defp send_email_by_state(
+         state,
+         pipeline_id,
+         schedule,
+         job,
+         gallery,
+         order,
+         is_approval_required?
+       ) do
+    send_email(state, pipeline_id, schedule, job, gallery, order, is_approval_required?)
   end
 
-  defp send_email(state, pipeline_id, schedule, job, gallery, order) do
+  defp send_email(state, pipeline_id, schedule, job, gallery, order, is_approval_required?) do
     type = schedule.email_automation_pipeline.email_automation_category.type
     type = if order, do: :order, else: type
     state = if is_atom(state), do: state, else: String.to_atom(state)
 
+    ## fetches the datetime on the basis of which email will be sent
     job_date_time =
       Shared.fetch_date_for_state_maybe_manual(state, schedule, pipeline_id, job, gallery, order)
 
+    ## Determines whether the email should be sent
     is_send_time = is_email_send_time(job_date_time, state, schedule.total_hours)
 
     if is_send_time and is_nil(schedule.reminded_at) and is_nil(schedule.stopped_at) do
-      send_email_task(type, state, schedule, job, gallery, order)
+      send_email_task(type, state, schedule, job, gallery, order, is_approval_required?)
     end
   end
 
@@ -212,8 +209,10 @@ defmodule Picsello.Workers.ScheduleAutomationEmail do
      email_schedule.email_automation_pipeline_id}
   end
 
+  ## Always return false whenever the submit_time is nil
   defp is_email_send_time(nil, _state, _total_hours), do: false
 
+  ## Always send true whenever the states are in [:shoot_thanks, :post_shoot, :before_shoot, :gallery_expiration_soon, :after_gallery_send_feedback]
   defp is_email_send_time(_submit_time, state, _total_hours)
        when state in [
               :shoot_thanks,
@@ -224,21 +223,23 @@ defmodule Picsello.Workers.ScheduleAutomationEmail do
             ],
        do: true
 
+  ## This function will handle the all follow-up emails and
+  ## these emails are actually 'after-emails' i.e. 3-days after, 5-days after etc
   defp is_email_send_time(submit_time, _state, total_hours) do
     %{sign: sign} = EmailAutomations.explode_hours(total_hours)
+    sign = if total_hours == 0, do: "+", else: sign
     {:ok, current_time} = DateTime.now("Etc/UTC")
-    diff_seconds = DateTime.diff(current_time, submit_time, :second)
-    hours = div(diff_seconds, 3600)
-    before_after_send_time(sign, hours, abs(total_hours))
+    hours_diff = DateTime.diff(current_time, submit_time, :hour)
+    before_after_send_time(sign, hours_diff, abs(total_hours))
   end
 
-  defp before_after_send_time(_sign, hours, 0) when hours > 0, do: true
+  ## This will only trigger when time is strictly matching + 2 hour buffer i.e.
+  ## if the email was to be sent 1 hours after then it will handle it upto 3 hours buffer
+  defp before_after_send_time("+", hours_diff, hours_to_compare),
+    do: hours_diff >= hours_to_compare && hours_diff <= hours_to_compare + 2
 
-  defp before_after_send_time("+", hours, total_hours),
-    do: if(hours >= total_hours, do: true, else: false)
-
-  defp before_after_send_time("-", hours, total_hours),
-    do: if(hours <= total_hours, do: true, else: false)
+  defp before_after_send_time("-", _days_diff, _days_to_compare),
+    do: false
 
   defp get_subjects_for_job_pipeline(emails) do
     emails
@@ -252,7 +253,7 @@ defmodule Picsello.Workers.ScheduleAutomationEmail do
     |> Enum.count() > 0
   end
 
-  defp send_email_task(type, state, schedule, job, gallery, order) do
+  defp send_email_task(type, state, schedule, job, gallery, order, is_approval_required?) do
     schema =
       case type do
         :gallery -> gallery
@@ -260,24 +261,41 @@ defmodule Picsello.Workers.ScheduleAutomationEmail do
         _ -> job
       end
 
-    send_email_task = EmailAutomations.send_now_email(type, schedule, schema, state)
+    if is_approval_required? do
+      update_email_schedule(schedule)
+    else
+      send_email_task = EmailAutomations.send_now_email(type, schedule, schema, state)
 
-    case send_email_task do
-      {:ok, _result} ->
-        Logger.info(
-          "---------Email Sent: #{schedule.name} sent at #{DateTime.truncate(DateTime.utc_now(), :second)}"
-        )
+      case send_email_task do
+        {:ok, _result} ->
+          Logger.info(
+            "---------Email Sent: #{schedule.name} sent at #{DateTime.truncate(DateTime.utc_now(), :second)}"
+          )
 
-      result when result in ["ok", :ok] ->
-        Logger.info(
-          "---------Email Sent: #{schedule.name} sent at #{DateTime.truncate(DateTime.utc_now(), :second)}"
-        )
+        result when result in ["ok", :ok] ->
+          Logger.info(
+            "---------Email Sent: #{schedule.name} sent at #{DateTime.truncate(DateTime.utc_now(), :second)}"
+          )
 
-      error ->
-        Logger.error("Email #{schedule.name} #{error}")
+        error ->
+          Logger.error("Email #{schedule.name} #{error}")
+      end
     end
   end
 
+  defp update_email_schedule(schedule) do
+    email_schedule = Ecto.Changeset.change(schedule, approval_required: true)
+
+    case Repo.update(email_schedule) do
+      {:ok, _struct} ->
+        Logger.info("Email Updated: #{schedule.name}} to approval_required: 'true'")
+
+      {:error, changeset} ->
+        Logger.error("Email #{schedule.name} #{changeset}")
+    end
+  end
+
+  ## Fetches the organizations in which subscription has been set :active
   defp get_all_organizations() do
     Subscriptions.organizations_with_active_subscription() |> Enum.map(& &1.id)
   end

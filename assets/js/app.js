@@ -80,11 +80,13 @@ import Cookies from 'js-cookie';
 import FolderUpload from './hooks/folder-upload';
 import SearchResultSelect from './hooks/search-result-select';
 import Tooltip from './hooks/tooltip';
-import DisableRightClick from './hooks/disable-right-click';
 import StripeElements from './hooks/stripe-elements';
+import DisableRightClick from './hooks/disable-right-click';
 import Timer from './hooks/timer';
 import LivePhone from 'live_phone';
 import ViewProposal from './hooks/view_proposal';
+import OpenCompose from './hooks/open_compose';
+import CollapseSidebar from './hooks/collapse-sidebar';
 
 const Modal = {
   mounted() {
@@ -232,6 +234,15 @@ const showAdminBanner = {
   },
 };
 
+const PreserveToggleState = {
+  mounted() {
+    this.el.addEventListener('click', (e) => {
+      var checked_value = document.getElementById("toggle-button").checked
+      document.getElementById("toggle-button").checked = !checked_value
+    })
+  },
+};
+
 const Hooks = {
   AutoHeight,
   Calendar,
@@ -286,6 +297,9 @@ const Hooks = {
   Timer,
   LivePhone,
   ViewProposal,
+  PreserveToggleState,
+  OpenCompose,
+  CollapseSidebar,
 };
 
 window.addEventListener(`phx:download`, (event) => {

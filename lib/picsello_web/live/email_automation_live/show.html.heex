@@ -57,7 +57,7 @@
             </div>
           </div>
           <%= Enum.map(subcategory.pipelines, fn pipeline -> %>
-            <.pipeline_section id="pipepline-#{pipeline.id}" collapsed_sections={@collapsed_sections} pipeline={pipeline} category={email_schedule.category_id} job_id={email_schedule.job_id} category_type={email_schedule.category_type} gallery_id={email_schedule.gallery_id} type={@type} subcategory={subcategory.subcategory_name} subcategory_slug={subcategory.subcategory_slug} current_user={@current_user}/>
+            <.pipeline_section id={"pipepline-#{pipeline.id}"} collapsed_sections={@collapsed_sections} pipeline={pipeline} category={email_schedule.category_id} job_id={email_schedule.job_id} category_type={email_schedule.category_type} gallery_id={email_schedule.gallery_id} type={@type} subcategory={subcategory.subcategory_name} subcategory_slug={subcategory.subcategory_slug} current_user={@current_user}/>
           <% end) %>
         <% end) %>
       </div>

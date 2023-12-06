@@ -54,7 +54,7 @@ defmodule Picsello.EmailAutomationsTest do
             "thanks_booking",
             "before_shoot",
             "balance_due",
-            "offline_payment",
+            "balance_due_offline",
             "paid_offline_full",
             "paid_full",
             "shoot_thanks",

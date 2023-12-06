@@ -24,6 +24,10 @@ defmodule Picsello.StripePayments do
   def create_billing_portal_session(params), do: Stripe.BillingPortal.Session.create(params)
 
   @impl Payments
+  def setup_intent(params, opts),
+    do: Stripe.SetupIntent.create(params, opts)
+
+  @impl Payments
   def retrieve_payment_intent(intent_id, opts),
     do: Stripe.PaymentIntent.retrieve(intent_id, %{}, opts)
 
@@ -49,6 +53,9 @@ defmodule Picsello.StripePayments do
 
   @impl Payments
   defdelegate create_subscription(id, opts), to: Stripe.Subscription, as: :create
+
+  @impl Payments
+  defdelegate create_subscription_schedule(id, opts), to: Stripe.SubscriptionSchedule, as: :create
 
   @impl Payments
   defdelegate list_prices(params), to: Stripe.Price, as: :list

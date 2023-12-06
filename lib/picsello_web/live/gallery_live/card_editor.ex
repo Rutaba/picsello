@@ -112,7 +112,7 @@ defmodule PicselloWeb.GalleryLive.CardEditor do
       </h1>
       </div>
 
-      <ul class="mt-48 pt-6 pb-16 grid grid-cols-2 lg:grid-cols-4 gap-6">
+      <ul class="pt-6 pb-16 grid grid-cols-2 lg:grid-cols-4 gap-6">
         <%= for occasion <- @occasions do %>
           <li>
             <%= live_patch to: self_path(@socket, @gallery, @album, %{"occasion_id" => occasion.id}) do %>

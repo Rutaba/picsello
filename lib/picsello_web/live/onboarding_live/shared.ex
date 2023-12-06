@@ -1,5 +1,6 @@
 defmodule PicselloWeb.OnboardingLive.Shared do
   @moduledoc false
+  require Logger
 
   use Phoenix.Component
   use Phoenix.HTML
@@ -28,18 +29,22 @@ defmodule PicselloWeb.OnboardingLive.Shared do
       Enum.into(assigns, %{
         original_price: nil,
         price: nil,
-        expires_at: nil
+        expires_at: nil,
+        note: nil
       })
 
     ~H"""
       <div class="bg-white" phx-update="ignore" id="timer">
-        <div class="bg-base-200 flex justify-center p-8">
-          <h3 class="text-4xl text-purple-marketing-300">
+        <div class="bg-base-200 p-8">
+          <h3 class="text-4xl text-purple-marketing-300 flex justify-center gap-2">
             <%= if @original_price do %>
               <strike class="font-bold"><%= @original_price %></strike>
             <% end %>
             <%= @price %>
           </h3>
+          <%= if @note do %>
+            <p class="text-md font-light text-center mt-4 text-purple-marketing-300"><%= @note %></p>
+          <% end %>
         </div>
         <%= if @expires_at do %>
           <div class="border flex justify-center p-2 text-purple-marketing-300 font-light tracking-wider text-lg" id="bf-timer" phx-hook="Timer" data-end={@expires_at}></div>
@@ -65,7 +70,7 @@ defmodule PicselloWeb.OnboardingLive.Shared do
           <.icon name="logo-shoot-higher" class="w-32 h-12 sm:h-20 sm:w-48" />
         </div>
         <div class="grid sm:grid-cols-2 bg-white rounded-lg">
-          <div class={"order-2 sm:order-1 sm:rounded-l-lg #{@left_classes}"}>
+          <div class={"sm:rounded-l-lg #{@left_classes}"}>
             <%= render_slot(@inner_block) %>
           </div>
           <div class={"#{@right_classes} order-1 sm:order-2 flex flex-col"}>
@@ -142,7 +147,7 @@ defmodule PicselloWeb.OnboardingLive.Shared do
             <%= for jt <- inputs_for(o, :organization_job_types) |> Enum.sort_by(&(&1.data.job_type)) do %>
               <% input_name = input_name(jt, :job_type) %>
               <%= hidden_inputs_for(jt) %>
-              <%= if jt.data.job_type != "other" do %>
+              <%= if jt.data.job_type != "global" do %>
                 <% checked = jt |> current() |> Map.get(:show_on_business?) %>
                 <.job_type_option type="checkbox" name={input_name} form={jt} job_type={jt |> current() |> Map.get(:job_type)} checked={checked} />
               <% else %>
@@ -153,14 +158,14 @@ defmodule PicselloWeb.OnboardingLive.Shared do
           </div>
           <div class="flex flex-row">
             <div class="flex items-center justify-center w-7 h-7 ml-1 mr-3 mt-2 rounded-full flex-shrink-0 bg-blue-planning-300 text-white">
-              <.icon name="other" class="fill-current" width="14" height="14" />
+              <.icon name="global" class="fill-current" width="14" height="14" />
             </div>
             <div class="flex flex-col">
               <p class="pt-2 font-bold">
                 Not seeing yours here?
               </p>
               <p class="text-gray-400 font-normal">
-                All Picsello accounts include an <strong>Other</strong> photography speciality in case yours isn’t listed here.
+                All Picsello accounts include an <strong>Global</strong> photography speciality in case yours isn’t listed here.
               </p>
             </div>
           </div>
@@ -201,6 +206,16 @@ defmodule PicselloWeb.OnboardingLive.Shared do
         {:error, _} ->
           {:error, "Couldn't assign default email presets"}
       end
+    end)
+    |> Multi.run(:user_temp_navbar, fn _repo, %{user: user} ->
+      # temporarily add enable for all net new users
+      # we are doing this to A/B cohort test the new navbar
+      # and see if it helps with retention/ease of use
+      if FunWithFlags.enabled?(:photo_lab) do
+        FunWithFlags.enable(:sidebar_navigation, for_actor: user)
+      end
+
+      {:ok, nil}
     end)
     |> Multi.run(:user_final, fn _repo, %{user: user} ->
       with _ <- Onboardings.complete!(user) do
@@ -289,4 +304,40 @@ defmodule PicselloWeb.OnboardingLive.Shared do
       {"Other", :other}
     ]
   end
+
+  def country_info("US"), do: %{state_label: "What’s your state?"}
+  def country_info("CA"), do: %{state_label: "What’s your province?"}
+  def country_info(nil), do: %{state_label: "What's your state?"}
+  def country_info(_), do: %{}
+
+  def countries() do
+    Picsello.Country.all() |> Enum.reject(&(&1.code == "US")) |> Enum.map(&{&1.name, &1.code})
+  end
+
+  def states_or_province("CA"), do: canadian_provinces()
+  def states_or_province(_), do: states()
+
+  def field_for("CA"), do: :province
+  def field_for(_), do: :state
+
+  def canadian_provinces() do
+    [
+      {"Alberta", :alberta},
+      {"Atlantic Canada", :atlantic_canada},
+      {"British Columbia", :british_columbia},
+      {"Manitoba", :manitoba},
+      {"New Brunswick", :new_brunswick},
+      {"Newfoundland and Labrador", :newfoundland_and_labrador},
+      {"Northwest Territories", :northwest_territories},
+      {"Nova Scotia", :nova_scotia},
+      {"Nunavut", :nunavut},
+      {"Ontario", :ontario},
+      {"Prince Edward Island", :prince_edward_island},
+      {"Quebec", :quebec},
+      {"Saskatchewan", :saskatchewan},
+      {"Yukon", :yukon}
+    ]
+  end
+
+  defdelegate states(), to: Onboardings, as: :state_options
 end

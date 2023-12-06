@@ -185,7 +185,7 @@ defmodule Picsello.PaymentSchedulesTest do
     end
 
     test "when it's not wedding, headshot or mini returns list with deposit and remainder attributes" do
-      for type <- ~w[family newborn maternity event portrait other boudoir] do
+      for type <- ~w[family newborn maternity event portrait global boudoir] do
         %{id: lead_id} =
           lead =
           insert(:lead,

@@ -36,7 +36,7 @@ defmodule Picsello.Packages do
     "portrait" => ["To Book"],
     "mini" => ["To Book"],
     "boudoir" => ["To Book", "Day Before Shoot"],
-    "other" => ["To Book", "Day Before Shoot"],
+    "global" => ["To Book", "Day Before Shoot"],
     "payment_due_book" => ["To Book"],
     "splits_2" => ["To Book", "Day Before Shoot"],
     "splits_3" => ["To Book", "6 Months Before", "Week Before"]
