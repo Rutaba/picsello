@@ -1,7 +1,7 @@
 defmodule PicselloWeb.BookingProposalLive.InvoiceComponent do
   @moduledoc false
   use PicselloWeb, :live_component
-  alias Picsello.{PaymentSchedules, BookingProposal}
+  alias Picsello.{PaymentSchedules, BookingProposal, EmailAutomations}
   import Picsello.EmailAutomationSchedules, only: [insert_job_emails: 5]
   import PicselloWeb.LiveModal, only: [close_x: 1, footer: 1]
 
@@ -82,9 +82,16 @@ defmodule PicselloWeb.BookingProposalLive.InvoiceComponent do
   end
 
   @impl true
-  def handle_event("submit", %{}, %{assigns: %{job: job, organization: organization}} = socket) do
-    insert_job_emails(job.type, organization.id, job.id, :job, [])
+  def handle_event(
+        "submit",
+        %{},
+        %{assigns: %{job: job, proposal: proposal, organization: organization}} = socket
+      ) do
     handle_checkout(socket, job)
+    insert_job_emails(job.type, organization.id, job.id, :job, [])
+    # send thanks booking or thanks job when proposal accepts of zero package or pay with stripe
+    send_thanks_email(proposal)
+    socket |> noreply()
   end
 
   def handle_event(
@@ -93,7 +100,8 @@ defmodule PicselloWeb.BookingProposalLive.InvoiceComponent do
         %{assigns: %{job: job, proposal: proposal, organization: organization}} = socket
       ) do
     insert_job_emails(job.type, organization.id, job.id, :job, [])
-
+    # send thanks booking or thanks job when proposal selects Pay with cash/check
+    send_thanks_email(proposal)
     handle_offline_checkout(socket, job, proposal)
   end
 
@@ -126,5 +134,11 @@ defmodule PicselloWeb.BookingProposalLive.InvoiceComponent do
     if to_book == "Book",
       do: "due to book",
       else: "due on #{strftime(time_zone, payment.due_at, "%b %d, %Y")}"
+  end
+
+  defp send_thanks_email(proposal) do
+    proposal = BookingProposal.preloads(proposal)
+    state = if is_nil(proposal.job.booking_event), do: :thanks_job, else: :thanks_booking
+    EmailAutomations.send_schedule_email(proposal.job, state)
   end
 end

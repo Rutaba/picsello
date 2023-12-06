@@ -93,10 +93,12 @@ defmodule Picsello.EmailAutomation.GarbageEmailCollector do
 
   def stop_job_and_lead_emails(job) do
     states = [
+      "thanks_booking",
+      "thanks_job",
       "pays_retainer",
       "pays_retainer_offline",
       "balance_due",
-      "offline_payment",
+      "balance_due_offline",
       "paid_full",
       "paid_offline_full"
     ]

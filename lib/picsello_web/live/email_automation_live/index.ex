@@ -2,7 +2,6 @@ defmodule PicselloWeb.Live.EmailAutomations.Index do
   @moduledoc false
   use PicselloWeb, :live_view
   import PicselloWeb.Live.Calendar.Shared, only: [back_button: 1]
-  import PicselloWeb.LiveHelpers
 
   import PicselloWeb.EmailAutomationLive.Shared,
     only: [
@@ -15,11 +14,18 @@ defmodule PicselloWeb.Live.EmailAutomations.Index do
       get_email_name: 4
     ]
 
-  alias Picsello.{EmailAutomations, Packages, Repo}
-  alias PicselloWeb.ConfirmationComponent
-  alias PicselloWeb.EmailAutomationLive.{EditTimeComponent, EditEmailComponent, AddEmailComponent}
+  import PicselloWeb.LiveHelpers
 
-  @always_enabled_states ~w(digitals_ready_download order_confirmation_digital_physical thanks_booking pays_retainer_offline pays_retainer)
+  alias Picsello.{EmailAutomations, Repo}
+
+  alias PicselloWeb.{
+    ConfirmationComponent,
+    EmailAutomationLive.EditTimeComponent,
+    EmailAutomationLive.EditEmailComponent,
+    EmailAutomationLive.AddEmailComponent
+  }
+
+  @always_enabled_states ~w(digitals_ready_download order_confirmation_digital_physical thanks_booking thanks_job pays_retainer_offline pays_retainer)
   @impl true
   def mount(params, _session, socket) do
     socket
@@ -152,11 +158,9 @@ defmodule PicselloWeb.Live.EmailAutomations.Index do
         %{assigns: %{collapsed_sections: collapsed_sections}} = socket
       ) do
     collapsed_sections =
-      if Enum.member?(collapsed_sections, section_id) do
-        Enum.filter(collapsed_sections, &(&1 != section_id))
-      else
-        collapsed_sections ++ [section_id]
-      end
+      if Enum.member?(collapsed_sections, section_id),
+        do: Enum.filter(collapsed_sections, &(&1 != section_id)),
+        else: collapsed_sections ++ [section_id]
 
     socket
     |> assign(:collapsed_sections, collapsed_sections)
@@ -371,7 +375,7 @@ defmodule PicselloWeb.Live.EmailAutomations.Index do
 
                 <div class="flex items-center md:mt-0 ml-auto md:pb-0 pb-6 md:pt-6">
                   <div class="custom-tooltip">
-                    <%= if @subcategory_slug != "order_confirmation_emails" do %>
+                    <%= unless emails_send_immediately_states?(@subcategory_slug, @pipeline.state) do %>
                       <.icon_button id={"email-#{email.id}"} disabled={disabled_email?(index)} class="ml-8 mr-2 px-2 py-2" title={!(index === 0) && "remove"} phx-click="delete-email" phx-value-email_id={email.id} color="red-sales-300" icon="trash"/>
                     <% end %>
                     <%= if index == 0 do %>
@@ -380,7 +384,7 @@ defmodule PicselloWeb.Live.EmailAutomations.Index do
                       </span>
                     <% end %>
                   </div>
-                  <%= if @subcategory_slug != "order_confirmation_emails" do %>
+                  <%= unless emails_send_immediately_states?(@subcategory_slug, @pipeline.state) do %>
                     <.icon_button_simple class={classes("flex items-center px-2 py-1 btn-tertiary text-blue-planning-300 hover:border-blue-planning-300 mr-2 whitespace-nowrap", %{"hidden" => is_state_manually_trigger(@pipeline.state) and index == 0})} phx-click="edit-time-popup" phx-value-index={index} phx-value-subcategory_slug={@subcategory_slug} phx-value-email_id={email.id} phx-value-pipeline_id={@pipeline.id} icon_class="inline-block w-4 h-4 mr-3" color="blue-planning-300" icon="settings">Edit time</.icon_button_simple>
                   <% end %>
                   <.icon_button_simple class="flex items-center px-2 py-1 btn-tertiary bg-blue-planning-300 text-white hover:bg-blue-planning-300/75 whitespace-nowrap" phx-click="edit-email-popup" phx-value-index={index} phx-value-email_id={email.id} phx-value-pipeline_id={@pipeline.id} icon_class="inline-block w-4 h-4 mr-3" color="white" icon="pencil">Edit email</.icon_button_simple>
@@ -391,7 +395,9 @@ defmodule PicselloWeb.Live.EmailAutomations.Index do
           <% end %>
           <div class="flex flex-row justify-between pr-6 pl-8 sm:pl-16 py-6">
             <div class="flex items-center">
-              <.icon_button_simple class="flex items-center px-2 py-1 btn-tertiary hover:border-blue-planning-300" phx-click="add-email-popup" phx-value-pipeline_id={@pipeline.id} data-popover-target="popover-default" icon_class="inline-block w-4 h-4 mr-3" color="blue-planning-300" icon="plus">Add email</.icon_button_simple>
+              <%= unless emails_send_immediately_states?(@subcategory_slug, @pipeline.state) do %>
+                <.icon_button_simple class="flex items-center px-2 py-1 btn-tertiary hover:border-blue-planning-300" phx-click="add-email-popup" phx-value-pipeline_id={@pipeline.id} data-popover-target="popover-default" icon_class="inline-block w-4 h-4 mr-3" color="blue-planning-300" icon="plus">Add email</.icon_button_simple>
+              <% end %>
             </div>
             <%= if show_enable_setting?(@pipeline.state, @subcategory_slug) do %>
               <div class="flex flex-row">
@@ -425,4 +431,18 @@ defmodule PicselloWeb.Live.EmailAutomations.Index do
 
   defp disabled_email?(0), do: true
   defp disabled_email?(_), do: false
+
+  defp emails_send_immediately_states?(_, state)
+       when state in ["client_contact", "abandoned_emails"],
+       do: true
+
+  defp emails_send_immediately_states?(slug, _state)
+       when slug in [
+              "order_confirmation_emails",
+              "booking_response_emails",
+              "payment_reminder_emails"
+            ],
+       do: true
+
+  defp emails_send_immediately_states?(_slug, _state), do: false
 end

@@ -21,30 +21,6 @@ defmodule Picsello.Workers.ScheduleAutomationEmail do
   import Ecto.Query
   @impl Oban.Worker
 
-  @doc """
-  Performs email automation tasks for multiple organizations and pipelines.
-
-  This function is responsible for orchestrating email automation tasks across multiple
-  organizations and pipelines. It chunks organizations into groups and processes emails
-  for each group in parallel. For each organization, it retrieves email pipelines, subjects,
-  and checks if any email requires sending based on the job's state and previous interactions
-  with the client. If no client reply is detected, emails are sent for each pipeline.
-
-  ## Parameters
-
-      - `args`: An optional argument, typically not used. It can be any value or data structure.
-
-  ## Returns
-
-      - `:ok`: Indicates that the email automation tasks have been successfully performed.
-
-  ## Example
-
-      ```elixir
-      EmailAutomations.perform(nil)
-
-      # The function will perform email automation tasks for multiple organizations and pipelines.
-  """
   def perform(_) do
     is_approval_required? =
       from(ags in AdminGlobalSetting, where: ags.slug == "approval_required", select: ags.value)
@@ -83,6 +59,7 @@ defmodule Picsello.Workers.ScheduleAutomationEmail do
     end)
   end
 
+  ## This will trigger for specified states whenever the gallery is nil
   defp send_email_by(_job, nil, %{state: state}, _is_approval_required?)
        when state in [
               :order_arrived,
@@ -138,22 +115,6 @@ defmodule Picsello.Workers.ScheduleAutomationEmail do
   This function retrieves email automation schedules for a list of organizations and organizes them
   into a structured list of `EmailPresetGroup` records. Each group represents a combination of job,
   gallery, pipeline, state, and associated emails. The retrieved emails are sorted according to their respective states.
-
-  ## Parameters
-
-      - `organizations`: A list of organization records for which to retrieve email schedules.
-
-  ## Returns
-
-      - A list of `EmailPresetGroup` records, each containing information about a specific job, gallery, pipeline, state, and associated emails.
-
-  ## Example
-
-      ```elixir
-      organizations = MyModule.get_all_organizations()
-      email_groups = EmailAutomations.get_all_emails(organizations)
-
-      # The `email_groups` variable now contains organized email automation schedules.
   """
   def get_all_emails(organizations) do
     EmailAutomationSchedules.get_all_emails_schedules(organizations)
@@ -231,9 +192,11 @@ defmodule Picsello.Workers.ScheduleAutomationEmail do
     type = if order, do: :order, else: type
     state = if is_atom(state), do: state, else: String.to_atom(state)
 
+    ## fetches the datetime on the basis of which email will be sent
     job_date_time =
       Shared.fetch_date_for_state_maybe_manual(state, schedule, pipeline_id, job, gallery, order)
 
+    ## Determines whether the email should be sent
     is_send_time = is_email_send_time(job_date_time, state, schedule.total_hours)
 
     if is_send_time and is_nil(schedule.reminded_at) and is_nil(schedule.stopped_at) do
@@ -246,8 +209,10 @@ defmodule Picsello.Workers.ScheduleAutomationEmail do
      email_schedule.email_automation_pipeline_id}
   end
 
+  ## Always return false whenever the submit_time is nil
   defp is_email_send_time(nil, _state, _total_hours), do: false
 
+  ## Always send true whenever the states are in [:shoot_thanks, :post_shoot, :before_shoot, :gallery_expiration_soon, :after_gallery_send_feedback]
   defp is_email_send_time(_submit_time, state, _total_hours)
        when state in [
               :shoot_thanks,
@@ -330,6 +295,7 @@ defmodule Picsello.Workers.ScheduleAutomationEmail do
     end
   end
 
+  ## Fetches the organizations in which subscription has been set :active
   defp get_all_organizations() do
     Subscriptions.organizations_with_active_subscription() |> Enum.map(& &1.id)
   end

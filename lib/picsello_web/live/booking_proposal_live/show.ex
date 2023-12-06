@@ -2,7 +2,17 @@ defmodule PicselloWeb.BookingProposalLive.Show do
   @moduledoc false
   use PicselloWeb, live_view: [layout: "live_client"]
   require Logger
-  alias Picsello.{Repo, BookingProposal, Job, Payments, PaymentSchedules, Messages}
+
+  alias Picsello.{
+    Repo,
+    BookingProposal,
+    Job,
+    Payments,
+    PaymentSchedules,
+    Messages,
+    EmailAutomations
+  }
+
   alias PicselloWeb.{BookingProposalLive.ScheduleComponent, Live.Brand.Shared}
   import Picsello.EmailAutomationSchedules, only: [insert_job_emails: 5]
   import Picsello.PaymentSchedules, only: [set_payment_schedules_order: 1]
@@ -103,6 +113,10 @@ defmodule PicselloWeb.BookingProposalLive.Show do
   end
 
   def handle_event("pay_offline", %{}, %{assigns: %{job: job, proposal: proposal}} = socket) do
+    # From job Booking proposal open and Pay with cash/check send either thanks booking or thanks job
+    proposal = BookingProposal.preloads(proposal)
+    state = if is_nil(proposal.job.booking_event), do: :thanks_job, else: :thanks_booking
+    EmailAutomations.send_schedule_email(job, state)
     handle_offline_checkout(socket, job, proposal)
   end
 

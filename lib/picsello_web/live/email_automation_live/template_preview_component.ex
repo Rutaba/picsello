@@ -2,7 +2,6 @@ defmodule PicselloWeb.EmailAutomationLive.TemplatePreviewComponent do
   @moduledoc false
 
   use PicselloWeb, :live_component
-
   import PicselloWeb.LiveModal, only: [close_x: 1]
 
   @impl true

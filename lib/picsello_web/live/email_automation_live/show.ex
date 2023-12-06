@@ -3,7 +3,6 @@ defmodule PicselloWeb.Live.EmailAutomations.Show do
   use PicselloWeb, :live_view
   import PicselloWeb.Live.Calendar.Shared, only: [back_button: 1]
   import Picsello.Onboardings, only: [save_intro_state: 3]
-  import PicselloWeb.LiveHelpers
   import PicselloWeb.JobLive.Shared, only: [assign_job: 2]
 
   import PicselloWeb.EmailAutomationLive.Shared,
@@ -19,6 +18,7 @@ defmodule PicselloWeb.Live.EmailAutomations.Show do
       get_sample_values: 4
     ]
 
+  import PicselloWeb.LiveHelpers
   import Ecto.Query
 
   alias Picsello.{
@@ -63,11 +63,9 @@ defmodule PicselloWeb.Live.EmailAutomations.Show do
         %{assigns: %{collapsed_sections: collapsed_sections}} = socket
       ) do
     collapsed_sections =
-      if Enum.member?(collapsed_sections, section_id) do
-        Enum.filter(collapsed_sections, &(&1 != section_id))
-      else
-        collapsed_sections ++ [section_id]
-      end
+      if Enum.member?(collapsed_sections, section_id),
+        do: Enum.filter(collapsed_sections, &(&1 != section_id)),
+        else: collapsed_sections ++ [section_id]
 
     socket
     |> assign(:collapsed_sections, collapsed_sections)
@@ -118,8 +116,6 @@ defmodule PicselloWeb.Live.EmailAutomations.Show do
           socket
       ) do
     selected_job_type = job_types |> Enum.filter(fn x -> x.job_type == type end) |> List.first()
-    schedule_id = to_integer(id)
-    pipeline_id = to_integer(pipeline_id)
 
     socket
     |> open_modal(PicselloWeb.EmailAutomationLive.EditEmailScheduleComponent, %{
@@ -127,8 +123,8 @@ defmodule PicselloWeb.Live.EmailAutomations.Show do
       job: job,
       job_type: selected_job_type.jobtype,
       job_types: job_types,
-      pipeline: get_pipline(pipeline_id),
-      email: EmailAutomationSchedules.get_schedule_by_id(schedule_id),
+      pipeline: get_pipline(to_integer(pipeline_id)),
+      email: EmailAutomationSchedules.get_schedule_by_id(to_integer(id)),
       index: to_integer(index)
     })
     |> noreply()
@@ -212,8 +208,7 @@ defmodule PicselloWeb.Live.EmailAutomations.Show do
 
   @impl true
   def handle_info({:confirm_event, "stop-email-schedule-" <> id}, socket) do
-    id = String.to_integer(id)
-    schedule_query = EmailAutomationSchedules.get_schedule_by_id_query(id)
+    schedule_query = EmailAutomationSchedules.get_schedule_by_id_query(String.to_integer(id))
 
     multi =
       EmailAutomationSchedules.delete_and_insert_schedules_by_multi(
@@ -249,7 +244,8 @@ defmodule PicselloWeb.Live.EmailAutomations.Show do
       <% sorted_emails = sort_emails(@pipeline.emails, @pipeline.state) %>
       <div testid="pipeline-section" class="mb-3 md:mr-4 border border-base-200 rounded-lg">
         <% next_email = get_next_email_schdule_date(@category_type, sorted_emails, @pipeline.id, @pipeline.state, @subcategory_slug) %>
-        <div class={classes("flex justify-between p-2", %{"opacity-60" => next_email.is_completed})}>
+        <% email_is_completed? = next_email.is_completed %>
+        <div class={classes("flex justify-between p-2", %{"opacity-60" => email_is_completed?})}>
             <% stopped_email_text = EmailAutomationSchedules.get_stopped_emails_text(@job_id, @pipeline.state, PicselloWeb.Helpers) %>
             <%= if stopped_email_text do %>
               <span class="pl-1 text-red-sales-300 font-bold"> <%= stopped_email_text %> </span>
@@ -261,7 +257,7 @@ defmodule PicselloWeb.Live.EmailAutomations.Show do
           <% end %>
         </div>
 
-        <div class={classes("flex bg-base-200 pl-2 pr-7 py-3 items-center cursor-pointer", %{"opacity-60" => next_email.is_completed})} phx-click="toggle-section" phx-value-section_id={"pipeline-#{@pipeline.id}-#{@subcategory}"}>
+        <div class={classes("flex bg-base-200 pl-2 pr-7 py-3 items-center cursor-pointer", %{"opacity-60" => email_is_completed?})} phx-click="toggle-section" phx-value-section_id={"pipeline-#{@pipeline.id}-#{@subcategory}"}>
 
           <div class="flex flex-col">
             <div class=" flex flex-row items-center">
@@ -298,7 +294,7 @@ defmodule PicselloWeb.Live.EmailAutomations.Show do
           <%= Enum.with_index(sorted_emails, fn email, index -> %>
               <% last_index = Enum.count(sorted_emails) - 1 %>
               <% is_email_disable = disable_send_stop_email(email, sorted_emails, @pipeline.state, index)%>
-            <div class={classes("flex flex-col md:flex-row pl-2 pr-7 md:items-center justify-between", %{"opacity-60" => next_email.is_completed})}>
+            <div class={classes("flex flex-col md:flex-row pl-2 pr-7 md:items-center justify-between", %{"opacity-60" => email_is_completed?})}>
               <div class="flex flex-row ml-2 h-max">
                 <div class={"h-auto pt-3 md:relative #{index != last_index && "md:before:absolute md:before:border md:before:h-full md:before:border-base-200 md:before:left-1/2 md:before:z-10 md:before:z-[-1]"}"}>
                   <div class="flex w-8 h-8 rounded-full items-center justify-center bg-base-200 z-40">
@@ -339,14 +335,15 @@ defmodule PicselloWeb.Live.EmailAutomations.Show do
                 <%= if not (is_state_manually_trigger(@pipeline.state) and index == 0) do %>
                   <.icon_button_simple testid={"#{@pipeline.state}-stop_button-#{index}"} class={classes("flex flex-row items-center justify-center w-8 h-8 bg-base-200 mr-2 rounded-xl", %{"opacity-30 hover:cursor-not-allowed" => is_email_disable})} disabled={is_email_disable} phx-click="confirm-stop-email" phx-value-email_id={email.id} icon_class="flex flex-col items-center justify-center w-5 h-5" color="red-sales-300" icon="stop"></.icon_button_simple>
                 <% end %>
-                <button testid="email_send_OR_start_sequence" disabled={is_email_disable} class={classes("h-8 flex items-center px-2 py-1 btn-tertiary text-black font-bold  hover:border-blue-planning-300 mr-2 whitespace-nowrap", %{"opacity-30 hover:cursor-not-allowed" => !is_nil(email.stopped_at) || !is_nil(email.reminded_at) || disable_pipeline?(sorted_emails, @pipeline.state, index), "hidden" => @subcategory_slug == "payment_reminder_emails"})} phx-click="confirm-send-email" phx-value-email_id={email.id} phx-value-pipeline_id={@pipeline.id}>
+                <% allow_cursor? = !is_nil(email.stopped_at) || !is_nil(email.reminded_at) %>
+                <button testid="email_send_OR_start_sequence" disabled={is_email_disable} class={classes("h-8 flex items-center px-2 py-1 btn-tertiary text-black font-bold  hover:border-blue-planning-300 mr-2 whitespace-nowrap", %{"opacity-30 hover:cursor-not-allowed" => allow_cursor? || disable_pipeline?(sorted_emails, @pipeline.state, index), "hidden" => @subcategory_slug == "payment_reminder_emails"})} phx-click="confirm-send-email" phx-value-email_id={email.id} phx-value-pipeline_id={@pipeline.id}>
                   <%= if is_state_manually_trigger(@pipeline.state) and index == 0 do %>
                       Start Sequence
                     <% else %>
                       Send now
                   <% end %>
                 </button>
-                <.icon_button_simple disabled={!is_nil(email.reminded_at) || !is_nil(email.stopped_at)} class={classes("h-8 flex items-center px-2 py-1 btn-tertiary bg-blue-planning-300 text-white hover:bg-blue-planning-300/75 whitespace-nowrap", %{"opacity-30 hover:cursor-not-allowed" => !is_nil(email.reminded_at) || !is_nil(email.stopped_at)})} phx-click="edit-email" phx-value-index={index} phx-value-email_id={email.id} phx-value-pipeline_id={@pipeline.id} icon_class="inline-block w-4 h-4 mr-3" color="white" icon="pencil">Edit email</.icon_button_simple>
+                <.icon_button_simple disabled={!is_nil(email.reminded_at) || !is_nil(email.stopped_at)} class={classes("h-8 flex items-center px-2 py-1 btn-tertiary bg-blue-planning-300 text-white hover:bg-blue-planning-300/75 whitespace-nowrap", %{"opacity-30 hover:cursor-not-allowed" => allow_cursor?})} phx-click="edit-email" phx-value-index={index} phx-value-email_id={email.id} phx-value-pipeline_id={@pipeline.id} icon_class="inline-block w-4 h-4 mr-3" color="white" icon="pencil">Edit email</.icon_button_simple>
               </div>
             </div>
           <% end) %>
@@ -498,35 +495,6 @@ defmodule PicselloWeb.Live.EmailAutomations.Show do
       true -> disable_pipeline?(sorted_emails, state, index)
     end
   end
-
-  # TODO: Needs to remove after verfiy send emails manually
-
-  # defp send_email(:job, category_type, email, job, state, _order_id) do
-  #   EmailAutomations.send_now_email(
-  #     category_type,
-  #     email,
-  #     job,
-  #     state
-  #   )
-  # end
-
-  # defp send_email(:gallery, _category_type, email, gallery, state, _order_id)
-  #      when state in [
-  #             :manual_gallery_send_link,
-  #             :manual_send_proofing_gallery,
-  #             :manual_send_proofing_gallery_finals,
-  #             :cart_abandoned,
-  #             :gallery_expiration_soon,
-  #             :gallery_password_changed,
-  #             :after_gallery_send_feedback
-  #           ] do
-  #   EmailAutomations.send_now_email(:gallery, email, gallery, state)
-  # end
-
-  # defp send_email(:gallery, _category_type, email, _gallery, state, order_id) do
-  #   order = Orders.get_order(order_id)
-  #   EmailAutomations.send_now_email(:order, email, order, state)
-  # end
 
   defp disable_pipeline?(_emails, _state, 0), do: false
 

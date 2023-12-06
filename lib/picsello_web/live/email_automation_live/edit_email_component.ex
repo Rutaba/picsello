@@ -6,12 +6,12 @@ defmodule PicselloWeb.EmailAutomationLive.EditEmailComponent do
   import PicselloWeb.GalleryLive.Shared, only: [steps: 1]
   import PicselloWeb.PackageLive.Shared, only: [current: 1]
   import PicselloWeb.Shared.Quill, only: [quill_input: 1]
-  import PicselloWeb.Shared.MultiSelect
   import PicselloWeb.Shared.ShortCodeComponent, only: [short_codes_select: 1]
-  import PicselloWeb.EmailAutomationLive.Shared
+  import PicselloWeb.{EmailAutomationLive.Shared, Shared.MultiSelect}
   import Ecto.Query
 
   alias Picsello.{Repo, EmailPresets, EmailPresets.EmailPreset}
+  alias Ecto.{Changeset, Multi}
 
   @steps [:edit_email, :preview_email]
 
@@ -63,16 +63,6 @@ defmodule PicselloWeb.EmailAutomationLive.EditEmailComponent do
     index = Enum.find_index(email_presets, &(&1.name == email_preset.name))
     if(index, do: List.delete_at(email_presets, index), else: email_presets) ++ [email_preset]
   end
-
-  defp step_valid?(assigns),
-    do:
-      Enum.all?(
-        [
-          assigns.email_preset_changeset
-        ],
-        & &1.valid?
-      )
-      |> validate?(assigns.job_types)
 
   @impl true
   def handle_event("back", _, %{assigns: %{step: step, steps: steps}} = socket) do
@@ -156,9 +146,10 @@ defmodule PicselloWeb.EmailAutomationLive.EditEmailComponent do
 
         <h1 class="mt-2 mb-4 text-3xl">
           <span class="font-bold">
-          <%= case @step do %>
-            <% :edit_email -> %> Edit
-            <% :preview_email -> %> Preview
+          <%= if @step == :edit_email do %>
+              Edit
+          <% else %>
+              Preview
           <% end %>
           <%= String.capitalize(@job_type.name)%> Email</span>
         </h1>
@@ -182,7 +173,8 @@ defmodule PicselloWeb.EmailAutomationLive.EditEmailComponent do
                     options={@job_types}
                   />
               </div>
-              <div class={classes(%{"hidden" => @step == :preview_email})}>
+              <% preview_email_step? = @step == :preview_email%>
+              <div class={classes(%{"hidden" => preview_email_step?})}>
                 <label class="flex items-center mt-3">
                   <%= checkbox(f, :is_global, class: "w-5 h-5 mr-2.5 checkbox") %>
                   <span>Apply Changes to all job types</span>
@@ -214,7 +206,7 @@ defmodule PicselloWeb.EmailAutomationLive.EditEmailComponent do
                   options={@job_types}
                 />
               </div>
-              <div class={classes(%{"hidden" => @step == :preview_email})}>
+              <div class={classes(%{"hidden" => preview_email_step?})}>
                 <label class="flex items-center mt-3">
                   <%= checkbox(f, :is_global, class: "w-5 h-5 mr-2.5 checkbox") %>
                   <span>Apply Changes to all job types</span>
@@ -335,14 +327,14 @@ defmodule PicselloWeb.EmailAutomationLive.EditEmailComponent do
          } = socket
        ) do
     changeset =
-      Ecto.Changeset.put_change(email_preset_changeset, :id, email.id)
-      |> Ecto.Changeset.put_change(:state, pipeline.state)
+      Changeset.put_change(email_preset_changeset, :id, email.id)
+      |> Changeset.put_change(:state, pipeline.state)
 
     preset = current(changeset)
 
     if preset.is_global do
-      Ecto.Multi.new()
-      |> Ecto.Multi.update_all(
+      Multi.new()
+      |> Multi.update_all(
         :email_presets,
         fn _ ->
           from(ep in EmailPreset,
@@ -361,8 +353,8 @@ defmodule PicselloWeb.EmailAutomationLive.EditEmailComponent do
         []
       )
     else
-      Ecto.Multi.new()
-      |> Ecto.Multi.insert(
+      Multi.new()
+      |> Multi.insert(
         :email_preset,
         fn _ -> changeset end,
         on_conflict: {:replace, [:subject_template, :body_template, :private_name]},
