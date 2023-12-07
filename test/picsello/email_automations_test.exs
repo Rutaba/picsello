@@ -933,6 +933,40 @@ defmodule Picsello.EmailAutomationsTest do
       Picsello.Workers.ScheduleAutomationEmail.perform(nil)
       assert fetch_all_send_emails_count() == 3
     end
+
+    test "doesn't sends the email when the time-difference doesn't matches any state", %{
+      cart_job: cart_job,
+      cart_organization: cart_organization
+    } do
+      gallery =
+        insert(:gallery,
+          job: cart_job,
+          organization: cart_organization
+        )
+
+      EmailAutomationSchedules.insert_gallery_order_emails(
+        gallery,
+        nil
+      )
+
+      gallery_client =
+        insert(:gallery_client, gallery: gallery, email: "galleryclient@picsello.com")
+
+      order =
+        insert(:order,
+          gallery: gallery,
+          placed_at: nil,
+          intent: nil,
+          gallery_client: gallery_client,
+          inserted_at: Timex.shift(Timex.now(), hours: -1000)
+        )
+
+      insert(:digital, order: order)
+
+      assert fetch_all_send_emails_count() == 0
+      Picsello.Workers.ScheduleAutomationEmail.perform(nil)
+      assert fetch_all_send_emails_count() == 3
+    end
   end
 
   describe "get_active_email_schedule_count/1 action" do
