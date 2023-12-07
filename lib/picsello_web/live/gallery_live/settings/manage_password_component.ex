@@ -46,7 +46,7 @@ defmodule PicselloWeb.GalleryLive.Settings.ManagePasswordComponent do
   @impl true
   def handle_event(
         "validate",
-        %{"gallery" => %{"password" => password}} = params,
+        %{"gallery" => %{"password" => password}},
         %{assigns: %{gallery: gallery}} = socket
       ) do
     socket
