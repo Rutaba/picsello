@@ -141,7 +141,7 @@ defmodule Picsello.WHCC do
 
   def merge_details(product_details, details, item_attrs, %{id: whcc_product_id} = product) do
     product_details
-    |> Map.merge(Map.take(item_attrs, [:total_markuped_price, :quantity]))
+    |> Map.merge(Map.take(item_attrs, [:total_markuped_price, :quantity, :unit_base_price]))
     |> Map.merge(
       details
       |> Map.take([:preview_url, :editor_id, :selections])
