@@ -112,7 +112,7 @@ defmodule Picsello.Contracts do
     %{organization: organization} = package |> Repo.preload(organization: :user)
 
     variables = %{
-      state: helpers.dyn_gettext(organization.user.onboarding.state),
+      state: organization |> get_state_for_contract() |> helpers.dyn_gettext(),
       organization_name: organization.name,
       turnaround_weeks: helpers.ngettext("1 week", "%{count} weeks", package.turnaround_weeks)
     }
@@ -122,13 +122,26 @@ defmodule Picsello.Contracts do
 
   def default_contract_content(contract, organization, helpers) do
     variables = %{
-      state: helpers.dyn_gettext(organization.onboarding.state),
+      state: organization |> get_state_for_contract() |> helpers.dyn_gettext(),
       organization_name: organization.name,
       turnaround_weeks: helpers.ngettext("1 week", "%{count} weeks", 1)
     }
 
     :bbmustache.render(contract.content, variables, key_type: :atom)
   end
+
+  defp get_state_for_contract(%{organization: %{user: %{onboarding: %{state: state}}}}), do: state
+
+  defp get_state_for_contract(%{organization: %{user: %{onboarding: %{province: province}}}}),
+    do: province
+
+  defp get_state_for_contract(%{organization: %{user: %{onboarding: %{country: country}}}}),
+    do: country
+
+  defp get_state_for_contract(%{organization: %{onboarding: %{state: state}}}), do: state
+  defp get_state_for_contract(%{organization: %{onboarding: %{province: province}}}), do: province
+  defp get_state_for_contract(%{organization: %{onboarding: %{country: country}}}), do: country
+  defp get_state_for_contract(_), do: ""
 
   defp for_package_query(%Package{} = package) do
     job_type = job_type(package)
