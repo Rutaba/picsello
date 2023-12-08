@@ -192,7 +192,7 @@ defmodule Picsello.Cart.CheckoutsTest do
 
     setup [:stub_create_session, :stub_create_order, :stub_create_invoice]
 
-    setup %{gallery: gallery, whcc_order: whcc_order, gallery_client: gallery_client} do
+    setup %{gallery: gallery, gallery_client: gallery_client} do
       order =
         build(:cart_product)
         |> Cart.place_product(gallery, gallery_client)
@@ -200,7 +200,7 @@ defmodule Picsello.Cart.CheckoutsTest do
 
       refute ~M[0]USD == Order.total_cost(order)
 
-      assert :gt = Money.cmp(Order.total_cost(order), WHCCOrder.total(whcc_order))
+      assert :gt = Money.cmp(Order.total_cost(order), Product.total_cost(order))
 
       [order: order]
     end
@@ -235,7 +235,7 @@ defmodule Picsello.Cart.CheckoutsTest do
 
     setup [:stub_create_session, :stub_create_order]
 
-    setup %{gallery: gallery, whcc_order: whcc_order, gallery_client: gallery_client} do
+    setup %{gallery: gallery, gallery_client: gallery_client} do
       order =
         build(:cart_product)
         |> Cart.place_product(gallery, gallery_client)
@@ -246,7 +246,7 @@ defmodule Picsello.Cart.CheckoutsTest do
 
       refute ~M[0]USD == Order.total_cost(order)
 
-      assert :gt = Money.cmp(Order.total_cost(order), WHCCOrder.total(whcc_order))
+      assert :gt = Money.cmp(Order.total_cost(order), Product.total_cost(order))
 
       [order: order]
     end
@@ -265,7 +265,7 @@ defmodule Picsello.Cart.CheckoutsTest do
 
     setup [:stub_create_order, :stub_create_invoice]
 
-    setup %{gallery: gallery, whcc_order: whcc_order, gallery_client: gallery_client} do
+    setup %{gallery: gallery, gallery_client: gallery_client} do
       order =
         build(:cart_product,
           shipping_base_charge: ~M[0]USD,
@@ -280,7 +280,7 @@ defmodule Picsello.Cart.CheckoutsTest do
 
       assert ~M[45]USD == Order.total_cost(order)
 
-      assert :gt = Money.cmp(Order.total_cost(order), WHCCOrder.total(whcc_order))
+      assert :gt = Money.cmp(Order.total_cost(order), Product.total_cost(order))
 
       [order: order]
     end
