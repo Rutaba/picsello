@@ -1,7 +1,7 @@
 defmodule PicselloWeb.GalleryLive.ClientShow.AuthenticationComponent do
   @moduledoc false
   use PicselloWeb, :live_component
-  alias Picsello.Galleries
+  alias Picsello.{Galleries, Galleries.Gallery}
   import Picsello.Profiles, only: [logo_url: 1]
 
   def mount(socket) do
@@ -30,22 +30,16 @@ defmodule PicselloWeb.GalleryLive.ClientShow.AuthenticationComponent do
         %{"login" => %{"email" => email, "password" => password}},
         %{assigns: %{gallery: gallery}} = socket
       ) do
-    valid_email? = String.length(email) > 0 && Regex.match?(~r/^[^\s]+@[^\s]+.[^\s]+$/, email)
+    check_login(socket, email, gallery, password)
+    |> noreply()
+  end
 
-    if valid_email? do
-      gallery
-      |> Galleries.build_gallery_session_token(password, String.downcase(email))
-      |> case do
-        {:ok, token} ->
-          update_emails_map(String.downcase(email), gallery)
-          assign(socket, submit: true, session_token: token)
-
-        _ ->
-          assign(socket, password_is_correct: false)
-      end
-    else
-      assign(socket, password_is_correct: false, submit: false)
-    end
+  def handle_event(
+        "check",
+        %{"login" => %{"email" => email}},
+        %{assigns: %{gallery: gallery}} = socket
+      ) do
+    check_login(socket, email, gallery, nil)
     |> noreply()
   end
 
@@ -90,5 +84,28 @@ defmodule PicselloWeb.GalleryLive.ClientShow.AuthenticationComponent do
     updated_email_list = email_list ++ [new_email_map]
 
     Galleries.update_gallery(gallery, %{gallery_analytics: updated_email_list})
+  end
+
+  defp check_login(socket, email, gallery, password) do
+    valid_email? = String.length(email) > 0 && Regex.match?(~r/^[^\s]+@[^\s]+.[^\s]+$/, email)
+
+    with true <- valid_email?,
+         {:ok, token} <- check_gallery_password(gallery, email, password) do
+      update_emails_map(String.downcase(email), gallery)
+      assign(socket, submit: true, session_token: token)
+    else
+      _ ->
+        assign(socket, password_is_correct: false)
+    end
+  end
+
+  defp check_gallery_password(%Gallery{is_password: false} = gallery, email, nil) do
+    gallery
+    |> Galleries.build_gallery_session_token(String.downcase(email))
+  end
+
+  defp check_gallery_password(gallery, email, password) do
+    gallery
+    |> Galleries.build_gallery_session_token(password, String.downcase(email))
   end
 end

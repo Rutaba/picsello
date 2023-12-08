@@ -42,6 +42,7 @@ defmodule Picsello.Galleries.Gallery do
     field :gallery_send_at, :utc_datetime
     field :total_count, :integer, default: 0
     field :type, Ecto.Enum, @type_opts
+    field :is_password, :boolean, default: true
     field :gallery_analytics, {:array, :map}
 
     belongs_to(:job, Job)
@@ -97,7 +98,8 @@ defmodule Picsello.Galleries.Gallery do
     :type,
     :client_link_hash,
     :total_count,
-    :gallery_analytics
+    :gallery_analytics,
+    :is_password
   ]
   @required_attrs [:name, :job_id, :status, :password]
 

@@ -1335,6 +1335,19 @@ defmodule Picsello.Galleries do
     end
   end
 
+  def build_gallery_session_token(
+        %Gallery{id: id, is_password: false} = gallery,
+        email
+      ) do
+    with {:ok, %{token: token}} <-
+           insert_session_token(%{resource_id: id, resource_type: :gallery, email: email}),
+         {:ok, _} <- insert_gallery_client(gallery, email) do
+      {:ok, token}
+    else
+      _ -> {:error, "Something went wrong"}
+    end
+  end
+
   def insert_session_token(attrs) do
     attrs
     |> SessionToken.changeset()

@@ -145,8 +145,22 @@ defmodule Picsello.Payments do
   @callback create_billing_portal_session(%{customer: String.t()}) ::
               {:ok, Stripe.BillingPortal.Session.t()} | {:error, Stripe.Error.t()}
 
-  @callback setup_intent(binary(), Stripe.options()) ::
+  @callback setup_intent(params, Stripe.options()) ::
               {:ok, Stripe.SetupIntent.t()} | {:error, Stripe.Error.t()}
+            when params:
+                   %{
+                     optional(:confirm) => boolean(),
+                     optional(:customer) => Stripe.id() | Stripe.Customer.t(),
+                     optional(:description) => String.t(),
+                     optional(:metadata) => map(),
+                     optional(:on_behalf_of) => Stripe.id() | Stripe.Account.t(),
+                     optional(:payment_method) => Stripe.id(),
+                     optional(:payment_method_options) => map(),
+                     optional(:payment_method_types) => [String.t()],
+                     optional(:return_url) => String.t(),
+                     optional(:usage) => String.t()
+                   }
+                   | %{}
 
   @callback retrieve_payment_intent(binary(), Stripe.options()) ::
               {:ok, Stripe.PaymentIntent.t()} | {:error, Stripe.Error.t()}

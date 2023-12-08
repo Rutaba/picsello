@@ -14,8 +14,8 @@ defmodule PicselloWeb.ClientLoginComponent do
           <%= input @f, @email_name, placeholder: @email_placeholder, value: input_value(@f, @email_name), phx_debounce: "500", wrapper_class: "mt-4", class: "w-full pr-16 #{@class}"%>
         </div>
       </div>
-
-      <div class='flex flex-col mt-4'>
+      <%= if @password_include do %>
+        <div class='flex flex-col mt-4'>
         <%= label_for @f, @password_name, label: @password_label %>
         <div class='relative'>
           <% password_input_type = if @hide_password, do: :password_input, else: :text_input %>
@@ -31,7 +31,8 @@ defmodule PicselloWeb.ClientLoginComponent do
             <% end %>
           </a>
         </div>
-      </div>
+        </div>
+      <% end %>
     </div>
     """
   end
