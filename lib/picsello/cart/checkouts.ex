@@ -15,7 +15,6 @@ defmodule Picsello.Cart.Checkouts do
     EmailAutomationSchedules
   }
 
-  alias Picsello.WHCC.Order.Created, as: WHCCOrder
   alias WHCC.Editor.Export.Editor
 
   import Picsello.Cart,
@@ -187,20 +186,14 @@ defmodule Picsello.Cart.Checkouts do
     acc ++ Enum.map(line_items, &Editor.new(&1.editor_id, order_attributes: order_attributes))
   end
 
-  defp create_session(cart, %{whcc_order: whcc_order} = opts) do
+  defp create_session(cart, opts) do
     shipping_price = Cart.total_shipping(cart)
 
     create_session(
       cart,
-      WHCCOrder.total(whcc_order) |> Money.add(shipping_price),
+      Product.total_cost(cart) |> Money.add(shipping_price),
       opts
     )
-  end
-
-  defp create_session(cart, opts) do
-    shipping_price = Cart.total_shipping(cart)
-
-    create_session(cart, shipping_price, opts)
   end
 
   defp create_session(
