@@ -26,12 +26,13 @@ defmodule Picsello.Organization do
     @primary_key false
     embedded_schema do
       field(:show_phone, :boolean, default: true)
+      field(:show_business_name, :boolean, default: true)
       field(:content, :string)
     end
 
     def changeset(signature, attrs) do
       signature
-      |> cast(attrs, [:show_phone, :content])
+      |> cast(attrs, [:show_phone, :show_business_name, :content])
     end
   end
 
