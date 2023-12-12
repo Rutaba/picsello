@@ -29,35 +29,35 @@ defmodule PicselloWeb.Live.Brand.EditSignatureComponent do
 
         <.form for={@changeset} :let={f} phx-change="validate" phx-submit="save" phx-target={@myself}>
           <%= for e <- inputs_for(f, :email_signature) do %>
-            <div class="grid mt-4 grid-cols-1 sm:grid-cols-3 gap-5 sm:gap-12 mb-6">
+            <div class="grid mt-4 grid-cols-1 sm:grid-cols-5 gap-5 sm:gap-12 mb-6">
+
+              <div class="col-span-3">
+                <div>
+                  <div class="input-label mb-4">Extra content</div>
+                  <.quill_input f={e} html_field={:content} placeholder="Start typing…" />
+                </div>
+                <div class="grid grid-cols-1 sm:grid-cols-2">
+                  <label class="flex my-4 cursor-pointer">
+                    <%= checkbox(e, :show_business_name, class: "w-6 h-6 mt-1 checkbox") %>
+                    <p class="ml-3 text-base-250"><span class="font-bold text-base-300">Show your business name?</span> <br />(Edit in account settings)</p>
+                  </label>
+                  <%= if @current_user.onboarding.phone do %>
+                    <label class="flex my-4 cursor-pointer">
+                      <%= checkbox(e, :show_phone, class: "w-6 h-6 mt-1 checkbox") %>
+                      <p class="ml-3 text-base-250"><span class="font-bold text-base-300">Show your phone number?</span> <br />(Edit in account settings)</p>
+                    </label>
+                  <% else %>
+                    <p class="text-base-250 my-4 italic">Add your phone number in account settings to enable/disable in your signature.</p>
+                  <% end %>
+                </div>
+              </div>
 
               <div class="col-span-2">
-                <div class="input-label">Extra content</div>
-
-                <.quill_input f={e} html_field={:content} placeholder="Start typing…" />
+                <.email_signature_preview organization={current_organization(@changeset)} user={@current_user} />
               </div>
-              <label class="flex flex-col justify-center">
-                <div class="input-label">Show your phone number?</div>
-                <div class="mt-2 flex items-center">
-                  <%= checkbox(e, :show_phone, class: "peer hidden") %>
-
-                  <div class="hidden peer-checked:flex items-center">
-                    <div class="rounded-full bg-blue-planning-300 border border-base-100 w-16 p-1 flex justify-end mr-4">
-                      <div class="rounded-full h-7 w-7 bg-base-100"></div>
-                    </div>
-                  </div>
-
-                  <div class="flex peer-checked:hidden items-center">
-                    <div class="rounded-full w-16 p-1 flex mr-4 border border-blue-planning-300">
-                      <div class="rounded-full h-7 w-7 bg-blue-planning-300"></div>
-                    </div>
-                  </div>
-                </div>
-              </label>
             </div>
           <% end %>
 
-          <.email_signature_preview organization={current_organization(@changeset)} user={@current_user} />
 
           <PicselloWeb.LiveModal.footer disabled={!@changeset.valid?} />
         </.form>

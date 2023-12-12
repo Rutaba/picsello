@@ -28,9 +28,11 @@ defmodule PicselloWeb.EmailSignatureView do
           <% end %>
         </td>
       </tr>
+      <%= if @organization.email_signature.show_business_name && @organization.name do %>
       <tr style="border-collapse:collapse;" border="0" cellpadding="0" cellspacing="0" width="100%">
         <td style="color:#1F1C1E;border:0px;font-weight:bold;font-size:18px;border-collapse:collapse;" border="0" cellpadding="0" cellspacing="0" width="100%"><%= @organization.name %></td>
       </tr>
+      <% end %>
       <%= if @organization.email_signature.show_phone && @user.onboarding.phone do %>
         <tr style="border-collapse:collapse;" border="0" cellpadding="0" cellspacing="0" width="100%">
           <td style={"color:#{@organization.profile.color};padding-top:10px;padding-bottom:10px;border:0px;border-collapse:collapse;font-size:18px;"} border="0" cellpadding="0" cellspacing="0" width="100%">
